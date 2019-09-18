@@ -1,0 +1,158 @@
+@import '~css/vars.scss';
+
+.SB-app {
+    .team {
+        position: absolute;
+        margin: auto;
+        top: 0;
+        width: 35%;
+        height: 100%;
+
+        .score {
+            position: absolute;
+            margin: auto;
+            top: 16px;
+            width: calc(100% - 175px);
+            background-color: #222222;
+            font-family: 'Liquid Crystal';
+            font-size: 128px;
+            line-height: 135px;
+            height: 150px;
+            text-align: center;
+            padding-left: 6px;
+            border-radius: 16px;
+        }
+
+        .logo {
+            position: absolute;
+            top: 16px;
+            right: 0px;
+            max-width: 150px;
+            max-height: 150px;
+        }
+
+        .values {
+            position: absolute;
+            margin: auto;
+            width: calc(100% - 32px);
+            top: 175px;
+            left: 16px;
+            right: 16px;
+            font-size: 18px;
+            text-transform: uppercase;
+        }
+
+        .values > div {
+            margin-bottom: 8px;
+            display: flex;
+            flex-flow: row wrap;
+            height: 50px;
+        }
+
+        .values > div > div:first-child {
+            flex: 0 0 35%;
+            line-height: 50px;
+        }
+
+        .values > div > div:nth-child(2) {
+            flex: 1;
+            line-height: 50px;
+        }
+
+        .values > div > div:last-child {
+            flex: 0 0 75px;
+        }
+
+        .values .counter {
+            font-size: 48px;
+        }
+
+        .controls {
+            position: absolute;
+            margin: auto;
+            width: 50%;
+            bottom: 16px;
+            display: flex;
+            flex-flow: row wrap;
+        }
+
+        .controls img.icon {
+            border: solid 1px #999999;
+            padding: 3px;
+            margin: 0px 0px 0px 3px;
+        }
+
+        .status {
+            border-radius: 16px;
+            text-align: center;
+            font-size: 42px;
+            font-family: 'Liquid Crystal';
+            position: absolute;
+            margin: auto;
+            left: 16px;
+            right: 16px;
+            bottom: 72px;
+            width: calc(100% - 32px);
+            height: 48px;
+        }
+
+        .status.leadjammer {
+            background-color: #009900;
+        }
+
+        .status.powerjam {
+            background-color: #AA7700;
+        }
+
+        .status.timeout,
+        .status.challenge {
+            background-color: #990000;
+        }
+
+        .status.injury {
+            background-color: #006699;
+        }
+    }
+
+    /* Team A */
+    .team.side-a {
+        left: 0;
+        border-right: solid 1px $purple;
+
+        .score {
+            right: 0;
+        }
+
+        .logo {
+            left: 0;
+            right: initial;
+        }
+
+        .controls {
+            right: 20px;
+            flex-flow: row-reverse;
+        }
+
+        .values > div > div:first-child {
+            padding-right: 16px;
+        }
+        
+        .values > div > div {
+            text-align: right;
+        }
+    }
+
+    /* Team B */
+    .team.side-b {
+        right: 0;
+        border-left: solid 1px $purple;
+
+        .controls {
+            left: 16px;
+        }
+
+        .values > div {
+            flex-flow: row-reverse;
+        }
+    }
+}

@@ -1,0 +1,78 @@
+@import 'css/vars.scss';
+
+.CFG-app {
+    position: relative;
+    .sections {
+        position: absolute;
+        margin: auto;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 300px;
+        height: 100%;
+        overflow: hidden;
+        display: flex;
+        flex-flow: column wrap;
+
+        > .section {
+            flex: 0 0 42px;
+            overflow: hidden;
+            transition: flex 150ms;
+            > .section-header {
+                display: flex;
+                flex-flow: row wrap;
+                > .button-icon {
+                    flex: 1;
+                    height: 42px;
+                    text-align: left;
+                }
+                > .icon {
+                    flex: 0 0 42px;
+                    max-width: 42px;
+                    max-height: 42px;
+                    border: solid 1px #CCCCCC;
+                }
+            }
+
+            > .record-list {
+                overflow: hidden scroll;
+                height: calc(100% - 42px);
+                > button {
+                    font-size: 20px;
+                }
+            }
+        }
+
+        > .section.shown {
+            flex: 1;
+        }
+    }
+
+    .forms {
+        position: absolute;
+        margin: auto;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: calc(100% - 300px);
+        height: 100%;
+        overflow: hidden;
+        background-color: $black;
+        > .panel {
+            
+        }
+    }
+
+    .peer-item {
+        display: flex;
+        flex-flow: row wrap;
+        > button {
+            flex: 1;
+        }
+
+        > .icon {
+            flex: 0 38px;
+            max-height: 38px;
+        }
+    }
+}

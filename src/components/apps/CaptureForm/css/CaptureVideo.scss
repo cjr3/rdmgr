@@ -1,0 +1,57 @@
+.main-video {
+    position: absolute;
+    margin: auto;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    transition: opacity 150ms linear, transform 150ms linear;
+    background-color: #000000;
+    z-index: 1;
+}
+
+.main-video.shown {
+    opacity: 1;
+}
+
+.main-video.video-5050 {
+    transform: scale(0.5) translateX(-50%);
+}
+
+/* Camera and video split 50/50 */
+.capture-form.camera-video-5050 .main-video.video-5050 {
+    transform: scale(0.5) translateX(50%);
+}
+
+.main-video.video-8020 {
+    transform: scale(0.65) translateX(25.3%);
+}
+
+.main-video.video-2080 {
+    transform: scale(0.30) translateX(-113%);
+}
+
+.main-video.video-lt,
+.main-video.video-lr {
+    box-shadow: 5px 5px 5px 5px rgba(0,0,0,0.5);
+}
+
+.main-video.video-lt {
+    transform: scale(0.3) translateX(-105%) translateY(95%);
+}
+
+.main-video.video-lr {
+    transform: scale(0.3) translateX(105%) translateY(95%);
+}
+
+.capture-form.video-video-5050 .main-video,
+.capture-form.video-video-8020 .main-video,
+.capture-form.video-video-2080 .main-video,
+.capture-form.video-video-lt .main-video,
+.capture-form.video-video-lr .main-video
+{
+    z-index: 99;
+}
+
+.capture-form.sponsor-board .main-video.shown {
+    z-index: 150;
+}

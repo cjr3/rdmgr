@@ -1,0 +1,82 @@
+@import '~css/vars.scss';
+
+.panel.RAF-panel {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    position: initial;
+    > .title {
+        display: none;
+    }
+
+    > .content {
+        height: calc(100% - 48px) !important;
+        top: 0px !important;
+    }
+
+    .buttons {
+        button {
+            flex: 1;
+            span {
+                display: none;
+            }
+        }
+    }
+}
+
+.RAF-app {
+    > .entry {
+        position: absolute;
+        margin: auto;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        flex-flow: column wrap;
+        font-family: $base-font-display;
+
+        .digit-buttons {
+            flex: 1;
+            display: flex;
+            flex-flow: row wrap;
+            > button {
+                flex: 0 0 25%;
+                font-weight: bold;
+                font-size: 48px;
+                font-family: $base-font-display;
+            }
+            > button:last-child {
+                flex: 1;
+            }
+        }
+
+        > input[type="text"] {
+            width: 100%;
+            font-size: 48px;
+            text-align: center;
+            font-family: $base-font-display;
+        }
+    }
+
+    .tickets {
+        display: flex;
+        flex-flow: row wrap;
+        > .ticket {
+            flex: 1;
+            display: flex;
+            flex-flow: row wrap;
+            background-color: #111111;
+            align-items: center;
+            > .ticket-number {
+                flex: 1;
+                padding: 6px;
+                font-family: $base-font-display;
+                font-size: 24px;
+                text-align: right;
+                cursor: pointer;
+                border: solid 1px #999999;
+            }
+        }
+    }
+}

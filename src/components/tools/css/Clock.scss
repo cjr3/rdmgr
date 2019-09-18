@@ -1,0 +1,21 @@
+@import '~css/vars.scss';
+
+.clock {
+    color: $base-foreground;
+}
+
+.clock.running {
+    color: $iceblue;
+}
+
+.clock.stopped {
+    color: $grey;
+}
+
+.clock.warning {
+    color: $warning;
+}
+
+.clock.danger {
+    color: $danger;
+}

@@ -1,0 +1,118 @@
+@import '~css/vars.scss';
+
+.SK-app {
+    .team {
+        position: absolute;
+        width: 50%;
+        height: 100%;
+        overflow: hidden;
+        margin: auto;
+        top: 0;
+        bottom: 0;
+        display: flex;
+        flex-flow: column wrap;
+
+        .name {
+            width: 100%;
+            padding: 6px;
+            font-size: 20px;
+            text-align: center;
+        }
+
+        .skater-list {
+            width: 100%;
+            display: flex;
+            flex-flow: row wrap;
+            justify-content: flex-start;
+            align-content: flex-start;
+            padding: 6px 16px;
+            flex: 1;
+
+            > button {
+                flex: 0 0 20%;
+                height: 64px;
+                font-family: $base-font-display;
+                font-size: 36px;
+                font-weight: bold;
+            }
+        }
+
+        .skater-decks {
+            width: 100%;
+            height: auto;
+            overflow: hidden;
+            display: flex;
+            flex-flow: column wrap;
+            align-items: center;
+            justify-content: center;
+            align-content: flex-end;
+            padding-bottom: 8px;
+
+            > .skater-deck {
+                flex: 0 0 95px;
+                width: 100%;
+                height: 75px;
+                display: flex;
+                flex-flow: row wrap;
+                justify-content: center;
+                align-items: center;
+                padding: 0px 16px;
+                > button {
+                    flex: 0 0 20%;
+                    height: 75px;
+                    font-size: 36px;
+                    font-family: $base-font-display;
+                }
+
+                > button:first-child {
+                    background-image: url('~images/icons/star.png');
+                    background-position: 50% 50%;
+                    background-size: 32px;
+                    background-repeat: no-repeat;
+                }
+
+                > button:nth-child(2) {
+                    background-image: url('~images/icons/diagstripe.png');
+                    background-position: 50% 50%;
+                    background-size: 32px;
+                    background-repeat: no-repeat;
+                }
+
+                > button.current
+                {
+                    background-color: $purple-light;
+                }
+
+                > button.active {
+                    background-position: 95% 5%;
+                    background-size: 18px;
+                }
+            }
+        }
+
+        .skater-buttons {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            align-content: flex-end;
+            padding-bottom: 16px;
+            > .icon {
+                width: 64px;
+                height: 64px;
+                max-width: 64px;
+                max-height: 64px;
+                margin-right: 4px;
+                border: solid 1px #CCCCCC;
+                padding: 8px;
+            }
+        }
+    }
+
+    .team.team-A {
+        left: 0;
+    }
+
+    .team.team-B {
+        right: 0;
+    }
+}

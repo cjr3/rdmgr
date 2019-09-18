@@ -1,0 +1,140 @@
+@import 'src/css/vars.scss';
+
+.capture-roster {
+    position: absolute;
+    margin: auto;
+    z-index: 30;
+    left: 0;
+    right: 0;
+    bottom: 48px;
+    width: 960px;
+    height: 150px;
+    overflow: visible;
+    transition: transform 500ms;
+    transform: translateY(300px);
+    transform-origin: 0% 0%;
+    transition-delay: 250ms;
+    
+    .roster-thumbs {
+        display: flex;
+        flex-flow: row wrap;
+        transform-origin: 0% 0%;
+        position: relative;
+        z-index: 2;
+
+        .team-logo {
+            order: 1;
+            flex: 0 0 100px;
+            border: solid 1px $gold;
+            border-bottom: none;
+            position: relative;
+            height: 100px;
+            background-color: $black;
+            transition: transform 500ms, opacity 500ms;
+            transition-delay: 500ms;
+            
+            transform: rotateY(90deg);
+            > img {
+                max-height: 98px;
+                max-width: 98px;
+                position: absolute;
+                top: 0;
+                bottom: 0;
+            }
+        }
+
+        .skaters {
+            flex: 1;
+            order: 2;
+            display: flex;
+            flex-flow: row wrap;
+            justify-content: flex-start;
+            border-bottom: none;
+
+            > .skater {
+                position: relative;
+                flex: 0 0 30px;
+                transition: flex 150ms, transform 500ms ease-in-out 500ms, opacity 500ms ease-in-out 500ms;
+                height: 100px;
+                transform-origin: 50% 50%;
+                text-align: center;
+                z-index: 1;
+                transform: rotateY(90deg);
+                opacity: 0;
+
+                > img {
+                    max-width: 100px;
+                    max-height: 100px;
+                    position: absolute;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    margin: auto;
+                    border: solid 2px transparent;
+                    transition: max-height 300ms, max-width 300ms;
+                    background-color: $black;
+                }
+
+                > .num {
+                    position: absolute;
+                    margin: auto;
+                    bottom: 0;
+                    left: 0;
+                    right: 0;
+                    z-index: 2;
+                    text-align: center;
+                    font-family: $base-font-display;
+                    padding: 6px;
+                    overflow: hidden;
+                    min-width: 100px;
+                    font-size: 22px;
+                    display: none;
+                }
+            }
+
+            > .skater.current {
+                flex: 0 0 125px;
+                z-index: 2;
+                > img {
+                    max-width: 125px;
+                    max-height: 125px;
+                    box-shadow: 0px 0px 15px 2px rgba(255,255,255,0.5);
+                }
+            }
+        }
+    }
+
+    .team-name {
+        position: relative;
+        z-index: 1;
+        background-color: $navy;
+        text-align: center;
+        padding: 4px;
+        font-size: 32px;
+        font-weight: bold;
+        border-top: solid 2px $gold;
+        transition: all 500ms;
+        transition-delay: 500ms;
+        transform: rotateX(90deg);
+    }
+}
+
+.capture-roster.shown {
+    transform: translateY(0);
+
+    .team-name {
+        transform: rotateX(0deg);
+    }
+    
+    > .roster-thumbs {
+        > .team-logo {
+            transform: rotateY(0deg);
+        }
+        .skaters {
+            .skater {
+                opacity: 1;
+                transform: rotateY(0deg);
+            }
+        }
+    }
+}

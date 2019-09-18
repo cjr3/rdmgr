@@ -1,0 +1,222 @@
+@import '~css/vars.scss';
+
+.progress-bar {
+    height: 16px;
+    background-color: #333333;
+    padding: 3px;
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+
+    .progress-amount {
+        position: absolute;
+        margin: auto;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        transform-origin: 0px 0px;
+        transform: scale(0, 1);
+        transition: transform 350ms linear;
+        background-image: 
+            linear-gradient(180deg, rgba(255, 255, 255, 0.5) 50%, rgba(0,125,0,0) 50%),
+            linear-gradient(180deg, rgba(0, 255, 0, 1), rgba(0,125,0,1)),
+            ;
+    }
+}
+
+/* Button */
+input[type="button"],
+button {
+    background-color: $black;
+    color: $input-color;
+    text-align: center;
+    text-transform: uppercase;
+    padding: $input-padding;
+    border: $input-border;
+    cursor: pointer;
+    transition: background-color 100ms linear;
+    font-size: $base-font-size;
+    font-family: $mono-font;
+}
+
+input[type="button"]:hover,
+button:hover {
+    background-color: $black-faded;
+}
+
+input[type="button"].active,
+button.active
+{
+    background-color: $green;
+}
+
+input[type="button"]:focus,
+button:focus {
+    background-color: $blood;
+}
+
+@media screen and (min-width: 1600px) {
+    input[type="button"],
+    button {
+        min-height: 56px;
+        font-size: 24px;
+    }
+}
+
+/* Icon+Button */
+.button-icon {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    > img {
+        flex: 0 0 24px;
+        height: 32px;
+        vertical-align: middle;
+        margin-right: 3px;
+    }
+
+    > img:hover {
+        background-color: transparent;
+    }
+
+    > span {
+        flex: 1;
+        height: 100%;
+        line-height: 30px;
+    }
+}
+
+/* Toggle Button */
+.toggle-button {
+    border: solid 1px #000000;
+    border-radius: 16px;
+    background-color: #444444;
+    padding: 4px 8px;
+    height: 32px;
+    text-transform: initial;
+    
+    .toggle-button-content {
+        display: flex;
+        > .icon {
+            flex: 0 0 24px;
+            width: 24px;
+            height: 24px;
+            background-color: #000000;
+            border-radius: 16px;
+            padding: 3px;
+            margin-right: 3px;
+            > img {
+                width: auto;
+                height: 22px;
+                visibility: hidden;
+                vertical-align: middle;
+            }
+        }
+    
+        > .text {
+            flex: 1;
+            height: 100%;
+            line-height: 24px;
+        }
+    }
+}
+
+.toggle-button.checked {
+    background-color: #006600;
+}
+
+.toggle-button:hover {
+    background-color: #009900;
+}
+
+.toggle-button.checked .icon > img { visibility: visible; }
+
+/* Icon */
+.icon {
+    max-width: 48px;
+    max-height: 48px;
+    width: auto;
+    height: auto;
+    cursor: pointer;
+}
+
+@media screen and (min-width: 1600px) {
+    .icon {
+        max-width: 72px;
+        max-height: 72px;
+    }
+}
+
+.icon.active {
+    background-color: $green;
+}
+
+.icon.attention {
+    background-color: $blood;
+}
+
+.icon:hover {
+    background-color: $purple-light;
+}
+
+.icon.active:hover {
+    background-color: $darkgreen;
+}
+
+/* Slider */
+.slider {
+    position: relative;
+    width: 100%;
+    > .handle {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 16px;
+        height: 48px;
+        border-radius: 16px;
+        cursor: pointer;
+        background-color: #000000;
+    }
+}
+
+/* Select */
+select {
+    background-color: $black;
+    color: $input-color;
+    text-align: left;
+    padding: $input-padding;
+    border: $input-border;
+    cursor: pointer;
+    max-width: 100%;
+    font-size: $base-font-size;
+}
+
+select:hover {
+    background-color: $black-faded;
+}
+
+/* Input */
+input[type="text"],
+input[type="number"],
+input[type="password"],
+textarea
+{
+    background-color: $input-background;
+    padding: $input-padding;
+    font-size: $base-font-size;
+    color: $input-color;
+    border: $input-border;
+    max-width: 100%;
+}
+
+input[type="number"].large {
+    font-size: 32px;
+    font-family: $base-font-display;
+}
+
+textarea {
+    font-size: 22px;
+}

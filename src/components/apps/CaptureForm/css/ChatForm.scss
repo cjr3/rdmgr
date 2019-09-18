@@ -1,0 +1,64 @@
+@import 'src/css/vars.scss';
+
+.CHT-app {
+    .chat-line {
+        clear: both;
+        overflow: hidden;
+        height: auto;
+        padding-right: 48px;
+        margin-bottom: 16px;
+        .name {
+            margin: 0px 0px 0px 21px;
+            display: flex;
+            flex-flow: row wrap;
+            font-size: 1rem;
+            font-style: italic;
+            color: #CCCCCC;
+            .qm {
+                background-color: $blue;
+                padding-right: 18px;
+                margin-right: 4px;
+                border-radius: 0px 0px 0px 18px;
+            }
+        }
+
+        .message-text {
+            padding: 16px;
+            margin: 5px 5px 0px 5px;
+            background-color: $blue;
+            border-radius: 16px;
+            word-break: break-all;
+        }
+    }
+
+    .chat-line.self {
+        padding: 0px 0px 0px 48px;
+        .message-text {
+            background-color: #555555;
+        }
+
+        .name {
+            margin: 0px 21px 0px 0px;
+            flex-flow: row-reverse wrap;
+            .nd {
+                margin-right: 4px;
+            }
+            .qm {
+                background-color: #555555;
+                margin-right: 0px 0px 0px 4px;
+                border-radius: 0px 0px 18px 0px;
+            }
+        }
+
+    }
+}
+
+.CHT-app-panel > .buttons {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: flex-end;
+
+    > input[type="text"] {
+        flex: 1;
+    }
+}

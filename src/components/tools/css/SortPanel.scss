@@ -1,0 +1,64 @@
+.sortable-pane {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+
+    .sortable {
+        opacity: 1;
+        flex: 0 0 20%;
+        position: relative;
+        user-select: none;
+        cursor: pointer;
+        outline-offset: -2px;
+        border: solid 2px #000000;
+        border-image-slice: 1;
+        z-index: 1;
+        * {
+            pointer-events: none;
+        }
+    }
+
+    .sortable:hover {
+        opacity: 0.9;
+        z-index: 2;
+        border-color: #999999 !important;
+    }
+
+    .sortable.active,
+    .sortable.active:hover
+    {
+        opacity: 1;
+        z-index: 2;
+        border-color: #009900 !important;
+    }
+
+    .sortable.drop-target,
+    .sortable.drop-target:hover
+    {
+        opacity: 1;
+        border-color: #FF0000 !important;
+        z-index: 2;
+    }
+
+    .sortable.drop-target.drop-right {
+        /*border-right-color: #FF0000;*/
+        background-origin: border-box;
+        background-repeat: no-repeat;
+        background-image: linear-gradient(90deg, #000000 50%, #0099CC);
+        border-color: transparent;
+    }
+
+    .sortable.drop-target.drop-left {
+        /*border-left-color: #FF0000;*/
+        background-origin: border-box;
+        background-repeat: no-repeat;
+        border-color: transparent;
+        background-image: linear-gradient(90deg, #0099CC, #000000 50%);
+    }
+
+    .sortable.drag-target {
+        opacity: 1;
+        border-color: #CC6600 !important;
+        z-index: 3;
+    }
+}

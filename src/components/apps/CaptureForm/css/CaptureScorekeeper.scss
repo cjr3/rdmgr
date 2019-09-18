@@ -1,0 +1,106 @@
+@import 'src/css/vars.scss';
+
+.capture-scorekeeper {
+    position: absolute;
+    margin: auto;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 20;
+
+    .jammers {
+        position: absolute;
+        margin: auto;
+        top: 70px;
+        right: 32px;
+        display: flex;
+        flex-flow: row wrap;
+        opacity: 0;
+        transition: opacity 150ms linear;
+
+        > .skater {
+            position: relative;
+            flex: 1;
+            width: 80px;
+            height: 80px;
+            overflow: visible;
+            transform-origin: 0 0;
+            transform: rotateX(90deg);
+            transition: all 150ms linear;
+            opacity: 0;
+
+            > img {
+                height: 100%;
+            }
+
+            > label {
+                position: absolute;
+                margin: auto;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                bottom: -24px;
+                padding: 2px 3px;
+                text-align: center;
+                font-family: $base-font-display;
+                font-size: 22px;
+                text-shadow: 2px 2px 2px rgba(0,0,0,0.5);
+            }
+        }
+
+        > .skater.shown {
+            transform: rotateX(0deg);
+            opacity: 1;
+            > label {
+                display: block;
+            }
+        }
+    }
+}
+
+.capture-scorekeeper.shown {
+    .jammers {
+        opacity:1;
+    }
+}
+
+.capture-form.sponsor-board .capture-scorekeeper {
+    z-index: 100;
+    .jammers {
+        width: 100%;
+        left: 0;
+        right: 0;
+        bottom: 112px;
+        top: initial;
+        > .skater {
+            width: 50%;
+            height: 100px;
+            img {
+                position: absolute;
+                bottom: 0;
+                height: auto;
+            }
+            label {
+                right: initial;
+                left: 100px;
+                bottom: 0;
+                font-size: 96px;
+                line-height: 84px;
+                height: 100px;
+                width: 200px;
+                padding: 0px;
+            }
+        }
+
+        > .skater:nth-child(2) {
+            img {
+                right: 0;
+            }
+            label {
+                right: 100px;
+                left: initial;
+            }
+        }
+    }
+}

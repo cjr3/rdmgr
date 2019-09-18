@@ -1,0 +1,188 @@
+@import '~css/vars.scss';
+
+.CC-app {
+
+    .capture-preview {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        margin: auto;
+        width: 640px;
+        height: 100%;
+
+        > canvas {
+            border: solid 1px #CCCCCC;
+        }
+
+        > p {
+            font-size: 0.9rem;
+            font-style: italic;
+            color: #999999;
+        }
+
+        .camera-styles {
+            > div {
+                overflow: hidden;
+                > .icon {
+                    float: left;
+                    margin-left: 5px;
+                }
+            }
+        }
+    }
+
+    .monitor-control {
+        overflow: hidden;
+        > * {
+            float: left;
+            margin: 2px;
+        }
+    }
+
+    .config-panels {
+        position: absolute;
+        margin: auto;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 25%;
+        height: 100%;
+        display: flex;
+        flex-flow: column wrap;
+
+        > .config-panel {
+            flex: 0 0 48px;
+            overflow: hidden;
+            transition: flex 150ms;
+
+            > .buttons {
+                display: flex;
+                flex-flow: row wrap;
+                > button {
+                    flex: 1;
+                    text-align: left;
+                }
+
+                > .icon {
+                    flex: 0;
+                    border: solid 1px #CCCCCC;
+                    padding: 2px;
+                }
+            }
+            > .panel {
+                border: solid 1px #999999;
+                border-top: none;
+                position: initial;
+                opacity: 0;
+                max-height: calc(100% - 48px);
+                transition: opacity 150ms ease-in-out 150ms;
+                > .title {
+                    display: none;
+                }
+                > .content {
+                    > div.text {
+                        padding: 6px;
+                    }
+                }
+
+                > .buttons {
+                    padding: 2px 0px;
+                    > button {
+                        > span {
+                            display: none;
+                        }
+                    }
+                }
+            }
+        }
+
+        .config-panel.shown {
+            flex: 1;
+            > .panel {
+                opacity: 1;
+            }
+        }
+    }
+
+    .config-panels.stream {
+        right: initial;
+        left: 0;
+        .chat {
+            display: flex;
+            flex-flow: column wrap;
+            .messages {
+                flex: 1;
+                overflow: hidden scroll;
+                padding: 8px 0px;
+                .message {
+                    font-size: 16px;
+                    margin-bottom: 8px;
+                    padding: 0px 6px;
+                    .text {
+                        background-color: #333333;
+                        padding: 8px;
+                        border-radius: 16px;
+                    }
+
+                    .name {
+                        padding-left: 8px;
+                        font-style: italic;
+                    }
+                }
+            }
+
+            .message-input {
+                flex: 0;
+                display: flex;
+                flex-flow: row wrap;
+                background-color: $purple;
+                label {
+                    display: block;
+                    padding: 3px;
+                }
+
+                input[type="text"] {
+                    flex: 1;
+                }
+
+                .icon {
+                    width: 36px;
+                    height: 36px;
+                }
+            }
+        }
+    }
+
+    .roster-skaters {
+        > button {
+            display: flex;
+            flex-flow: row wrap;
+            font-size: 18px;
+            > .num {
+                flex: 0 0 100px;
+                > img {
+                    max-height: 48px;
+                }
+            }
+            > .name {
+                flex: 1;
+            }
+        }
+    }
+
+    .team-score {
+        text-align: center;
+        cursor: pointer;
+        font-size: 48px;
+        font-family: $base-font-display;
+        padding: 8px 8px 8px 12px;
+    }
+
+    .record-list {
+        > select {
+            width: 100%;
+        }
+    }
+}

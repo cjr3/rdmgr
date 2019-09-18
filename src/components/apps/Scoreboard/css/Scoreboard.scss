@@ -1,0 +1,328 @@
+@import '~css/vars.scss';
+
+.SB-app {
+    img.icon {
+        vertical-align: top;
+    }
+
+    .counter,
+    .boardstatus,
+    .phase,
+    .clock {
+        font-family: $base-font-display;
+        text-align: center;
+    }
+
+    /* Center Elements */
+    .scoreboard-center {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        margin: auto;
+        width: 30%;
+        height: 100%;
+    }
+
+    .jam-clock {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        margin: auto;
+        width: 100%;
+        height: 170px;
+        text-align: center;
+        padding-left: 16px;
+        font-size: 160px;
+    }
+
+    .game-clock {
+        position: absolute;
+        width: 100%;
+        height: 115px;
+        line-height: 100px;
+        text-align: center;
+        padding-left: 6px;
+        font-size: 120px;
+        bottom: 70px;
+        left: 0;
+        right: 0;
+        margin: auto;
+        cursor: pointer;
+    }
+
+    .game-clock:hover {
+        background-color: #222222;
+    }
+
+    .jamn-break {
+        position: absolute;
+        width: 100%;
+        margin: auto;
+        height: auto;
+        top: 175px;
+        left: 0;
+        right: 0;
+    }
+
+    .jamn-break table {
+        width: 100%;
+        text-transform: uppercase;
+    }
+
+    .jamn-break table td:first-child {
+        width: 35%;
+        text-align: right;
+        vertical-align: middle;
+    }
+
+    .jamn-break table td:nth-child(2) {
+        width: 100px;
+        text-align: center;
+    }
+
+    .jamn-break .clock,
+    .jamn-break .counter
+    {
+        font-size: 48px;
+        height: 48px;
+        line-height: 48px;
+        cursor: pointer;
+    }
+
+    .boardstatus {
+        position: absolute;
+        margin: auto;
+        width: calc(100% - 32px);
+        height: 36px;
+        left: 0;
+        right: 0;
+        bottom: 190px;
+        text-align: center;
+        font-size: 36px;
+        padding-left: 12px;
+        border-radius: 16px;
+        line-height: 34px;
+    }
+
+    .boardstatus.timeout,
+    .boardstatus.review
+    {
+        background-color: #990000;
+    }
+
+    .boardstatus.injury {
+        background-color: #006699;
+    }
+
+    .boardstatus.upheld {
+        background-color: #666666;
+    }
+
+    .boardstatus.overturned {
+        background-color: #009900;
+    }
+
+    .jam-controls {
+        position: absolute;
+        margin: auto;
+        width: 100%;
+        left: 0;
+        right: 0;
+        bottom: 16px;
+        display: flex;
+    }
+
+    .jam-controls > button {
+        flex: 1;
+        font-size: 32px;
+        font-weight: bold;
+    }
+
+    .jam-controls > img.icon {
+        flex: 0 0 48px;
+        height: 48px;
+    }
+
+    .board-status-controls {
+        position: absolute;
+        margin: auto;
+        left: 16px;
+        bottom: 16px;
+        width: auto;
+        display: flex;
+        flex-flow: row wrap;
+    }
+
+    .board-status-controls img.icon {
+        border: solid 1px #999999;
+        padding: 3px;
+        margin-right: 3px;
+    }
+
+    .phase {
+        position: absolute;
+        margin: auto;
+        left: 0;
+        right: 0;
+        bottom: 220px;
+        width: calc(100% - 32px);
+        height: 50px;
+        font-size: 32px;
+        text-transform: uppercase;
+    }
+
+    .phase-control {
+        position: absolute;
+        margin: auto;
+        right: 16px;
+        bottom: 16px;
+    }
+
+    .phase-control input[type="number"] {
+        width: 48px;
+        height: 48px;
+        text-align: right;
+        font-size: 24px;
+    }
+
+    .phase-selection {
+        max-width: 300px;
+        max-height: 460px;
+        > .content {
+            > button {
+                display: flex;
+                flex-flow: row wrap;
+                width: 100%;
+                font-size: 18px;
+                padding: 6px;
+
+                div:first-child {
+                    flex: 1;
+                    text-align: left;
+                }
+
+                div:last-child {
+                    flex: 0;
+                    min-width: 100px;
+                }
+            }
+        }
+    }
+
+    .team-selector {
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        .team-selection {
+            flex: 0 0 50%;
+            padding: 10px;
+            height: 100%;
+            align-self: center;
+            img {
+                max-width: 200px;
+                max-height: 200px;
+                cursor: pointer;
+            }
+        }
+    }
+
+    /* Display Options Panel */
+    .display-options {
+        height: 125px;
+    }
+
+    .jam-reset-panel {
+        width:300px;
+        height:200px;
+        .jam-reset {
+            text-align: center;
+            h1 {
+                font-family: $base-font-display;
+            }
+        }
+    }
+}
+
+@media screen and (min-width: 1600px) {
+    .SB-app {
+        .jam-controls {
+            img.icon {
+                flex: 0 0 54px;
+                height: 54px;
+            }
+        }
+
+
+        .jam-clock {
+            font-size: 200px;
+        }
+
+        .jamn-break {
+            top: 220px;
+            font-size: 32px;
+            .icon {
+                width: 64px;
+                height: 64px;
+            }
+            .clock, .counter {
+                font-size: 64px;
+            }
+        }
+
+        .phase {
+            font-size: 48px;
+            bottom: 300px;
+        }
+
+        .boardstatus {
+            font-size: 48px;
+            height: 64px;
+            line-height: 60px;
+            bottom: 220px;
+        }
+
+        .game-clock {
+            bottom: 84px;
+        }
+
+        .team {
+            > .values {
+                top: 240px;
+                > div {
+                    height: 64px;
+                }
+            }
+
+            input[type="text"] {
+                min-height: 48px;
+                font-size: 24px;
+                width: 100%;
+            }
+
+            .score {
+                height: 200px;
+                width: 350px;
+                font-size: 164px;
+                line-height: 180px;
+            }
+
+            .logo {
+                max-width: 175px;
+                max-height: 175px;
+            }
+        }
+    }
+
+    .panel.phase-selection {
+        max-width: 400px;
+        > .content {
+            > button {
+                font-size: 28px;
+            }
+        }
+    }
+}

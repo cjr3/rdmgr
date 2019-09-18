@@ -1,0 +1,45 @@
+@import 'src/css/vars.scss';
+
+.capture-raffle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    flex-flow: column wrap;
+    justify-content: center;
+    align-items: center;
+    z-index: 130;
+    opacity: 0;
+    transition: all 150ms linear;
+
+    > .ticket {
+        width: 720px;
+        height: 180px;
+        color: #003366;
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center center;
+        padding: 16px 16px 16px 32px;
+        font-family: $base-font-display;
+        font-size: 128px;
+        line-height: 140px;
+        text-align: center;
+        margin: 16px;
+        font-weight: bold;
+        text-shadow: 3px 3px 5px rgba(150,0,0,0.5);
+        transition: all 350ms linear 250ms;
+        transform: scaleY(0);
+        opacity: 0;
+    }
+
+    > .ticket.shown {
+        opacity: 1;
+        transform: scaleY(1);
+    }
+}
+
+.capture-raffle.shown {
+    opacity: 1;
+}

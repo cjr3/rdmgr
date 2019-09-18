@@ -1,0 +1,50 @@
+.media-preview {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    outline: dotted 1px #CCCCCC;
+    background-color: #000000;
+    overflow: hidden;
+    > .name {
+        position: absolute;
+        margin: auto;
+        left: 0;
+        right: 0;
+        top: 0;
+        background-image: linear-gradient(rgba(0,0,0,1), rgba(0,0,0,0));
+        transition: transform 150ms;
+        transform: translateY(-100%);
+        padding: 6px;
+        font-size: 0.8em;
+    }
+    > .buttons {
+        position: absolute;
+        margin: auto;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: linear-gradient(rgba(0,0,0,0), rgba(0,0,0,1));
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: center;
+        transform: translateY(50px);
+        transition: transform 150ms linear;
+        > .icon {
+            max-height:48px;
+            padding: 3px;
+        }
+    }
+}
+
+.media-preview.filled {
+    outline: solid 2px #009900;
+}
+
+.media-preview:hover {
+    > .name {
+        transform: translateY(0px);
+    }
+    > .buttons {
+        transform: translateY(0px);
+    }
+}

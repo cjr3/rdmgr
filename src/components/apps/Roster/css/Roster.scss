@@ -1,0 +1,103 @@
+@import '~css/vars.scss';
+
+.ROS-app {
+    .team {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 33.333%;
+        height: 100%;
+        display: flex;
+        flex-flow: column wrap;
+        .name {
+            padding: 6px;
+            text-align: center;
+            font-size: 20px;
+        }
+
+        .skaters {
+            flex: 1;
+            overflow: hidden scroll;
+            display: block;
+            .sortable {
+                display: flex;
+                overflow: visible;
+                width: 100%;
+
+                > .icon {
+                    pointer-events: all;
+                }
+
+                .number {
+                    flex: 0 0 75px;
+                    padding: 6px;
+                }
+
+                .name {
+                    flex: 1;
+                    padding: 6px;
+                    text-align: left;
+                }
+            }
+
+            .sortable:hover {
+                z-index: 3;
+            }
+        }
+    }
+
+    .team.team-B {
+        left: initial;
+        right: 0;
+        
+    }
+
+    .skater-list-holder {
+        position: absolute;
+        margin: auto;
+        top: 0;
+        right: 0;
+        left: 0;
+        width: 33.333%;
+        height: 100%;
+        border-left: solid 1px #999999;
+        border-right: solid 1px #999999;
+        display: flex;
+        flex-flow: column wrap;
+
+        > .name {
+            padding: 6px;
+            font-size: 20px;
+            text-align: center;
+            background-color: $purple;
+        }
+
+        .skater-list {
+            flex: 1;
+            overflow: hidden scroll;
+            .skater-item {
+                display: flex;
+                flex-flow: row wrap;
+                border-bottom: solid 1px #999999;
+                align-items: center;
+
+                .icon {
+                    width: 42px;
+                    margin: 2px;
+                    padding: 6px;
+                }
+
+                .number {
+                    flex: 0 0 75px;
+                }
+                
+                .name {
+                    flex: 1;
+                    text-align: left;
+                    padding: 6px;
+                }
+            }
+        }
+    }
+
+}

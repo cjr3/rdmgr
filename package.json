@@ -1,0 +1,77 @@
+{
+  "name": "rdmgr",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@material-ui/core": "^4.3.1",
+    "babel-plugin-root-import": "^6.2.0",
+    "body-parser": "^1.19.0",
+    "classnames": "^2.2.6",
+    "concurrently": "^4.1.2",
+    "electron-is-dev": "^1.1.0",
+    "electron-packager": "^14.0.4",
+    "http": "0.0.0",
+    "material-ui-color-picker": "^3.2.0",
+    "node-sass": "^4.12.0",
+    "obs-websocket-js": "^3.1.0",
+    "peer": "^0.2.10",
+    "peerjs": "^1.0.0",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "react-router-dom": "^5.0.1",
+    "react-scripts": "3.0.1",
+    "redux": "^4.0.1",
+    "socket.io": "^2.2.0",
+    "socket.io-stream": "^0.9.1",
+    "typescript": "^3.5.3",
+    "wait-on": "^3.3.0",
+    "write-file-atomic": "^3.0.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "dist":"build",
+    "electron-pack":"npm run build -w",
+    "electron-dev": "concurrently \"yarn start\" \"wait-on http://localhost:3001 && electron .\"",
+    "build-electron":"mkdir build/src && robocopy electron build/electron /S & robocopy src/shared build/src/shared /S",
+    "package":"electron-builder build --win --publish never"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "main": "public/electron.js",
+  "homepage": "./",
+  "author": {
+    "name":"Carl Roberts",
+    "email":"cjr3@live.com",
+    "url":"http://carljroberts.com"
+  },
+  "description": "Banked Track Roller Derby A/V Production Software",
+  "devDependencies": {
+    "electron": "^6.0.9",
+    "electron-builder": "^21.2.0"
+  },
+  "build":{
+    "appId":"com.carljroberts.rdmgr",
+    "productName":"RDMGR",
+    "copyright":"Copyright 2019 ${author}",
+    "files":[
+      "build/**/*",
+      "node_modules/**/*"
+    ],
+    "directories":{
+      "buildResources":"public"
+    }
+  }
+}

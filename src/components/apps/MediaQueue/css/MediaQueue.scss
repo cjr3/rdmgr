@@ -1,0 +1,197 @@
+@import '~css/vars.scss';
+
+.MEQ-app {
+    display: flex;
+    flex-flow: row wrap;
+
+    > .queue-items {
+        flex: 0 0 300px;
+        overflow: hidden auto;
+        height: 100%;
+
+        > .sortable-pane {
+            flex-flow: column wrap;
+            .sortable {
+                flex: 0 0 75px;
+                width: 100%;
+                position: relative;
+                border-bottom: solid 1px #999999;
+                > canvas {
+                    max-width: 100%;
+                    height: 75px;
+                }
+                > .remove {
+                    position: absolute;
+                    margin: auto;
+                    right: 0;
+                    top: 0;
+                    pointer-events: all;
+                }
+
+                .slide-title {
+                    padding: 6px;
+                }
+            }
+
+            .sortable.video {
+                display: flex;
+                flex-flow: column wrap;
+            }
+
+            .sortable.active {
+                outline: solid 3px $green;
+            }
+        }
+    }
+
+    > .current-record {
+        flex: 1;
+        display: relative;
+        height: 100%;
+
+        > .video-preview {
+            position: absolute;
+            margin: auto;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0;
+            transition: all 500ms;
+            display: none;
+        }
+
+        > .video-preview.shown {
+            opacity: 1;
+            display: block;
+        }
+
+        > .slideshow-slides {
+            opacity: 0;
+            transition: all 500ms;
+            overflow: hidden auto;
+            height: 100%;
+            display: none;
+            > .sortable-pane {
+                > .sortable {
+                    flex: 0 0 33.333%;
+                    > canvas {
+                        height: auto;
+                        max-width: 100%;
+                    }
+                }
+            }
+        }
+
+        > .slideshow-slides.shown {
+            opacity: 1;
+            display: block;
+        }
+    }
+
+    > .queue-recordsets {
+        flex: 0 0 300px;
+        height: 100%;
+        display: flex;
+        flex-flow: column wrap;
+        justify-content: flex-end;
+        > .recordset {
+            position: relative;
+            overflow: hidden;
+            flex: 0 0 40px;
+            transition: all 150ms linear;
+            display: flex;
+            flex-flow:  column wrap;
+
+            > button {
+                width: 100%;
+                text-align: left;
+                > .icon {
+                    margin-right: 3px;
+                }
+            }
+
+            > .record-list {
+                overflow: hidden scroll;
+                flex: 1;
+            }
+
+            > .buttons {
+                display: flex;
+                flex-flow: row wrap;
+                background-color: $purple;
+                height: 36px;
+                > button {
+                    height: 36px;
+                }
+            }
+
+            .panel.RAF-panel {
+                max-height: calc(100% - 48px);
+            }
+        }
+        > .recordset.shown {
+            > button {
+                background-color: $green;
+            }
+
+            flex: 1;
+
+            > .record-list {
+                overflow: hidden scroll;
+                button.active {
+                    background-color: $purple;
+                }
+            }
+        }
+    }
+}
+
+.panel.MEQ-panel {
+    .buttons {
+        overflow: visible;
+        .btn-volume {
+            width: 250px;
+            height: 48px;
+            border: none;
+            overflow: visible;
+            padding: 0px 24px 0px 12px;
+            cursor: default;
+
+            .MuiSlider-root {
+                padding: 0px;
+                height: 48px;
+                .MuiSlider-rail,
+                .MuiSlider-track,
+                .MuiSlider-mark,
+                .MuiSlider-thumb
+                {
+                    bottom: 0;
+                    top: 0;
+                    margin: auto;
+                    height: 16px;
+                }
+                
+                .MuiSlider-mark {
+                    height: 3px;
+                }
+                
+                .MuiSlider-thumb,
+                .MuiSlider-track {
+                    color: $green;
+                }
+
+                .MuiSlider-thumb {
+                    border-radius: 0px 16px 16px 0px;
+                }
+            }
+        }
+
+        .btn-volume.muted {
+            .MuiSlider-thumb,
+            .MuiSlider-track {
+                background-color: #999999;
+            }
+        }
+    }
+}
