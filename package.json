@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@material-ui/core": "^4.3.1",
+    "@types/node": "^12.7.5",
     "babel-plugin-root-import": "^6.2.0",
     "body-parser": "^1.19.0",
     "classnames": "^2.2.6",
@@ -32,11 +33,11 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "dist":"build",
-    "electron-pack":"npm run build -w",
+    "dist": "build",
+    "electron-pack": "npm run build -w",
     "electron-dev": "concurrently \"yarn start\" \"wait-on http://localhost:3001 && electron .\"",
-    "build-electron":"mkdir build/src && robocopy electron build/electron /S & robocopy src/shared build/src/shared /S",
-    "package":"electron-builder build --win --publish never"
+    "build-electron": "mkdir build/src && robocopy electron build/electron /S & robocopy src/shared build/src/shared /S",
+    "package": "electron-builder build --win --publish never"
   },
   "browserslist": {
     "production": [
@@ -53,25 +54,25 @@
   "main": "public/electron.js",
   "homepage": "./",
   "author": {
-    "name":"Carl Roberts",
-    "email":"cjr3@live.com",
-    "url":"http://carljroberts.com"
+    "name": "Carl Roberts",
+    "email": "cjr3@live.com",
+    "url": "http://carljroberts.com"
   },
   "description": "Banked Track Roller Derby A/V Production Software",
   "devDependencies": {
     "electron": "^6.0.9",
     "electron-builder": "^21.2.0"
   },
-  "build":{
-    "appId":"com.carljroberts.rdmgr",
-    "productName":"RDMGR",
-    "copyright":"Copyright 2019 ${author}",
-    "files":[
+  "build": {
+    "appId": "com.carljroberts.rdmgr",
+    "productName": "RDMGR",
+    "copyright": "Copyright 2019 ${author}",
+    "files": [
       "build/**/*",
       "node_modules/**/*"
     ],
-    "directories":{
-      "buildResources":"public"
+    "directories": {
+      "buildResources": "public"
     }
   }
 }

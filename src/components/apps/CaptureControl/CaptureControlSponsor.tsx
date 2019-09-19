@@ -31,7 +31,7 @@ class CaptureControlSponsor extends React.PureComponent<PCaptureControlPanel, SC
      */
     updateCapture() {
         this.setState(() => {
-            return {Shown:CaptureController.Shown};
+            return {Shown:CaptureController.getState().SponsorSlideshow.Shown};
         });
     }
 

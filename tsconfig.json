@@ -19,7 +19,11 @@
     "noEmit": true,
     "jsx": "preserve",
     "baseUrl": "src",
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "types":["node"],
+    "typeRoots": [
+      "./node_modules/@types"
+    ]
   },
   "include": [
     "src"

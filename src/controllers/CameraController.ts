@@ -1,6 +1,6 @@
 import {createStore} from 'redux';
 
-export interface ICameraControllerState {
+export interface CameraControllerState {
     /**
      * Currently selected local camera device ID to send to the capture window.
      */
@@ -14,7 +14,7 @@ export interface ICameraControllerState {
 const SET_STATE = 'SET_STATE';
 const SET_CAMERA_ID = 'SET_CAMERA_ID';
 const SET_CAMERAS = 'SET_CAMERAS';
-const InitState:ICameraControllerState = {
+const InitState:CameraControllerState = {
     DeviceID:'',
     Cameras:new Array<MediaDeviceInfo>()
 };

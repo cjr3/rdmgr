@@ -7,9 +7,19 @@ import DataController from './controllers/DataController';
 
 declare global {
     interface Window{
-        ReactEntryPoint:any,
-        RDMGR:any
+        ReactEntryPoint?:any,
+        RDMGR?:any,
+        LocalServer?:any,
+        IPC?:any,
+        initControlServer?:any,
+        initCaptureServer?:any,
+        onSelectFile?:any,
+        client?:any
     }
+}
+
+declare module "*.png" {
+    const value: string;
 }
 
 DataController.Init();

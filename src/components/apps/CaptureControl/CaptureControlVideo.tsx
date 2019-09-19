@@ -73,9 +73,8 @@ class CaptureControlVideo extends React.PureComponent<PCaptureControlPanel> {
      */
     render() {
         var name = '(no video playing)';
-        if(this.state.Source && this.state.Status === vars.Video.Status.Playing) {
-            if(DataController.PATH != null)
-                name = DataController.PATH.basename(this.state.Source);
+        if(this.state.Source != '' && this.state.Status === vars.Video.Status.Playing) {
+            name = DataController.basename(this.state.Source);
         }
 
         return (

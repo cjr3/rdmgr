@@ -59,6 +59,9 @@ const IconUp = require('images/icons/up.png');
 const IconWhistle = require('images/icons/whistle.png');
 const IconX = require('images/icons/x.png');
 const IconYouTube = require('images/icons/youtube.png');
+const IconFastForward = require('images/icons/fastforward.png');
+const IconPlay = require('images/icons/play.png');
+const IconPause = require('images/icons/pause.png');
 
 /**
  * Creates a <button> element
@@ -671,5 +674,8 @@ export {
     IconCamera5050,
     IconCamera2080,
     IconCameraLeftThird,
-    IconCameraRightThird
+    IconCameraRightThird,
+    IconFastForward,
+    IconPlay,
+    IconPause
 };
