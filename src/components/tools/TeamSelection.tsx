@@ -1,18 +1,36 @@
 import React from 'react'
 import cnames from 'classnames'
-import DataController from 'controllers/DataController'
+import DataController from 'controllers/DataController';
+import {TeamRecord} from 'tools/vars';
 
-class TeamSelection extends React.PureComponent {
+interface STeamSelection {
+    teams:Array<TeamRecord>,
+    index:number
+}
+
+interface PTeamSelection {
+    teamid?:number,
+    onChange?:Function,
+    className?:string
+}
+
+class TeamSelection extends React.PureComponent<PTeamSelection, STeamSelection> {
+    readonly state:STeamSelection = {
+        teams:DataController.getTeams(true),
+        index:0
+    }
+
+    remoteData:Function
+
     constructor(props) {
         super(props);
-        this.state = {
-            teams:DataController.getTeams(true),
-            index:0
-        }
 
-        for(var key in this.state.teams) {
-            if(this.state.teams[key].RecordID == this.props.teamid) {
-                this.state.index = parseInt(key);
+        if(this.props.teamid) {
+            for(let i=0; i < this.state.teams.length; i++) {
+                if(this.state.teams[i].RecordID == this.props.teamid) {
+                    this.state.index = i;
+                    break;
+                }
             }
         }
 
@@ -21,7 +39,7 @@ class TeamSelection extends React.PureComponent {
         this.next = this.next.bind(this);
         this.prev = this.prev.bind(this);
         this.updateState = this.updateState.bind(this);
-        this.remote = DataController.subscribe(this.updateState);
+        this.remoteData = DataController.subscribe(this.updateState);
     }
 
     /**
@@ -108,8 +126,8 @@ class TeamSelection extends React.PureComponent {
      * Renders the component.
      */
     render() {
-        var options = [];
-        var src = null;
+        var options:Array<React.ReactElement> = [];
+        var src:string = '';
         var i = 0;
         this.state.teams.forEach((team) => {
             options.push(
@@ -124,7 +142,7 @@ class TeamSelection extends React.PureComponent {
 
         return (
             <div className={cnames("team-selection", this.props.className)}>
-                <select size="1" onChange={this.onChangeSelect} value={this.state.index}>{options}</select>
+                <select size={1} onChange={this.onChangeSelect} value={this.state.index}>{options}</select>
                 <img src={src} onClick={this.next} onContextMenu={this.prev} alt=""/>
             </div>
         )

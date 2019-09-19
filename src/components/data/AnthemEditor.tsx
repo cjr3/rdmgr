@@ -1,24 +1,36 @@
 import React from 'react';
 import RecordEditor from './RecordEditor';
 import DataController from 'controllers/DataController';
-import vars from 'tools/vars';
+import vars, { AnthemRecord } from 'tools/vars';
+
+interface SAnthemEditor {
+    Biography:string,
+    Records:Array<AnthemRecord>
+}
+
+interface PAnthemEditor {
+    record:AnthemRecord,
+    opened:boolean
+}
 
 /**
  * Component for editing National Anthem records.
  */
-class AnthemEditor extends React.PureComponent {
+class AnthemEditor extends React.PureComponent<PAnthemEditor, SAnthemEditor> {
+    readonly state:SAnthemEditor ={
+        Biography:'',
+        Records:DataController.getAnthemSingers(true)
+    }
+
+    remoteData:Function
+
     constructor(props) {
         super(props);
-        this.state = {
-            Biography:'',
-            records:Object.assign({}, DataController.getAnthemSingers())
-        }
-
         this.onChangeBio = this.onChangeBio.bind(this);
         this.onSubmit = this.onSubmit.bind(this);
         this.onSelect = this.onSelect.bind(this);
         this.updateState = this.updateState.bind(this);
-        this.remote = DataController.subscribe(this.updateState);
+        this.remoteData = DataController.subscribe(this.updateState);
     }
 
     /**
@@ -26,12 +38,7 @@ class AnthemEditor extends React.PureComponent {
      * - Update changed phase records.
      */
     updateState() {
-        var records = DataController.getAnthemSingers();
-        if(!DataController.compare(records, this.state.records)) {
-            this.setState(() => {
-                return {records:Object.assign({}, records)}
-            });
-        }
+        this.setState({Records:DataController.getAnthemSingers(true)});
     }
 
     /**
@@ -89,15 +96,20 @@ class AnthemEditor extends React.PureComponent {
         return (
             <RecordEditor 
                 recordType={vars.RecordType.Anthem}
-                records={this.state.records}
+                records={this.state.Records}
                 onSubmit={this.onSubmit}
+                opened={this.props.opened}
                 {...this.props}
                 >
-                <h3>Biography</h3>
-                <textarea rows="5" cols="50" maxLength={300}
-                    value={bio}
-                    onChange={this.onChangeBio}
-                    />
+                <tr>
+                    <td>Biography</td>
+                    <td colSpan={3}>
+                        <textarea rows={5} cols={50} maxLength={300}
+                            value={bio}
+                            onChange={this.onChangeBio}
+                            />
+                    </td>
+                </tr>
             </RecordEditor>
         )
     }

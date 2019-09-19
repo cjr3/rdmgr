@@ -13,14 +13,14 @@ const TOGGLE_LOOP = 'TOGGLE_LOOP';
 export interface SMediaQueueController {
     Index:number,
     Records:Array<SlideshowRecord | VideoRecord | AnthemRecord>,
-    Record:Record | VideoRecord | AnthemRecord | SlideshowRecord,
+    Record:Record | VideoRecord | AnthemRecord | SlideshowRecord | null,
     Loop:boolean
 }
 
 const InitState:SMediaQueueController = {
     Index:-1,
     Records:[],
-    Record:{},
+    Record:null,
     Loop:false
 };
 

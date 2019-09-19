@@ -1,20 +1,30 @@
 import React from 'react';
 import RecordEditor from './RecordEditor';
 import DataController from 'controllers/DataController';
-import vars from 'tools/vars';
+import vars, { TeamRecord } from 'tools/vars';
+
+interface STeamEditor {
+    records:Array<TeamRecord>;
+}
+
+interface PTeamEditor {
+    record:TeamRecord;
+    opened:boolean;
+}
 
 /**
  * Component for editing team records.
  */
-class TeamEditor extends React.PureComponent {
+class TeamEditor extends React.PureComponent<PTeamEditor, STeamEditor> {
+    readonly state:STeamEditor = {
+        records:DataController.getTeams(true)
+    }
+    remoteData:Function
     constructor(props) {
         super(props);
-        this.state = {
-            records:Object.assign({}, DataController.getTeams())
-        };
 
         this.updateState = this.updateState.bind(this);
-        this.remote = DataController.subscribe(this.updateState);
+        this.remoteData = DataController.subscribe(this.updateState);
     }
 
     /**
@@ -36,6 +46,7 @@ class TeamEditor extends React.PureComponent {
             <RecordEditor 
                 recordType={vars.RecordType.Team}
                 records={this.state.records}
+                opened={this.props.opened}
                 {...this.props}
                 >
             </RecordEditor>

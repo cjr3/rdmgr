@@ -7,11 +7,11 @@ interface SGameClock {
     showTenths:boolean,
     hour:number,
     minute:number,
-    second:number
+    second:number,
+    status:number
 }
 
 interface PGameClock {
-    status:number,
     remote?:string
 }
 
@@ -20,6 +20,7 @@ interface PGameClock {
  */
 class GameClock extends React.PureComponent<PGameClock, SGameClock> {
     readonly state:SGameClock = {
+        status:vars.Clock.Status.Ready,
         showTenths:false,
         hour:0,
         minute:15,
@@ -46,6 +47,7 @@ class GameClock extends React.PureComponent<PGameClock, SGameClock> {
         this.setState(() => {
             var cstate = ScoreboardController.getState();
             return {
+                status:cstate.GameState,
                 hour:cstate.GameHour,
                 minute:cstate.GameMinute,
                 second:cstate.GameSecond
@@ -101,7 +103,7 @@ class GameClock extends React.PureComponent<PGameClock, SGameClock> {
                 hour={this.state.hour}
                 minute={this.state.minute}
                 second={this.state.second}
-                status={this.props.status}
+                status={this.state.status}
                 showTenths={this.state.showTenths}
                 type={vars.Clock.Types.Clock}
                 onClick={this.onClick}

@@ -22,7 +22,7 @@ export interface SSlideshowController {
     Loop:boolean,
     Auto:boolean,
     Slides:Array<any>,
-    Slideshow:SlideshowRecord,
+    Slideshow:SlideshowRecord|null,
     SlideshowID:number,
     Name:string,
     Delay:number
@@ -33,7 +33,7 @@ const InitState:SSlideshowController = {
     Loop:false,
     Auto:false,
     Slides:[],
-    Slideshow:{},
+    Slideshow:null,
     SlideshowID:0,
     Name:'',
     Delay:10000
@@ -192,7 +192,7 @@ const SlideshowController = {
      * @param {Number} id Slideshow's RecordID
      * @param {String} name Slideshow's name
      */
-    SetSlides(records:Array<any>, id, name) {
+    SetSlides(records:Array<any>|undefined, id, name) {
         SlideshowController.getStore().dispatch({
             type:SET_SLIDES,
             records:records,

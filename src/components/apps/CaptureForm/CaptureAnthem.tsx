@@ -1,13 +1,13 @@
 import React from 'react'
-import CaptureController, {StateAnthem} from 'controllers/CaptureController';
+import CaptureController, {CaptureStateAnthem} from 'controllers/CaptureController';
 import cnames from 'classnames'
 import './css/CaptureAnthem.scss'
 import DataController from 'controllers/DataController';
 
 
-class CaptureAnthem extends React.PureComponent<any, StateAnthem> {
+class CaptureAnthem extends React.PureComponent<any, CaptureStateAnthem> {
 
-    readonly state:StateAnthem = CaptureController.getState().NationalAnthem
+    readonly state:CaptureStateAnthem = CaptureController.getState().NationalAnthem
     BackgroundImage:string = DataController.GetMiscRecord('NationalAnthemSinger').Background
     remoteCapture:Function
 

@@ -1,19 +1,30 @@
 import React from 'react';
 import RecordEditor from './RecordEditor';
 import DataController from 'controllers/DataController';
-import vars from 'tools/vars';
+import vars, {VideoRecord} from 'tools/vars';
 import {IconButton, IconFolder} from 'components/Elements';
+
+interface SVideoEditor {
+    source:string,
+    records:Array<VideoRecord>
+}
+
+interface PVideoEditor {
+    record:VideoRecord|null|undefined;
+    opened:boolean;
+}
 
 /**
  * Component for editing a video record.
  */
-class VideoEditor extends React.PureComponent {
+class VideoEditor extends React.PureComponent<PVideoEditor, SVideoEditor> {
+    readonly state:SVideoEditor = {
+        source:'',
+        records:DataController.getVideos(true)
+    }
+    remoteData:Function
     constructor(props) {
         super(props);
-        this.state = {
-            Source:'',
-            records:Object.assign({}, DataController.getVideos())
-        }
         
         this.updateState = this.updateState.bind(this);
 
@@ -21,7 +32,7 @@ class VideoEditor extends React.PureComponent {
         this.onSubmit = this.onSubmit.bind(this);
 
         this.onSelectFile = this.onSelectFile.bind(this);
-        this.remote = DataController.subscribe(this.updateState);
+        this.remoteData = DataController.subscribe(this.updateState);
     }
 
     /**
@@ -42,7 +53,7 @@ class VideoEditor extends React.PureComponent {
      */
     onSelectFile(filename) {
         this.setState(() => {
-            return {Source:DataController.PATH.basename(filename)};
+            return {source:DataController.basename(filename)};
         });
     }
 
@@ -52,7 +63,7 @@ class VideoEditor extends React.PureComponent {
      */
     onSubmit(record) {
         return Object.assign({}, record, {
-            Filename:this.state.Source
+            Filename:this.state.source
         });
     }
 
@@ -66,7 +77,7 @@ class VideoEditor extends React.PureComponent {
             source = record.Filename;
 
         this.setState({
-            Source:source
+            source:source
         });
     }
 
@@ -90,7 +101,7 @@ class VideoEditor extends React.PureComponent {
      * Renders the component.
      */
     render() {
-        var src = this.state.Source;
+        var src = this.state.source;
         if(src && src.length) {
             src = DataController.mpath("videos/" + src);
         }
@@ -112,21 +123,27 @@ class VideoEditor extends React.PureComponent {
                 records={this.state.records}
                 buttons={buttons}
                 onSubmit={this.onSubmit}
+                opened={this.props.opened}
                 {...this.props}
                 >
-                <h2>Preview</h2>
-                <video 
-                    src={src}
-                    controls={true}
-                    volume="0"
-                    muted
-                    width="640"
-                    height="360"
-                    onFocus={(ev) => {
-                        ev.preventDefault();
-                        ev.target.blur();
-                    }}
-                    />
+                <tr>
+                    <td>Preview</td>
+                    <td colSpan={3}>
+                        <video 
+                            src={src}
+                            controls={true}
+                            //volume="0"
+                            muted
+                            width="640"
+                            height="360"
+                            onFocus={(ev) => {
+                                ev.preventDefault();
+                                ev.target.blur();
+                            }}
+                            />
+
+                    </td>
+                </tr>
             </RecordEditor>
         )
     }

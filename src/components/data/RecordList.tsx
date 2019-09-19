@@ -2,17 +2,30 @@ import React from 'react';
 import cnames from 'classnames';
 import {Button} from 'components/Elements';
 import DataController from 'controllers/DataController';
-import './css/RecordList.scss'
+import './css/RecordList.scss';
 
-class RecordList extends React.Component {
+interface SRecordList {
+    DragIndex:number,
+    DropIndex:number,
+    records:Array<any>
+}
+
+interface PRecordList {
+    records:Array<any>,
+    keywords?:string,
+    recordid?:number,
+    onSelect?:Function,
+    className?:string
+}
+
+class RecordList extends React.Component<PRecordList, SRecordList> {
+    readonly state:SRecordList = {
+        DragIndex:-1,
+        DropIndex:-1,
+        records:[]
+    }
     constructor(props) {
         super(props);
-        this.state = {
-            DragIndex:-1,
-            DropIndex:-1,
-            records:null
-        };
-
         this.onDragOver = this.onDragOver.bind(this);
         this.onDragStart = this.onDragStart.bind(this);
         this.onDrop = this.onDrop.bind(this);
@@ -103,17 +116,16 @@ class RecordList extends React.Component {
      * Renders the component.
      */
     render() {
-        let items = [];
-        var rx = null;
+        let items:Array<React.ReactElement> = [];
+        var rx:RegExp|null = null;
 
         if(typeof(this.props.keywords) === 'string' && this.props.keywords) {
             rx = new RegExp(this.props.keywords, 'ig');
         }
 
         if(this.props.records) {
+
             var keys = Object.entries(this.props.records);
-            if(!this.props.sortable)
-                keys = keys.sort((a, b) => a[1].Name.localeCompare(b[1].Name));
             keys.forEach((item) => {
                 var hidden = false;
                 let record = item[1];

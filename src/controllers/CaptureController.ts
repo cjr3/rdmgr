@@ -150,6 +150,7 @@ const InitState:CaptureControllerState = {
         className:'',
         Record:{
             RecordID:0,
+            RecordType:vars.RecordType.Anthem,
             Name:'',
             Biography:''
         }

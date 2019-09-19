@@ -1,6 +1,6 @@
 import React from 'react';
 import cnames from 'classnames';
-import CaptureController, {SCaptureControllerAnnouncers} from 'controllers/CaptureController';
+import CaptureController, {CaptureStateAnnouncer} from 'controllers/CaptureController';
 import {IconMic, Icon} from 'components/Elements';
 import './css/CaptureAnnouncer.scss';
 
@@ -11,8 +11,8 @@ interface PCaptureAnnouncers {
 /**
  * Component for displaying the announcer names on the capture window.
  */
-class CaptureAnnouncers extends React.PureComponent<PCaptureAnnouncers, SCaptureControllerAnnouncers> {
-    readonly state:SCaptureControllerAnnouncers = CaptureController.getState().Announcers;
+class CaptureAnnouncers extends React.PureComponent<PCaptureAnnouncers, CaptureStateAnnouncer> {
+    readonly state:CaptureStateAnnouncer = CaptureController.getState().Announcers;
     remote:Function
     constructor(props) {
         super(props);

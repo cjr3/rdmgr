@@ -13,13 +13,10 @@ declare global {
         IPC?:any,
         initControlServer?:any,
         initCaptureServer?:any,
-        onSelectFile?:any,
+        onSelectFile?:Function|null,
+        onSelectFolder?:Function|null,
         client?:any
     }
-}
-
-declare module "*.png" {
-    const value: string;
 }
 
 DataController.Init();

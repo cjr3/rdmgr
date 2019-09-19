@@ -9,7 +9,8 @@ import NameInput from './NameInput'
 import ColorInput from './ColorInput'
 import Status from './Status'
 import vars from 'tools/vars'
-import ScoreboardController, {SScoreboardTeam} from 'controllers/ScoreboardController'
+import ScoreboardController, {SScoreboardTeam} from 'controllers/ScoreboardController';
+import DataController from 'controllers/DataController';
 
 import './css/Team.scss'
 
@@ -25,7 +26,7 @@ export default function Team(props:PTeam) {
     return (
         <div className={cnames('team', 'side-' + props.Team.Side.toLowerCase())}>
             <Score Team={props.Team}/>
-            <img src={props.Team.Thumbnail} alt="" className="logo"/>
+            <img src={DataController.mpath(props.Team.Thumbnail)} alt="" className="logo"/>
             <div className="values">
                 <NameInput Team={props.Team}/>
                 <ColorInput Team={props.Team}/>

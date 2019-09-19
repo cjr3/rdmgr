@@ -6,7 +6,7 @@
 import React from 'react'
 import cnames from 'classnames'
 import './css/Elements.scss'
-import {default as UISlider} from '@material-ui/core/Slider'
+import {default as UISlider, SliderProps, Mark} from '@material-ui/core/Slider'
 import DataController from 'controllers/DataController';
 
 //static icons
@@ -87,9 +87,24 @@ function ButtonElement(props) {
 }
 
 /**
+ * General interface for elements
+ */
+interface PElement {
+    className?:string;
+    active?:boolean;
+    title?:string;
+}
+
+interface PMediaElement extends PElement {
+    src:string,
+    children?:any,
+    onClick?:Function
+}
+
+/**
  * Button with an icon and text labels.
  */
-class ButtonIconElement extends React.PureComponent {
+class ButtonIconElement extends React.PureComponent<PMediaElement> {
     render() {
         var className = cnames('button-icon', this.props.className, {
             active:this.props.active
@@ -109,7 +124,13 @@ class ButtonIconElement extends React.PureComponent {
 /**
  * A checkbox with toggle capabilities.
  */
-class ToggleButtonElement extends React.PureComponent {
+class ToggleButtonElement extends React.PureComponent<{
+    checked:boolean,
+    onClick:Function,
+    className?:string,
+    label?:string,
+    title?:string
+}> {
     /**
      * Renders the component
      */
@@ -133,12 +154,22 @@ class ToggleButtonElement extends React.PureComponent {
 /**
  * Element for handling single-line text input.
  */
-class TextboxElement extends React.PureComponent {
+class TextboxElement extends React.PureComponent<{
+    size:number;
+    maxLength:number;
+    type:string;
+    onChange:Function;
+    value:string;
+}, {
+    value:string
+}> {
+    readonly state = {
+        value:''
+    }
     constructor(props) {
         super(props);
-        this.state = {
-            value:(this.props.value) ? this.props.value : ''
-        };
+        if(this.props.value)
+            this.state.value = this.props.value;
         this.onChange = this.onChange.bind(this);
     }
 
@@ -162,9 +193,12 @@ class TextboxElement extends React.PureComponent {
      */
     componentDidUpdate(prevProps) {
         if(prevProps.value !== this.props.value && this.props.value !== this.state.value) {
-            this.setState(() => {
-                return {value:this.props.value};
-            })
+            if(this.props.value === undefined) {
+                if(this.state.value !== '')
+                    this.setState({value:''});
+            } else {
+                this.setState({value:this.props.value});
+            }
         }
     }
 
@@ -223,7 +257,6 @@ function RadioElement(props) {
         <input type="radio"
             onChange={props.onChange}
             name={props.name}
-            //checked={props.checked}
             value={props.value}
         />
     )
@@ -251,91 +284,33 @@ function IconElement(props) {
     );
 }
 
-/**
- * Progress bar element.
- */
-class ProgressBarElement extends React.PureComponent {
-    /**
-     * Renders the component.
-     */
-    render() {
-        var className = cnames('progress-bar', this.props.className);
-        var progress = 0;
-        if(this.props.value && this.props.max)
-            progress = parseFloat((this.props.value / this.props.max));
-        var style = {
-            transform:"scale(" + progress + ",1)"
-        };
-        return (
-            <div 
-                className={className}
-                >
-                <div className={"progress-amount"} style={style}/>
-            </div>
-        )
-    }
+interface PProgressBarElement {
+    value:number,
+    max:number,
+    className?:string
 }
 
-class RadioGroupElement extends React.PureComponent {
-    constructor(props) {
-        super(props);
-        this.onChange = this.onChange.bind(this);
-    }
-
-    onChange(ev) {
-        if(this.props.onChange)
-            this.props.onChange(ev.target.value);
-    }
-
-    render() {
-        this.RadioButtons = [];
-        for(let key in this.props.values) {
-            let text = this.props.values[key];
-            this.RadioButtons.push(
-                <label key={"radio-" + key}>
-                    <CheckboxElement
-                        onChange={(ev) => {
-                            if(this.props.onChange)
-                                this.props.onChange((ev.target.checked) ? key : null);
-                        }}
-                        />
-                        {text}
-                </label>
-            )
-        }
-
-        return (
-            <div className="radio-group">
-                {this.RadioButtons}
-            </div>
-        )
-    }
+function ProgressBarElement(props:PProgressBarElement) {
+    var className = cnames('progress-bar', props.className);
+    var progress = 0;
+    if(props.value && props.max)
+        progress = props.value / props.max;
+    var style = {
+        transform:"scale(" + progress + ",1)"
+    };
+    return (
+        <div 
+            className={className}
+            >
+            <div className={"progress-amount"} style={style}/>
+        </div>
+    )
 }
 
-class ButtonGroupElement extends React.PureComponent {
-    render() {
-        const buttons = [];
-        for(let key in this.props.values) {
-            let text = this.props.values[key];
-            buttons.push(
-                <ButtonElement
-                    key={key}
-                    onClick={() => {
-                        if(this.props.onChange)
-                            this.props.onChange(key);
-                    }}
-                    className={cnames({active:(key === this.props.value)})}>
-                    {text}
-                </ButtonElement>
-            );
-        }
-
-        return (
-            <div className="button-group">
-                {buttons}
-            </div>
-        )
-    }
+interface PMediaThumbnailElement {
+    width?:number,
+    height?:number,
+    src:string
 }
 
 /**
@@ -343,15 +318,23 @@ class ButtonGroupElement extends React.PureComponent {
  * such as an image or a video. This reduces the load of large animated GIFs
  * and videos for slideshows.
  */
-class MediaThumbnailElement extends React.PureComponent {
+class MediaThumbnailElement extends React.PureComponent<PMediaThumbnailElement> {
+
+    Width:number = 256;
+    Height:number = 144;
+    Brush:CanvasRenderingContext2D|null = null;
+    ImageItem:HTMLImageElement = new Image();
+    CanvasItem:React.RefObject<HTMLCanvasElement> = React.createRef();
+
     constructor(props) {
         super(props);
-        this.Width = (this.props.width) ? this.props.width : 256;
-        this.Height = (this.props.height) ? this.props.height : 144;
-        this.Brush = null;
+        if(this.props.width !== undefined)
+            this.Width = this.props.width;
+
+        if(this.props.height !== undefined)
+            this.Height = this.props.height;
+            
         this.paint = this.paint.bind(this);
-        this.Canvas = React.createRef();
-        this.ImageItem = new Image();
         this.ImageItem.onload = this.paint;
     }
 
@@ -362,28 +345,37 @@ class MediaThumbnailElement extends React.PureComponent {
         if(this.Brush == null)
             return;
 
-        this.Brush.clearRect(0,0,this.Width, this.Height);
-        if(typeof(this.props.src) !== "string")
-            return;
+        this.clear();
 
         var size = DataController.aspectSize(this.Width, this.Height, this.ImageItem.width, this.ImageItem.height);
         this.Brush.drawImage(this.ImageItem, size.x, size.y, size.width, size.height);
-        this.ImageItem.src = null;
+        //this.ImageItem.src = '';
+    }
+
+    /**
+     * Clears the preview canvas
+     */
+    protected clear() {
+        if(this.Brush === null)
+            return;
+        this.Brush.clearRect(0,0,this.Width, this.Height);
     }
 
     /**
      * Loads the image to preview.
      */
-    loadImage() {
+    async loadImage() {
         if(this.props.src && this.props.src.search) {
             if(this.props.src.search('http') === 0) {
                 this.ImageItem.src = this.props.src;
             } else if(this.props.src.search('c:') === 0) {
-                DataController.FS.access(this.props.src, (err) => {
-                    if(!err) {
-                        this.ImageItem.src = this.props.src;
-                    }
-                });
+                DataController.access(this.props.src).then(() => {
+                    this.ImageItem.src = this.props.src;
+                }).catch(() => {this.clear();});
+            } else {
+                DataController.access(DataController.mpath(this.props.src)).then(() => {
+                    this.ImageItem.src = DataController.mpath(this.props.src);
+                }).catch(() => {this.clear();});
             }
         }
     }
@@ -392,7 +384,8 @@ class MediaThumbnailElement extends React.PureComponent {
      * Triggered when the component mounts
      */
     componentDidMount() {
-        this.Brush = this.Canvas.current.getContext('2d');
+        if(this.CanvasItem !== null && this.CanvasItem.current !== null)
+            this.Brush = this.CanvasItem.current.getContext('2d');
         this.loadImage();
     }
 
@@ -414,146 +407,41 @@ class MediaThumbnailElement extends React.PureComponent {
             <canvas 
                 width={this.Width} 
                 height={this.Height} 
-                ref={this.Canvas}
+                ref={this.CanvasItem}
                 ></canvas>
         )
     }
 }
 
-/**
- * A component that displays a video as a thumbnail.
- * The video is loaded, painted, and then unloaded.
- * A position can be supplied.
- */
-class VideoThumbnailElement extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            duration:0
-        };
-        this.VideoItem = document.createElement('video');
-        this.VideoItem.volume = 0;
-        this.CanvasItem = React.createRef();
-        this.paint = this.paint.bind(this);
-        this.onCanPlayThrough = this.onCanPlayThrough.bind(this);
-        this.Brush = null;
-        //this.VideoItem.ontimeupdate = this.paint;
-        this.VideoItem.oncanplaythrough = this.onCanPlayThrough;
-    }
-
-    onCanPlayThrough() {
-        //this.VideoItem.currentTime = (this.props.currentTime) ? this.props.currentTime : 0;
-        this.VideoItem.currentTime = 10;
-        this.setState(() => {
-            return {duration:this.VideoItem.duration};
-        });
-        setTimeout(() => {
-            this.paint();
-        }, 1000);
-    }
-
-    /**
-     * Triggered when the component mounts to the DOM.
-     * - Create brush.
-     * - Sets the video preview source.
-     */
-    componentDidMount() {
-        this.Brush = this.CanvasItem.current.getContext('2d');
-        this.VideoItem.src = this.props.src;
-    }
-
-    /**
-     * Triggered when the component updates.
-     * - Checks change of video source (src)
-     * - Checks change of video time.
-     * @param {Object} prevProps Previous props
-     */
-    componentDidUpdate(prevProps) {
-        if(prevProps.src !== this.props.src) {
-            this.VideoItem.src = this.props.src;
-        }
-
-        if(prevProps.currentTime !== this.props.currentTime) {
-            if(this.props.currentTime > this.VideoItem.duration)
-                this.VideoItem.currentTime = this.VideoItem.duration;
-            else if(this.props.currentTime >= 0)
-                this.VideoItem.currentTime = this.VideoItem.currentTime;
-            this.paint();
-        }
-    }
-
-    /**
-     * Paints a thumbnail of the video.
-     */
-    paint() {
-        if(this.Brush) {
-            if(typeof(this.VideoItem.src) === "string") {
-                var {
-                    width = 256,
-                    height = 144
-                } = this.props;
-                this.Brush.drawImage(this.VideoItem, 0, 0, width, height);
-                this.VideoItem.src = null;
-            } else {
-                //this.Brush.clearRect(0, 0, this.props.width, this.props.height);
-            }
-        }
-    }
-
-    /**
-     * Renders the component.
-     */
-    render() {
-        var {
-            width = 256,
-            height = 144
-        } = this.props;
-        
-        var time = "00:00";
-        if(this.state.duration > 0) {
-            var hours = parseInt(this.state.duration / 60 / 60);
-            var minutes = parseInt(this.state.duration / 60);
-            var seconds = parseInt( this.state.duration - ((this.state.duration / 60 / 60) - (this.state.duration / 60)) );
-            time = hours.toString().padStart(2,'0') + ":" +
-                minutes.toString().padStart(2,'0') + ":" +
-                seconds.toString().padStart(2,'0');
-        }
-
-        return (
-            <div className="video-thumbnail">
-                <label className="name">{this.props.Name}</label>
-                <label className="name">{time}</label>
-                <canvas
-                    width={width}
-                    height={height}
-                    ref={this.CanvasItem}
-                    />
-            </div>
-        );
-    }
+interface PSliderElement extends SliderProps {
+    className?:string
 }
 
 /**
  * A component with a range of values, and a knob
  * that can be 'slid' into position to set that value.
  */
-class SliderElement extends React.PureComponent {
-    constructor(props) {
-        super(props);
-        this.state = {
-            value:0
-        };
-        this.ChangingValue = false;
+class SliderElement extends React.PureComponent<PSliderElement, {
+    value:number | number[]
+}> {
+    readonly state = {
+        value:0
     }
 
+    ChangingValue:boolean = false;
+
+    /**
+     * Triggered when the component updates
+     */
     componentDidUpdate() {
-        if(this.state.value !== this.props.value) {
-            if(!this.ChangingValue) {
-                this.setState({value:this.props.value});
-            }
+        if(!this.ChangingValue && this.state.value !== this.props.value && this.props.value !== undefined) {
+            this.setState({value:this.props.value});
         }
     }
 
+    /**
+     * Renders the component.
+     */
     render() {
         var className = cnames('slider', this.props.className);
         var value = this.props.value;
@@ -562,7 +450,6 @@ class SliderElement extends React.PureComponent {
         return (
             <UISlider
                 className={className}
-
                 defaultValue={this.props.defaultValue}
                 min={this.props.min}
                 max={this.props.max}
@@ -577,7 +464,7 @@ class SliderElement extends React.PureComponent {
                 onChangeCommitted={(o, value) => {
                     this.setState({value:value});
                     if(this.props.onChangeCommitted)
-                        this.props.onChangeCommitted(0, value);
+                        this.props.onChangeCommitted(o, value);
                 }}
 
                 onChange={(o, value) => {
@@ -597,8 +484,8 @@ class SliderElement extends React.PureComponent {
                     this.ChangingValue = false;
                 }}
                 onMouseOut={(ev) => {
-                    if(ev.target === ev.parentNode)
-                        this.ChangingValue = false;
+                    //if(ev.target === ev.target.parentNode)
+                        //this.ChangingValue = false;
                 }}
                 onMouseEnter={() => {
                     //this.ChangingValue = false;
@@ -617,11 +504,8 @@ export {
     CheckboxElement as Checkbox,
     IconElement as Icon,
     ButtonIconElement as IconButton,
-    RadioGroupElement as RadioGroup,
     RadioElement as Radio,
-    ButtonGroupElement as ButtonGroup,
     MediaThumbnailElement as MediaThumbnail,
-    VideoThumbnailElement as VideoThumbnail,
     ToggleButtonElement as ToggleButton,
     ProgressBarElement as ProgressBar,
     SliderElement as Slider,

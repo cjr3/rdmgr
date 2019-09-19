@@ -2,18 +2,35 @@ import React from 'react';
 import cnames from 'classnames';
 import './css/SortPanel.scss';
 
-class SortPanel extends React.PureComponent {
+interface SSortPanel {
+    DragIndex:number,
+    DropIndex:number,
+    DragEnterX:number,
+    DropX:number,
+    DropLeft:boolean,
+    DropRight:boolean
+}
+
+interface PSortPanel {
+    items:Array<any>,
+    index?:number,
+    className?:string,
+    onDrop?:Function,
+    onDoubleClick?:Function
+}
+
+class SortPanel extends React.PureComponent<PSortPanel, SSortPanel> {
+    readonly state:SSortPanel = {
+        DragIndex:-1,
+        DropIndex:-1,
+        DragEnterX:-1,
+        DropX:-1,
+        DropLeft:false,
+        DropRight:false
+    }
+
     constructor(props) {
         super(props);
-        this.state = {
-            DragIndex:-1,
-            DropIndex:-1,
-            DragEnterX:-1,
-            DropX:-1,
-            DropLeft:false,
-            DropRight:false
-        };
-
         this.onDragEnd = this.onDragEnd.bind(this);
         this.onDragLeave = this.onDragLeave.bind(this);
         this.onDragOver = this.onDragOver.bind(this);
@@ -27,12 +44,6 @@ class SortPanel extends React.PureComponent {
      */
     async onDragOver(ev) {
         var index = parseInt( ev.target.dataset.index );
-        //var rect = ev.target.getBoundingClientRect();
-        //var x = ev.clientX;
-        //var percent = Math.floor(((x- rect.x) / rect.width)*100);
-        //var left = (percent <= 15);
-        //var right = (percent >= 85);
-
         ev.preventDefault();
         this.setState(() => {
             return {DropIndex:index};
@@ -92,19 +103,18 @@ class SortPanel extends React.PureComponent {
      * Renders the component.
      */
     render() {
-        var items = [];
-        var Type = (this.props.type) ? this.props.type : 'div';
+        var items:Array<React.ReactElement> = [];
         var className = '';
         for(let i=0, len = this.props.items.length; i < len; i++) {
             let item = this.props.items[i];
             className = cnames('sortable', {
-                active:(i === parseInt(this.props.index)),
+                active:(i === this.props.index),
                 ['drop-target']:(i === this.state.DropIndex && i !== this.state.DragIndex),
                 ['drag-target']:(i === this.state.DragIndex && i !== this.state.DropIndex),
                 ['drop-left']:(i === this.state.DropIndex && this.state.DropLeft),
                 ['drop-right']:(i === this.state.DropIndex && this.state.DropRight)
             }, item.className);
-            items.push(<Type
+            items.push(<div
                 className={className}
                 key={`item-${i}`}
                 draggable={true}
@@ -115,7 +125,7 @@ class SortPanel extends React.PureComponent {
                 onDragLeave={this.onDragLeave}
                 onDoubleClick={this.onDoubleClick}
                 data-index={i}
-                >{item.label}</Type>
+                >{item.label}</div>
             );
         }
 

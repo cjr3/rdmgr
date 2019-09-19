@@ -15,14 +15,13 @@ interface SChatForm extends SChatController {
  */
 class ChatForm extends React.PureComponent<any, SChatForm> {
 
-    readonly state:SChatForm = ChatController.getState()
-    MessageItem:React.RefObject<HTMLInputElement>
+    readonly state:SChatForm = ChatController.getState();
+    MessageItem:React.RefObject<HTMLInputElement> = React.createRef();
     remoteChat:Function
 
     constructor(props) {
         super(props);
         this.state.MessageText = '';
-        this.MessageItem = React.createRef();
 
         //bindings
         this.onChatOpen = this.onChatOpen.bind(this);
@@ -97,18 +96,20 @@ class ChatForm extends React.PureComponent<any, SChatForm> {
     /**
      * Adds a message to the chat room, sending it to all connected peers.
      */
-    addMessage() {
+    async addMessage() {
         if(this.state.MessageText === undefined)
             return;
 
         if(this.state.MessageText.trim().length <= 0)
             return;
 
-        var line = {
+        let date = new Date();
+        let line:MessageRecord = {
             line:this.state.MessageText,
             name:window.LocalServer.LocalPeer.ID,
             read:true,
-            self:true
+            self:true,
+            time:date.getMinutes().toString().padStart(2,'0') + ":" + date.getSeconds().toString().padStart(2,'0')
         };
 
         this.setState({MessageText:''});

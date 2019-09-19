@@ -1,14 +1,15 @@
 import React from 'react'
 import Clock from 'components/tools/Clock'
 import {Icon} from 'components/Elements'
-import ScoreboardController from 'controllers/ScoreboardController'
+import ScoreboardController from 'controllers/ScoreboardController';
+import vars from 'tools/vars';
 
 interface SBreakClock {
+    status:number,
     second:number
 }
 
 interface PBreakClock {
-    status:number,
     remote?:string
 }
 
@@ -17,6 +18,7 @@ interface PBreakClock {
  */
 class BreakClock extends React.PureComponent<PBreakClock, SBreakClock> {
     readonly state:SBreakClock = {
+        status:vars.Clock.Status.Ready,
         second:30
     }
 
@@ -40,6 +42,7 @@ class BreakClock extends React.PureComponent<PBreakClock, SBreakClock> {
     updateState() {
         this.setState(() => {
             return {
+                status:ScoreboardController.getState().BreakState,
                 second:ScoreboardController.getState().BreakSecond
             };
         }, () => {
@@ -77,7 +80,7 @@ class BreakClock extends React.PureComponent<PBreakClock, SBreakClock> {
      * @param {Number} minute 
      * @param {Number} second 
      */
-    onTick(hour, minute, second) {
+    async onTick(hour, minute, second) {
         if(!this.props.remote)
             ScoreboardController.SetBreakTime(second);
     }
@@ -94,7 +97,7 @@ class BreakClock extends React.PureComponent<PBreakClock, SBreakClock> {
                         hour={0}
                         minute={0}
                         second={this.state.second}
-                        status={this.props.status}
+                        status={this.state.status}
                         remote={this.props.remote}
                         onClick={this.onClick}
                         onTick={this.onTick}

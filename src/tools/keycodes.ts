@@ -57,9 +57,11 @@ keychars[keycodes.NUM9] = '9';
 keychars[keycodes.SUBTRACT] = '-';
 keychars[keycodes.SEMICOLON] = ':';
 
-module.exports = keycodes;
-module.exports.keycodes = keycodes;
-module.exports.keydigits = keydigits;
-module.exports.keytime = keytime;
-module.exports.keymove = keymove;
-module.exports.keychars = keychars;
+export default keycodes;
+export {
+    keycodes,
+    keydigits,
+    keytime,
+    keymove,
+    keychars
+}

@@ -6,7 +6,11 @@ import GameClock from './GameClock'
 import BreakClock from './BreakClock'
 import JamCounter from './JamCounter'
 import BoardStatus from './BoardStatus'
-import {Icon, Button, IconCheck, IconPlay} from 'components/Elements'
+import {
+    Icon, 
+    Button, 
+    IconCheck, 
+    IconPlay} from 'components/Elements'
 import PhaseControl from './PhaseControl'
 import PhaseSelection from './PhaseSelection'
 import TeamPicker from './TeamPicker'
@@ -36,8 +40,8 @@ interface SScoreboard {
 }
 
 interface PScoreboard {
-    shown:boolean,
-    remote?:string
+    remote?:string,
+    opened:boolean
 }
 
 /**
@@ -178,7 +182,7 @@ class Scoreboard extends React.Component<PScoreboard, SScoreboard> {
         var clockIcon = IconPlay
             
         if(ScoreboardController.getState().GameState === vars.Clock.Status.Running) {
-            clockIcon = 'pause.png';
+            //clockIcon = 'pause.png';
         }
         
         var buttons = [
@@ -207,26 +211,27 @@ class Scoreboard extends React.Component<PScoreboard, SScoreboard> {
             <Panel 
                 contentName="SB-app" 
                 buttons={buttons}
+                opened={this.props.opened}
                 {...this.props}>
                 <ScoreboardTeam Team={this.state.TeamA}/>
                 <ScoreboardTeam Team={this.state.TeamB}/>
                 <div className="scoreboard-center">
-                    <JamClock remote={this.props.remote} status={this.state.JamState}/>
+                    <JamClock remote={this.props.remote}/>
                     <div className="jamn-break">
                         <table>
                             <tbody>
                                 <JamCounter/>
-                                <BreakClock remote={this.props.remote} status={this.state.BreakState}/>
+                                <BreakClock remote={this.props.remote}/>
                             </tbody>
                         </table>
                     </div>
                     <div className="phase">{this.state.PhaseName}</div>
                     <BoardStatus status={this.state.BoardStatus}/>
-                    <GameClock remote={this.props.remote} status={this.state.GameState}/>
+                    <GameClock remote={this.props.remote}/>
                     <div className="jam-controls">
                         <Button onClick={ScoreboardController.ToggleJamClock} className="jam-button">{jamLabel}</Button>
                         <Icon 
-                            src={require('images/icons/' + clockIcon)}
+                            src={clockIcon}
                             onClick={ScoreboardController.ToggleGameClock}
                             className="clock-button"
                         />

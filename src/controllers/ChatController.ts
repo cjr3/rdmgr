@@ -6,12 +6,11 @@ const CLEAR_CHAT = 'CLEAR_CHAT';
 const MARK_READ = 'MARK_READ';
 
 export type MessageRecord = {
-    name:string,
-    line:string,
-    time:string,
-    read:boolean,
-    self:boolean,
-    message:string
+    name:string;
+    line:string;
+    time:string;
+    read:boolean;
+    self:boolean;
 }
 
 export interface SChatController {
@@ -34,12 +33,11 @@ function ChatReducer(state = InitState, action) {
         case ADD_MESSAGE :
             messages = state.Messages.slice();
             messages.push({
-                name:'',
-                line:'',
-                time:`${date.getMinutes().toString().padStart(2,'0')}:${date.getSeconds().toString().padStart(2,'0')}`,
-                read:false,
-                self:true,
-                message:action.message
+                name:action.message.name,
+                line:action.message.line,
+                time:action.message.date,
+                read:action.message.read,
+                self:action.message.self
             });
             return Object.assign({}, state, {Messages:messages});
 
@@ -85,7 +83,7 @@ const ChatController = {
      * 
      * @param {Object} message 
      */
-    AddMessage(message) {
+    AddMessage(message:MessageRecord) {
         ChatController.getStore().dispatch({
             type:ADD_MESSAGE,
             message:message

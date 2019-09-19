@@ -1,22 +1,37 @@
 import React from 'react';
 import RecordEditor from './RecordEditor';
 import DataController from 'controllers/DataController';
-import vars from 'tools/vars';
+import vars, { PhaseRecord } from 'tools/vars';
+
+interface SPhaseEditor {
+    hour:number,
+    minute:number,
+    second:number,
+    quarter:number,
+    records:Array<PhaseRecord>
+}
+
+interface PPhaseEditor {
+    record:PhaseRecord,
+    opened:boolean
+}
 
 /**
  * Component for editing a Phase record.
  */
-class PhaseEditor extends React.PureComponent {
+class PhaseEditor extends React.PureComponent<PPhaseEditor, SPhaseEditor> {
+    readonly state:SPhaseEditor = {
+        hour:0,
+        minute:0,
+        second:0,
+        quarter:0,
+        records:DataController.getPhases()
+    }
+
+    remoteData:Function
+
     constructor(props) {
         super(props);
-        this.state = {
-            hour:0,
-            minute:0,
-            second:0,
-            quarter:0,
-            records:Object.assign({}, DataController.getPhases())
-        }
-
         this.onChangeHour = this.onChangeHour.bind(this);
         this.onChangeMinute = this.onChangeMinute.bind(this);
         this.onChangeSecond = this.onChangeSecond.bind(this);
@@ -26,7 +41,7 @@ class PhaseEditor extends React.PureComponent {
         this.onSelect = this.onSelect.bind(this);
 
         this.updateState = this.updateState.bind(this);
-        this.remote = DataController.subscribe(this.updateState);
+        this.remoteData = DataController.subscribe(this.updateState);
     }
 
     /**
@@ -138,38 +153,47 @@ class PhaseEditor extends React.PureComponent {
             <RecordEditor 
                 recordType={vars.RecordType.Phase}
                 records={this.state.records}
+                opened={this.props.opened}
                 {...this.props}
                 >
-                <h3>Duration</h3>
-                <input type="number"
-                    min={0}
-                    max={23}
-                    value={this.state.hour}
-                    onChange={this.onChangeHour}
-                    className="large"
-                    /> : 
-                <input type="number"
-                    min={0}
-                    max={59}
-                    value={this.state.minute}
-                    onChange={this.onChangeMinute}
-                    className="large"
-                    /> : 
-                <input type="number"
-                    min={0}
-                    max={59}
-                    value={this.state.second}
-                    onChange={this.onChangeSecond}
-                    className="large"
-                    />
-                <h3>Quarter</h3>
-                <input type="number"
-                    min={0}
-                    max={4}
-                    value={qtr}
-                    onChange={this.onChangeQuarter}
-                    className="large"
-                    />
+                <tr>
+                    <td>Duration</td>
+                    <td colSpan={2}>
+                        <input type="number"
+                            min={0}
+                            max={23}
+                            value={this.state.hour}
+                            onChange={this.onChangeHour}
+                            className="large"
+                            /> : 
+                        <input type="number"
+                            min={0}
+                            max={59}
+                            value={this.state.minute}
+                            onChange={this.onChangeMinute}
+                            className="large"
+                            /> : 
+                        <input type="number"
+                            min={0}
+                            max={59}
+                            value={this.state.second}
+                            onChange={this.onChangeSecond}
+                            className="large"
+                            />
+                    </td>
+                </tr>
+                <tr>
+                    <td>Quarter</td>
+                    <td>
+                        <input type="number"
+                            min={0}
+                            max={4}
+                            value={qtr}
+                            onChange={this.onChangeQuarter}
+                            className="large"
+                            />
+                    </td>
+                </tr>
             </RecordEditor>
         )
     }

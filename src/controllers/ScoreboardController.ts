@@ -192,7 +192,8 @@ function ControllerReducer(state:SScoreboardState = ScoreboardState, action) {
             if(index >= 0) {
                 phase.PhaseIndex = index;
                 phase.PhaseID = phases[index].RecordID;
-                phase.PhaseName = phases[index].Name;
+                if(typeof(phases[index].Name) === "string")
+                    phase.PhaseName = phases[index].Name;
                 phase.PhaseHour = phases[index].Duration[0];
                 phase.PhaseMinute = phases[index].Duration[1];
                 phase.PhaseSecond = phases[index].Duration[2];

@@ -2,15 +2,32 @@ import React from 'react'
 import cnames from 'classnames'
 import './css/Counter.scss'
 
-class Counter extends React.Component {
+interface SCounter {
+    amount:number
+}
+
+interface PCounter {
+    min:number,
+    max:number,
+    style?:any,
+    value?:number,
+    amount?:number,
+    padding?:number,
+    className?:string,
+    onAdd?:Function,
+    onSubtract?:Function
+    onChange?:Function
+}
+
+class Counter extends React.Component<PCounter, SCounter> {
+    readonly state:SCounter = {
+        amount:0
+    }
     constructor(props) {
         super(props);
 
-        this.state = {
-            amount:(this.props.amount) ? this.props.amount : 0,
-            min:0,
-            max:999
-        };
+        if(this.props.amount)
+            this.state.amount = this.props.amount;
 
         //bindings
         this.onClick = this.onClick.bind(this);
@@ -20,9 +37,7 @@ class Counter extends React.Component {
     add(amount) {
         this.setState((state) => {
             return {amount:this._value(state.amount + amount)};
-        }, (state) => {
-            //if(this.props.onChange)
-                //this.props.onChange(this.state.amount);
+        }, () => {
             if(this.props.onAdd)
                 this.props.onAdd(amount);
         });
@@ -31,18 +46,16 @@ class Counter extends React.Component {
     subtract(amount) {
         this.setState((state) => {
             return {amount:this._value(state.amount - amount)};
-        }, (state) => {
-            //if(this.props.onChange)
-                //this.props.onChange(this.state.amount);
+        }, () => {
             if(this.props.onSubtract)
                 this.props.onSubtract(amount);
         });
     }
 
     set(amount, trigger) {
-        this.setState((state) => {
+        this.setState(() => {
             return {amount:this._value(amount)};
-        }, (state) => {
+        }, () => {
             if(this.props.onChange && trigger)
                 this.props.onChange(this.state.amount);
         });
@@ -98,7 +111,7 @@ class Counter extends React.Component {
      */
     render() {
         const classes = cnames({counter:true}, this.props.className);
-        var value = this.state.amount;
+        var value:number|string = this.state.amount;
         if(this.props.padding)
             value = value.toString().padStart(this.props.padding, '0');
 

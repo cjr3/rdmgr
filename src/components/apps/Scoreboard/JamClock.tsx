@@ -7,11 +7,11 @@ interface SJamClock {
     showTenths:boolean,
     hour:number,
     minute:number,
-    second:number
+    second:number,
+    status:number
 }
 
 interface PJamClock {
-    status:number,
     remote?:string
 }
 
@@ -20,6 +20,7 @@ interface PJamClock {
  */
 class JamClock extends React.PureComponent<PJamClock, SJamClock> {
     readonly state:SJamClock = {
+        status:vars.Clock.Status.Ready,
         showTenths:false,
         hour:0,
         minute:0,
@@ -45,6 +46,7 @@ class JamClock extends React.PureComponent<PJamClock, SJamClock> {
     updateState() {
         this.setState(() => {
             return {
+                status:ScoreboardController.getState().JamState,
                 hour:ScoreboardController.getState().JamHour,
                 minute:ScoreboardController.getState().JamMinute,
                 second:ScoreboardController.getState().JamSecond
@@ -98,10 +100,9 @@ class JamClock extends React.PureComponent<PJamClock, SJamClock> {
                 hour={this.state.hour}
                 minute={this.state.minute}
                 second={this.state.second}
-                initSeconds={60}
                 type={vars.Clock.Types.Stopwatch}
                 showTenths={this.state.showTenths}
-                status={this.props.status}
+                status={this.state.status}
                 onContextMenu={this.onContextMenu}
                 onTick={this.onTick}
                 onDone={this.onDone}

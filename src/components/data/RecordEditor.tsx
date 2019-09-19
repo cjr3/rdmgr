@@ -22,16 +22,34 @@ import VideoEditor from './VideoEditor';
 
 import './css/RecordEditor.scss';
 
+interface SRecordEditor {
+    record?:any,
+    keywords:string
+}
+
+interface PRecordEditor {
+    record?:any,
+    records?:Array<any>|null,
+    onCancel?:Function,
+    recordType?:string,
+    buttons?:Array<React.ReactElement>,
+    opened:boolean,
+    onSelect?:Function,
+    onSubmit?:Function,
+    onOpen?:Function,
+    onClose?:Function
+}
+
 /**
  * Base component for editing most records.
  */
-class RecordEditor extends React.PureComponent {
+class RecordEditor extends React.PureComponent<PRecordEditor, SRecordEditor> {
+    readonly state:SRecordEditor = {
+        record:null,
+        keywords:''
+    }
     constructor(props) {
         super(props);
-        this.state = {
-            record:null,
-            keywords:''
-        };
 
         this.onChangeName = this.onChangeName.bind(this);
         this.onChangeShortName = this.onChangeShortName.bind(this);
@@ -223,7 +241,10 @@ class RecordEditor extends React.PureComponent {
         if(this.props.onSubmit)
             record = this.props.onSubmit(record);
         DataController.SaveRecord(record);
-        this.setState({record:null}, this.props.onCancel);
+        this.setState({record:null}, () => {
+            if(this.props.onCancel)
+                this.props.onCancel();
+        });
     }
 
     /**
@@ -274,7 +295,7 @@ class RecordEditor extends React.PureComponent {
                 Acronym = this.state.record.Code;
         }
 
-        var buttons = [];
+        var buttons:Array<React.ReactElement> = [];
         if(this.state.record) {
             buttons.push(
                 <IconButton
@@ -293,7 +314,9 @@ class RecordEditor extends React.PureComponent {
             );
 
             if(this.props.buttons) {
-                buttons.unshift(this.props.buttons);
+                for(var key in this.props.buttons) {
+                    buttons.unshift(this.props.buttons[key]);
+                }
             }
 
         }
@@ -310,14 +333,17 @@ class RecordEditor extends React.PureComponent {
             >
                 <div className="record-editor-base">
                     <div className={className}>
-                        <table width="100%" cellPadding="10" cellSpacing="0">
+                        <table cellPadding="10" cellSpacing="0">
                             <tbody>
                                 <tr>
-                                    <td width="150">Name</td>
+                                    <td>Name</td>
                                     <td>
-                                        <Textbox type="text" 
+                                        <Textbox 
+                                            type="text" 
                                             value={Name}
                                             onChange={this.onChangeName}
+                                            size={20}
+                                            maxLength={30}
                                             />
                                     </td>
                                     <td>Short Name</td>
@@ -325,6 +351,8 @@ class RecordEditor extends React.PureComponent {
                                         <Textbox type="text" 
                                             value={ShortName}
                                             onChange={this.onChangeShortName}
+                                            size={20}
+                                            maxLength={15}
                                             />
                                     </td>
                                 </tr>
@@ -334,6 +362,8 @@ class RecordEditor extends React.PureComponent {
                                         <Textbox type="text" 
                                             value={RecordNumber}
                                             onChange={this.onChangeNumber}
+                                            size={10}
+                                            maxLength={10}
                                             />
                                     </td>
                                     <td>Acronym</td>
@@ -341,21 +371,24 @@ class RecordEditor extends React.PureComponent {
                                         <Textbox type="text" 
                                             value={Acronym}
                                             onChange={this.onChangeAcronym}
+                                            size={10}
+                                            maxLength={6}
                                             />
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>
-                                        Media
-                                        <hr/>
-                                        Color
+                                    <td>Color</td>
+                                    <td colSpan={3}>
                                         <ColorPicker
                                             name='color'
                                             value={Color}
                                             onChange={this.onChangeColor}
                                             />
                                     </td>
-                                    <td colSpan="3">
+                                </tr>
+                                <tr>
+                                    <td>Media</td>
+                                    <td colSpan={3}>
                                         <div className="stack-panel">
                                             <MediaPreview
                                                 src={Thumbnail}
@@ -385,11 +418,7 @@ class RecordEditor extends React.PureComponent {
                                         </div>
                                     </td>
                                 </tr>
-                                <tr>
-                                    <td colSpan="4">
-                                        {this.props.children}
-                                    </td>
-                                </tr>
+                                {this.props.children}
                             </tbody>
                         </table>
                     </div>

@@ -609,7 +609,7 @@ const DataController = {
      * @param {String} filename 
      * @param {Boolean} sync true to return data synchronously
      */
-    loadFile(filename:string, sync:boolean = false) {
+    loadFile(filename:string, sync:boolean = false) : Promise<any> {
         let fs:any = DataController.FS;
         return new Promise((res, rej) => {
             if(sync) {
@@ -919,17 +919,15 @@ const DataController = {
      */
     loadConfig() {
         return DataController.loadFile(FILE_CONFIG)
-            .then((data:any) => {
-                if(typeof(data) === 'string' && data.length >= 1) {
-                    try {
-                        var content = JSON.parse(data);
-                        DataController.getStore().dispatch({
-                            type:SET_CONFIG_USER,
-                            config:content
-                        });
-                    } catch(er) {
+            .then((data) => {
+                try {
+                    var content = JSON.parse(data);
+                    DataController.getStore().dispatch({
+                        type:SET_CONFIG_USER,
+                        config:content
+                    });
+                } catch(er) {
 
-                    }
                 }
             });
     },
@@ -1258,7 +1256,10 @@ const DataController = {
      * @param {Number} zero 
      */
     getPeers(zero:boolean = false) {
-        return DataController.getRecords(vars.RecordType.Peer, zero);
+        if(zero) {
+            return DataController.zeroArray(DataController.getState().Peers);
+        }
+        return DataController.getState().Peers;
     },
 
     /**
@@ -1406,6 +1407,16 @@ const DataController = {
     basename(path:string) {
         let pather:any = DataController.PATH;
         return pather.basename(path);
+    },
+
+    /**
+     * Checks if the user has access to the given path
+     * @param path string
+     * @param cb Function
+     */
+    access(path:string) : Promise<any> {
+        let fs:any = DataController.FS;
+        return fs.promises.access( path );
     },
 
     /**
@@ -1877,9 +1888,8 @@ const DataController = {
      * @param {Object} parent A parent folder object, with a 'path' and 'children' (array)
      * @param {Array} folders An array of folders already read (foor recursion)
      */
-    async loadFolder(path:string = FOLDER_MEDIA + "/", parent:any = null, folders:Array<any> = []) {
+    async loadFolder(path:string = FOLDER_MEDIA + "/", parent:any = null, folders:Array<any> = []) : Promise<any> {
         let fs:any = DataController.FS;
-        
         return new Promise((res, rej) => {
             return fs.readdir(path, {encoding:'utf8'}, async (err, files) => {
                 if(err) {
@@ -1923,7 +1933,7 @@ const DataController = {
      * Lists the files for the given path.
      * @param {String} path Path to the folder to read
      */
-    async loadFolderFiles(path) {
+    async loadFolderFiles(path) : Promise<Array<string>> {
         let fs:any = DataController.FS;
         return new Promise((res, rej) => {
             if(typeof(path) === 'string' && path === '')
@@ -1953,7 +1963,7 @@ const DataController = {
      * Shows a dialog for selecting files or folders.
      * @param {Object} options 
      */
-    async showOpenDialog(options) {
+    async showOpenDialog(options) : Promise<Array<string>> {
         let diag:any = DataController.DIALOG;
         let settings = Object.assign({
             title:"Select File(s)",
@@ -1976,7 +1986,7 @@ const DataController = {
      * @param {String} path 
      * @param {String} dest
      */
-    async uploadFile(path, dest) {
+    async uploadFile(path, dest:string = '') {
         let fs:any = DataController.FS;
         let pather:any = DataController.PATH;
         if(typeof(dest) !== 'string' || dest.indexOf(FOLDER_MEDIA) !== 0) {

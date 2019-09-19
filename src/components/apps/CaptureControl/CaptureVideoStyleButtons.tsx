@@ -57,7 +57,7 @@ class CaptureVideoStyleButtons extends React.PureComponent<any, SCaptureVideoSty
             <div className="video-icons">
                 <Icon 
                     src={IconMovie}
-                    onClick={CaptureController.ToggleMainCamera}
+                    onClick={CaptureController.ToggleMainVideo}
                     active={this.state.Shown}
                     />
                 <Icon

@@ -1,7 +1,7 @@
 import React from 'react';
 import RecordEditor from './RecordEditor';
 import DataController from 'controllers/DataController';
-import vars from 'tools/vars';
+import vars, { SlideshowRecord } from 'tools/vars';
 import SortPanel from 'components/tools/SortPanel';
 import {
     MediaThumbnail,
@@ -12,17 +12,29 @@ import {
     IconFolder
 } from 'components/Elements';
 
+interface SSlideshowEditor {
+    Slides:Array<any>;
+    records:Array<SlideshowRecord>;
+}
+
+interface PSlideshowEditor {
+    record:SlideshowRecord;
+    opened:boolean;
+}
+
 /**
  * Component for editing slideshow records.
  */
-class SlideshowEditor extends React.PureComponent {
+class SlideshowEditor extends React.PureComponent<PSlideshowEditor, SSlideshowEditor> {
+    readonly state:SSlideshowEditor = {
+        Slides:[],
+        records:DataController.getSlideshows(true)
+    }
+
+    remoteData:Function
+
     constructor(props) {
         super(props);
-        this.state = {
-            Slides:[],
-            records:Object.assign({}, DataController.getSlideshows())
-        };
-
         this.addSlide = this.addSlide.bind(this);
         this.removeSlide = this.removeSlide.bind(this);
         this.onSelectFolder = this.onSelectFolder.bind(this);
@@ -33,7 +45,7 @@ class SlideshowEditor extends React.PureComponent {
         this.onSelect = this.onSelect.bind(this);
         
         this.updateState = this.updateState.bind(this);
-        this.remote = DataController.subscribe(this.updateState);
+        this.remoteData = DataController.subscribe(this.updateState);
     }
 
     /**
@@ -57,7 +69,7 @@ class SlideshowEditor extends React.PureComponent {
             var slides = state.Slides.slice();
             slides.push({
                 RecordType:"IMG",
-                Name:DataController.PATH.basename(filename),
+                Name:DataController.basename(filename),
                 Filename:filename
             });
             return {Slides:slides};
@@ -88,7 +100,7 @@ class SlideshowEditor extends React.PureComponent {
             this.setState((state) => {
                 var slides = state.Slides.slice();
                 slides[index] = Object.assign({}, slides[index], {
-                    Name:DataController.PATH.basename(filename),
+                    Name:DataController.basename(filename),
                     Filename:filename
                 });
                 return {Slides:slides};
@@ -139,9 +151,10 @@ class SlideshowEditor extends React.PureComponent {
     onSelectFolder(path) {
         window.onSelectFolder = null;
         window.client.hideFileBrowser();
-        if(DataController.FS) {
-            DataController.FS.readdir(path, "utf8", (eer, files) => {
-                var slides = [];
+        let fs:any = DataController.FS;
+        if(fs !== null) {
+            fs.readdir(path, "utf8", (eer, files) => {
+                var slides:Array<any> = [];
                 for(var key in files) {
                     switch(DataController.ext(files[key])) {
                         case 'jpg' :
@@ -151,7 +164,7 @@ class SlideshowEditor extends React.PureComponent {
                         case 'bmp' :
                             slides.push({
                                 RecordType:"IMG",
-                                Name:DataController.PATH.basename(files[key]),
+                                Name:DataController.basename(files[key]),
                                 Filename:path + "/" + files[key]
                             });
                         break;
@@ -185,7 +198,7 @@ class SlideshowEditor extends React.PureComponent {
      * Renders the component
      */
     render() {
-        var slides = [];
+        var slides:Array<any> = [];
         if(this.state.Slides.length) {
             for(let i=0, len = this.state.Slides.length; i < len; i++) {
                 let slide = this.state.Slides[i];
@@ -243,15 +256,18 @@ class SlideshowEditor extends React.PureComponent {
                 records={this.state.records}
                 buttons={buttons}
                 onSubmit={this.onSubmit}
+                opened={this.props.opened}
                 {...this.props}
                 >
-                <h2>Slides</h2>
-                <SortPanel
-                    className="slides"
-                    items={slides}
-                    type="div"
-                    onDrop={this.swapSlides}
-                />
+                <tr>
+                    <td colSpan={4}>
+                        <SortPanel
+                            className="slides"
+                            items={slides}
+                            onDrop={this.swapSlides}
+                        />
+                    </td>
+                </tr>
             </RecordEditor>
         )
     }

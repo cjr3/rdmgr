@@ -6,7 +6,7 @@ import CaptureForm from './components/apps/CaptureForm/CaptureForm'
 class ViewManager extends React.Component {
     static View(props) {
         let name = props.location.search.substr(1);
-        let view = null;
+        let view:React.ReactElement|null = null;
         if(name === 'control') {
             view = <Client/>
         }

@@ -69,8 +69,6 @@ class ElectronStartup {
         });
 
         process.on('uncaughtException', function(er) {
-            //console.log(er)
-            //console.trace();
             switch(er.code) {
                 //server creation failed...
                 case "EADDRINUSE" :
@@ -172,7 +170,6 @@ class ElectronStartup {
         });
         
         if(this.DevMode) {
-            //this.CaptureWindow.loadURL('http://localhost:3001?capture');
             this.CaptureWindow.loadURL(`http://localhost:3001?capture`);
         } else {
             this.CaptureWindow.loadURL(url.format({
@@ -181,13 +178,6 @@ class ElectronStartup {
                 slashes:true
             }) + "?capture");
         }
-    }
-
-    /**
-     * Creates the listening server.
-     */
-    createServer() {
-        this.LocalServer = new P2PServer("RDMGR-DEV", 24012);
     }
 }
 

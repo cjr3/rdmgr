@@ -3,24 +3,51 @@ import cnames from 'classnames'
 import vars from 'tools/vars'
 import './css/Clock.scss'
 
+interface SClock {
+    hour:number,
+    minute:number,
+    second:number,
+    tenths:number
+}
+
+interface PClock {
+    hour:number,
+    minute:number,
+    second:number,
+    status:number,
+    remote?:string,
+    type?:string,
+    className?:string,
+    showTenths?:boolean,
+    onClick?:any,
+    onContextMenu?:any,
+    onTick?:Function,
+    onTenths?:Function,
+    onDone?:Function
+}
+
 /**
  * Base clock component.
  */
-class Clock extends React.Component {
+class Clock extends React.Component<PClock, SClock> {
+    readonly state:SClock = {
+        hour:0,
+        minute:0,
+        second:0,
+        tenths:0
+    }
+
+    Timer:number = 0
+
     constructor(props) {
         super(props);
 
-        this.state = {
-            hour:(this.props.hour) ? this.props.hour : 0,
-            minute:(this.props.minute) ? this.props.minute : 0,
-            second:(this.props.second) ? this.props.second : 0,
-            tenths:0
-        }
-
-        if(this.props.initSeconds)
-            this.state.second = this.props.initSeconds;
-
-        this.Timer = null;
+        if(this.props.hour)
+            this.state.hour = this.props.hour;
+        if(this.props.minute)
+            this.state.minute = this.props.minute;
+        if(this.props.second)
+            this.state.second = this.props.second;
 
         //bindings
         this._tick = this._tick.bind(this);
@@ -129,7 +156,7 @@ class Clock extends React.Component {
         //continue ticking
         if(!this._done(hours, minutes, seconds, tenths)) {
             if(this.props.status === vars.Clock.Status.Running)
-                this.Timer = setTimeout(this._tick, 100);
+                this.Timer = window.setTimeout(this._tick, 100);
         } else {
             if(this.props.onDone)
                 this.props.onDone();

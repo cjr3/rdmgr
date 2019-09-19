@@ -15,7 +15,7 @@ export interface PCaptureControlPanel {
     /**
      * True if active, false if not
      */
-    active?:boolean,
+    active:boolean,
     /**
      * Name to display on the button
      */

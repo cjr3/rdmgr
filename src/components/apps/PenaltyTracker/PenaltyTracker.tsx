@@ -7,7 +7,6 @@ import RosterController from 'controllers/RosterController';
 import Panel from 'components/Panel';
 import {Button, IconButton, Icon, IconDelete, IconSave, IconX} from 'components/Elements'
 import DataController from 'controllers/DataController';
-import RecordSelection from 'components/data/RecordSelection';
 import './css/PenaltyTracker.scss';
 import { SkaterRecord } from 'tools/vars';
 
@@ -357,7 +356,6 @@ class PenaltyTracker extends React.PureComponent<any, SPenaltyTracker> {
                     color={this.state.TeamA.Color}
                     onSelectSkater={this.onSelectSkater}
                     skater={this.state.Skater}
-                    ref={this.TeamA}
                 />
                 <PenaltyTrackerTeam
                     side='B'
@@ -367,7 +365,6 @@ class PenaltyTracker extends React.PureComponent<any, SPenaltyTracker> {
                     color={this.state.TeamB.Color}
                     onSelectSkater={this.onSelectSkater}
                     skater={this.state.Skater}
-                    ref={this.TeamB}
                 />
                 <div className="penalty-list">
                     <h3>Penalty Codes</h3>

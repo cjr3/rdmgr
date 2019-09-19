@@ -3,9 +3,7 @@ import RecordEditor from './RecordEditor';
 import vars from 'tools/vars';
 import { 
     ToggleButton, 
-    IconButton, 
-    IconSave, 
-    IconLoop, 
+    IconButton,
     IconUp, 
     IconDown,
     IconCheck,
@@ -24,23 +22,52 @@ import VideoController from 'controllers/VideoController';
 import Panel from 'components/Panel';
 import DataController from 'controllers/DataController';
 
+interface SPeerEditor {
+    Host:string,
+    PeerID:string,
+    Port:number,
+    CapturePort:number,
+    ControlledApps:Array<string>,
+    ReceiveApps:Array<string>,
+    getRecordsShown:boolean,
+    setRecordsShown:boolean
+}
+
+type PeerControlRecord = {
+    name:string,
+    controller:any
+}
+
 /**
  * Component for editing team records.
  */
-class PeerEditor extends React.PureComponent {
+class PeerEditor extends React.PureComponent<any, SPeerEditor> {
+    readonly state:SPeerEditor = {
+        Host:'',
+        PeerID:'',
+        Port:0,
+        CapturePort:0,
+        ControlledApps:[],
+        ReceiveApps:[],
+        getRecordsShown:false,
+        setRecordsShown:false
+    }
+
+    Controllers:Array<PeerControlRecord> = [
+        {name:"Capture", controller:CaptureController},
+        {name:"Media Queue", controller:MediaQueueController},
+        {name:"Penalty Tracker", controller:PenaltyController},
+        {name:"Scoreboard", controller:ScoreboardController},
+        {name:"Scorekeeper", controller:ScorekeeperController},
+        {name:"Slideshow", controller:SlideshowController},
+        {name:"Raffle", controller:RaffleController},
+        {name:"Roster", controller:RosterController},
+        {name:"Sponsors", controller:SponsorController},
+        {name:"Video", controller:VideoController}
+    ]
+
     constructor(props) {
         super(props);
-        this.state = {
-            Host:'',
-            PeerID:'',
-            Port:0,
-            CapturePort:0,
-            ControlledApps:[],
-            ReceiveApps:[],
-            getRecordsShown:false,
-            setRecordsShown:false
-        };
-
         this.onChangeHost = this.onChangeHost.bind(this);
         this.onChangePort = this.onChangePort.bind(this);
         this.onChangePeerID = this.onChangePeerID.bind(this);
@@ -51,49 +78,6 @@ class PeerEditor extends React.PureComponent {
         this.onClickReceiveApp = this.onClickReceiveApp.bind(this);
         this.onClickSyncFromPeer = this.onClickSyncFromPeer.bind(this);
         this.onClickSyncToPeer = this.onClickSyncToPeer.bind(this);
-
-        this.Controllers = [
-            {
-                name:"Capture",
-                controller:CaptureController
-            },
-            {
-                name:"Media Queue",
-                controller:MediaQueueController
-            },
-            {
-                name:"Penalty Tracker",
-                controller:PenaltyController
-            },
-            {
-                name:"Scoreboard",
-                controller:ScoreboardController
-            },
-            {
-                name:"Scorekeeper",
-                controller:ScorekeeperController
-            },
-            {
-                name:"Slideshow",
-                controller:SlideshowController
-            },
-            {
-                name:"Raffle",
-                controller:RaffleController
-            },
-            {
-                name:"Roster",
-                controller:RosterController
-            },
-            {
-                name:"Sponsors",
-                controller:SponsorController
-            },
-            {
-                name:"Video",
-                controller:VideoController
-            }
-        ]
     }
 
     /**
@@ -283,8 +267,8 @@ class PeerEditor extends React.PureComponent {
     render() {
         var port = (Number.isNaN(this.state.Port)) ? 0 : this.state.Port;
         var cport = (Number.isNaN(this.state.CapturePort)) ? 0 : this.state.CapturePort;
-        var capps = [];
-        var rapps = [];
+        var capps:Array<React.ReactElement> = [];
+        var rapps:Array<React.ReactElement> = [];
         this.Controllers.forEach((item) => {
             let key = item.controller.Key;
             let controlled = (this.state.ControlledApps.indexOf(key) >= 0);
@@ -342,122 +326,123 @@ class PeerEditor extends React.PureComponent {
                 recordType={vars.RecordType.Peer}
                 onSubmit={this.onSubmit}
                 buttons={buttons}
+                opened={this.props.opened}
                 {...this.props}
                 >
-                <table cellPadding="2">
-                    <tbody>
-                        <tr>
-                            <td width="150">ID</td>
-                            <td colSpan="2">
-                                <input
-                                    type="text"
-                                    size="30"
-                                    maxLength="20"
-                                    value={this.state.PeerID}
-                                    onChange={this.onChangePeerID}
-                                    />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Host</td>
-                            <td colSpan="2">
-                                <input
-                                    type="text"
-                                    size="15"
-                                    maxLength="20"
-                                    value={this.state.Host}
-                                    onChange={this.onChangeHost}
-                                    /> :
-                                <input type="text"
-                                    size="4"
-                                    maxLength="5"
-                                    value={port}
-                                    onChange={this.onChangePort}
-                                    />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Camera Port</td>
-                            <td colSpan="2">
-                                <input type="text"
-                                    size="4"
-                                    maxLength="5"
-                                    value={cport}
-                                    onChange={this.onChangeCapturePort}
-                                    />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Receive From Peer</td>
-                            <td className="stack-panel s4">{capps}</td>
-                        </tr>
-                        <tr>
-                            <td>Send To Peer</td>
-                            <td className="stack-panel s4">{rapps}</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <PeerRecordRequest
-                    opened={this.state.getRecordsShown}
-                    name={name}
-                    id={this.state.PeerID}
-                    method='get-records'
-                    message={`Please select the records to receive from ${this.state.PeerID}`}
-                    onClose={() => {
-                        this.setState({
-                            getRecordsShown:!this.state.getRecordsShown
-                        });
-                    }}
-                    />
-                <PeerRecordRequest
-                    opened={this.state.setRecordsShown}
-                    name={name}
-                    id={this.state.PeerID}
-                    method='set-record-request'
-                    message={`Please select the records to send to ${this.state.PeerID}.
-                        They'll be requested to confirm which records to update.`}
-                    onClose={() => {
-                        this.setState({
-                            setRecordsShown:!this.state.setRecordsShown
-                        });
-                    }}
-                    />
+                <tr>
+                    <td>ID</td>
+                    <td colSpan={3}>
+                        <input
+                            type="text"
+                            size={30}
+                            maxLength={20}
+                            value={this.state.PeerID}
+                            onChange={this.onChangePeerID}
+                            />
+                    </td>
+                </tr>
+                <tr>
+                    <td>Host</td>
+                    <td colSpan={3}>
+                        <input
+                            type="text"
+                            size={15}
+                            maxLength={20}
+                            value={this.state.Host}
+                            onChange={this.onChangeHost}
+                            /> :
+                        <input type="text"
+                            size={4}
+                            maxLength={5}
+                            value={port}
+                            onChange={this.onChangePort}
+                            />
+                    </td>
+                </tr>
+                <tr>
+                    <td>Camera Port</td>
+                    <td colSpan={3}>
+                        <input type="text"
+                            size={4}
+                            maxLength={5}
+                            value={cport}
+                            onChange={this.onChangeCapturePort}
+                            />
+                    </td>
+                </tr>
+                <tr>
+                    <td>Receive From Peer</td>
+                    <td className="stack-panel s4" colSpan={3}>
+                        {capps}
+                        <PeerRecordRequest
+                            opened={this.state.getRecordsShown}
+                            name={name}
+                            id={this.state.PeerID}
+                            method='get-records'
+                            message={`Please select the records to receive from ${this.state.PeerID}`}
+                            onClose={() => {
+                                this.setState({
+                                    getRecordsShown:!this.state.getRecordsShown
+                                });
+                            }}
+                            />
+                    </td>
+                </tr>
+                <tr>
+                    <td>Send To Peer</td>
+                    <td className="stack-panel s4" colSpan={3}>
+                        {rapps}
+                        <PeerRecordRequest
+                            opened={this.state.setRecordsShown}
+                            name={name}
+                            id={this.state.PeerID}
+                            method='set-record-request'
+                            message={`Please select the records to send to ${this.state.PeerID}.
+                                They'll be requested to confirm which records to update.`}
+                            onClose={() => {
+                                this.setState({
+                                    setRecordsShown:!this.state.setRecordsShown
+                                });
+                            }}
+                            />
+                    </td>
+                </tr>
             </RecordEditor>
         );
     }
 }
 
+interface SPeerRecordRequest {
+    AnthemSingers:boolean,
+    Penalties:boolean,
+    Phases:boolean,
+    Teams:boolean,
+    Skaters:boolean
+}
+
+interface PPeerRecordRequest {
+    opened:boolean,
+    id:string,
+    method:string,
+    types?:any,
+    message?:string,
+    onClose?:Function,
+    name:string
+}
+
 /**
  * Component for displaying a request to update records from this peer.
  */
-class PeerRecordRequest extends React.PureComponent {
+class PeerRecordRequest extends React.PureComponent<PPeerRecordRequest, SPeerRecordRequest> {
+    readonly state:SPeerRecordRequest = {
+        AnthemSingers:false,
+        Penalties:false,
+        Phases:false,
+        Teams:false,
+        Skaters:false
+    }
     constructor(props) {
         super(props);
-        this.state = {
-            [vars.RecordType.Anthem]:false,
-            [vars.RecordType.Penalty]:false,
-            [vars.RecordType.Phase]:false,
-            [vars.RecordType.Team]:false,
-            [vars.RecordType.Skater]:false
-        };
-
-        if(this.props.types) {
-            if(this.props.types[vars.RecordType.Anthem])
-                this.state[vars.RecordType.Anthem] = true;
-
-            if(this.props.types[vars.RecordType.Penalty])
-                this.state[vars.RecordType.Penalty] = true;
-
-            if(this.props.types[vars.RecordType.Phase])
-                this.state[vars.RecordType.Phase] = true;
-                
-            if(this.props.types[vars.RecordType.Team])
-                this.state[vars.RecordType.Team] = true;
-
-            if(this.props.types[vars.RecordType.Skater])
-                this.state[vars.RecordType.Skater] = true;
-        }
-
         this.onClickConfirm = this.onClickConfirm.bind(this);
     }
 
@@ -490,28 +475,28 @@ class PeerRecordRequest extends React.PureComponent {
      */
     componentDidUpdate(prevProps, prevState) {
         if(prevProps.types != this.props.types && this.props.types) {
-            let changes = {
-                [vars.RecordType.Anthem]:false,
-                [vars.RecordType.Penalty]:false,
-                [vars.RecordType.Phase]:false,
-                [vars.RecordType.Team]:false,
-                [vars.RecordType.Skater]:false,
-            };
+            let changes:SPeerRecordRequest = {
+                AnthemSingers:false,
+                Penalties:false,
+                Phases:false,
+                Skaters:false,
+                Teams:false
+            }
             
             if(this.props.types[vars.RecordType.Anthem])
-                changes[vars.RecordType.Anthem] = true;
+                changes.AnthemSingers = true;
 
             if(this.props.types[vars.RecordType.Penalty])
-                changes[vars.RecordType.Penalty] = true;
+                changes.Penalties = true;
 
             if(this.props.types[vars.RecordType.Phase])
-                changes[vars.RecordType.Phase] = true;
+                changes.Phases = true;
 
             if(this.props.types[vars.RecordType.Team])
-                changes[vars.RecordType.Team] = true;
+                changes.Teams = true;
 
             if(this.props.types[vars.RecordType.Skater])
-                changes[vars.RecordType.Skater] = true;
+                changes.Skaters = true;
 
             if(!DataController.compare(prevState, changes)) {
                 this.setState(() => {return changes;});
@@ -551,45 +536,35 @@ class PeerRecordRequest extends React.PureComponent {
                         checked={this.state[vars.RecordType.Anthem]}
                         label="Anthem Singers"
                         onClick={() => {
-                            this.setState((state) => {
-                                return {[vars.RecordType.Anthem]:!state[vars.RecordType.Anthem]}
-                            })
+                            this.setState({AnthemSingers:!this.state.AnthemSingers});
                         }}
                     />
                     <ToggleButton
                         checked={this.state[vars.RecordType.Penalty]}
                         label="Penalties"
                         onClick={() => {
-                            this.setState((state) => {
-                                return {[vars.RecordType.Penalty]:!state[vars.RecordType.Penalty]}
-                            })
+                            this.setState({Penalties:!this.state.Penalties});
                         }}
                     />
                     <ToggleButton
                         checked={this.state[vars.RecordType.Phase]}
                         label="Quarters"
                         onClick={() => {
-                            this.setState((state) => {
-                                return {[vars.RecordType.Phase]:!state[vars.RecordType.Phase]}
-                            })
+                            this.setState({Phases:!this.state.Phases});
                         }}
                     />
                     <ToggleButton
                         checked={this.state[vars.RecordType.Team]}
                         label="Teams"
                         onClick={() => {
-                            this.setState((state) => {
-                                return {[vars.RecordType.Team]:!state[vars.RecordType.Team]}
-                            })
+                            this.setState({Teams:!this.state.Teams});
                         }}
                     />
                     <ToggleButton
                         checked={this.state[vars.RecordType.Skater]}
                         label="Skaters"
                         onClick={() => {
-                            this.setState((state) => {
-                                return {[vars.RecordType.Skater]:!state[vars.RecordType.Skater]}
-                            })
+                            this.setState({Skaters:!this.state.Skaters});
                         }}
                     />
                 </div>

@@ -3,7 +3,7 @@ import vars from 'tools/vars';
 import CaptureStatus, {SCaptureStatus} from 'tools/CaptureStatus';
 import { ProgressBar } from 'components/Elements';
 
-import CaptureController, {StateBase, StateSponsor} from 'controllers/CaptureController';
+import CaptureController, {CaptureStateBase, CaptureStateSponsor} from 'controllers/CaptureController';
 import DataController from 'controllers/DataController';
 import SlideshowController, {SSlideshowController} from 'controllers/SlideshowController';
 import SponsorController, {SSponsorController} from 'controllers/SponsorController';
@@ -14,9 +14,9 @@ interface SClientCaptureStatus {
     Video:SVideoController,
     Slideshow:SSlideshowController,
     Sponsors:SSponsorController,
-    CaptureVideo:StateBase,
-    CaptureSponsor:StateSponsor,
-    CaptureSlideshow:StateBase
+    CaptureVideo:CaptureStateBase,
+    CaptureSponsor:CaptureStateSponsor,
+    CaptureSlideshow:CaptureStateBase
 }
 
 /**

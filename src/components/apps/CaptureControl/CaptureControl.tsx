@@ -24,7 +24,7 @@ interface PCaptureControl {
     /**
      * Determines if the capture control is displayed or not
      */
-    opened?:boolean
+    opened:boolean
 };
 
 /**

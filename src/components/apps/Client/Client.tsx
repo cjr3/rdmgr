@@ -727,9 +727,10 @@ class Client extends React.PureComponent<any, SClient> {
                     />
                 <ClientDialog ref={this.DialogItem}/>
                 <PeerRecordRequest
+                    name={this.state.RecordUpdatePeerName}
                     opened={this.state.RecordUpdateShown}
                     id={this.state.RecordUpdatePeerID}
-                    message={`${this.state.RecordUpdatePeerID} wishes to update the following records. 
+                    message={`${this.state.RecordUpdatePeerName} wishes to update the following records. 
                         Choose which records to update, or click cancel to ignore the request.`}
                     types={this.state.RecordUpdateTypes}
                     method='get-records'

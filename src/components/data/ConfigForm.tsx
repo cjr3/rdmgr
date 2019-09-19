@@ -1,6 +1,15 @@
 import React from 'react';
 import cnames from 'classnames';
-import vars from 'tools/vars';
+import vars, { 
+    AnthemRecord, 
+    PenaltyRecord, 
+    TeamRecord, 
+    SkaterRecord, 
+    PhaseRecord,
+    SlideshowRecord, 
+    VideoRecord,
+    PeerRecord
+} from 'tools/vars';
 import { 
     Button,
     IconButton,
@@ -35,84 +44,97 @@ import DataController from 'controllers/DataController';
 import './css/ConfigForm.scss';
 import RecordList from './RecordList';
 
+interface SConfigForm {
+    currentApp:any,
+    AnthemRecords:Array<AnthemRecord>,
+    PenaltyRecords:Array<PenaltyRecord>,
+    PhaseRecords:Array<PhaseRecord>,
+    SkaterRecords:Array<SkaterRecord>,
+    TeamRecords:Array<TeamRecord>,
+    SlideshowRecords:Array<SlideshowRecord>,
+    VideoRecords:Array<VideoRecord>,
+    PeerRecords:Array<PeerRecord>
+}
+
 /**
  * Component for configuring network, accessing records,
  * and user settings.
  */
-class ConfigForm extends React.PureComponent {
+class ConfigForm extends React.PureComponent<any, SConfigForm> {
+    readonly state:SConfigForm = {
+        currentApp:null,
+        AnthemRecords:DataController.getAnthemSingers(true),
+        PenaltyRecords:DataController.getPenalties(true),
+        PhaseRecords:DataController.getPhases(),
+        SkaterRecords:DataController.getSkaters(true),
+        TeamRecords:DataController.getTeams(true),
+        SlideshowRecords:DataController.getSlideshows(true),
+        VideoRecords:DataController.getVideos(true),
+        PeerRecords:DataController.getPeers(true)
+    }
+
+    private Applications:any = {
+        [vars.RecordType.Anthem]:{
+            type:ConfigPanelAnthem,
+            form:AnthemEditor,
+            name:"Anthem Singers",
+            icon:IconFlag,
+            record:null
+        },
+        [vars.RecordType.Penalty]:{
+            type:ConfigPanelPenalty,
+            form:PenaltyEditor,
+            name:"Penalties",
+            icon:IconWhistle,
+            record:null
+        },
+        [vars.RecordType.Phase]:{
+            type:ConfigPanelPhase,
+            form:PhaseEditor,
+            name:"Quarters",
+            icon:IconStopwatch,
+            record:null
+        },
+        [vars.RecordType.Skater]:{
+            type:ConfigPanelSkaters,
+            form:SkaterEditor,
+            name:"Skaters",
+            icon:IconSkater,
+            record:null
+        },
+        [vars.RecordType.Team]:{
+            type:ConfigPanelTeams,
+            form:TeamEditor,
+            name:"Teams",
+            icon:IconTeam,
+            record:null
+        },
+        [vars.RecordType.Slideshow]:{
+            type:ConfigPanelSlideshows,
+            name:"Slideshows",
+            form:SlideshowEditor,
+            icon:IconSlideshow,
+            record:null
+        },
+        [vars.RecordType.Video]:{
+            type:ConfigPanelVideos,
+            name:"Videos",
+            icon:IconMovie,
+            form:VideoEditor,
+            record:null
+        },
+        [vars.RecordType.Peer]:{
+            type:ConfigPanelPeers,
+            form:PeerEditor,
+            icon:IconOffline,
+            name:"Network",
+            record:null
+        }
+    }
+
     constructor(props) {
         super(props);
-
         this.onCancelRecord = this.onCancelRecord.bind(this);
-
-        this.Applications = {
-            [vars.RecordType.Anthem]:{
-                type:ConfigPanelAnthem,
-                form:AnthemEditor,
-                name:"Anthem Singers",
-                icon:IconFlag,
-                record:null
-            },
-            [vars.RecordType.Penalty]:{
-                type:ConfigPanelPenalty,
-                form:PenaltyEditor,
-                name:"Penalties",
-                icon:IconWhistle,
-                record:null
-            },
-            [vars.RecordType.Phase]:{
-                type:ConfigPanelPhase,
-                form:PhaseEditor,
-                name:"Quarters",
-                icon:IconStopwatch,
-                record:null
-            },
-            [vars.RecordType.Skater]:{
-                type:ConfigPanelSkaters,
-                form:SkaterEditor,
-                name:"Skaters",
-                icon:IconSkater,
-                record:null
-            },
-            [vars.RecordType.Team]:{
-                type:ConfigPanelTeams,
-                form:TeamEditor,
-                name:"Teams",
-                icon:IconTeam,
-                record:null
-            },
-            [vars.RecordType.Slideshow]:{
-                type:ConfigPanelSlideshows,
-                name:"Slideshows",
-                form:SlideshowEditor,
-                icon:IconSlideshow,
-                record:null
-            },
-            [vars.RecordType.Video]:{
-                type:ConfigPanelVideos,
-                name:"Videos",
-                icon:IconMovie,
-                form:VideoEditor,
-                record:null
-            },
-            /*
-            [vars.RecordType.Sponsor]:{
-                type:ConfigPanelSponsors,
-                name:"Sponsors",
-                icon:IconSlideshow
-            },*/
-            [vars.RecordType.Peer]:{
-                type:ConfigPanelPeers,
-                form:PeerEditor,
-                icon:IconOffline,
-                name:"Network",
-                record:null
-            }
-        };
-
-        this.state = {
-            currentApp:this.Applications[vars.RecordType.Peer]
-        };
     }
 
     /**
@@ -130,8 +152,8 @@ class ConfigForm extends React.PureComponent {
      * - Right side: list of sections, accordion
      */
     render() {
-        var sections = [];
-        var forms = [];
+        var sections:Array<React.ReactElement> = [];
+        var forms:Array<React.ReactElement> = [];
         for(let key in this.Applications) {
             let app = this.Applications[key];
             let current = (this.state.currentApp === app);
@@ -184,52 +206,52 @@ class ConfigForm extends React.PureComponent {
     }
 }
 
+interface PConfigFormSection {
+    active:boolean,
+    icon:string,
+    name:string,
+    onClick:Function,
+    icons?:Array<React.ReactElement>,
+    children:any
+}
+
 /**
- * Component to list options / records for a section.
+ * Component for a section on the config form
+ * @param props PConfigmFormSection
  */
-class ConfigFormSection extends React.PureComponent {
-    constructor(props) {
-        super(props);
-        this.state = {
-
-        };
-    }
-
-    /**
-     * Renders the component.
-     * - Section
-     * - Main Button
-     * - Additional icons
-     * - Children
-     */
-    render() {
-        return (
-            <div className={cnames('section', {
-                shown:(this.props.active)
-            })}>
-                <div className="section-header">
-                    <IconButton
-                        src={this.props.icon}
-                        active={this.props.active}
-                        onClick={this.props.onClick}
-                        >{this.props.name}</IconButton>
-                    {this.props.icons}
-                </div>
-                {this.props.children}
+function ConfigFormSection(props:PConfigFormSection) {
+    return (
+        <div className={cnames('section', {
+            shown:(props.active)
+        })}>
+            <div className="section-header">
+                <IconButton
+                    src={props.icon}
+                    active={props.active}
+                    onClick={props.onClick}
+                    >{props.name}</IconButton>
+                {props.icons}
             </div>
-        )
-    }
+            {props.children}
+        </div>
+    );
+}
+
+interface SConfigRecordPanel {
+    Records:Array<AnthemRecord>
 }
 
 /**
  * Component for listing national anthem singer records.
  */
-class ConfigPanelAnthem extends React.PureComponent {
+class ConfigPanelAnthem extends React.PureComponent<any, SConfigRecordPanel> {
+    readonly state:SConfigRecordPanel = {
+        Records:DataController.getAnthemSingers(true)
+    }
+
+    remoteData:Function
     constructor(props) {
         super( props );
-        this.state = {
-            Records:DataController.getAnthemSingers(true)
-        }
 
         this.updateData = this.updateData.bind(this);
         this.remoteData = DataController.subscribe(this.updateData);
@@ -240,12 +262,7 @@ class ConfigPanelAnthem extends React.PureComponent {
      * - List national anthem singer records.
      */
     updateData() {
-        var singers = DataController.getAnthemSingers(true);
-        if(!DataController.compare(singers, this.state.Records)) {
-            this.setState(() => {
-                return {Records:singers}
-            });
-        }
+        this.setState({Records:DataController.getAnthemSingers(true)});
     }
 
     /**
@@ -284,13 +301,13 @@ class ConfigPanelAnthem extends React.PureComponent {
 /**
  * Component for selecting penalty records
  */
-class ConfigPanelPenalty extends React.PureComponent {
+class ConfigPanelPenalty extends React.PureComponent<any, SConfigRecordPanel> {
+    readonly state:SConfigRecordPanel = {
+        Records:DataController.getPenalties(true)
+    }
+    remoteData:Function
     constructor(props) {
         super( props );
-        this.state = {
-            Records:DataController.getPenalties(true)
-        }
-
         this.updateData = this.updateData.bind(this);
         this.remoteData = DataController.subscribe(this.updateData);
     }
@@ -300,12 +317,7 @@ class ConfigPanelPenalty extends React.PureComponent {
      * - List national anthem singer records.
      */
     updateData() {
-        var records = DataController.getPenalties(true);
-        if(!DataController.compare(records, this.state.Records)) {
-            this.setState(() => {
-                return {Records:records}
-            });
-        }
+        this.setState({Records:DataController.getPenalties(true)});
     }
 
     /**
@@ -344,13 +356,13 @@ class ConfigPanelPenalty extends React.PureComponent {
 /**
  * Component for listing phases to create and edit.
  */
-class ConfigPanelPhase extends React.PureComponent {
+class ConfigPanelPhase extends React.PureComponent<any, SConfigRecordPanel> {
+    readonly state:SConfigRecordPanel = {
+        Records:DataController.getPhases()
+    }
+    remoteData:Function
     constructor(props) {
         super( props );
-        this.state = {
-            Records:DataController.getPhases()
-        }
-
         this.updateData = this.updateData.bind(this);
         this.remoteData = DataController.subscribe(this.updateData);
     }
@@ -360,12 +372,7 @@ class ConfigPanelPhase extends React.PureComponent {
      * - List national anthem singer records.
      */
     updateData() {
-        var records = DataController.getPhases();
-        if(!DataController.compare(records, this.state.Records)) {
-            this.setState(() => {
-                return {Records:records}
-            });
-        }
+        this.setState({Records:DataController.getPhases()});
     }
 
     /**
@@ -395,7 +402,6 @@ class ConfigPanelPhase extends React.PureComponent {
                     onSelect={this.props.onSelect}
                     recordid={(this.props.record) ? this.props.record.RecordID : 0}
                     records={this.state.Records}
-                    sortable={true}
                     />
             </ConfigFormSection>
         )
@@ -405,13 +411,13 @@ class ConfigPanelPhase extends React.PureComponent {
 /**
  * Component to select and create/edit skaters.
  */
-class ConfigPanelSkaters extends React.PureComponent {
+class ConfigPanelSkaters extends React.PureComponent<any, SConfigRecordPanel> {
+    readonly state:SConfigRecordPanel = {
+        Records:DataController.getSkaters(true)
+    }
+    remoteData:Function
     constructor(props) {
         super( props );
-        this.state = {
-            Records:DataController.getSkaters(true)
-        }
-
         this.updateData = this.updateData.bind(this);
         this.remoteData = DataController.subscribe(this.updateData);
     }
@@ -421,12 +427,7 @@ class ConfigPanelSkaters extends React.PureComponent {
      * - List national anthem singer records.
      */
     updateData() {
-        var records = DataController.getSkaters(true);
-        if(!DataController.compare(records, this.state.Records)) {
-            this.setState(() => {
-                return {Records:records}
-            });
-        }
+        this.setState({Records:DataController.getSkaters(true)});
     }
 
     /**
@@ -462,13 +463,13 @@ class ConfigPanelSkaters extends React.PureComponent {
     }
 }
 
-class ConfigPanelTeams extends React.PureComponent {
+class ConfigPanelTeams extends React.PureComponent<any, SConfigRecordPanel> {
+    readonly state:SConfigRecordPanel = {
+        Records:DataController.getTeams(true)
+    }
+    remoteData:Function
     constructor(props) {
         super( props );
-        this.state = {
-            Records:DataController.getTeams(true)
-        }
-
         this.updateData = this.updateData.bind(this);
         this.remoteData = DataController.subscribe(this.updateData);
     }
@@ -478,12 +479,7 @@ class ConfigPanelTeams extends React.PureComponent {
      * - List national anthem singer records.
      */
     updateData() {
-        var records = DataController.getTeams(true);
-        if(!DataController.compare(records, this.state.Records)) {
-            this.setState(() => {
-                return {Records:records}
-            });
-        }
+        this.setState({Records:DataController.getTeams(true)});
     }
 
     /**
@@ -522,13 +518,15 @@ class ConfigPanelTeams extends React.PureComponent {
 /**
  * 
  */
-class ConfigPanelSlideshows extends React.PureComponent {
+class ConfigPanelSlideshows extends React.PureComponent<any, SConfigRecordPanel> {
+    readonly state:SConfigRecordPanel = {
+        Records:DataController.getSlideshows(true)
+    }
+
+    remoteData:Function
+
     constructor(props) {
         super( props );
-        this.state = {
-            Records:DataController.getSlideshows(true)
-        }
-
         this.updateData = this.updateData.bind(this);
         this.remoteData = DataController.subscribe(this.updateData);
     }
@@ -538,12 +536,7 @@ class ConfigPanelSlideshows extends React.PureComponent {
      * - List national anthem singer records.
      */
     updateData() {
-        var records = DataController.getSlideshows(true);
-        if(!DataController.compare(records, this.state.Records)) {
-            this.setState(() => {
-                return {Records:records}
-            });
-        }
+        this.setState({Records:DataController.getSlideshows(true)});
     }
 
     /**
@@ -582,13 +575,13 @@ class ConfigPanelSlideshows extends React.PureComponent {
 /**
  * Component to add/edit video records.
  */
-class ConfigPanelVideos extends React.PureComponent {
+class ConfigPanelVideos extends React.PureComponent<any, SConfigRecordPanel> {
+    readonly state:SConfigRecordPanel = {
+        Records:DataController.getVideos(true)
+    }
+    remoteData:Function
     constructor(props) {
         super( props );
-        this.state = {
-            Records:DataController.getVideos(true)
-        }
-
         this.updateData = this.updateData.bind(this);
         this.remoteData = DataController.subscribe(this.updateData);
     }
@@ -598,12 +591,7 @@ class ConfigPanelVideos extends React.PureComponent {
      * - List national anthem singer records.
      */
     updateData() {
-        var records = DataController.getVideos(true);
-        if(!DataController.compare(records, this.state.Records)) {
-            this.setState(() => {
-                return {Records:records}
-            });
-        }
+        this.setState({Records:DataController.getVideos(true)});
     }
 
     /**
@@ -639,21 +627,26 @@ class ConfigPanelVideos extends React.PureComponent {
     }
 }
 
+interface SConfigPanelPeers extends SConfigRecordPanel {
+    Records:Array<PeerRecord>,
+    Peers:any
+}
+
 /**
  * Component to add/edit peer records.
  */
-class ConfigPanelPeers extends React.PureComponent {
+class ConfigPanelPeers extends React.PureComponent<any, SConfigPanelPeers> {
+    readonly state:SConfigPanelPeers = {
+        Records:DataController.getPeers(true),
+        Peers:{}
+    }
+
+    remoteData:Function
 
     constructor(props) {
         super( props );
-        this.state = {
-            Records:DataController.getPeers(true),
-            Peers:{}
-        }
-
         this.updateData = this.updateData.bind(this);
         this.remoteData = DataController.subscribe(this.updateData);
-
         this.updateLocalServer = this.updateLocalServer.bind(this);
     }
 
@@ -661,10 +654,8 @@ class ConfigPanelPeers extends React.PureComponent {
      * Updates the state to match the server controller.
      */
     updateLocalServer() {
-        this.setState(() => {
-            return {
-                Peers:Object.assign({}, window.LocalServer.getState().Peers)
-            }
+        this.setState({
+            Peers:Object.assign({}, window.LocalServer.getState().Peers)
         });
     }
 
@@ -673,12 +664,7 @@ class ConfigPanelPeers extends React.PureComponent {
      * - List national anthem singer records.
      */
     updateData() {
-        var records = DataController.getPeers(true);
-        if(!DataController.compare(records, this.state.Records)) {
-            this.setState(() => {
-                return {Records:records}
-            });
-        }
+        this.setState({Records:DataController.getPeers(true)});
     }
 
     /**
@@ -686,7 +672,7 @@ class ConfigPanelPeers extends React.PureComponent {
      * - Wait for the local server to be ready, and then update the peer records.
      */
     componentDidMount() {
-        let timer = setInterval(() => {
+        let timer = window.setInterval(() => {
             if(window && window.LocalServer) {
                 window.LocalServer.subscribe(this.updateLocalServer);
                 this.updateData();
@@ -710,12 +696,12 @@ class ConfigPanelPeers extends React.PureComponent {
                 />
         ];
 
-        var peers = [];
+        var peers:Array<React.ReactElement> = [];
         this.state.Records.forEach((record) => {
             let iconConnection = IconOffline;
             let iconStream = IconStreamOff;
             let datatime = 0;
-            if(this.state.Peers && this.state.Peers[record.PeerID]) {
+            if(this.state.Peers && record.PeerID !== undefined && this.state.Peers[record.PeerID]) {
                 let peer = this.state.Peers[record.PeerID];
                 datatime = peer.DataConnectionTime;
                 if(peer.Connected)

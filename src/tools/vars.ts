@@ -87,12 +87,12 @@ export default vars;
 
 export interface Record {
     ID?:number,
-    RecordID?:number,
-    RecordType?:string,
+    RecordID:number,
+    RecordType:string,
     Acronym?:string,
     Code?:string,
     Color?:string,
-    Name?:string,
+    Name:string,
     ShortName?:string,
     Photo?:string,
     Background?:string,
@@ -131,7 +131,9 @@ export interface SkaterTeamRecord {
     Captain?:boolean,
     CoCaptain?:boolean,
     Coach?:boolean,
-    Manager?:boolean
+    Manager?:boolean,
+    Regulator?:boolean,
+    Trainer?:boolean
 };
 
 export interface SlideshowRecord extends Record {
