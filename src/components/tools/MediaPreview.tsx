@@ -23,10 +23,23 @@ interface PMediaPreview {
  * Component for previewing and changed a media element, such as an Image or video
  */
 class MediaPreview extends React.PureComponent<PMediaPreview> {
-    CanvasItem:React.RefObject<HTMLCanvasElement> = React.createRef();
-    CurrentImage:HTMLImageElement = new Image();
-    Brush:CanvasRenderingContext2D|null = null;
-    constructor(props) {
+    /**
+     * 
+     */
+    private CanvasItem:React.RefObject<HTMLCanvasElement> = React.createRef();
+    /**
+     * 
+     */
+    private CurrentImage:HTMLImageElement = new Image();
+    /**
+     * 
+     */
+    private Brush:CanvasRenderingContext2D|null = null;
+    /**
+     * 
+     * @param props PMediaPreview
+     */
+    constructor(props:PMediaPreview) {
         super(props);
         this.onSelectFile = this.onSelectFile.bind(this);
         this.paint = this.paint.bind(this);

@@ -19,13 +19,16 @@ declare global {
     }
 }
 
-DataController.Init();
-DataController.loadConfig().then(() => {
-    DataController.loadPeers().then(() => {
-        DataController.loadFiles().then(() => {
-            DataController.RegisterSaveStates();
-            window.ReactEntryPoint = ReactDOM.render(<ViewManager />, document.getElementById('root'));
-            serviceWorker.unregister();
+DataController.Init().then(() => {
+    DataController.loadConfig().then(() => {
+        DataController.loadPeers().then(() => {
+            DataController.loadFiles().then(() => {
+                DataController.RegisterSaveStates();
+                window.ReactEntryPoint = ReactDOM.render(<ViewManager />, document.getElementById('root'));
+                serviceWorker.unregister();
+            });
         });
     });
+}).catch(() => {
+    //error !? ??!  ?!! !??
 });

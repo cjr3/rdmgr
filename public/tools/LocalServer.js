@@ -7,7 +7,7 @@
  */
 
 class P2PServer {
-    constructor(settings, capture, peers) {
+    constructor(peers, capture) {
         const express = window.require('express');
         const cors = require('cors');
         const ExpressPeerServer = require('peer').ExpressPeerServer;
@@ -15,37 +15,49 @@ class P2PServer {
         const bodyParser = require('body-parser');
         this.Peer = require('peerjs').peerjs.Peer
         this.Networker = require('net');
+        const os = require('os');
 
         if(typeof(capture) !== "boolean")
             capture = false;
 
-        var id = settings.PeerSettings.ID;
-        var port = settings.ServerSettings.port;
-        var path = "/p2p";
-        if(capture) {
-            id += "-CAP";
-            path = "/p2p-CAP";
-            port = settings.ServerSettings.captureport;
-        }
-        this.LocalPeer = new LocalPeer(id, "localhost", port, path);
-        this.IPAddress = '127.0.0.1';
-        this.Port = port;
-
-        //holds other peer objects
+        this.PeerID = os.hostname();
+        this.Port = 0;
+        this.Path = "/p2p";
+        this.IPAddress = "127.0.0.1";
         this.InitState = {
             Peers:{}
-        };
-        
-        if(peers) {
+        }
+
+        if(capture) {
+            this.PeerID += "-CAP";
+            this.Path = "/p2p-CAP";
+        }
+
+        this.LocalPeer = null;
+
+        if(typeof(peers) === 'object' && peers instanceof Array) {
             peers.forEach((record) => {
-                if(record.PeerID !== this.LocalPeer.ID) {
+                if(record.Host === this.IPAddress && this.LocalPeer === null) {
+                    //local peer record
+                    this.Port = record.Port;
+                    if(capture)
+                        this.Port = record.CapturePort;
+                    this.PeerID = record.PeerID;
+                    this.LocalPeer = new LocalPeer(this.PeerID, "localhost", this.Port, this.Path);
+                } else if(record.PeerID !== this.PeerID) {
+                    //known peer record
                     let id = record.PeerID;
                     let port = record.Port;
+
                     if(capture) {
                         id += "-CAP";
                         port = record.CapturePort;
                     }
-                    this.LocalPeer.addPeer(id, record.Host, port);
+
+                    if(this.LocalPeer !== null) {
+                        this.LocalPeer.addPeer(id, record.Host, port);
+                    }
+
                     this.InitState.Peers[id] = {
                         ID:id,
                         Name:record.Name,
@@ -55,7 +67,10 @@ class P2PServer {
                         MediaConnected:false
                     };
                 }
-            });
+            })
+        }
+        if(this.LocalPeer === null) {
+            this.LocalPeer = new LocalPeer(this.PeerID, "localhost", this.Port, this.Path);
         }
 
         this.ExpressApp = express();
@@ -64,8 +79,16 @@ class P2PServer {
             res.end();
         });
         
-        this.LocalExpressServer = this.ExpressApp.listen(this.LocalPeer.Port, () => {
-            var os = require('os');
+        this.LocalExpressServer = this.ExpressApp.listen(this.Port, () => {
+            //change port if port was randomly assigned
+            if(this.Port === 0) {
+                this.Port = this.LocalExpressServer.address().port;
+                if(this.LocalPeer !== null) {
+                    this.LocalPeer.Port = this.Port;
+                }
+            }
+
+            //get the network IP address
             let timer = setInterval(() => {
                 var interfaces = os.networkInterfaces();
                 for (var k in interfaces) {
@@ -81,6 +104,7 @@ class P2PServer {
             }, 500);
         });
 
+        //attach the peer server
         this.Server = ExpressPeerServer(this.LocalExpressServer, {
             debug:0
         });
@@ -88,6 +112,7 @@ class P2PServer {
         //connect peerjs to the express server path
         this.ExpressApp.use(this.LocalPeer.Path, this.Server);
 
+        //enable parsing of JSON, URL encoded, cross-site, and static resources
         this.ExpressApp.use(bodyParser.json());
         this.ExpressApp.use(bodyParser.urlencoded({
             extended:true
@@ -95,12 +120,12 @@ class P2PServer {
         this.ExpressApp.use(express.static('public'));
         this.ExpressApp.use(cors({credentials:true, origin:true}));
 
+        //bindings
         this.Init = this.Init.bind(this);
         this.onConnect = this.onConnect.bind(this);
         this.onDisconnect = this.onDisconnect.bind(this);
         this.updateData = this.updateData.bind(this);
         this.reducer = this.reducer.bind(this);
-        
         this.Server.on('connection', this.onConnect);
         this.Server.on('disconnect', this.onDisconnect);
         this.LocalStore = createStore(this.reducer);
@@ -130,7 +155,12 @@ class P2PServer {
         if(this.controller) {
             this.remoteController = this.controller.subscribe(this.updateData);
         }
-        this.LocalPeer.connect();
+        let timer = setInterval(() => {
+            if(this.LocalPeer.Port > 0) {
+                this.LocalPeer.connect();
+                clearInterval(timer);
+            }
+        }, 500);
     }
 
     updateData() {

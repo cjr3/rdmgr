@@ -57,7 +57,7 @@ export interface SVideoController {
     Blur:number
 }
 
-const InitState:SVideoController = {
+export const InitState:SVideoController = {
     Status:vars.Video.Status.Ready,
     Loop:false,
     AutoPlay:false,

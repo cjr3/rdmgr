@@ -14,7 +14,7 @@ export interface SSponsorController {
     TemporarySlide:string
 }
 
-const InitState:SSponsorController = {
+export const InitState:SSponsorController = {
     Slides:[],
     Index:0,
     SlideDuration:1000 * 10, //10 seconds

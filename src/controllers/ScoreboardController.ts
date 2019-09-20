@@ -81,7 +81,7 @@ export interface SScoreboardState {
     StartGameSecond:number
 }
 
-const ScoreboardState:SScoreboardState = {
+export const InitState:SScoreboardState = {
     ID:0,
     JamCounter:0,
     JamHour:0,
@@ -106,29 +106,29 @@ const ScoreboardState:SScoreboardState = {
     ConfirmStatus:0,
     TeamA:{
         Side:'A',
-        ID:0,
+        ID:1,
         Score:0,
         Timeouts:3,
         Challenges:3,
         JamPoints:0,
         Status:vars.Team.Status.Normal,
-        Color:"#993333",
+        Color:"#990000",
         Name:"Team A",
         Thumbnail:"default/TeamA.jpg",
-        ScoreboardThumbnail:""
+        ScoreboardThumbnail:"default/TeamAScoreboard.png"
     },
     TeamB:{
         Side:'B',
-        ID:0,
+        ID:2,
         Score:0,
         Timeouts:3,
         Challenges:3,
         JamPoints:0,
         Status:vars.Team.Status.Normal,
-        Color:"#333399",
+        Color:"#000099",
         Name:"Team B",
         Thumbnail:"default/TeamB.jpg",
-        ScoreboardThumbnail:""
+        ScoreboardThumbnail:"default/TeamBScoreboard.png"
     },
     StartGameHour:0,
     StartGameMinute:0,
@@ -157,7 +157,7 @@ const MidiControllers = {
  * @param {Object} state 
  * @param {object} action 
  */
-function ControllerReducer(state:SScoreboardState = ScoreboardState, action) {
+function ControllerReducer(state:SScoreboardState = InitState, action) {
     switch(action.type) {
         case SET_STATE :
             var obj = Object.assign({}, state, action.state, {
@@ -200,7 +200,7 @@ function ControllerReducer(state:SScoreboardState = ScoreboardState, action) {
             }
 
             //copy initial state, keep team identification and phases
-            return Object.assign({}, ScoreboardState, {
+            return Object.assign({}, InitState, {
                 StartGameHour:0,
                 StartGameMinute:0,
                 StartGameSecond:0,
@@ -632,9 +632,9 @@ function ControllerReducer(state:SScoreboardState = ScoreboardState, action) {
                 GameState:vars.Clock.Status.Stopped,
                 JamState:vars.Clock.Status.Ready,
                 BreakState:vars.Clock.Status.Ready,
-                JamHour:ScoreboardState.JamHour,
-                JamMinute:ScoreboardState.JamMinute,
-                JamSecond:ScoreboardState.JamSecond
+                JamHour:InitState.JamHour,
+                JamMinute:InitState.JamMinute,
+                JamSecond:InitState.JamSecond
             });
 
         default :

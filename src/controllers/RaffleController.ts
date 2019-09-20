@@ -11,7 +11,7 @@ export interface SRaffleController {
 }
 
 //Initial state
-const InitState:SRaffleController = {
+export const InitState:SRaffleController = {
     Tickets:[]
 };
 

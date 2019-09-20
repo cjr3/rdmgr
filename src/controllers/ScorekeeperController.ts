@@ -50,7 +50,7 @@ export interface SScorekeeperState {
     }
 }
 
-const InitState:SScorekeeperState = {
+export const InitState:SScorekeeperState = {
     TeamA:{
         Track:{
             Jammer:null,

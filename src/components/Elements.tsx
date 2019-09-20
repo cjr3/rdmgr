@@ -9,6 +9,8 @@ import './css/Elements.scss'
 import {default as UISlider, SliderProps, Mark} from '@material-ui/core/Slider'
 import DataController from 'controllers/DataController';
 
+export const TeamALogo = require('images/default/TeamA.jpg');
+
 //static icons
 const IconAttachment = require('images/icons/attachment.png');
 const IconAV = require('images/icons/av.png');

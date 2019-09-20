@@ -17,7 +17,7 @@ export interface SMediaQueueController {
     Loop:boolean
 }
 
-const InitState:SMediaQueueController = {
+export const InitState:SMediaQueueController = {
     Index:-1,
     Records:[],
     Record:null,

@@ -14,7 +14,7 @@ export interface CameraControllerState {
 const SET_STATE = 'SET_STATE';
 const SET_CAMERA_ID = 'SET_CAMERA_ID';
 const SET_CAMERAS = 'SET_CAMERAS';
-const InitState:CameraControllerState = {
+export const InitState:CameraControllerState = {
     DeviceID:'',
     Cameras:new Array<MediaDeviceInfo>()
 };

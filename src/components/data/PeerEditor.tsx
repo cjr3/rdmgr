@@ -372,8 +372,10 @@ class PeerEditor extends React.PureComponent<any, SPeerEditor> {
                 </tr>
                 <tr>
                     <td>Receive From Peer</td>
-                    <td className="stack-panel s4" colSpan={3}>
-                        {capps}
+                    <td colSpan={3}>
+                        <div className="stack-panel s4">
+                            {capps}
+                        </div>
                         <PeerRecordRequest
                             opened={this.state.getRecordsShown}
                             name={name}
@@ -390,8 +392,10 @@ class PeerEditor extends React.PureComponent<any, SPeerEditor> {
                 </tr>
                 <tr>
                     <td>Send To Peer</td>
-                    <td className="stack-panel s4" colSpan={3}>
-                        {rapps}
+                    <td colSpan={3}>
+                        <div className="stack-panel s4">
+                            {rapps}
+                        </div>
                         <PeerRecordRequest
                             opened={this.state.setRecordsShown}
                             name={name}

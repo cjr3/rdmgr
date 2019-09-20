@@ -30,7 +30,7 @@ export interface SRosterController {
     }
 }
 
-const InitState:SRosterController = {
+export const InitState:SRosterController = {
     CurrentTeam:'A',
     SkaterIndex:-1,
     TeamA:{

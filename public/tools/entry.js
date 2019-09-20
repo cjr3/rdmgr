@@ -1,12 +1,19 @@
 window.RDMGR = require('electron').remote.getGlobal("RDMGR");
 
+/**
+ * Initializes the control window
+ * @param {DataController} controller 
+ */
 function initControlServer(controller) {
-    //const {P2PServer} = require('./LocalServer');
-    window.LocalServer = new P2PServer(controller.getConfig().UR.Settings, false, controller.getPeers(true));
+    window.LocalServer = new P2PServer(controller.getPeers(true), false);
     window.LocalServer.Init(controller);
 }
 
+/**
+ * Initializes the server for the capture window
+ * @param {DataController} controller 
+ */
 function initCaptureServer(controller) {
-    window.LocalServer = new P2PServer(controller.getConfig().UR.Settings, true);
+    window.LocalServer = new P2PServer(controller.getPeers(true), true);
     window.LocalServer.Init();
 }

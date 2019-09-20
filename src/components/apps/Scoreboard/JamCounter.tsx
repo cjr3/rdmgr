@@ -19,6 +19,8 @@ class JamCounter extends React.PureComponent<any, SJamCounter> {
     constructor(props) {
         super(props);
         this.onChange = this.onChange.bind(this);
+        this.onAdd = this.onAdd.bind(this);
+        this.onSubtract = this.onSubtract.bind(this);
         this.updateState = this.updateState.bind(this);
         this.remoteScore = ScoreboardController.subscribe(this.updateState);
     }
@@ -49,6 +51,22 @@ class JamCounter extends React.PureComponent<any, SJamCounter> {
     }
 
     /**
+     * Triggered when the user increase the counter
+     * @param amount Amount added
+     */
+    onAdd(amount:number) {
+        ScoreboardController.IncreaseJamCounter(amount);
+    }
+
+    /**
+     * Triggered when the user decreases the counter
+     * @param amount Amount subtracted
+     */
+    onSubtract(amount:number) {
+        ScoreboardController.DecreaseJamCounter(amount);
+    }
+
+    /**
      * Renders the component
      */
     render() {
@@ -60,7 +78,9 @@ class JamCounter extends React.PureComponent<any, SJamCounter> {
                         min={0}
                         max={99}
                         padding={2}
-                        onChange={this.onChange}
+                        //onChange={this.onChange}
+                        onAdd={this.onAdd}
+                        onSubtract={this.onSubtract}
                         ref={this.CounterItem}
                     />
                 </td>

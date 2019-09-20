@@ -26,12 +26,23 @@ import CameraController from './CameraController';
 import PenaltyController from './PenaltyController';
 import RaffleController from './RaffleController';
 import SponsorController from './SponsorController';
+
+import Installation from 'tools/Installation';
+
 const os = require('os');
 
 const USER_PATH = os.homedir();
 const TEMP_PATH = os.tmpdir();
+//console.log(TEMP_PATH);
 
-interface IDataControllerState {
+export interface IConfigUser {
+    
+}
+
+export interface IDataControllerState {
+    /**
+     * User configuration
+     */
     Config:any,
     Skaters:any,
     Teams:any,
@@ -97,33 +108,87 @@ const InitState:IDataControllerState = {
     }
 };
 
-//record constants
-const SET_SKATERS = 'SET_SKATERS';
-const SET_TEAMS = 'SET_TEAMS';
-const SET_PENALTIES = 'SET_PENALTIES';
-const SET_VIDEOS = 'SET_VIDEOS';
-const SET_PHASES = 'SET_PHASES';
-const SET_SLIDESHOWS = 'SET_SLIDESHOWS';
-const SET_JAMS = 'SET_JAMS';
-const SET_ANTHEM = 'SET_ANTHEM';
-const SET_ANTHEMS = 'SET_ANTHEMS';
-const SET_MISC_RECORDS = 'SET_MISC_RECORDS';
-const SET_PEERS = 'SET_PEERS';
-
-//config constants
-const SET_CONFIG_USER = 'SET_CONFIG_USER';
-const SET_CONFIG_CAPTURE = 'SET_CONFIG_CAPTURE';
-const SET_CONFIG_SCOREBOARD = 'SET_CONFIG_SCOREBOARD';
-const SET_CONFIG_SCOREKEEPER = 'SET_CONFIG_SCOREKEEPER';
-const SET_CONFIG_BROADCASTER = 'SET_CONFIG_BROADCASTER';
-const SET_CONFIG_PENALTYTRACKER = 'SET_CONFIG_PENALTYTRACKER';
+/**
+ * Actions for the data controller
+ */
+export enum Actions {
+    /**
+     * Sets the skater records
+     */
+    SET_SKATERS,
+    /**
+     * Sets the team records
+     */
+    SET_TEAMS,
+    /**
+     * Sets the penalty records
+     */
+    SET_PENALTIES,
+    /**
+     * Sets the video records
+     */
+    SET_VIDEOS,
+    /**
+     * Sets the phase records
+     */
+    SET_PHASES,
+    /**
+     * Sets the slideshow records
+     */
+    SET_SLIDESHOWS,
+    /**
+     * Sets the jam records
+     */
+    SET_JAMS,
+    /**
+     * Sets the anthem records
+     */
+    SET_ANTHEMS,
+    /**
+     * Sets the misc records object
+     */
+    SET_MISC_RECORDS,
+    /**
+     * Sets the peer records
+     */
+    SET_PEERS,
+    /**
+     * Sets the user configuration
+     */
+    SET_CONFIG_USER,
+    /**
+     * Sets the capture window configuration
+     */
+    SET_CONFIG_CAPTURE,
+    /**
+     * Sets the scoreboard configuration
+     */
+    SET_CONFIG_SCOREBOARD,
+    /**
+     * Sets the configuration of the scorekeeper
+     */
+    SET_CONFIG_SCOREKEEPER,
+    /**
+     * Sets the configuration for the broadcaster
+     */
+    SET_CONFIG_BROADCASTER,
+    /**
+     * Sets the configuration for the penalty tracker
+     */
+    SET_CONFIG_PENALTYTRACKER
+}
 
 //file constants
-const FOLDER_MAIN = 'c:/rdmgrdata';
-const FOLDER_DATA = FOLDER_MAIN + "/files2";
+//const FOLDER_MAIN = 'c:/rdmgrdata';
+const FOLDER_MAIN = 'c:/ProgramData/RDMGR';
+const FOLDER_DATA = FOLDER_MAIN + "/files";
+const FOLDER_MEDIA_ROOT = FOLDER_MAIN + "/images";
 const FOLDER_MEDIA = FOLDER_MAIN + "/images/uploads";
 const FOLDER_RECORDS = FOLDER_DATA + "/records";
 const FOLDER_STATES = FOLDER_DATA + "/states";
+const FOLDER_MEDIA_DEFAULT = FOLDER_MEDIA + "/default";
+const FOLDER_MEDIA_VIDEOS = FOLDER_MEDIA + "/videos";
+const FOLDER_MEDIA_SLIDESHOWS = FOLDER_MEDIA + "/slideshows";
 
 //record files
 const FILE_CONFIG = FOLDER_DATA + "/rdmgr.config.json";
@@ -153,6 +218,7 @@ const FILE_STATE_ROSTER = FOLDER_STATES + "/roster.state.json";
 const FILE_STATE_SLIDESHOW = FOLDER_STATES + "/slideshow.state.json";
 const FILE_STATE_SPONSOR = FOLDER_STATES + "/sponsor.state.json";
 const FILE_STATE_VIDEO = FOLDER_STATES + "/video.state.json";
+const FILE_STATE_MEDIA_QUEUE = FOLDER_STATES + "/media.state.json";
 
 /**
  * Reducer for the DataController
@@ -162,19 +228,19 @@ const FILE_STATE_VIDEO = FOLDER_STATES + "/video.state.json";
 function DataReducer(state = InitState, action) {
     switch(action.type) {
         //Sets the user configuration
-        case SET_CONFIG_USER :
+        case Actions.SET_CONFIG_USER :
             return Object.assign({}, state, {
                 Config:Object.assign({}, state.Config, action.config)
             });
 
         //set skaters
-        case SET_SKATERS :
+        case Actions.SET_SKATERS :
             if(DataController.compare(state.Skaters, action.records))
                 return state;
             return Object.assign({}, state, {Skaters:action.records});
 
         //set teams
-        case SET_TEAMS :
+        case Actions.SET_TEAMS :
             if(DataController.compare(state.Teams, action.records))
                 return state;
             return Object.assign({}, state, {
@@ -182,61 +248,49 @@ function DataReducer(state = InitState, action) {
             });
 
         //set phases
-        case SET_PHASES :
+        case Actions.SET_PHASES :
             return Object.assign({}, state, {
                 Phases:action.records
             });
 
         //set videos
-        case SET_VIDEOS :
+        case Actions.SET_VIDEOS :
             return Object.assign({}, state, {
                 Videos:action.records
             });
 
         //set penalties
-        case SET_PENALTIES :
+        case Actions.SET_PENALTIES :
             return Object.assign({}, state, {
                 Penalties:action.records
             });
 
         //set slideshows
-        case SET_SLIDESHOWS :
+        case Actions.SET_SLIDESHOWS :
             return Object.assign({}, state, {
                 Slideshows:action.records
             });
 
-        case SET_JAMS :
+        case Actions.SET_JAMS :
             return Object.assign({}, state, {
                 Jams:action.records
             });
 
-        case SET_CONFIG_SCOREBOARD :
+        case Actions.SET_CONFIG_SCOREBOARD :
             return Object.assign({}, state, {
                 ScoreboardConfig:Object.assign({}, state.ScoreboardConfig, action.config)
             });
 
-        //Set the National Anthem Singer
-        case SET_ANTHEM :
-            return Object.assign({}, state, {
-                MiscRecords:Object.assign({}, state.MiscRecords, {
-                    NationalAnthemSinger:Object.assign({}, state.MiscRecords.NationalAnthemSinger, {
-                        Name:action.name,
-                        Bio:action.bio,
-                        Background:action.background
-                    })
-                })
-            });
-
         //National Anthem Singer Records
-        case SET_ANTHEMS :
+        case Actions.SET_ANTHEMS :
             return Object.assign({}, state, {Anthems:action.records});
 
         //Peers
-        case SET_PEERS :
+        case Actions.SET_PEERS :
             return Object.assign({}, state, {Peers:action.records});
 
         //Sets the misc records object
-        case SET_MISC_RECORDS :
+        case Actions.SET_MISC_RECORDS :
             return Object.assign({}, state, {
                 MiscRecords:Object.assign({}, state.MiscRecords, action.values)
             });
@@ -278,301 +332,31 @@ const DataController = {
      * Initializes the data controller by including node modules for
      * I/O access.
      */
-    Init() {
+    Init() : Promise<any> {
         DataController.PATH = window.require('path');
         DataController.FS = window.require('fs');
         DataController.WFA = window.require('write-file-atomic');
         DataController.DIALOG = window.require('electron').remote.dialog;
-        DataController.CheckFiles();
-    },
-
-    /**
-     * Checks that the required files exist, and if they don't, creates them.
-     * This method is synchronous to ensure all checks are performed before continuing,
-     * and should only be called at initialization.
-     */
-    CheckFiles() {
-        //check config files
-        DataController.CheckConfigFiles();
-        let fs:any = DataController.FS;
-
-        //empty record files
-        var recordFiles = [
-            FILE_ANTHEM,
-            FILE_PEERS,
-            FILE_PENALTIES,
-            FILE_SKATERS,
-            FILE_SLIDESHOWS,
-            FILE_VIDEOS
-        ];
-
-        recordFiles.forEach((filename) => {
-            if(!fs.existsSync(filename)) {
-                console.log(`${filename} doesn't exist.`);
-                //DataController.saveFile(filename, JSON.stringify({Records:[]}), true);
-            }
-        });
-
-        //teams - Team A and Team B must exist!
-        if(!fs.existsSync(FILE_TEAMS)) {
-            let content = JSON.stringify({
-                Records:[
-                    Object.assign({}, DataController.getNewRecord(vars.RecordType.Team), {
-                        RecordID:1,
-                        Name:"Team A",
-                        Color:"#990000"
-                    }),
-                    Object.assign({}, DataController.getNewRecord(vars.RecordType.Team), {
-                        RecordID:2,
-                        Name:"Team B",
-                        Color:"#000099"
-                    }),
-                ]
+        if(window && window.location && window.location.search.substr(1) === 'control') {
+            let installer = new Installation();
+            return new Promise(async (res, rej) => {
+                let folderResponse = await installer.CheckFolders();
+                if(typeof(folderResponse) === 'string')
+                    rej(folderResponse);
+                let fileResponse = await installer.CheckFiles();
+                if(typeof(fileResponse) === 'string')
+                    rej(fileResponse);
+                res(true);
             });
-            console.log(`${FILE_TEAMS} doesn't exist`);
-            //DataController.saveFile(FILE_TEAMS, content, true);
-        }
-
-        //phases / quarters
-        //setup: 2:00:00
-        //warmups: 45:00
-        //intros: 10:00
-        //1st quarter: 15:00
-        //break: 5:00
-        //2nd quarter: 15:00
-        //halftime: 20:00
-        //3rd quarter: 15:00
-        //break: 5:00
-        //4th quarter: 15:00
-        if(!fs.existsSync(FILE_PHASES)) {
-            console.log(`${FILE_PHASES} doesn't exist!`);
-            let content = JSON.stringify({Records:[
-                Object.assign({}, DataController.getNewRecord(vars.RecordType.Phase), {
-                    Name:"Setup",
-                    RecordID:1,
-                    PhaseQtr:0,
-                    Duration:[2,0,0],
-                    PhaseTime:'02:00:00'
-                }),
-                Object.assign({}, DataController.getNewRecord(vars.RecordType.Phase), {
-                    Name:"Warmups",
-                    RecordID:2,
-                    PhaseQtr:0,
-                    Duration:[0,45,0],
-                    PhaseTime:'00:45:00'
-                }),
-                Object.assign({}, DataController.getNewRecord(vars.RecordType.Phase), {
-                    Name:"Intros",
-                    RecordID:3,
-                    PhaseQtr:0,
-                    Duration:[0,10,0],
-                    PhaseTime:'00:10:00'
-                }),
-                Object.assign({}, DataController.getNewRecord(vars.RecordType.Phase), {
-                    Name:"1ST QTR",
-                    RecordID:4,
-                    PhaseQtr:1,
-                    Duration:[0,15,0],
-                    PhaseTime:'00:15:00'
-                }),
-                Object.assign({}, DataController.getNewRecord(vars.RecordType.Phase), {
-                    Name:"Break",
-                    RecordID:5,
-                    PhaseQtr:0,
-                    Duration:[0,5,0],
-                    PhaseTime:'00:05:00'
-                }),
-                Object.assign({}, DataController.getNewRecord(vars.RecordType.Phase), {
-                    Name:"2ND QTR",
-                    RecordID:6,
-                    PhaseQtr:2,
-                    Duration:[0,15,0],
-                    PhaseTime:'00:15:00'
-                }),
-                Object.assign({}, DataController.getNewRecord(vars.RecordType.Phase), {
-                    Name:"Halftime",
-                    RecordID:8,
-                    PhaseQtr:0,
-                    Duration:[0,20,0],
-                    PhaseTime:'00:20:00'
-                }),
-                Object.assign({}, DataController.getNewRecord(vars.RecordType.Phase), {
-                    Name:"3RD QTR",
-                    RecordID:9,
-                    PhaseQtr:3,
-                    Duration:[0,15,0],
-                    PhaseTime:'00:15:00'
-                }),
-                Object.assign({}, DataController.getNewRecord(vars.RecordType.Phase), {
-                    Name:"Break",
-                    RecordID:10,
-                    PhaseQtr:0,
-                    Duration:[0,5,0],
-                    PhaseTime:'00:05:00'
-                }),
-                Object.assign({}, DataController.getNewRecord(vars.RecordType.Phase), {
-                    Name:"4TH QTR",
-                    RecordID:11,
-                    PhaseQtr:4,
-                    Duration:[0,15,0],
-                    PhaseTime:'00:15:00'
-                }),
-                Object.assign({}, DataController.getNewRecord(vars.RecordType.Phase), {
-                    Name:"FINAL",
-                    RecordID:12,
-                    PhaseQtr:0,
-                    Duration:[0,0,0],
-                    PhaseTime:'00:00:00'
-                })
-            ]});
-
-            //DataController.saveFile(FILE_PHASES, content, true);
-        }
-
-        //misc records
-        if(!fs.existsSync(FILE_RECORDS)) {
-            console.log(`${FILE_RECORDS} doesn't exist.`);
-            let content = JSON.stringify({Records:{
-                NationalAnthemSinger:{
-                    Name:"",
-                    Biography:"",
-                    Background:""
-                },
-                Raffle:{
-                    Background:""
-                },
-                Announcers:{
-                    Announcer1:"",
-                    Announcer2:""
-                },
-                NextBoutFlier:""
-            }});
-            //DataController.saveFile(FILE_RECORDS, content, true);
-        }
-    },
-
-    /**
-     * Checks configuration/state files.
-     */
-    CheckConfigFiles() {
-        let fs:any = DataController.FS;
-        //main config
-        if(!fs.existsSync(FILE_CONFIG)) {
-            console.log(`${FILE_CONFIG} doesn't exist!`);
-            let content = JSON.stringify({
-                DB:{
-                    UseDatabase:false,
-                    ConnectionSettings:{
-                        host:"127.0.0.1",
-                        port:3306,
-                        user:"",
-                        password:"",
-                        schema:"rdmgr",
-                        timezone:"-07:00",
-                        connectTimeout:10000,
-                        supportBigNumbers: true
+        } else {
+            return new Promise((res) => {
+                let timer = setInterval(() => {
+                    if(window && window.RDMGR && window.RDMGR.mainWindow) {
+                        clearInterval(timer);
+                        res(true);
                     }
-                },
-                FS:{
-                    RemoteFolder:FOLDER_MAIN,
-                    LocalFolder:FOLDER_MAIN
-                },
-                UR:{
-                    FullScreen:true,
-                    Capture:true,
-                    Remote:false,
-                    Settings:{
-                        PeerSettings:{
-                            ID:"SCR01-RDMGR"
-                        },
-                        ServerSettings:{
-                            host:"127.0.0.1",
-                            port:24901,
-                            captureport:24902,
-                            path:"SCR01-RDMGR"
-                        },
-                        InitialApp:"SB"
-                    }
-                }
+                }, 500);
             });
-            //DataController.saveFile(FILE_CONFIG, content, true);
-        }
-
-        //scoreboard state
-        if(!fs.existsSync(FILE_STATE_SCOREBOARD)) {
-            console.log(`${FILE_STATE_SCOREBOARD} doesn't exist!`);
-            let content = JSON.stringify(Object.assign({}, ScoreboardController.getState()));
-            //DataController.saveFile(FILE_STATE_SCOREBOARD, content, true);
-        }
-
-        //camera 
-        if(!fs.existsSync(FILE_STATE_CAMERA)) {
-            console.log(`${FILE_STATE_CAMERA} doesn't exist!`);
-            let content = JSON.stringify(Object.assign({}, CameraController.getState()));
-            //DataController.saveFile(FILE_STATE_CAMERA, content, true);
-        }
-
-        //capture
-        if(!fs.existsSync(FILE_STATE_CAPTURE)) {
-            console.log(`${FILE_STATE_CAPTURE} doesn't exist!`);
-            let content = JSON.stringify(Object.assign({}, CaptureController.getState()));
-            //DataController.saveFile(FILE_STATE_CAPTURE, content, true);
-        }
-
-        //chat
-        if(!fs.existsSync(FILE_STATE_CHAT)) {
-            console.log(`${FILE_STATE_CHAT} doesn't exist!`);
-            let content = JSON.stringify(Object.assign({}, ChatController.getState()));
-            //DataController.saveFile(FILE_STATE_CHAT, content, true);
-        }
-
-        //penalty tracker
-        if(!fs.existsSync(FILE_STATE_PENALTY)) {
-            console.log(`${FILE_STATE_PENALTY} doesn't exist!`);
-            let content = JSON.stringify(Object.assign({}, PenaltyController.getState()));
-            //DataController.saveFile(FILE_STATE_PENALTY, content, true);
-        }
-
-        //raffle
-        if(!fs.existsSync(FILE_STATE_RAFFLE)) {
-            console.log(`${FILE_STATE_RAFFLE} doesn't exist!`);
-            let content = JSON.stringify(Object.assign({}, RaffleController.getState()));
-            //DataController.saveFile(FILE_STATE_RAFFLE, content, true);
-        }
-
-        //roster
-        if(!fs.existsSync(FILE_STATE_ROSTER)) {
-            console.log(`${FILE_STATE_ROSTER} doesn't exist!`);
-            let content = JSON.stringify(Object.assign({}, RosterController.getState()));
-            //DataController.saveFile(FILE_STATE_ROSTER, content, true);
-        }
-
-        //scorekeeper
-        if(!fs.existsSync(FILE_STATE_SCOREKEEPER)) {
-            console.log(`${FILE_STATE_SCOREKEEPER} doesn't exist!`);
-            let content = JSON.stringify(Object.assign({}, ScorekeeperController.getState()));
-            //DataController.saveFile(FILE_STATE_SCOREKEEPER, content, true);
-        }
-
-        //Slideshow
-        if(!fs.existsSync(FILE_STATE_SLIDESHOW)) {
-            console.log(`${FILE_STATE_SLIDESHOW} doesn't exist!`);
-            let content = JSON.stringify(Object.assign({}, SlideshowController.getState()));
-            //DataController.saveFile(FILE_STATE_SLIDESHOW, content, true);
-        }
-
-        //Sponsors
-        if(!fs.existsSync(FILE_STATE_SPONSOR)) {
-            console.log(`${FILE_STATE_SPONSOR} doesn't exist!`);
-            let content = JSON.stringify(Object.assign({}, SponsorController.getState()));
-            //DataController.saveFile(FILE_STATE_SPONSOR, content, true);
-        }
-
-        //Video
-        if(!fs.existsSync(FILE_STATE_VIDEO)) {
-            console.log(`${FILE_STATE_VIDEO} doesn't exist!`);
-            let content = JSON.stringify(Object.assign({}, VideoController.getState()));
-            //DataController.saveFile(FILE_STATE_VIDEO, content, true);
         }
     },
 
@@ -678,61 +462,61 @@ const DataController = {
         var srecord = Object.assign({}, record);
         var records:any = {};
         var filename:string = '';
-        var type:string = '';
+        var type:number = -1;
         switch(record.RecordType) {
             //Skater
             case vars.RecordType.Skater :
                 records = Object.assign({}, DataController.getSkaters());
                 filename = FILE_SKATERS;
-                type = SET_SKATERS;
+                type = Actions.SET_SKATERS;
             break;
 
             //Team
             case vars.RecordType.Team :
                 records = Object.assign({}, DataController.getTeams());
                 filename = FILE_TEAMS;
-                type = SET_TEAMS;
+                type = Actions.SET_TEAMS;
             break;
 
             //Slideshow
             case vars.RecordType.Slideshow :
                 records = Object.assign({}, DataController.getSlideshows());
                 filename = FILE_SLIDESHOWS;
-                type = SET_SLIDESHOWS;
+                type = Actions.SET_SLIDESHOWS;
             break;
 
             //Video
             case vars.RecordType.Video :
                 records = Object.assign({}, DataController.getVideos());
                 filename = FILE_VIDEOS;
-                type = SET_VIDEOS;
+                type = Actions.SET_VIDEOS;
             break;
 
             //Penalty
             case vars.RecordType.Penalty :
                 records = Object.assign({}, DataController.getPenalties());
                 filename = FILE_PENALTIES;
-                type = SET_PENALTIES;
+                type = Actions.SET_PENALTIES;
             break;
 
             //Anthem
             case vars.RecordType.Anthem :
                 records = Object.assign({}, DataController.getAnthemSingers());
                 filename = FILE_ANTHEM;
-                type = SET_ANTHEMS;
+                type = Actions.SET_ANTHEMS;
             break;
 
             //Peers
             case vars.RecordType.Peer :
                 records = Object.assign({}, DataController.getPeers());
                 filename = FILE_PEERS;
-                type = SET_PEERS;
+                type = Actions.SET_PEERS;
             break;
 
             case vars.RecordType.Phase :
                 filename = FILE_PHASES;
                 records = DataController.getPhases();
-                type = SET_PHASES;
+                type = Actions.SET_PHASES;
             break;
 
             default :
@@ -798,35 +582,35 @@ const DataController = {
      */
     async UpdateRecords(type, records) {
         let filename:string = '';
-        let operation:string = '';
+        let operation:number = -1;
         switch(type) {
             //Skaters
             case vars.RecordType.Skater :
-                operation = SET_SKATERS;
+                operation = Actions.SET_SKATERS;
                 filename = FILE_SKATERS;
             break;
             
             //Teams
             case vars.RecordType.Team :
-                operation = SET_TEAMS;
+                operation = Actions.SET_TEAMS;
                 filename = FILE_TEAMS;
             break;
 
             //Penalties
             case vars.RecordType.Penalty :
-                operation = SET_PENALTIES;
+                operation = Actions.SET_PENALTIES;
                 filename = FILE_PENALTIES;
             break;
 
             //Phases / Quarters
             case vars.RecordType.Phase :
-                operation = SET_PHASES;
+                operation = Actions.SET_PHASES;
                 filename = FILE_PHASES;
             break;
 
             //Anthem Singers
             case vars.RecordType.Anthem :
-                operation = SET_ANTHEMS;
+                operation = Actions.SET_ANTHEMS;
                 filename = FILE_ANTHEM;
             break;
 
@@ -834,7 +618,7 @@ const DataController = {
             break;
         }
 
-        if(filename.length > 0 && operation.length > 0) {
+        if(filename.length > 0 && operation >= 0) {
             if(records instanceof Array) {
                 let items:any = records;
 
@@ -923,7 +707,7 @@ const DataController = {
                 try {
                     var content = JSON.parse(data);
                     DataController.getStore().dispatch({
-                        type:SET_CONFIG_USER,
+                        type:Actions.SET_CONFIG_USER,
                         config:content
                     });
                 } catch(er) {
@@ -974,7 +758,7 @@ const DataController = {
             .then((data:any) => {
                 try {
                     DataController.getStore().dispatch({
-                        type:SET_SKATERS,
+                        type:Actions.SET_SKATERS,
                         records:DataController.prepareRecords(JSON.parse(data).Records)
                     });
                 } catch(er) {
@@ -998,7 +782,7 @@ const DataController = {
             .then((data:any) => {
                 try {
                     DataController.getStore().dispatch({
-                        type:SET_TEAMS,
+                        type:Actions.SET_TEAMS,
                         records:DataController.prepareRecords(JSON.parse(data).Records)
                     });
                 } catch(er) {
@@ -1042,7 +826,7 @@ const DataController = {
                     phase.Duration = phase.PhaseTime.split(":");
                 });
                 DataController.getStore().dispatch({
-                    type:SET_PHASES,
+                    type:Actions.SET_PHASES,
                     records:phases
                 });
             } catch(er) {
@@ -1088,7 +872,7 @@ const DataController = {
         .then((data:any) => {
             try {
                 DataController.getStore().dispatch({
-                    type:SET_VIDEOS,
+                    type:Actions.SET_VIDEOS,
                     records:DataController.prepareRecords(JSON.parse(data).Records)
                 });
             } catch(er) {
@@ -1112,7 +896,7 @@ const DataController = {
         .then((data:any) => {
             try {
                 DataController.getStore().dispatch({
-                    type:SET_SLIDESHOWS,
+                    type:Actions.SET_SLIDESHOWS,
                     records:DataController.prepareRecords(JSON.parse(data).Records)
                 });
             } catch(er) {
@@ -1136,7 +920,7 @@ const DataController = {
         .then((data:any) => {
             try {
                 DataController.getStore().dispatch({
-                    type:SET_PENALTIES,
+                    type:Actions.SET_PENALTIES,
                     records:DataController.prepareRecords(JSON.parse(data).Records)
                 });
             } catch(er) {
@@ -1170,7 +954,7 @@ const DataController = {
         .then((data:any) => {
             try {
                 DataController.getStore().dispatch({
-                    type:SET_ANTHEMS,
+                    type:Actions.SET_ANTHEMS,
                     records:DataController.prepareRecords(JSON.parse(data).Records)
                 });
             } catch(er) {
@@ -1207,7 +991,7 @@ const DataController = {
             try {
                 var config = JSON.parse( data );
                 DataController.getStore().dispatch({
-                    type:SET_CONFIG_SCOREBOARD,
+                    type:Actions.SET_CONFIG_SCOREBOARD,
                     config:config
                 });
                 ScoreboardController.ApplyConfig(config);
@@ -1225,7 +1009,7 @@ const DataController = {
         .then((data:any) => {
             try {
                 DataController.getStore().dispatch({
-                    type:SET_MISC_RECORDS,
+                    type:Actions.SET_MISC_RECORDS,
                     values:JSON.parse(data).Records
                 });
             } catch(er) {
@@ -1242,7 +1026,7 @@ const DataController = {
         .then((data:any) => {
             try {
                 DataController.getStore().dispatch({
-                    type:SET_PEERS,
+                    type:Actions.SET_PEERS,
                     records:DataController.prepareRecords(JSON.parse(data).Records)
                 });
             } catch(er) {
@@ -2075,3 +1859,142 @@ const DataController = {
 };
 
 export default DataController;
+
+//file constants
+export const Folders = {
+    /**
+     * Main folder
+     */
+    Main:FOLDER_MAIN,
+    /**
+     * Base folder for data files (records, states, config)
+     */
+    Data:FOLDER_DATA,
+    /**
+     * Root media folder
+     */
+    MediaRoot:FOLDER_MEDIA_ROOT,
+    /**
+     * Base media folder, for images, videos, slides, etc.
+     */
+    Media:FOLDER_MEDIA,
+    /**
+     * Folder for individual records
+     */
+    Records:FOLDER_RECORDS,
+    /**
+     * Folder for state records
+     */
+    States:FOLDER_STATES,
+    /**
+     * Folder for default media records
+     */
+    MediaDefault:FOLDER_MEDIA_DEFAULT,
+    /**
+     * Folder for video records
+     */
+    Videos:FOLDER_MEDIA_VIDEOS,
+    /**
+     * Folder for slideshow folders
+     */
+    Slideshows:FOLDER_MEDIA_SLIDESHOWS
+}
+
+export const Files = {
+    /**
+     * User configuration file
+     */
+    Config:FILE_CONFIG,
+    /**
+     * Misc records file
+     */
+    MiscRecords:FILE_RECORDS,
+    /**
+     * Skater records file
+     */
+    Skaters:FILE_SKATERS,
+    /**
+     * Team records file
+     */
+    Teams:FILE_TEAMS,
+    /**
+     * Phase records file
+     */
+    Phases:FILE_PHASES,
+    /**
+     * Video records file
+     */
+    Videos:FILE_VIDEOS,
+    /**
+     * Slideshow records file
+     */
+    Slideshows:FILE_SLIDESHOWS,
+    /**
+     * Sponsor records file
+     */
+    Sponsors:FILE_SPONSORS,
+    /**
+     * Penalty records file
+     */
+    Penalties:FILE_PENALTIES,
+    /**
+     * Jam records file
+     */
+    Jams:FILE_JAMS,
+    /**
+     * Anthem singer records file
+     */
+    AnthemSingers:FILE_ANTHEM,
+    /**
+     * Peer records file
+     */
+    Peers:FILE_PEERS,
+    /**
+     * Scoreboard state file
+     */
+    Scoreboard:FILE_STATE_SCOREBOARD,
+    /**
+     * Scorekeeper state file
+     */
+    Scorekeeper:FILE_STATE_SCOREKEEPER,
+    /**
+     * Camera state file
+     */
+    Camera:FILE_STATE_CAMERA,
+    /**
+     * Capture state file
+     */
+    Capture:FILE_STATE_CAPTURE,
+    /**
+     * Chat state file
+     */
+    Chat:FILE_STATE_CHAT,
+    /**
+     * Media Queue state file
+     */
+    MediaQueue:FILE_STATE_MEDIA_QUEUE,
+    /**
+     * Penalty state file
+     */
+    Penalty:FILE_STATE_PENALTY,
+    /**
+     * Raffle state file
+     */
+    Raffle:FILE_STATE_RAFFLE,
+    /**
+     * Roster state file
+     */
+    Roster:FILE_STATE_ROSTER,
+    /**
+     * Slideshow state file
+     */
+    Slideshow:FILE_STATE_SLIDESHOW,
+    /**
+     * Sponsor state file
+     */
+    Sponsor:FILE_STATE_SPONSOR,
+    /**
+     * Video state file
+     */
+    Video:FILE_STATE_VIDEO
+}

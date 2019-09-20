@@ -28,7 +28,7 @@ export interface SSlideshowController {
     Delay:number
 }
 
-const InitState:SSlideshowController = {
+export const InitState:SSlideshowController = {
     Index:0,
     Loop:false,
     Auto:false,

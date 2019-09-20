@@ -91,7 +91,7 @@ export interface CaptureControllerState {
     Scorekeeper:CaptureStateBase
 }
 
-const InitState:CaptureControllerState = {
+export const InitState:CaptureControllerState = {
     className:'',
     Monitor:{
         Shown:true,

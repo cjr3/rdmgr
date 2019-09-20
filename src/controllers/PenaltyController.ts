@@ -10,7 +10,7 @@ export interface SPenaltyController {
     Skaters:Array<SkaterRecord>
 }
 
-const InitState:SPenaltyController = {
+export const InitState:SPenaltyController = {
     Skaters:[]
 };
 

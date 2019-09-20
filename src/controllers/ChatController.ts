@@ -17,7 +17,7 @@ export interface SChatController {
     Messages:Array<MessageRecord>
 }
 
-const InitState:SChatController = {
+export const InitState:SChatController = {
     Messages:[]
 };
 

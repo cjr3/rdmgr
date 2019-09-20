@@ -19,23 +19,21 @@ class ElectronStartup {
         this.CaptureWindow = null;
         this.MainWindow = null;
         this.DevMode = (typeof(process.defaultApp) == "boolean") ? process.defaultApp : false;
-        this.ShowCaptureWindow = false;
+        this.ShowCaptureWindow = true;
         this.FullScreen = false;
-
-        if(!fs.existsSync('c:/rdmgrdata/files2/rdmgr.config.json')) {
-            app.exit();
-        }
-        
-        let data = fs.readFileSync('c:/rdmgrdata/files2/rdmgr.config.json');
-        if(data) {
-            try {
-                this.Config = JSON.parse(data);
-                if(this.Config && this.Config.UR) {
-                    this.ShowCaptureWindow = this.Config.UR.Capture;
-                    this.FullScreen = this.Config.UR.FullScreen;
+        let path = 'c:/ProgramData/RDMGR/files/rdmgr.config.json';
+        if(fs.existsSync(path)) {
+            let data = fs.readFileSync(path);
+            if(data) {
+                try {
+                    this.Config = JSON.parse(data);
+                    if(this.Config && this.Config.UR) {
+                        this.ShowCaptureWindow = this.Config.UR.Capture;
+                        this.FullScreen = this.Config.UR.FullScreen;
+                    }
+                } catch(er) {
+    
                 }
-            } catch(er) {
-
             }
         }
 
@@ -88,9 +86,9 @@ class ElectronStartup {
      * Creates the needed windows
      */
     createWindows() {
+        this.createControlWindow();
         if(this.ShowCaptureWindow)
             this.createCaptureWindow();
-        this.createControlWindow();
     }
 
     /**
