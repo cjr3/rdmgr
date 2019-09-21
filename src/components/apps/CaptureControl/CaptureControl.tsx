@@ -1,10 +1,7 @@
 import React from 'react'
-import {
-    ToggleButton
-} from 'components/Elements';
+import {ToggleButton} from 'components/Elements';
 import Panel from 'components/Panel'
 import CaptureWatcher from './CaptureWatcher'
-import CaptureDisplayButtons from './CaptureDisplayButtons';
 import CaptureDisplayControls from './CaptureDisplayControls';
 import CaptureStreamControls from './CaptureStreamControls';
 import CaptureControlMonitor from './CaptureControlMonitor';
@@ -20,7 +17,7 @@ interface SCaptureControl {
     CapturePreviewShown:boolean
 };
 
-interface PCaptureControl {
+export interface PCaptureControl {
     /**
      * Determines if the capture control is displayed or not
      */
@@ -37,8 +34,7 @@ interface PCaptureControl {
  * - Slideshows (visibility)
  * - Videos (visibility)
  */
-class CaptureControl extends React.PureComponent<PCaptureControl, SCaptureControl> {
-
+export default class CaptureControl extends React.PureComponent<PCaptureControl, SCaptureControl> {
     readonly state:SCaptureControl = {
         CapturePreviewShown:false
     }
@@ -51,7 +47,7 @@ class CaptureControl extends React.PureComponent<PCaptureControl, SCaptureContro
             <Panel opened={this.props.opened} contentName="CC-app" >
                 <div className="capture-preview">
                     <CaptureControlMonitor/>
-                    <CaptureWatcher shown={this.state.CapturePreviewShown} />
+                    <CaptureWatcher shown={this.state.CapturePreviewShown}/>
                     <div style={{padding:"5px"}}>
                         <ToggleButton
                             checked={this.state.CapturePreviewShown}
@@ -74,6 +70,3 @@ class CaptureControl extends React.PureComponent<PCaptureControl, SCaptureContro
         )
     }
 }
-
-export default CaptureControl;
-export {CaptureDisplayButtons};

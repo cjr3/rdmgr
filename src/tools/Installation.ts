@@ -20,8 +20,16 @@ export interface PathCheckResponse {
     exists:boolean
 }
 
+/**
+ * Class exclusively for checking files during startup and installation
+ * - Checks for the existance of folders and files
+ * - Creates needed folders and files
+ */
 class Installation {
-    FS:any = null;
+    /**
+     * File system access for Node
+     */
+    protected FS:any = null;
     constructor() {
         if(window && window.require) {
             this.FS = window.require('fs');
@@ -30,6 +38,11 @@ class Installation {
         }
     }
 
+    /**
+     * Checks for the existance of required folders
+     * The returned promise is an array of PathCheckResponse objects,
+     * each containing a path (string), and exists (boolean)
+     */
     async CheckFolders() : Promise<Array<PathCheckResponse>|string> {
         return new Promise(async (res, rej) => {
             let responses:Array<PathCheckResponse> = [];
@@ -84,6 +97,11 @@ class Installation {
         });
     }
 
+    /**
+     * Attempts to create the provided file
+     * The file must start with the main RDMGR folder, or an error will be thrown
+     * @param path String
+     */
     protected async CreateFile(path:string) : Promise<boolean> {
         if(path.indexOf(Folders.Main) !== 0)
             throw new Error("File must be in the RDMGR folder only!");
@@ -120,6 +138,10 @@ class Installation {
         });
     }
 
+    /**
+     * Writes the default values for the provided path
+     * @param path String
+     */
     protected WriteFileDefaults(path:string) {
         let data:any = null;
         let records:Array<any> = [];
@@ -135,6 +157,7 @@ class Installation {
                 data = {Records:[]};
             break;
 
+            //Peers
             case Files.Peers :
                 let peer = DataController.getNewRecord(vars.RecordType.Peer);
                 peer.PeerID = 'SCR01-RDMGR';
@@ -275,6 +298,7 @@ class Installation {
                 data = {Records:records};
             break;
 
+            //Misc records
             case Files.MiscRecords :
                 data = {Records:{
                     Raffle:{

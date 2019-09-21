@@ -3,11 +3,29 @@ import Panel from 'components/Panel'
 import ScoreboardController from 'controllers/ScoreboardController'
 import {IconButton, IconNo, IconCheck} from 'components/Elements'
 
-interface PJamReset {
+/**
+ * 
+ */
+export interface PJamReset {
+    /**
+     * Hour when last jam started
+     */
     hour:number,
+    /**
+     * Minute when last jam started
+     */
     minute:number,
+    /**
+     * Second when last jam started
+     */
     second:number,
+    /**
+     * true = shown, false = hidden
+     */
     opened:boolean,
+    /**
+     * Triggered when closed
+     */
     onClose:Function
 }
 
@@ -24,7 +42,10 @@ export default function JamReset(props:PJamReset) {
             buttons={[
                 <IconButton
                     key="button-submit"
-                    onClick={ScoreboardController.ResetJam}
+                    onClick={() => {
+                        ScoreboardController.ResetJam();
+                        props.onClose();
+                    }}
                     src={IconCheck}
                     >Yes</IconButton>,
                 <IconButton

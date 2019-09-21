@@ -48,53 +48,57 @@ class CaptureWatcher extends React.PureComponent<PCaptureWorker> {
             this.paint();
     }
 
+    load() {
+        let DC:any = window.require("electron").desktopCapturer;
+        let that = this;
+        DC.getSources({
+            types:['window']
+        }, async function(err, sources) {
+            if(err) { }
+            else {
+                for(var key in sources) {
+                    if(sources[key].name === 'RDMGR : Capture Window') {
+                        (navigator.mediaDevices as any).getUserMedia({
+                            audio:false,
+                            video:{
+                                mandatory:{
+                                    chromeMediaSource:'desktop',
+                                    chromeMediaSourceId:sources[key].id,
+                                    minWidth:640,
+                                    maxWidth:640,
+                                    minHeight:360,
+                                    maxHeight:360
+                                }
+                            }
+                        }).then(function(stream) {
+                            that.CaptureVideo.srcObject = stream;
+                            if(that.props.shown) {
+                                that.worker.postMessage('play');
+                                that.CaptureVideo.play();
+                            }
+                        }.bind(that)).catch(function(er) {
+
+                        });
+                        break;
+                    }
+                }
+            }
+        }.bind(this));
+    }
+
     componentDidMount() {
         if(this.CanvasItem.current !== null) {
             this.Brush = this.CanvasItem.current.getContext('2d');
         }
-
         if(window) {
-            let DC:any = window.require("electron").desktopCapturer;
-            let that = this;
-            DC.getSources({
-                types:['window']
-            }, async function(err, sources) {
-                if(err) { }
-                else {
-                    for(var key in sources) {
-                        if(sources[key].name === 'RDMGR : Capture Window') {
-                            (navigator.mediaDevices as any).getUserMedia({
-                                audio:false,
-                                video:{
-                                    mandatory:{
-                                        chromeMediaSource:'desktop',
-                                        chromeMediaSourceId:sources[key].id,
-                                        minWidth:640,
-                                        maxWidth:640,
-                                        minHeight:360,
-                                        maxHeight:360
-                                    }
-                                }
-                            }).then(function(stream) {
-                                that.CaptureVideo.srcObject = stream;
-                                if(that.props.shown) {
-                                    that.worker.postMessage('play');
-                                    that.CaptureVideo.play();
-                                }
-                            }.bind(that)).catch(function(er) {
-    
-                            });
-                            break;
-                        }
-                    }
-                }
-            }.bind(this));
+            this.load();
         }
     }
 
     componentDidUpdate(prevProps) {
         if(prevProps.shown !== this.props.shown) {
             if(this.props.shown) {
+                this.load();
                 this.worker.postMessage('play');
                 this.CaptureVideo.play();
             }

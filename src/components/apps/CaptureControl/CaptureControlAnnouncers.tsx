@@ -1,8 +1,8 @@
 import React from 'react';
 import CaptureController from 'controllers/CaptureController';
 import CaptureControlPanel, {PCaptureControlPanel} from './CaptureControlPanel';
-
 import {IconX, IconCheck, IconButton} from 'components/Elements';
+import DataController from 'controllers/DataController';
 
 interface SCaptureControlAnnouncers {
     /**
@@ -28,6 +28,9 @@ interface SCaptureControlAnnouncers {
  */
 class CaptureControlAnnouncers extends React.PureComponent<PCaptureControlPanel, SCaptureControlAnnouncers> {
 
+    /**
+     * State
+     */
     readonly state:SCaptureControlAnnouncers = {
         Announcer1:CaptureController.getState().Announcers.Announcer1,
         Announcer2:CaptureController.getState().Announcers.Announcer2,
@@ -35,7 +38,10 @@ class CaptureControlAnnouncers extends React.PureComponent<PCaptureControlPanel,
         Shown:CaptureController.getState().Announcers.Shown
     }
 
-    remoteCapture:Function
+    /**
+     * Listener for capture controller
+     */
+    protected remoteCapture:Function
 
     constructor(props) {
         super(props);
@@ -80,11 +86,7 @@ class CaptureControlAnnouncers extends React.PureComponent<PCaptureControlPanel,
      * Triggered when the user clicks the submit button.
      */
     onClickSubmit() {
-        CaptureController.SetAnnouncers({
-            Announcer1:this.state.Announcer1,
-            Announcer2:this.state.Announcer2,
-            Duration:this.state.Duration * 1000
-        });
+        CaptureController.SetAnnouncers(this.state.Announcer1, this.state.Announcer2, this.state.Duration * 1000);
     }
 
     /**

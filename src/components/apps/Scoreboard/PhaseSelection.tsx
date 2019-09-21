@@ -8,13 +8,28 @@ interface SPhaseSelection {
     Phases:Array<PhaseRecord>
 }
 
-interface PPhaseSelection {
+export interface PPhaseSelection {
+    /**
+     * True to show, false to hide
+     */
     opened:boolean,
+    /**
+     * Triggered when the user selects a phase
+     */
     onSelect:Function,
+    /**
+     * Triggered when the panel closes
+     */
     onClose:Function,
+    /**
+     * Class name of panel content
+     */
     className?:string
 }
 
+/**
+ * Component for displaying the phase/quarter selection on the scoreboard
+ */
 class PhaseSelection extends React.PureComponent<PPhaseSelection, SPhaseSelection> {
     readonly state:SPhaseSelection = {
         Phases:DataController.getState().Phases
@@ -39,7 +54,7 @@ class PhaseSelection extends React.PureComponent<PPhaseSelection, SPhaseSelectio
      * Triggered when the user select a phase/quarter.
      * @param {Number} index 
      */
-    onSelect(index) {
+    onSelect(index:number) {
         ScoreboardController.SetPhase(index);
         if(ScoreboardController.getState().GameState !== vars.Clock.Status.Running) {
             let Phases = DataController.getState().Phases;

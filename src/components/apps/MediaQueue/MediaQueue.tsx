@@ -9,7 +9,7 @@ import CaptureController, {
 } from 'controllers/CaptureController';
 import SponsorController from 'controllers/SponsorController';
 import MediaQueueController, {SMediaQueueController} from 'controllers/MediaQueueController';
-import {CaptureDisplayButtons} from 'components/apps/CaptureControl/CaptureControl';
+import CaptureDisplayButtons from 'components/apps/CaptureControl/CaptureDisplayButtons';
 import Raffle from 'components/apps/Raffle/Raffle';
 import {
     IconButton,

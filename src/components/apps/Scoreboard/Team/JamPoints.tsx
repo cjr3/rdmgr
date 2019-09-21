@@ -1,6 +1,6 @@
 import React from 'react'
 import Counter from 'components/tools/Counter'
-import {Icon} from 'components/Elements'
+import {Icon, IconPlus} from 'components/Elements'
 import ScoreboardController, {SScoreboardTeam} from 'controllers/ScoreboardController'
 
 interface SJamPoints {
@@ -27,6 +27,8 @@ class JamPoints extends React.PureComponent<PJamPoints, SJamPoints> {
 
         //bindings
         this.onChange = this.onChange.bind(this);
+        this.onAdd = this.onAdd.bind(this);
+        this.onSubtract = this.onSubtract.bind(this);
         this.updateState = this.updateState.bind(this);
         this.remoteScoreboard = ScoreboardController.subscribe(this.updateState);
     }
@@ -58,6 +60,22 @@ class JamPoints extends React.PureComponent<PJamPoints, SJamPoints> {
     }
 
     /**
+     * Triggered when the user adds jam points
+     * @param amount number
+     */
+    onAdd(amount) {
+        ScoreboardController.IncreaseTeamJamPoints(this.props.Team, amount);
+    }
+
+    /**
+     * Triggered when the user subtracts jam points
+     * @param amount number
+     */
+    onSubtract(amount) {
+        ScoreboardController.DecreaseTeamJamPoints(this.props.Team, amount);
+    }
+
+    /**
      * Triggered when the component mounts to the DOM.
      */
     componentDidMount() {
@@ -78,13 +96,15 @@ class JamPoints extends React.PureComponent<PJamPoints, SJamPoints> {
                         min={-99}
                         max={99}
                         padding={2}
-                        onChange={this.onChange}
+                        //onChange={this.onChange}
+                        onAdd={this.onAdd}
+                        onSubtract={this.onSubtract}
                         ref={this.CounterItem}
                     />
                 </div>
                 <div>
                     <Icon 
-                        src={require('images/icons/plus.png')}
+                        src={IconPlus}
                         onClick={() => {
                             ScoreboardController.IncreaseTeamJamPoints(this.props.Team, 1);
                         }}

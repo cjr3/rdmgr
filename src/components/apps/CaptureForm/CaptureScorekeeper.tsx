@@ -1,19 +1,32 @@
-import React from 'react';
+import React, { CSSProperties } from 'react';
 import DataController from 'controllers/DataController';
 import ScorekeeperController, {SScorekeeperState} from 'controllers/ScorekeeperController';
 import cnames from 'classnames'
 import './css/CaptureScorekeeper.scss';
 
-interface PCaptureScorekeeper {
-    shown?:boolean
+/**
+ * Properties for the CaptureScorekeeper component
+ */
+export interface PCaptureScorekeeper {
+    /**
+     * True to show/hide the component
+     */
+    shown:boolean
 }
 
 /**
  * Component for displaying Scorekeeper elements on the capture window.
  */
 class CaptureScorekeeper extends React.Component<PCaptureScorekeeper, SScorekeeperState> {
+    /**
+     * State
+     */
     readonly state:SScorekeeperState = ScorekeeperController.getState();
-    remoteState:Function
+    /**
+     * Listener for changes to the scorekeeper controller
+     */
+    protected remoteState:Function
+
     constructor(props) {
         super(props);
         this.updateState = this.updateState.bind(this);
@@ -43,18 +56,18 @@ class CaptureScorekeeper extends React.Component<PCaptureScorekeeper, SScorekeep
             shown:(this.state.TeamB.Track.Jammer !== null)
         });
 
-        var srcA:string = '';
-        var srcB:string = '';
-        var styleA:any = {};
-        var styleB:any = {};
-        var nameA:string = '';
-        var nameB:string = '';
+        var srcA:string|undefined = '';
+        var srcB:string|undefined = '';
+        var styleA:CSSProperties = {};
+        var styleB:CSSProperties = {};
+        var nameA:string|undefined = '';
+        var nameB:string|undefined = '';
 
         if(this.state.TeamA.Track.Jammer !== null) {
             if(this.state.TeamA.Track.Jammer.Thumbnail)
                 srcA = DataController.mpath(this.state.TeamA.Track.Jammer.Thumbnail);
-            if(this.state.TeamA.Track.Jammer.Name !== undefined)
-                nameA = this.state.TeamA.Track.Jammer.Name;
+            if(this.state.TeamA.Track.Jammer.Number !== undefined)
+                nameA = this.state.TeamA.Track.Jammer.Number;
             styleA = {
                 backgroundImage:`linear-gradient(0deg, rgba(0,0,0,0), ${this.state.TeamA.Track.Jammer.Color})`
             }
@@ -63,8 +76,8 @@ class CaptureScorekeeper extends React.Component<PCaptureScorekeeper, SScorekeep
         if(this.state.TeamB.Track.Jammer !== null) {
             if(this.state.TeamB.Track.Jammer.Thumbnail)
                 srcB = DataController.mpath(this.state.TeamB.Track.Jammer.Thumbnail);
-            if(this.state.TeamB.Track.Jammer.Name !== undefined)
-                nameB = this.state.TeamB.Track.Jammer.Name;
+            if(this.state.TeamB.Track.Jammer.Number !== undefined)
+                nameB = this.state.TeamB.Track.Jammer.Number;
             styleB = {
                 backgroundImage:`linear-gradient(0deg, rgba(0,0,0,0), ${this.state.TeamB.Track.Jammer.Color})`,
             }

@@ -9,8 +9,12 @@ import BoardStatus from './BoardStatus'
 import {
     Icon, 
     Button, 
-    IconCheck, 
-    IconPlay} from 'components/Elements'
+    IconPlay,
+    IconPause,
+    IconCheck,
+    IconInjury,
+    IconOfficialTimeout
+} from 'components/Elements'
 import PhaseControl from './PhaseControl'
 import PhaseSelection from './PhaseSelection'
 import TeamPicker from './TeamPicker'
@@ -18,28 +22,79 @@ import JamReset from './JamReset'
 import DisplayPanel from './DisplayPanel'
 import vars from 'tools/vars'
 import ScoreboardController, {SScoreboardTeam} from 'controllers/ScoreboardController'
-import DataController from 'controllers/DataController'
 import './css/Scoreboard.scss'
 
 interface SScoreboard {
+    /**
+     * Status of the scoreboard
+     */
     BoardStatus:number,
+    /**
+     * State of the jam clock
+     */
     JamState:number,
+    /**
+     * State of the break clock
+     */
     BreakState:number,
+    /**
+     * State of the game clock
+     */
     GameState:number,
+    /**
+     * Status of confirming points to in-field referees
+     */
     ConfirmStatus:number,
+    /**
+     * Name of current phase/quarter
+     */
     PhaseName:string,
+    /**
+     * Left-side team
+     */
     TeamA:SScoreboardTeam,
+    /**
+     * Right-side team
+     */
     TeamB:SScoreboardTeam,
+    /**
+     * Show/Hide phase selection
+     */
     PhaseOpened:boolean,
+    /**
+     * Show/Hide team selection
+     */
     TeamOpened:boolean,
+    /**
+     * Show/hide display buttons
+     */
     DisplayOpened:boolean,
+    /**
+     * Show/Hide Jam Reset
+     */
     JamResetOpened:boolean,
+    /**
+     * Last jam start hour
+     */
     StartGameHour:number,
+    /**
+     * Last jam start minute
+     */
     StartGameMinute:number,
+    /**
+     * Last jam start second
+     */
     StartGameSecond:number
 }
 
-interface PScoreboard {
+/**
+ * Scoreboard properties
+ */
+export interface PScoreboard {
+    /**
+     * Remote peer's PeerID
+     * - If provided, clocks values must be set with state updates
+     */
     remote?:string,
     opened:boolean
 }
@@ -66,9 +121,15 @@ class Scoreboard extends React.Component<PScoreboard, SScoreboard> {
         StartGameSecond:ScoreboardController.getState().StartGameSecond
     }
 
-    JamLabels:Array<string> = ["JAM", "STOP", "READY"];
+    /**
+     * Labels for the jam button
+     */
+    protected JamLabels:Array<string> = ["JAM", "STOP", "READY"];
 
-    remoteScore:Function
+    /**
+     * Listener for Scoreboard controller
+     */
+    protected remoteScore:Function
 
     constructor(props) {
         super(props);
@@ -87,13 +148,19 @@ class Scoreboard extends React.Component<PScoreboard, SScoreboard> {
      * Updates the state to match the controller.
      */
     updateState() {
+        let cstate = ScoreboardController.getState();
         this.setState({
-            BoardStatus:ScoreboardController.getState().BoardStatus,
-            JamState:ScoreboardController.getState().JamState,
-            ConfirmStatus:ScoreboardController.getState().ConfirmStatus,
-            PhaseName:ScoreboardController.getState().PhaseName,
-            TeamA:ScoreboardController.getState().TeamA,
-            TeamB:ScoreboardController.getState().TeamB
+            BoardStatus:cstate.BoardStatus,
+            JamState:cstate.JamState,
+            GameState:cstate.GameState,
+            BreakState:cstate.BreakState,
+            ConfirmStatus:cstate.ConfirmStatus,
+            PhaseName:cstate.PhaseName,
+            TeamA:cstate.TeamA,
+            TeamB:cstate.TeamB,
+            StartGameHour:cstate.StartGameHour,
+            StartGameMinute:cstate.StartGameMinute,
+            StartGameSecond:cstate.StartGameSecond
         });
     }
 
@@ -178,14 +245,14 @@ class Scoreboard extends React.Component<PScoreboard, SScoreboard> {
      * Renders the component
      */
     render() {
-        var jamLabel = this.JamLabels[this.state.JamState];
+        const jamLabel:string = this.JamLabels[this.state.JamState];
         var clockIcon = IconPlay
             
         if(ScoreboardController.getState().GameState === vars.Clock.Status.Running) {
-            //clockIcon = 'pause.png';
+            clockIcon = IconPause
         }
         
-        var buttons = [
+        var buttons:Array<React.ReactElement> = [
             <Button key="btn-review" 
                 active={(this.state.BoardStatus == vars.Scoreboard.Status.Review)}
                 onClick={this.onClickReview}>Review</Button>,
@@ -239,19 +306,19 @@ class Scoreboard extends React.Component<PScoreboard, SScoreboard> {
                 </div>
                 <div className="board-status-controls">
                     <Icon 
-                        src={require('images/icons/oto.png')}
+                        src={IconOfficialTimeout}
                         active={this.state.BoardStatus === vars.Scoreboard.Status.Timeout}
                         onClick={ScoreboardController.OfficialTimeout}
                         title="Official Timeout"
                         />
                     <Icon 
-                        src={require('images/icons/injury.png')}
+                        src={IconInjury}
                         active={this.state.BoardStatus === vars.Scoreboard.Status.Injury}
                         onClick={ScoreboardController.InjuryTimeout}
                         title="Injury Timeout"
                         />
                     <Icon 
-                        src={require('images/icons/check.png')}
+                        src={IconCheck}
                         active={this.state.ConfirmStatus === 1}
                         onClick={ScoreboardController.ToggleConfirm}
                         />

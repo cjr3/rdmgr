@@ -35,7 +35,7 @@ function ChatReducer(state = InitState, action) {
             messages.push({
                 name:action.message.name,
                 line:action.message.line,
-                time:action.message.date,
+                time:action.message.time,
                 read:action.message.read,
                 self:action.message.self
             });

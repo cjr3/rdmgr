@@ -1,14 +1,15 @@
-import React from 'react'
+import React, { CSSProperties } from 'react'
 import Panel from 'components/Panel'
 import cnames from 'classnames';
 import ScoreboardController, {SScoreboardTeam} from 'controllers/ScoreboardController'
-import ScorekeeperController, {SScorekeeperState} from 'controllers/ScorekeeperController'
+import ScorekeeperController, {SScorekeeperState, SScorekeeperTeam, SScorekeeperTeamDeckStatus, SScorekeeperTeamDeck} from 'controllers/ScorekeeperController'
 import CaptureController from 'controllers/CaptureController'
 import RosterController from 'controllers/RosterController';
-import {Button, IconButton, Icon} from 'components/Elements';
+import {Button, IconButton, Icon, IconShown, IconHidden, IconUp} from 'components/Elements';
 
 import './css/Scorekeeper.scss';
 import { SkaterRecord } from 'tools/vars';
+import DataController from 'controllers/DataController';
 
 interface SScoreKeeper {
     Shown:boolean,
@@ -89,10 +90,65 @@ class Scorekeeper extends React.PureComponent<any, SScoreKeeper> {
      * Renders the component
      */
     render() {
-        var iconShown = 'eye-closed.png'
+        var iconShown = IconHidden;
         if(this.state.Shown)
-            iconShown = 'eye-open.png';
-        iconShown = require('images/icons/' + iconShown);
+            iconShown = IconShown;
+
+        let logoA = '';
+        let logoB = '';
+        if(this.state.TeamA.Thumbnail !== undefined) {
+            logoA = DataController.mpath(this.state.TeamA.Thumbnail);
+        }
+
+        if(this.state.TeamB.Thumbnail !== undefined) {
+            logoB = DataController.mpath(this.state.TeamB.Thumbnail);
+        }
+
+        let teamASkaters:Array<React.ReactElement> = [];
+        let teamBSkaters:Array<React.ReactElement> = [];
+
+        let i = 0;
+        for(let key in this.state.State.TeamA.Track) {
+            let skater:SkaterRecord|null = this.state.State.TeamA.Track[key];
+            if(skater !== null) {
+                let src = logoA;
+                if(skater.Thumbnail !== undefined && skater.Thumbnail.length >= 1) {
+                    src = DataController.mpath(skater.Thumbnail);
+                }
+                teamASkaters.push(
+                    <div 
+                        key={`skater-${i}`}
+                        className="skater">
+                        <div className="thumbnail">
+                            <img src={src} alt=""/>
+                        </div>
+                        <div className="num">{skater.Number}</div>
+                    </div>
+                )
+            }
+            i++;
+        }
+
+        for(let key in this.state.State.TeamB.Track) {
+            let skater:SkaterRecord|null = this.state.State.TeamB.Track[key];
+            if(skater !== null) {
+                let src = logoB;
+                if(skater.Thumbnail !== undefined && skater.Thumbnail.length >= 1) {
+                    src = DataController.mpath(skater.Thumbnail);
+                }
+                teamBSkaters.push(
+                    <div 
+                        key={`skater-${i}`}
+                        className="skater">
+                        <div className="thumbnail">
+                            <img src={src} alt=""/>
+                        </div>
+                        <div className="num">{skater.Number}</div>
+                    </div>
+                )
+            }
+            i++;
+        }
 
         var buttons = [
             <IconButton
@@ -103,7 +159,7 @@ class Scorekeeper extends React.PureComponent<any, SScoreKeeper> {
             >{(this.state.Shown) ? 'Hide' : 'Show'}</IconButton>,
             <IconButton
                 key="btn-shift"
-                src={require('images/icons/up.png')}
+                src={IconUp}
                 onClick={ScorekeeperController.ShiftDecks}
                 >Shift Skaters</IconButton>
         ];
@@ -116,8 +172,8 @@ class Scorekeeper extends React.PureComponent<any, SScoreKeeper> {
                 {...this.props}>
                 <ScorekeeperTeam 
                     side='A' 
-                    name={this.state.TeamB.Name}
-                    color={this.state.TeamB.Color}
+                    name={this.state.TeamA.Name}
+                    color={this.state.TeamA.Color}
                     team={this.state.State.TeamA}
                     skaters={this.state.TeamASkaters}
                     />
@@ -128,23 +184,31 @@ class Scorekeeper extends React.PureComponent<any, SScoreKeeper> {
                     team={this.state.State.TeamB}
                     skaters={this.state.TeamBSkaters}
                     />
+                <div className="positions">
+                    <div className="team team-a">
+                        {teamASkaters}
+                    </div>
+                    <div className="team team-b">
+                        {teamBSkaters}
+                    </div>
+                </div>
             </Panel>
         )
     }
 }
 
-interface SScorekeeperTeam {
+interface PScorekeeperTeam {
     side:string,
     name:string,
     color:string,
     skaters:Array<SkaterRecord>,
-    team:any
+    team:SScorekeeperTeam
 }
 /**
  * Component represents a team.
  */
-class ScorekeeperTeam extends React.PureComponent<SScorekeeperTeam> {
-    constructor(props) {
+class ScorekeeperTeam extends React.PureComponent<PScorekeeperTeam> {
+    constructor(props:PScorekeeperTeam) {
         super(props);
         this.onSelectSkater = this.onSelectSkater.bind(this);
         this.onSelectPosition = this.onSelectPosition.bind(this);
@@ -193,7 +257,7 @@ class ScorekeeperTeam extends React.PureComponent<SScorekeeperTeam> {
             });
         }
         var className = cnames('team', 'team-' + this.props.side);
-        var style = {backgroundColor:this.props.color};
+        var style:CSSProperties = {backgroundColor:this.props.color};
 
         return (
             <div className={className}>
@@ -228,14 +292,14 @@ class ScorekeeperTeam extends React.PureComponent<SScorekeeperTeam> {
     }
 }
 
-interface SScorekeeperTeamDeck {
-    deck:any,
-    current:string,
+interface PScorekeeperTeamDeck {
+    deck:SScorekeeperTeamDeck,
+    current:SScorekeeperTeamDeckStatus,
     title:string,
     onSelectPosition:Function
 }
 
-function ScorekeeperTeamPositionDeck(props:SScorekeeperTeamDeck) {
+function ScorekeeperTeamPositionDeck(props:PScorekeeperTeamDeck) {
     return (
         <div className="skater-deck">
             <ScorekeeperTeamPosition 
@@ -277,15 +341,15 @@ function ScorekeeperTeamPositionDeck(props:SScorekeeperTeamDeck) {
     );
 }
 
-interface SScorekeeperPosition {
-    position:any,
-    current:any,
-    deck:any,
+interface PScorekeeperPosition {
+    position:SkaterRecord|null,
+    current:SScorekeeperTeamDeckStatus,
+    deck:string,
     title:string,
     onSelectPosition:Function
 }
 
-function ScorekeeperTeamPosition(props:SScorekeeperPosition) {
+function ScorekeeperTeamPosition(props:PScorekeeperPosition) {
     var className = cnames({
         active:(props.position !== null),
         current:(props.current.Deck === props.deck && props.current.Position === props.title)

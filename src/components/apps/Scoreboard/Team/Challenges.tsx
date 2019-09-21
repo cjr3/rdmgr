@@ -7,7 +7,10 @@ interface SChallenge {
     amount:number
 }
 
-interface PChallenge {
+export interface PChallenge {
+    /**
+     * The team the challenges belong to
+     */
     Team:SScoreboardTeam
 }
 
@@ -19,9 +22,15 @@ class Challenges extends React.PureComponent<PChallenge, SChallenge> {
         amount:3
     }
 
-    CounterItem:React.RefObject<Counter> = React.createRef();
+    /**
+     * Reference to counter component
+     */
+    protected CounterItem:React.RefObject<Counter> = React.createRef();
 
-    remoteScoreboard:Function
+    /**
+     * Listener for scoreboard controller
+     */
+    protected remoteScoreboard:Function
 
     constructor(props) {
         super(props);
@@ -29,6 +38,8 @@ class Challenges extends React.PureComponent<PChallenge, SChallenge> {
 
         //bindings
         this.onChange = this.onChange.bind(this);
+        this.onAdd = this.onAdd.bind(this);
+        this.onSubtract = this.onSubtract.bind(this);
         this.updateState = this.updateState.bind(this);
         this.remoteScoreboard = ScoreboardController.subscribe(this.updateState);
     }
@@ -62,6 +73,22 @@ class Challenges extends React.PureComponent<PChallenge, SChallenge> {
     }
 
     /**
+     * Triggered when the user adds challenges
+     * @param amount number
+     */
+    onAdd(amount:number) {
+        ScoreboardController.IncreaseTeamChallenges(this.props.Team, amount);
+    }
+
+    /**
+     * Triggered when the user subtracts challenges
+     * @param amount number
+     */
+    onSubtract(amount:number) {
+        ScoreboardController.DecreaseTeamChallenges(this.props.Team, amount);
+    }
+
+    /**
      * Triggered when the component mounts to the DOM.
      */
     componentDidMount() {
@@ -83,7 +110,9 @@ class Challenges extends React.PureComponent<PChallenge, SChallenge> {
                         max={3}
                         amount={3}
                         padding={2}
-                        onChange={this.onChange}
+                        //onChange={this.onChange}
+                        onAdd={this.onAdd}
+                        onSubtract={this.onSubtract}
                         ref={this.CounterItem}
                     />
                 </div>

@@ -585,12 +585,38 @@ const CaptureController = {
 
     /**
      * Sets the values of the announcer object.
-     * @param {Object} values 
+     * @param {string} announcer1 
+     * @param {string} announcer2 
+     * @param {string} duration 
      */
-    SetAnnouncers(values:object) {
+    SetAnnouncers(announcer1:string, announcer2:string, duration:number = 7000) {
+        DataController.SaveMiscRecord('Announcers', {
+            Announcer1:announcer1,
+            Announcer2:announcer2
+        }).then(() => {
+            CaptureController.getStore().dispatch({
+                type:SET_ANNOUNCERS,
+                values:{
+                    Announcer1:announcer1,
+                    Announcer2:announcer2,
+                    Duration:duration
+                }
+            });
+        }).catch(() => {
+
+        })
+    },
+
+    /**
+     * Sets the visibility of the announcer on the capture window
+     * @param value boolean
+     */
+    SetAnnouncerVisibility(value:boolean) {
         CaptureController.getStore().dispatch({
             type:SET_ANNOUNCERS,
-            values:values
+            values:{
+                Shown:value
+            }
         });
     },
 
@@ -713,7 +739,7 @@ const CaptureController = {
             type:TOGGLE_ANNOUNCER
         });
         Timers.Announcers = startTimeout(Timers.Announcers, () => {
-            CaptureController.SetAnnouncers({Shown:false});
+            CaptureController.SetAnnouncerVisibility(false);
         }, CaptureController.getState().Announcers.Duration);
     },
 

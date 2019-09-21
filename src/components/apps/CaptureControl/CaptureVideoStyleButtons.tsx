@@ -64,7 +64,7 @@ class CaptureVideoStyleButtons extends React.PureComponent<any, SCaptureVideoSty
                     src={IconCameraDefault}
                     active={(this.state.className === 'video-def')}
                     onClick={() => {
-                        CaptureController.SetMainCameraClass('video-def');
+                        CaptureController.SetMainVideoClass('video-def');
                     }}
                     />
                 <Icon
@@ -79,24 +79,24 @@ class CaptureVideoStyleButtons extends React.PureComponent<any, SCaptureVideoSty
                     src={IconCamera2080}
                     active={(this.state.className === 'video-2080'  || this.state.className === 'video-8020')}
                     onClick={() => {
-                        CaptureController.SetMainCameraClass('video-8020');
-                        CaptureController.SetMainVideoClass('video-2080');
+                        CaptureController.SetMainVideoClass('video-8020');
+                        CaptureController.SetMainCameraClass('video-2080');
                     }}
                     />
                 <Icon
                     src={IconCameraLeftThird}
                     active={(this.state.className === 'video-lt')}
                     onClick={() => {
-                        CaptureController.SetMainCameraClass('video-lt');
-                        CaptureController.SetMainVideoClass('video-def');
+                        CaptureController.SetMainVideoClass('video-lt');
+                        CaptureController.SetMainCameraClass('video-def');
                     }}
                     />
                 <Icon
                     src={IconCameraRightThird}
                     active={(this.state.className === 'video-lr')}
                     onClick={() => {
-                        CaptureController.SetMainCameraClass('video-lr');
-                        CaptureController.SetMainVideoClass('video-def');
+                        CaptureController.SetMainVideoClass('video-lr');
+                        CaptureController.SetMainCameraClass('video-def');
                     }}
                     />
             </div>

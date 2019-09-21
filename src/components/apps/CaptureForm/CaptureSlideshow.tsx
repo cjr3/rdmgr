@@ -1,5 +1,6 @@
 import React from 'react'
 import SlideshowController, {SSlideshowController} from 'controllers/SlideshowController'
+import DataController from 'controllers/DataController';
 import cnames from 'classnames'
 import './css/CaptureSlideshow.scss';
 
@@ -63,10 +64,10 @@ class CaptureSlideshow extends React.PureComponent<PCaptureSlideshow, SCaptureSl
         });
 
         if(this.state.Slides && this.state.Slides.length && this.state.Slides[this.state.Index]) {
-            if(this.state.CurrentSlide === 'A')
-                this.SourceA = this.state.Slides[this.state.Index].Filename;
-            else {
-                this.SourceB = this.state.Slides[this.state.Index].Filename;
+            if(this.state.CurrentSlide === 'A') {
+                this.SourceA = DataController.mpath(this.state.Slides[this.state.Index].Filename);
+            } else {
+                this.SourceB = DataController.mpath(this.state.Slides[this.state.Index].Filename);
             }
         }
 

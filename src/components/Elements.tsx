@@ -9,8 +9,6 @@ import './css/Elements.scss'
 import {default as UISlider, SliderProps, Mark} from '@material-ui/core/Slider'
 import DataController from 'controllers/DataController';
 
-export const TeamALogo = require('images/default/TeamA.jpg');
-
 //static icons
 const IconAttachment = require('images/icons/attachment.png');
 const IconAV = require('images/icons/av.png');
@@ -28,9 +26,10 @@ const IconConnected = require('images/icons/online.png');
 const IconDelete = require('images/icons/trash.png');
 const IconDisconnected = require('images/icons/offline.png');
 const IconDown = require('images/icons/down.png');
-const IconHidden = require('images/icons/eye-closed.png');
 const IconFlag = require('images/icons/flag.png');
 const IconFolder = require('images/icons/folder.png');
+const IconHidden = require('images/icons/eye-closed.png');
+const IconInjury = require('images/icons/injury.png');
 const IconLeft = require('images/icons/left.png');
 const IconLoop = require('images/icons/loop.png');
 const IconMic = require('images/icons/microphone.png');
@@ -38,6 +37,7 @@ const IconMonitor = require('images/icons/monitor.png');
 const IconMovie = require('images/icons/movie.png');
 const IconMuted = require('images/icons/volume-mute.png');
 const IconNo = require('images/icons/no.png');
+const IconOfficialTimeout = require('images/icons/oto.png');
 const IconOffline = require('images/icons/offline.png');
 const IconOnline = require('images/icons/online.png');
 const IconPlus = require('images/icons/plus.png');
@@ -563,5 +563,7 @@ export {
     IconCameraRightThird,
     IconFastForward,
     IconPlay,
-    IconPause
+    IconPause,
+    IconInjury,
+    IconOfficialTimeout
 };

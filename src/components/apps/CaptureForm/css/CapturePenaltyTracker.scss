@@ -32,6 +32,7 @@
             .skater-number {
                 flex: 0 0 90px;
                 padding: 3px;
+                overflow:hidden;
             }
 
             .skater-penalties {
@@ -64,7 +65,7 @@
 
     .penalty-items {
         .penalty-item {
-            font-size: 36px;
+            font-size: 24px;
             text-align: center;
             .skater-penalties {
                 text-align: center;

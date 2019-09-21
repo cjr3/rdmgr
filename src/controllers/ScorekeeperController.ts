@@ -7,47 +7,28 @@ const STAR_PASS = 'STAR_PASS';
 const SHIFT_DECKS = 'SHIFT_DECKS';
 const SET_CURRENT_POSITION = 'SET_CURRENT_POSITION';
 
+export interface SScorekeeperTeamDeckStatus {
+    Deck:string,
+    Position:string
+}
+
+export interface SScorekeeperTeamDeck {
+    Jammer:SkaterRecord|null,
+    Pivot:SkaterRecord|null,
+    Blocker1:SkaterRecord|null,
+    Blocker2:SkaterRecord|null,
+    Blocker3:SkaterRecord|null,
+}
+
+export interface SScorekeeperTeam {
+    Track:SScorekeeperTeamDeck,
+    Deck:SScorekeeperTeamDeck,
+    Current:SScorekeeperTeamDeckStatus
+}
+
 export interface SScorekeeperState {
-    TeamA:{
-        Track:{
-            Jammer:SkaterRecord|null,
-            Pivot:SkaterRecord|null,
-            Blocker1:SkaterRecord|null,
-            Blocker2:SkaterRecord|null,
-            Blocker3:SkaterRecord|null,
-        },
-        Deck:{
-            Jammer:SkaterRecord|null,
-            Pivot:SkaterRecord|null,
-            Blocker1:SkaterRecord|null,
-            Blocker2:SkaterRecord|null,
-            Blocker3:SkaterRecord|null,
-        },
-        Current:{
-            Deck:string,
-            Position:string
-        }
-    },
-    TeamB:{
-        Track:{
-            Jammer:SkaterRecord|null,
-            Pivot:SkaterRecord|null,
-            Blocker1:SkaterRecord|null,
-            Blocker2:SkaterRecord|null,
-            Blocker3:SkaterRecord|null,
-        },
-        Deck:{
-            Jammer:SkaterRecord|null,
-            Pivot:SkaterRecord|null,
-            Blocker1:SkaterRecord|null,
-            Blocker2:SkaterRecord|null,
-            Blocker3:SkaterRecord|null,
-        },
-        Current:{
-            Deck:string,
-            Position:string
-        }
-    }
+    TeamA:SScorekeeperTeam,
+    TeamB:SScorekeeperTeam
 }
 
 export const InitState:SScorekeeperState = {

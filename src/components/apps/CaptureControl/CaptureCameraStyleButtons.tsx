@@ -24,16 +24,26 @@ interface SCaptureCameraStyleButtons {
 /**
  * Buttons for setting the style of the main camera
  */
-class CaptureCameraStyleButtons extends React.PureComponent<any, SCaptureCameraStyleButtons> {
+export default class CaptureCameraStyleButtons extends React.PureComponent<any, SCaptureCameraStyleButtons> {
 
+    /**
+     * State
+     */
     readonly state:SCaptureCameraStyleButtons = {
         Shown:CaptureController.getState().MainCamera.Shown,
         className:CaptureController.getState().MainCamera.className
     }
 
-    remoteState:Function
+    /**
+     * Listener for controller changes
+     */
+    protected remoteState:Function
 
-    constructor(props) {
+    /**
+     * 
+     * @param props Constructor
+     */
+    constructor(props:any) {
         super(props);
         this.updateState = this.updateState.bind(this);
         this.remoteState = CaptureController.subscribe(this.updateState);
@@ -103,5 +113,3 @@ class CaptureCameraStyleButtons extends React.PureComponent<any, SCaptureCameraS
         );
     }
 }
-
-export default CaptureCameraStyleButtons;

@@ -16,34 +16,47 @@ import vars, {
 } from 'tools/vars';
 
 import ScoreboardController from './ScoreboardController';
-import ScorekeeperController from './ScorekeeperController';
-import SlideshowController from './SlideshowController';
 import VideoController from './VideoController';
 import RosterController from './RosterController';
-import ChatController from './ChatController';
 import CaptureController from './CaptureController';
-import CameraController from './CameraController';
-import PenaltyController from './PenaltyController';
-import RaffleController from './RaffleController';
-import SponsorController from './SponsorController';
-
+import ChatController from './ChatController';
 import Installation from 'tools/Installation';
+import IO, { IOFileQueue } from 'tools/IO';
 
 const os = require('os');
-
 const USER_PATH = os.homedir();
-const TEMP_PATH = os.tmpdir();
+//const TEMP_PATH = os.tmpdir();
 //console.log(TEMP_PATH);
 
+/**
+ * Defines user configuration
+ */
 export interface IConfigUser {
-    
+    /**
+     * Determines if the application starts in full-screen mode or not
+     */
+    FullScreen:boolean;
+    /**
+     * Determines if the user has access to the capture window
+     */
+    Capture:boolean;
+}
+
+/**
+ * Interface for the system config
+ */
+export interface IConfig {
+    /**
+     * User configuration 
+     */
+    UR:IConfigUser;
 }
 
 export interface IDataControllerState {
     /**
-     * User configuration
+     * Main configuration
      */
-    Config:any,
+    Config:IConfig,
     Skaters:any,
     Teams:any,
     Penalties:any,
@@ -76,7 +89,12 @@ export interface IDataControllerState {
 }
 
 const InitState:IDataControllerState = {
-    Config:{},
+    Config:{
+        UR:{
+            FullScreen:false,
+            Capture:false
+        }
+    },
     Skaters:{},
     Teams:{},
     Penalties:{},
@@ -179,8 +197,9 @@ export enum Actions {
 }
 
 //file constants
-//const FOLDER_MAIN = 'c:/rdmgrdata';
-const FOLDER_MAIN = 'c:/ProgramData/RDMGR';
+let FOLDER_MAIN = 'c:/ProgramData/RDMGR';
+if(process && process.env && process.env.NODE_ENV && process.env.NODE_ENV === 'development')
+    FOLDER_MAIN = 'c:/rdmgrdata';
 const FOLDER_DATA = FOLDER_MAIN + "/files";
 const FOLDER_MEDIA_ROOT = FOLDER_MAIN + "/images";
 const FOLDER_MEDIA = FOLDER_MAIN + "/images/uploads";
@@ -189,6 +208,46 @@ const FOLDER_STATES = FOLDER_DATA + "/states";
 const FOLDER_MEDIA_DEFAULT = FOLDER_MEDIA + "/default";
 const FOLDER_MEDIA_VIDEOS = FOLDER_MEDIA + "/videos";
 const FOLDER_MEDIA_SLIDESHOWS = FOLDER_MEDIA + "/slideshows";
+
+//file constants
+export const Folders = {
+    /**
+     * Main folder
+     */
+    Main:FOLDER_MAIN,
+    /**
+     * Base folder for data files (records, states, config)
+     */
+    Data:FOLDER_DATA,
+    /**
+     * Root media folder
+     */
+    MediaRoot:FOLDER_MEDIA_ROOT,
+    /**
+     * Base media folder, for images, videos, slides, etc.
+     */
+    Media:FOLDER_MEDIA,
+    /**
+     * Folder for individual records
+     */
+    Records:FOLDER_RECORDS,
+    /**
+     * Folder for state records
+     */
+    States:FOLDER_STATES,
+    /**
+     * Folder for default media records
+     */
+    MediaDefault:FOLDER_MEDIA_DEFAULT,
+    /**
+     * Folder for video records
+     */
+    Videos:FOLDER_MEDIA_VIDEOS,
+    /**
+     * Folder for slideshow folders
+     */
+    Slideshows:FOLDER_MEDIA_SLIDESHOWS
+}
 
 //record files
 const FILE_CONFIG = FOLDER_DATA + "/rdmgr.config.json";
@@ -203,6 +262,7 @@ const FILE_PENALTIES = FOLDER_RECORDS + "/records.penalties.json";
 const FILE_JAMS = FOLDER_RECORDS + "/records.jams.json";
 const FILE_ANTHEM = FOLDER_RECORDS + "/records.anthem.json";
 const FILE_PEERS = FOLDER_RECORDS + "/records.peers.json";
+//const FILE_PRIZES = FOLDER_RECORDS + "/records.raffle.json";
 
 const FILE_TEST = FOLDER_DATA + "/test.txt";
 
@@ -219,6 +279,106 @@ const FILE_STATE_SLIDESHOW = FOLDER_STATES + "/slideshow.state.json";
 const FILE_STATE_SPONSOR = FOLDER_STATES + "/sponsor.state.json";
 const FILE_STATE_VIDEO = FOLDER_STATES + "/video.state.json";
 const FILE_STATE_MEDIA_QUEUE = FOLDER_STATES + "/media.state.json";
+
+
+export const Files = {
+    /**
+     * User configuration file
+     */
+    Config:FILE_CONFIG,
+    /**
+     * Misc records file
+     */
+    MiscRecords:FILE_RECORDS,
+    /**
+     * Skater records file
+     */
+    Skaters:FILE_SKATERS,
+    /**
+     * Team records file
+     */
+    Teams:FILE_TEAMS,
+    /**
+     * Phase records file
+     */
+    Phases:FILE_PHASES,
+    /**
+     * Video records file
+     */
+    Videos:FILE_VIDEOS,
+    /**
+     * Slideshow records file
+     */
+    Slideshows:FILE_SLIDESHOWS,
+    /**
+     * Sponsor records file
+     */
+    Sponsors:FILE_SPONSORS,
+    /**
+     * Penalty records file
+     */
+    Penalties:FILE_PENALTIES,
+    /**
+     * Jam records file
+     */
+    Jams:FILE_JAMS,
+    /**
+     * Anthem singer records file
+     */
+    AnthemSingers:FILE_ANTHEM,
+    /**
+     * Peer records file
+     */
+    Peers:FILE_PEERS,
+    /**
+     * Scoreboard state file
+     */
+    Scoreboard:FILE_STATE_SCOREBOARD,
+    /**
+     * Scorekeeper state file
+     */
+    Scorekeeper:FILE_STATE_SCOREKEEPER,
+    /**
+     * Camera state file
+     */
+    Camera:FILE_STATE_CAMERA,
+    /**
+     * Capture state file
+     */
+    Capture:FILE_STATE_CAPTURE,
+    /**
+     * Chat state file
+     */
+    Chat:FILE_STATE_CHAT,
+    /**
+     * Media Queue state file
+     */
+    MediaQueue:FILE_STATE_MEDIA_QUEUE,
+    /**
+     * Penalty state file
+     */
+    Penalty:FILE_STATE_PENALTY,
+    /**
+     * Raffle state file
+     */
+    Raffle:FILE_STATE_RAFFLE,
+    /**
+     * Roster state file
+     */
+    Roster:FILE_STATE_ROSTER,
+    /**
+     * Slideshow state file
+     */
+    Slideshow:FILE_STATE_SLIDESHOW,
+    /**
+     * Sponsor state file
+     */
+    Sponsor:FILE_STATE_SPONSOR,
+    /**
+     * Video state file
+     */
+    Video:FILE_STATE_VIDEO
+}
 
 /**
  * Reducer for the DataController
@@ -326,7 +486,9 @@ const DataController = {
     WFA:{},
     PATH:{},
     DIALOG:{},
-    MediaFolder:FOLDER_MEDIA,
+    MediaFolder:Folders.Media,
+    FileSaver:new IO(),
+    RecordSavers:{},
 
     /**
      * Initializes the data controller by including node modules for
@@ -335,9 +497,22 @@ const DataController = {
     Init() : Promise<any> {
         DataController.PATH = window.require('path');
         DataController.FS = window.require('fs');
-        DataController.WFA = window.require('write-file-atomic');
-        DataController.DIALOG = window.require('electron').remote.dialog;
         if(window && window.location && window.location.search.substr(1) === 'control') {
+            DataController.WFA = window.require('write-file-atomic');
+            DataController.DIALOG = window.require('electron').remote.dialog;
+            DataController.FileSaver.Init();
+
+            DataController.RecordSavers[vars.RecordType.Anthem] = new IOFileQueue(Files.AnthemSingers);
+            DataController.RecordSavers[vars.RecordType.Peer] = new IOFileQueue(Files.Peers);
+            DataController.RecordSavers[vars.RecordType.Penalty] = new IOFileQueue(Files.Penalties);
+            DataController.RecordSavers[vars.RecordType.Skater] = new IOFileQueue(Files.Skaters);
+            DataController.RecordSavers[vars.RecordType.Team] = new IOFileQueue(Files.Teams);
+            DataController.RecordSavers[vars.RecordType.Video] = new IOFileQueue(Files.Videos);
+            DataController.RecordSavers[vars.RecordType.Phase] = new IOFileQueue(Files.Phases);
+            DataController.RecordSavers[vars.RecordType.Slideshow] = new IOFileQueue(Files.Slideshows);
+            DataController.RecordSavers['MISC'] = new IOFileQueue(Files.MiscRecords);
+
+
             let installer = new Installation();
             return new Promise(async (res, rej) => {
                 let folderResponse = await installer.CheckFolders();
@@ -366,26 +541,20 @@ const DataController = {
      * - The check is performed every 1 second, which is good enough for our purposes.
      */
     RegisterSaveStates() {
-
-        SaveTimer = window.setInterval(() => {
-            DataController.saveFile(FILE_STATE_CAMERA, JSON.stringify(CameraController.getState(), null, 4));
-            DataController.saveFile(FILE_STATE_CAPTURE, JSON.stringify(CaptureController.getState(), null, 4));
-            DataController.saveFile(FILE_STATE_PENALTY, JSON.stringify(PenaltyController.getState(), null, 4));
-            DataController.saveFile(FILE_STATE_RAFFLE, JSON.stringify(RaffleController.getState(), null, 4));
-            DataController.saveFile(FILE_STATE_ROSTER, JSON.stringify(RosterController.getState(), null, 4));
-            DataController.saveFile(FILE_STATE_SCOREBOARD, JSON.stringify(ScoreboardController.getState(), null, 4));
-            DataController.saveFile(FILE_STATE_SCOREKEEPER, JSON.stringify(ScorekeeperController.getState(), null, 4));
-            DataController.saveFile(FILE_STATE_SLIDESHOW, JSON.stringify(SlideshowController.getState(), null, 4));
-            DataController.saveFile(FILE_STATE_SPONSOR, JSON.stringify(SponsorController.getState(), null, 4));
-            DataController.saveFile(FILE_STATE_VIDEO, JSON.stringify(VideoController.getState(), null, 4));
-        }, 1000);
+        DataController.FileSaver.Start();
+        for(var key in DataController.RecordSavers) {
+            DataController.RecordSavers[key].Start();
+        }
     },
 
     /**
      * Clears the timer used to save states.
      */
     UnregisterSaveStates() {
-
+        DataController.FileSaver.Pause();
+        for(var key in DataController.RecordSavers) {
+            DataController.RecordSavers[key].Pause();
+        }
     },
 
     /**
@@ -416,6 +585,7 @@ const DataController = {
      * @param {Boolean} sync true to save synchronously (default is false)
      */
     saveFile(filename, content, sync:boolean = false) {
+
         try {
             var ext = DataController.ext(filename);
             if(ext === 'json') {
@@ -441,13 +611,15 @@ const DataController = {
 
     /**
      * Saves a records file.
-     * @param {String} filename 
-     * @param {Obejct} values
+     * @param {String} type
+     * @param {Object} values
      */
-    saveRecordsFile(filename, values) {
-        DataController.saveFile(filename, JSON.stringify({
-            Records:DataController.prepareRecordsForSaving(values)
-        }));
+    saveRecordsFile(type:string, values) {
+        if(DataController.RecordSavers[type]) {
+            DataController.RecordSavers[type].Save(JSON.stringify({
+                Records:DataController.prepareRecordsForSaving(values)
+            }));
+        }
     },
 
     /**
@@ -455,123 +627,120 @@ const DataController = {
      * file based on its RecordType property.
      * @param {Object} record The record to save.
      */
-    SaveRecord(record) {
-        if(typeof(record) !== "object" || record === null)
-            return;
-        
-        var srecord = Object.assign({}, record);
-        var records:any = {};
-        var filename:string = '';
-        var type:number = -1;
-        switch(record.RecordType) {
-            //Skater
-            case vars.RecordType.Skater :
-                records = Object.assign({}, DataController.getSkaters());
-                filename = FILE_SKATERS;
-                type = Actions.SET_SKATERS;
-            break;
-
-            //Team
-            case vars.RecordType.Team :
-                records = Object.assign({}, DataController.getTeams());
-                filename = FILE_TEAMS;
-                type = Actions.SET_TEAMS;
-            break;
-
-            //Slideshow
-            case vars.RecordType.Slideshow :
-                records = Object.assign({}, DataController.getSlideshows());
-                filename = FILE_SLIDESHOWS;
-                type = Actions.SET_SLIDESHOWS;
-            break;
-
-            //Video
-            case vars.RecordType.Video :
-                records = Object.assign({}, DataController.getVideos());
-                filename = FILE_VIDEOS;
-                type = Actions.SET_VIDEOS;
-            break;
-
-            //Penalty
-            case vars.RecordType.Penalty :
-                records = Object.assign({}, DataController.getPenalties());
-                filename = FILE_PENALTIES;
-                type = Actions.SET_PENALTIES;
-            break;
-
-            //Anthem
-            case vars.RecordType.Anthem :
-                records = Object.assign({}, DataController.getAnthemSingers());
-                filename = FILE_ANTHEM;
-                type = Actions.SET_ANTHEMS;
-            break;
-
-            //Peers
-            case vars.RecordType.Peer :
-                records = Object.assign({}, DataController.getPeers());
-                filename = FILE_PEERS;
-                type = Actions.SET_PEERS;
-            break;
-
-            case vars.RecordType.Phase :
-                filename = FILE_PHASES;
-                records = DataController.getPhases();
-                type = Actions.SET_PHASES;
-            break;
-
-            default :
-                return;
-        }
-
-        //generate a new record ID
-        if(srecord.RecordID <= 0) {
-            let id = 0;
-            if(records instanceof Array) {
-                records.forEach((record) => {
-                    if(record.RecordID > id)
-                        id = record.RecordID;
-                });
-            } else {
-                let keys = Object.entries(records);
-                keys.forEach((entry:any) => {
-                    if(entry[1].RecordID > id)
-                        id = entry[1].RecordID;
-                });
+    async SaveRecord(record:any) : Promise<boolean> {
+        return new Promise((res) => {
+            var srecord = Object.assign({}, record);
+            let records:any = {};
+            let type:number = -1;
+            switch(record.RecordType) {
+                //Skater
+                case vars.RecordType.Skater :
+                    records = Object.assign({}, DataController.getSkaters());
+                    type = Actions.SET_SKATERS;
+                break;
+    
+                //Team
+                case vars.RecordType.Team :
+                    records = Object.assign({}, DataController.getTeams());
+                    type = Actions.SET_TEAMS;
+                break;
+    
+                //Slideshow
+                case vars.RecordType.Slideshow :
+                    records = Object.assign({}, DataController.getSlideshows());
+                    type = Actions.SET_SLIDESHOWS;
+                break;
+    
+                //Video
+                case vars.RecordType.Video :
+                    records = Object.assign({}, DataController.getVideos());
+                    type = Actions.SET_VIDEOS;
+                break;
+    
+                //Penalty
+                case vars.RecordType.Penalty :
+                    records = Object.assign({}, DataController.getPenalties());
+                    type = Actions.SET_PENALTIES;
+                break;
+    
+                //Anthem
+                case vars.RecordType.Anthem :
+                    records = Object.assign({}, DataController.getAnthemSingers());
+                    type = Actions.SET_ANTHEMS;
+                break;
+    
+                //Peers
+                case vars.RecordType.Peer :
+                    records = Object.assign({}, DataController.getPeers());
+                    type = Actions.SET_PEERS;
+                break;
+    
+                case vars.RecordType.Phase :
+                    records = DataController.getPhases();
+                    type = Actions.SET_PHASES;
+                break;
+    
+                default :
+                    return;
             }
-            srecord.RecordID = id + 1;
-        }
-
-        //update records after generating an ID
-        switch(srecord.RecordType) {
-            case vars.RecordType.Skater :
-                if(srecord.Teams && srecord.Teams.length) {
-                    srecord.Teams.forEach((team) => {
-                        team.SkaterID = srecord.RecordID;
+    
+            //generate a new record ID
+            if(srecord.RecordID <= 0) {
+                let id = 0;
+                if(records instanceof Array) {
+                    records.forEach((record) => {
+                        if(record.RecordID > id)
+                            id = record.RecordID;
+                    });
+                } else {
+                    let keys = Object.entries(records);
+                    keys.forEach((entry:any) => {
+                        if(entry[1].RecordID > id)
+                            id = entry[1].RecordID;
                     });
                 }
-            break;
-            default :
-            break;
-        }
-
-        if(srecord.RecordType === vars.RecordType.Phase) {
-            let index = records.findIndex((record) => {
-                return (record.RecordID == srecord.RecordID);
-            });
-            if(index >= 0) {
-                records[index] = srecord;
+                srecord.RecordID = id + 1;
+            }
+    
+            //update records after generating an ID
+            switch(srecord.RecordType) {
+                case vars.RecordType.Skater :
+                    if(srecord.Teams && srecord.Teams.length) {
+                        srecord.Teams.forEach((team) => {
+                            team.SkaterID = srecord.RecordID;
+                        });
+                    }
+                break;
+                default :
+                break;
+            }
+    
+            if(srecord.RecordType === vars.RecordType.Phase) {
+                let index = records.findIndex((record) => {
+                    return (record.RecordID == srecord.RecordID);
+                });
+                if(index >= 0) {
+                    records[index] = srecord;
+                } else {
+                    records.push(srecord);
+                }
+    
             } else {
-                records.push(srecord);
+                records[srecord.RecordType + "-" + srecord.RecordID] = srecord;
             }
 
-        } else {
-            records[srecord.RecordType + "-" + srecord.RecordID] = srecord;
-        }
-        
-        DataController.saveRecordsFile(filename, records);
-        DataController.getStore().dispatch({
-            type:type,
-            records:records
+            DataController.getStore().dispatch({
+                type:type,
+                records:records
+            });
+            
+            //save file
+            if(DataController.RecordSavers[srecord.RecordType]) {
+                DataController.RecordSavers[srecord.RecordType].Save(JSON.stringify({
+                    Records:DataController.prepareRecordsForSaving(records)
+                }));
+            }
+            res(true);
         });
     },
 
@@ -580,74 +749,83 @@ const DataController = {
      * @param {String} type 
      * @param {Array} records 
      */
-    async UpdateRecords(type, records) {
-        let filename:string = '';
-        let operation:number = -1;
-        switch(type) {
-            //Skaters
-            case vars.RecordType.Skater :
-                operation = Actions.SET_SKATERS;
-                filename = FILE_SKATERS;
-            break;
-            
-            //Teams
-            case vars.RecordType.Team :
-                operation = Actions.SET_TEAMS;
-                filename = FILE_TEAMS;
-            break;
-
-            //Penalties
-            case vars.RecordType.Penalty :
-                operation = Actions.SET_PENALTIES;
-                filename = FILE_PENALTIES;
-            break;
-
-            //Phases / Quarters
-            case vars.RecordType.Phase :
-                operation = Actions.SET_PHASES;
-                filename = FILE_PHASES;
-            break;
-
-            //Anthem Singers
-            case vars.RecordType.Anthem :
-                operation = Actions.SET_ANTHEMS;
-                filename = FILE_ANTHEM;
-            break;
-
-            default :
-            break;
-        }
-
-        if(filename.length > 0 && operation >= 0) {
-            if(records instanceof Array) {
-                let items:any = records;
-
-                //phases are always an array, not an object
-                if(type !== vars.RecordType.Phase)
-                    items = DataController.prepareRecords(records);
-
-                //set records
-                DataController.getStore().dispatch({
-                    type:operation,
-                    records:items
-                });
-
-                //save records as they're received (an array)
-                DataController.saveFile(filename, JSON.stringify({
-                    Records:records
-                }));
-            } else {
-                //set records - they're already an object
-                DataController.getStore().dispatch({
-                    type:operation,
-                    records:records
-                });
-
-                DataController.saveFile(filename, JSON.stringify({
-                    Records:DataController.prepareRecordsForSaving(records)
-                }));
+    async UpdateRecords(type, records) : Promise<boolean> {
+        return new Promise((res) => {
+            let operation:number = -1;
+            switch(type) {
+                //Skaters
+                case vars.RecordType.Skater :
+                    operation = Actions.SET_SKATERS;
+                break;
+                
+                //Teams
+                case vars.RecordType.Team :
+                    operation = Actions.SET_TEAMS;
+                break;
+    
+                //Penalties
+                case vars.RecordType.Penalty :
+                    operation = Actions.SET_PENALTIES;
+                break;
+    
+                //Phases / Quarters
+                case vars.RecordType.Phase :
+                    operation = Actions.SET_PHASES;
+                break;
+    
+                //Anthem Singers
+                case vars.RecordType.Anthem :
+                    operation = Actions.SET_ANTHEMS;
+                break;
+    
+                default :
+                break;
             }
-        }
+    
+            if(operation >= 0) {
+                if(records instanceof Array) {
+                    let items:any = records;
+    
+                    //phases are always an array, not an object
+                    if(type !== vars.RecordType.Phase)
+                        items = DataController.prepareRecords(records);
+    
+                    //set records
+                    DataController.getStore().dispatch({
+                        type:operation,
+                        records:items
+                    });
+    
+                    //save records as they're received (an array)
+                    if(DataController.RecordSavers[type]) {
+                        DataController.RecordSavers[type].Save(JSON.stringify({
+                            Records:records
+                        }));
+                    }
+    
+                    //DataController.saveFile(filename, JSON.stringify({
+                    //    Records:records
+                    //}));
+                } else {
+                    //set records - they're already an object
+                    DataController.getStore().dispatch({
+                        type:operation,
+                        records:records
+                    });
+                    
+                    if(DataController.RecordSavers[type]) {
+                        DataController.RecordSavers[type].Save(JSON.stringify({
+                            Records:DataController.prepareRecordsForSaving(records)
+                        }));
+                    }
+    
+                    //DataController.saveFile(filename, JSON.stringify({
+                    //    Records:DataController.prepareRecordsForSaving(records)
+                    //}));
+                }
+            }
+            res(true);
+        });
     },
 
     /**
@@ -655,13 +833,21 @@ const DataController = {
      * @param {String} key A unique key for the record
      * @param {Mixed} record Serializable value.
      */
-    SaveMiscRecord(key, record) {
-        var records = Object.assign({}, DataController.getState().MiscRecords);
-        if(typeof(record) === "object")
-            records[key] = Object.assign({}, record);
-        else
-            records[key] = record;
-        DataController.saveFile(FILE_RECORDS, JSON.stringify({Records:records}, null, 4));
+    async SaveMiscRecord(key, record) : Promise<boolean> {
+        return new Promise((res) => {
+            var records = Object.assign({}, DataController.getState().MiscRecords);
+            if(typeof(record) === "object")
+                records[key] = Object.assign({}, record);
+            else
+                records[key] = record;
+            DataController.getStore().dispatch({
+                type:Actions.SET_MISC_RECORDS,
+                values:records
+            });
+            if(DataController.RecordSavers['MISC'])
+                DataController.RecordSavers['MISC'].Save(JSON.stringify({Records:records}, null, 4));
+            res(true);
+        });
     },
 
     /**
@@ -677,10 +863,11 @@ const DataController = {
     },
 
     /**
-     * Loads all files.
+     * Loads required files
      */
     loadFiles() {
         return Promise.all([
+            //records first
             DataController.loadSkaters(),
             DataController.loadTeams(),
             DataController.loadPhases(),
@@ -690,10 +877,12 @@ const DataController = {
             DataController.loadAnthemSingers(),
             DataController.loadMiscRecords()
         ]).then(() => {
+            //then states (because they rely on records)
             return Promise.all([
                 DataController.loadScoreboardState(),
                 DataController.loadCaptureState(),
-                DataController.loadRosterState()
+                DataController.loadRosterState(),
+                DataController.loadChatState()
             ]);
         })
     },
@@ -702,7 +891,7 @@ const DataController = {
      * Loads the user configuration settings.
      */
     loadConfig() {
-        return DataController.loadFile(FILE_CONFIG)
+        return DataController.loadFile(Files.Config)
             .then((data) => {
                 try {
                     var content = JSON.parse(data);
@@ -720,7 +909,7 @@ const DataController = {
      * Loads the capture state to the capture controller.
      */
     loadCaptureState() {
-        return DataController.loadFile(FILE_STATE_CAPTURE)
+        return DataController.loadFile(Files.Capture)
             .then((data:any) => {
                 try {
                     var content = JSON.parse(data);
@@ -731,12 +920,30 @@ const DataController = {
             });
     },
 
+    /**
+     * Loads the roster state to the controller
+     */
     loadRosterState() {
-        return DataController.loadFile(FILE_STATE_ROSTER)
+        return DataController.loadFile(Files.Roster)
             .then((data:any) => {
                 try {
                     var content = JSON.parse(data);
                     RosterController.SetState(content);
+                } catch(er) {
+
+                }
+            });
+    },
+
+    /**
+     * Loads the chat state file into the chat controller
+     */
+    loadChatState() {
+        return DataController.loadFile(Files.Chat)
+            .then((data:any) => {
+                try {
+                    var content = JSON.parse(data);
+                    ChatController.SetState(content);
                 } catch(er) {
 
                 }
@@ -754,7 +961,7 @@ const DataController = {
      * Load skater records
      */
     loadSkaters() {
-        return DataController.loadFile(FILE_SKATERS)
+        return DataController.loadFile(Files.Skaters)
             .then((data:any) => {
                 try {
                     DataController.getStore().dispatch({
@@ -768,17 +975,10 @@ const DataController = {
     },
 
     /**
-     * Saves the skater records.
-     */
-    SaveSkaters() {
-        DataController.saveRecordsFile(FILE_SKATERS, DataController.getState().Skaters);
-    },
-
-    /**
      * Loads the team records to the state.
      */
     loadTeams() {
-        return DataController.loadFile(FILE_TEAMS)
+        return DataController.loadFile(Files.Teams)
             .then((data:any) => {
                 try {
                     DataController.getStore().dispatch({
@@ -789,13 +989,6 @@ const DataController = {
 
                 }
             });
-    },
-
-    /**
-     * Saves the team records.
-     */
-    SaveTeams() {
-        DataController.saveRecordsFile(FILE_TEAMS, DataController.getState().Teams);
     },
 
     /**
@@ -818,7 +1011,7 @@ const DataController = {
      * Loads the scoreboard phases.
      */
     loadPhases() {
-        return DataController.loadFile(FILE_PHASES)
+        return DataController.loadFile(Files.Phases)
         .then((data:any) => {
             try {
                 let phases = JSON.parse(data).Records;
@@ -833,13 +1026,6 @@ const DataController = {
 
             }
         })
-    },
-
-    /**
-     * Saves the scoreboard phase records.
-     */
-    SavePhases() {
-        DataController.saveRecordsFile(FILE_PHASES, DataController.getState().Phases);
     },
 
     /**
@@ -868,7 +1054,7 @@ const DataController = {
      * Loads the video files.
      */
     loadVideos() {
-        return DataController.loadFile(FILE_VIDEOS)
+        return DataController.loadFile(Files.Videos)
         .then((data:any) => {
             try {
                 DataController.getStore().dispatch({
@@ -882,17 +1068,10 @@ const DataController = {
     },
 
     /**
-     * Saves the video records.
-     */
-    SaveVideos() {
-        DataController.saveRecordsFile(FILE_VIDEOS, DataController.getState().Videos);
-    },
-
-    /**
      * Loads the slideshows to the state.
      */
     loadSlideshows() {
-        return DataController.loadFile(FILE_SLIDESHOWS)
+        return DataController.loadFile(Files.Slideshows)
         .then((data:any) => {
             try {
                 DataController.getStore().dispatch({
@@ -906,17 +1085,10 @@ const DataController = {
     },
 
     /**
-     * Saves the slideshow records.
-     */
-    SaveSlideshows() {
-        DataController.saveRecordsFile(FILE_SLIDESHOWS, DataController.getState().Slideshows);
-    },
-
-    /**
      * Loads the penalties to the state.
      */
     loadPenalties() {
-        return DataController.loadFile(FILE_PENALTIES)
+        return DataController.loadFile(Files.Penalties)
         .then((data:any) => {
             try {
                 DataController.getStore().dispatch({
@@ -927,13 +1099,6 @@ const DataController = {
 
             }
         });
-    },
-
-    /**
-     * Saves the penalty records.
-     */
-    SavePenalties() {
-        DataController.saveRecordsFile(FILE_PENALTIES, DataController.getState().Penalties);
     },
 
     /**
@@ -950,7 +1115,7 @@ const DataController = {
      * @returns Promise
      */
     loadAnthemSingers() {
-        return DataController.loadFile(FILE_ANTHEM)
+        return DataController.loadFile(Files.AnthemSingers)
         .then((data:any) => {
             try {
                 DataController.getStore().dispatch({
@@ -986,7 +1151,7 @@ const DataController = {
      * Loads the last state of the scoreboard
      */
     loadScoreboardState() {
-        return DataController.loadFile(FILE_STATE_SCOREBOARD)
+        return DataController.loadFile(Files.Scoreboard)
         .then((data:any) => {
             try {
                 var config = JSON.parse( data );
@@ -1005,7 +1170,7 @@ const DataController = {
      * Loads the misc records.
      */
     loadMiscRecords() {
-        return DataController.loadFile(FILE_RECORDS)
+        return DataController.loadFile(Files.MiscRecords)
         .then((data:any) => {
             try {
                 DataController.getStore().dispatch({
@@ -1022,7 +1187,7 @@ const DataController = {
      * Loads the peer records.
      */
     loadPeers() {
-        return DataController.loadFile(FILE_PEERS)
+        return DataController.loadFile(Files.Peers)
         .then((data:any) => {
             try {
                 DataController.getStore().dispatch({
@@ -1152,24 +1317,27 @@ const DataController = {
         if(src.indexOf('http://') === 0 || src.indexOf('https://') === 0)
             return src;
         if(removal) {
-            if(typeof(src) === "string" && src.indexOf(FOLDER_MEDIA) >= 0)
-                return src.replace(FOLDER_MEDIA, '');
+            if(typeof(src) === "string" && src.indexOf(Folders.Media) >= 0)
+                return src.replace(Folders.Media, '');
             return src;
         }
-        if(typeof(src) === "string" && src.indexOf(FOLDER_MEDIA) !== 0)
-            return FOLDER_MEDIA + "/" + src;
+        if(typeof(src) === "string" && src.indexOf(Folders.Media) !== 0)
+            return Folders.Media + "/" + src;
         return src;
     },
 
-    getMediaFolder() {
-        return FOLDER_MEDIA + "/";
+    /**
+     * Gets the media records
+     */
+    getMediaFolder() : string {
+        return Folders.Media;
     },
 
     /**
      * Prepends the user path to the given src.
      * @param {String} src 
      */
-    upath(src) {
+    upath(src:string|null) : string|null {
         if(typeof(src) === "string" && src.indexOf(USER_PATH) !== 0)
             return USER_PATH + "/" + src;
         return src;
@@ -1179,7 +1347,7 @@ const DataController = {
      * Gets the extension for the given file.
      * @param {String} src 
      */
-    ext(src) {
+    ext(src:string|null) :string|unknown {
         let path:any = DataController.PATH;
         return path.extname(src).toLowerCase().split('.').pop();
     },
@@ -1198,7 +1366,7 @@ const DataController = {
      * @param path string
      * @param cb Function
      */
-    access(path:string) : Promise<any> {
+    async access(path:string) : Promise<any> {
         let fs:any = DataController.FS;
         return fs.promises.access( path );
     },
@@ -1672,7 +1840,7 @@ const DataController = {
      * @param {Object} parent A parent folder object, with a 'path' and 'children' (array)
      * @param {Array} folders An array of folders already read (foor recursion)
      */
-    async loadFolder(path:string = FOLDER_MEDIA + "/", parent:any = null, folders:Array<any> = []) : Promise<any> {
+    async loadFolder(path:string = Folders.Media + "/", parent:any = null, folders:Array<any> = []) : Promise<any> {
         let fs:any = DataController.FS;
         return new Promise((res, rej) => {
             return fs.readdir(path, {encoding:'utf8'}, async (err, files) => {
@@ -1721,8 +1889,8 @@ const DataController = {
         let fs:any = DataController.FS;
         return new Promise((res, rej) => {
             if(typeof(path) === 'string' && path === '')
-                path = FOLDER_MEDIA;
-            if(typeof(path) !== 'string' || path.indexOf(FOLDER_MEDIA) !== 0)
+                path = Folders.Media;
+            if(typeof(path) !== 'string' || path.indexOf(Folders.Media) !== 0)
                 rej(`Listing files is restricted to the RDMGR media folder: ${path}`);
             else {
                 fs.readdir(path, "utf8", (err, files) => {
@@ -1751,7 +1919,7 @@ const DataController = {
         let diag:any = DataController.DIALOG;
         let settings = Object.assign({
             title:"Select File(s)",
-            defaultPath:FOLDER_MEDIA,
+            defaultPath:Folders.Media,
             buttonLabel:"SELECT",
             filers:[
                 {name:'Images', extensions:['jpg', 'png', 'gif', 'jpeg']},
@@ -1773,9 +1941,9 @@ const DataController = {
     async uploadFile(path, dest:string = '') {
         let fs:any = DataController.FS;
         let pather:any = DataController.PATH;
-        if(typeof(dest) !== 'string' || dest.indexOf(FOLDER_MEDIA) !== 0) {
+        if(typeof(dest) !== 'string' || dest.indexOf(Folders.Media) !== 0) {
             let tdate = new Date();
-            let yfolder = FOLDER_MEDIA + "/" + tdate.getFullYear();
+            let yfolder = Folders.Media + "/" + tdate.getFullYear();
             let mfolder = yfolder + "/" + ((tdate.getMonth() + 1).toString().padStart(2,'0'));
             await DataController.createFolder(yfolder);
             await DataController.createFolder(mfolder);
@@ -1794,7 +1962,7 @@ const DataController = {
         return new Promise((res, rej) => {
             if(typeof(path) !== 'string')
                 return rej('Path must be a string.');
-            if(path.indexOf(FOLDER_MEDIA) !== 0)
+            if(path.indexOf(Folders.Media) !== 0)
                 return rej('Path must reside in the RDMGR media folder.');
 
             if(fs.existsSync(path)) {
@@ -1814,6 +1982,9 @@ const DataController = {
         return DataStore.subscribe(f);
     },
 
+    /**
+     * Builds the REST API for this controller
+     */
     buildAPI() {
         const server = window.LocalServer;
         const exp = server.ExpressApp;
@@ -1859,142 +2030,3 @@ const DataController = {
 };
 
 export default DataController;
-
-//file constants
-export const Folders = {
-    /**
-     * Main folder
-     */
-    Main:FOLDER_MAIN,
-    /**
-     * Base folder for data files (records, states, config)
-     */
-    Data:FOLDER_DATA,
-    /**
-     * Root media folder
-     */
-    MediaRoot:FOLDER_MEDIA_ROOT,
-    /**
-     * Base media folder, for images, videos, slides, etc.
-     */
-    Media:FOLDER_MEDIA,
-    /**
-     * Folder for individual records
-     */
-    Records:FOLDER_RECORDS,
-    /**
-     * Folder for state records
-     */
-    States:FOLDER_STATES,
-    /**
-     * Folder for default media records
-     */
-    MediaDefault:FOLDER_MEDIA_DEFAULT,
-    /**
-     * Folder for video records
-     */
-    Videos:FOLDER_MEDIA_VIDEOS,
-    /**
-     * Folder for slideshow folders
-     */
-    Slideshows:FOLDER_MEDIA_SLIDESHOWS
-}
-
-export const Files = {
-    /**
-     * User configuration file
-     */
-    Config:FILE_CONFIG,
-    /**
-     * Misc records file
-     */
-    MiscRecords:FILE_RECORDS,
-    /**
-     * Skater records file
-     */
-    Skaters:FILE_SKATERS,
-    /**
-     * Team records file
-     */
-    Teams:FILE_TEAMS,
-    /**
-     * Phase records file
-     */
-    Phases:FILE_PHASES,
-    /**
-     * Video records file
-     */
-    Videos:FILE_VIDEOS,
-    /**
-     * Slideshow records file
-     */
-    Slideshows:FILE_SLIDESHOWS,
-    /**
-     * Sponsor records file
-     */
-    Sponsors:FILE_SPONSORS,
-    /**
-     * Penalty records file
-     */
-    Penalties:FILE_PENALTIES,
-    /**
-     * Jam records file
-     */
-    Jams:FILE_JAMS,
-    /**
-     * Anthem singer records file
-     */
-    AnthemSingers:FILE_ANTHEM,
-    /**
-     * Peer records file
-     */
-    Peers:FILE_PEERS,
-    /**
-     * Scoreboard state file
-     */
-    Scoreboard:FILE_STATE_SCOREBOARD,
-    /**
-     * Scorekeeper state file
-     */
-    Scorekeeper:FILE_STATE_SCOREKEEPER,
-    /**
-     * Camera state file
-     */
-    Camera:FILE_STATE_CAMERA,
-    /**
-     * Capture state file
-     */
-    Capture:FILE_STATE_CAPTURE,
-    /**
-     * Chat state file
-     */
-    Chat:FILE_STATE_CHAT,
-    /**
-     * Media Queue state file
-     */
-    MediaQueue:FILE_STATE_MEDIA_QUEUE,
-    /**
-     * Penalty state file
-     */
-    Penalty:FILE_STATE_PENALTY,
-    /**
-     * Raffle state file
-     */
-    Raffle:FILE_STATE_RAFFLE,
-    /**
-     * Roster state file
-     */
-    Roster:FILE_STATE_ROSTER,
-    /**
-     * Slideshow state file
-     */
-    Slideshow:FILE_STATE_SLIDESHOW,
-    /**
-     * Sponsor state file
-     */
-    Sponsor:FILE_STATE_SPONSOR,
-    /**
-     * Video state file
-     */
-    Video:FILE_STATE_VIDEO
-}

@@ -104,8 +104,8 @@ class CaptureControlRoster extends React.PureComponent<PCaptureControlPanel, SCa
         }
 
         if(!this.state.Shown && team === 'B' && (index+1) >= this.state.SkatersB.length) {
-            RosterController.SetSkater('A', -1);
-            return;
+             RosterController.SetSkater('A', -1);
+             return;
         }
 
         if(team === 'A' && (index+1) >= this.state.SkatersA.length) {
@@ -117,7 +117,7 @@ class CaptureControlRoster extends React.PureComponent<PCaptureControlPanel, SCa
             }
         } else {
             if(this.state.Shown) {
-                if((index+1) >= this.state.SkatersB.length) {
+                if(team === 'B' && (index+1) >= this.state.SkatersB.length) {
                     CaptureController.ToggleRoster();
                 } else {
                     RosterController.Next();

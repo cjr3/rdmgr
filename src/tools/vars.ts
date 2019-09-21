@@ -15,7 +15,11 @@ const vars = {
         Slideshow:"SLS",
         Anthem:"ANT",
         Sponsor:"SPN",
-        Peer:"PER"
+        Peer:"PER",
+        /**
+         * Raffle Prize
+         */
+        RafflePrize:"RPZ"
     },
 
     //Clocks

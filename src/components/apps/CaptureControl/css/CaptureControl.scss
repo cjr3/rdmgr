@@ -172,12 +172,21 @@
         }
     }
 
-    .team-score {
+    .team-score,
+    .jam-counter
+    {
         text-align: center;
         cursor: pointer;
         font-size: 48px;
         font-family: $base-font-display;
         padding: 8px 8px 8px 12px;
+    }
+
+    .phase-selection {
+        flex: 1;
+        > select {
+            width:100%;
+        }
     }
 
     .record-list {

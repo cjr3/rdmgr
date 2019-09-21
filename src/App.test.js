@@ -3,8 +3,33 @@
 //import App from './App';
 
 //import {it, assertTrue} from 'ts-jest';
-import Installation from 'tools/Installation';
+//import Installation from 'tools/Installation';
 
+import IO from 'tools/IO';
+import ScoreboardController from 'controllers/ScoreboardController';
+import ScorekeeperController from 'controllers/ScorekeeperController';
+import SlideshowController from 'controllers/SlideshowController';
+import RosterController from 'controllers/RosterController';
+import CaptureController from 'controllers/CaptureController';
+
+it('Checks save states', async done => {
+  let io = new IO();
+  io.Start().then(() => {
+    setTimeout(() => {
+      done();
+    }, 3100);
+    
+    let state = Object.assign({}, CaptureController.getState());
+    let index = 0;
+    setInterval(() => {
+      index++;
+      state.className = `class-${index}`;
+      CaptureController.SetState(state);
+    }, 500);
+  });
+});
+
+/*
 it('check files and filders', async done => {
   const installer = new Installation();
   installer.CheckFiles().then(() => {
@@ -13,6 +38,7 @@ it('check files and filders', async done => {
     done();
   });
 });
+*/
 
 /*
 it('checks the folders', done => {

@@ -1,11 +1,18 @@
 import React from 'react'
 import Panel from 'components/Panel'
-import {CaptureDisplayButtons} from 'components/apps/CaptureControl/CaptureControl'
+import CaptureDisplayButtons from 'components/apps/CaptureControl/CaptureDisplayButtons'
 
-interface PDisplayPanel {
+export interface PDisplayPanel {
+    /**
+     * true if visible, false if not
+     */
     opened:boolean
 }
 
+/**
+ * Component for the scoreboard to easily show/hide capture components
+ * @param props PDisplayPanel
+ */
 export default function DisplayPanel(props:PDisplayPanel) {
     return (
         <Panel

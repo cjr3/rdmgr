@@ -236,11 +236,11 @@ class RecordEditor extends React.PureComponent<PRecordEditor, SRecordEditor> {
     /**
      * Triggered when the user clicks the submit button.
      */
-    onSubmit() {
+    async onSubmit() {
         let record = Object.assign({}, this.state.record);
         if(this.props.onSubmit)
             record = this.props.onSubmit(record);
-        DataController.SaveRecord(record);
+        await DataController.SaveRecord(record);
         this.setState({record:null}, () => {
             if(this.props.onCancel)
                 this.props.onCancel();

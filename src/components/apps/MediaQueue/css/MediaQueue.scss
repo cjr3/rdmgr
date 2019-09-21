@@ -1,13 +1,17 @@
 @import '~css/vars.scss';
 
 .MEQ-app {
-    display: flex;
-    flex-flow: row wrap;
+    position: relative;
 
     > .queue-items {
-        flex: 0 0 300px;
+        position: absolute;
+        margin: auto;
+        left: 0;
+        top: 0;
+        width: 300px;
         overflow: hidden auto;
         height: 100%;
+        border-right: solid 1px #333333;
 
         > .sortable-pane {
             flex-flow: column wrap;
@@ -45,8 +49,13 @@
     }
 
     > .current-record {
-        flex: 1;
-        display: relative;
+        position: absolute;
+        margin: auto;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: calc(100% - 600px);
         height: 100%;
 
         > .video-preview {
@@ -90,7 +99,12 @@
     }
 
     > .queue-recordsets {
-        flex: 0 0 300px;
+        position: absolute;
+        margin: auto;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 300px;
         height: 100%;
         display: flex;
         flex-flow: column wrap;

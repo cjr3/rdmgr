@@ -130,13 +130,32 @@ class CaptureControlMonitor extends React.PureComponent<any, SCaptureControlMoni
      */
     componentDidMount() {
         if(window && window.RDMGR && window.RDMGR.captureWindow) {
+            var bounds:any = {};
             this.setState(() => {
-                var monitors = window.require('electron').remote.screen.getAllDisplays();
+                var screen = window.require('electron').remote.screen;
+                var monitors = screen.getAllDisplays();
                 var changes:any = {Monitors:monitors};
                 if(monitors.length > 1) {
-                    changes.MonitorID = monitors[1].id;
-                    changes.Width = monitors[1].bounds.width;
-                    changes.Height = monitors[1].bounds.height;
+                    var primary = screen.getPrimaryDisplay();
+                    let index = 0;
+                    monitors.forEach((monitor, mindex) => {
+                        if(primary && monitor.id == primary.id) {
+                            return;
+                        }
+                        if(index <= 0)
+                            index = mindex;
+                    });
+                    
+                    changes.MonitorID = monitors[index].id;
+                    changes.Width = monitors[index].bounds.width;
+                    changes.Height = monitors[index].bounds.height;
+                    
+                    window.RDMGR.captureWindow.setBounds({
+                        x:monitors[index].bounds.x,
+                        y:monitors[index].bounds.y,
+                        width:changes.Width,
+                        height:changes.Height
+                    });
                 }
                 return changes;
             });

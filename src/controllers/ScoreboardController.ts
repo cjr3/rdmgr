@@ -414,6 +414,15 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
                 name = Phases[action.index].Name;
                 id = Phases[action.index].RecordID;
             }
+
+            if(typeof(duration[0]) === "string")
+                duration[0] = parseInt(duration[0]);
+
+            if(typeof(duration[1]) === "string")
+                duration[1] = parseInt(duration[1]);
+
+            if(typeof(duration[2]) === "string")
+                duration[2] = parseInt(duration[2]);
                 
             return Object.assign({}, state, {
                 PhaseIndex:action.index,
@@ -426,9 +435,9 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
 
         case SET_PHASE_TIME :
             return Object.assign({}, state, {
-                PhaseHour:action.hour,
-                PhaseMinute:action.minute,
-                PhaseSecond:action.second
+                PhaseHour:parseInt(action.hour),
+                PhaseMinute:parseInt(action.minute),
+                PhaseSecond:parseInt(action.second)
             });
 
         case SET_PHASES :
@@ -852,7 +861,7 @@ const ScoreboardController = {
      * Sets the phase / quarter
      * @param {Number} index 
      */
-    SetPhase(index) {
+    SetPhase(index:number) {
         var Phases = DataController.getState().Phases;
         if(index < 0)
             index = Phases.length - 1;
@@ -1088,7 +1097,7 @@ const ScoreboardController = {
      * @param {Object} team 
      * @param {Number} amount 
      */
-    async IncreaseTeamScore(team, amount) {
+    IncreaseTeamScore(team, amount) {
         if(ScoreboardController.getState().JamState !== vars.Clock.Status.Running) {
             ScoreboardController.SetTeamScore(team, team.Score + amount, amount);
         } else {

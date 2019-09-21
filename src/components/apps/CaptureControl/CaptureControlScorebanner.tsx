@@ -1,5 +1,5 @@
 import React from 'react';
-import ScoreboardController from 'controllers/ScoreboardController';
+import ScoreboardController, {SScoreboardTeam} from 'controllers/ScoreboardController';
 import CaptureController from 'controllers/CaptureController';
 import CaptureControlPanel, {PCaptureControlPanel} from './CaptureControlPanel';
 import DataController from 'controllers/DataController';
@@ -9,16 +9,18 @@ import {
     IconCheck,
     IconButton
 } from 'components/Elements';
+import { PhaseRecord } from 'tools/vars';
+import Counter from 'components/tools/Counter';
 
 interface SCaptureControlScorebanner {
     /**
      * Left side socreboard team
      */
-    TeamA:any,
+    TeamA:SScoreboardTeam,
     /**
      * Right side scoreboard team
      */
-    TeamB:any,
+    TeamB:SScoreboardTeam,
     /**
      * Current phase index
      */
@@ -30,7 +32,7 @@ interface SCaptureControlScorebanner {
     /**
      * Phases / quarters to select from
      */
-    Phases:Array<any>,
+    Phases:Array<PhaseRecord>,
     /**
      * Determines if the scorebanner is shown or note
      */
@@ -56,16 +58,44 @@ class CaptureControlScorebanner extends React.PureComponent<PCaptureControlPanel
         ClocksShown:CaptureController.getState().Scorebanner.ClocksShown
     }
 
-    remoteState:Function
-    remoteCapture:Function
-    remoteData:Function
+    /**
+     * Reference to jam Counter element
+     */
+    protected JamCounterItem:React.RefObject<Counter> = React.createRef();
 
-    constructor(props) {
+    /**
+     * Listener for scoreboard controller
+     */
+    protected remoteState:Function
+
+    /**
+     * Listener for capture controller
+     */
+    protected remoteCapture:Function
+
+    /**
+     * Listener for data controller
+     */
+    protected remoteData:Function
+
+    /**
+     * 
+     * @param props PCaptureControlPanel
+     */
+    constructor(props:PCaptureControlPanel) {
         super(props);
 
         this.updateState = this.updateState.bind(this);
         this.updateCapture = this.updateCapture.bind(this);
         this.updateData = this.updateData.bind(this);
+
+        this.onAddJam = this.onAddJam.bind(this);
+        this.onSubtractJam = this.onSubtractJam.bind(this);
+        this.onChangePhase = this.onChangePhase.bind(this);
+        this.onClickIncreaseTeamAScore = this.onClickIncreaseTeamAScore.bind(this);
+        this.onClickDecreaseTeamAScore = this.onClickDecreaseTeamAScore.bind(this);
+        this.onClickIncreaseTeamBScore = this.onClickIncreaseTeamBScore.bind(this);
+        this.onClickDecreaseTeamBScore = this.onClickDecreaseTeamBScore.bind(this);
 
         this.remoteState = ScoreboardController.subscribe(this.updateState);
         this.remoteCapture = CaptureController.subscribe(this.updateCapture);
@@ -79,7 +109,9 @@ class CaptureControlScorebanner extends React.PureComponent<PCaptureControlPanel
         this.setState(() => {
             return {
                 TeamA:ScoreboardController.getState().TeamA,
-                TeamB:ScoreboardController.getState().TeamB
+                TeamB:ScoreboardController.getState().TeamB,
+                JamCounter:ScoreboardController.getState().JamCounter,
+                PhaseIndex:ScoreboardController.getState().PhaseIndex
             }
         });
     }
@@ -89,7 +121,10 @@ class CaptureControlScorebanner extends React.PureComponent<PCaptureControlPanel
      */
     updateCapture() {
         this.setState(() => {
-            return {Shown:CaptureController.getState().Scorebanner.Shown}
+            return {
+                Shown:CaptureController.getState().Scorebanner.Shown,
+                ClocksShown:CaptureController.getState().Scorebanner.ClocksShown
+            }
         });
     }
 
@@ -101,6 +136,71 @@ class CaptureControlScorebanner extends React.PureComponent<PCaptureControlPanel
         this.setState(() => {
             return {Phases:DataController.getPhases()}
         });
+    }
+
+    /**
+     * Triggered when the user increase the jam counter
+     * @param amount number
+     */
+    onAddJam(amount) {
+        ScoreboardController.IncreaseJamCounter(amount);
+    }
+
+    /**
+     * Triggered when the user decreases the jam counter
+     * @param amount number
+     */
+    onSubtractJam(amount) {
+        ScoreboardController.DecreaseJamCounter(amount);
+    }
+
+    /**
+     * Triggered when the user changes the phase
+     * @param ev React.ChangeEvent<HTMLSelectElement>
+     */
+    onChangePhase(ev:React.ChangeEvent<HTMLSelectElement>) {
+        ScoreboardController.SetPhase(parseInt(ev.currentTarget.value));
+    }
+
+    /**
+     * Triggered when the user clicks on the right side team's score
+     */
+    onClickIncreaseTeamAScore() {
+        ScoreboardController.IncreaseTeamScore(this.state.TeamA, 1);
+    }
+
+    /**
+     * Triggered when the user context-clicks on the left-side team's score
+     */
+    onClickDecreaseTeamAScore() {
+        ScoreboardController.DecreaseTeamScore(this.state.TeamA, 1);
+    }
+
+    /**
+     * Triggered when the user clicks on the left side team's score
+     */
+    onClickIncreaseTeamBScore() {
+        ScoreboardController.IncreaseTeamScore(this.state.TeamB, 1);
+    }
+
+    /**
+     * Triggered when the user context-clicks on the right-side team's score
+     */
+    onClickDecreaseTeamBScore() {
+        ScoreboardController.DecreaseTeamScore(this.state.TeamB, 1);
+    }
+
+    /**
+     * Triggered when the component updates
+     * @param prevProps PCaptureControlPanel
+     * @param prevState SCaptureControlScorebanner
+     */
+    componentDidUpdate(prevProps:PCaptureControlPanel, prevState:SCaptureControlScorebanner) {
+        if(prevState.JamCounter != this.state.JamCounter) {
+            if(this.JamCounterItem !== null && this.JamCounterItem.current !== null) {
+                this.JamCounterItem.current.set(this.state.JamCounter, false);
+            }
+        }
     }
 
     /**
@@ -131,12 +231,8 @@ class CaptureControlScorebanner extends React.PureComponent<PCaptureControlPanel
                             style={{
                                 backgroundColor:this.state.TeamA.Color
                             }}
-                            onClick={() => {
-                                ScoreboardController.IncreaseTeamScore(this.state.TeamA, 1);
-                            }}
-                            onContextMenu={() => {
-                                ScoreboardController.DecreaseTeamScore(this.state.TeamA, 1);
-                            }}
+                            onClick={this.onClickIncreaseTeamAScore}
+                            onContextMenu={this.onClickDecreaseTeamAScore}
                             >
                             {this.state.TeamA.Score}
                         </div>
@@ -145,12 +241,8 @@ class CaptureControlScorebanner extends React.PureComponent<PCaptureControlPanel
                             style={{
                                 backgroundColor:this.state.TeamB.Color
                             }}
-                            onClick={() => {
-                                ScoreboardController.IncreaseTeamScore(this.state.TeamB, 1);
-                            }}
-                            onContextMenu={() => {
-                                ScoreboardController.DecreaseTeamScore(this.state.TeamB, 1);
-                            }}
+                            onClick={this.onClickIncreaseTeamBScore}
+                            onContextMenu={this.onClickDecreaseTeamBScore}
                             >
                             {this.state.TeamB.Score}
                         </div>
@@ -162,26 +254,24 @@ class CaptureControlScorebanner extends React.PureComponent<PCaptureControlPanel
                             onClick={CaptureController.ToggleScorebannerClocks}
                         >Hide Clocks</IconButton>
                     </div>
+                    <div className="phase-selection">
+                        <select size={1}
+                            value={this.state.PhaseIndex}
+                            onChange={this.onChangePhase}
+                            >{phases}</select>
+                    </div>
                     <div className="stack-panel s2">
-                        <div>Quarter:</div>
-                        <div>
-                            <select size={1}
-                                value={this.state.PhaseIndex}
-                                onChange={(ev) => {
-                                    ScoreboardController.SetPhase(parseInt(ev.target.value))
-                                }}
-                                >{phases}</select>
+                        <div className="jam-counter">JAM #</div>
+                        <div className="jam-counter">
+                            <Counter
+                                min={0}
+                                max={99}
+                                padding={2}
+                                onAdd={this.onAddJam}
+                                onSubtract={this.onSubtractJam}
+                                ref={this.JamCounterItem}
+                            />
                         </div>
-                        <div>JAM #</div>
-                        <div
-                            className="team-score"
-                            onClick={() => {
-                                ScoreboardController.IncreaseJamCounter(1);
-                            }}
-                            onContextMenu={() => {
-                                ScoreboardController.DecreaseJamCounter(1);
-                            }}
-                        >{this.state.JamCounter}</div>
                     </div>
                 </CaptureControlPanel>
         )

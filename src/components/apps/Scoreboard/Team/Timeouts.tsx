@@ -1,24 +1,40 @@
 import React from 'react'
 import Counter from 'components/tools/Counter'
-import {Icon} from 'components/Elements'
+import {Icon, IconSubtract} from 'components/Elements'
 import ScoreboardController, {SScoreboardTeam} from 'controllers/ScoreboardController'
 
 interface STimeouts {
     amount:number
 }
 
-interface PTimeouts {
+export interface PTimeouts {
+    /**
+     * Team the timeouts belongs to
+     */
     Team:SScoreboardTeam
 }
 
+/**
+ * Component for controlling team timeout value
+ */
 class Timeouts extends React.PureComponent<PTimeouts, STimeouts> {
     readonly state:STimeouts = {
         amount:3
     }
 
-    CounterItem:React.RefObject<Counter> = React.createRef();
-    remoteScore:Function
+    /**
+     * Reference for counter component
+     */
+    protected CounterItem:React.RefObject<Counter> = React.createRef();
+    /**
+     * Listener for scoreboard controller
+     */
+    protected remoteScore:Function
 
+    /**
+     * Constructor
+     * @param props PTimeouts
+     */
     constructor(props) {
         super(props);
         this.state.amount = this.props.Team.Timeouts;
@@ -62,6 +78,22 @@ class Timeouts extends React.PureComponent<PTimeouts, STimeouts> {
     }
 
     /**
+     * Triggered when the user adds challenges
+     * @param amount number
+     */
+    onAdd(amount:number) {
+        ScoreboardController.IncreaseTeamTimeouts(this.props.Team, amount);
+    }
+
+    /**
+     * Triggered when the user subtracts challenges
+     * @param amount number
+     */
+    onSubtract(amount:number) {
+        ScoreboardController.DecreaseTeamTimeouts(this.props.Team, amount);
+    }
+
+    /**
      * Triggered when the component mounts to the DOM.
      */
     componentDidMount() {
@@ -83,13 +115,15 @@ class Timeouts extends React.PureComponent<PTimeouts, STimeouts> {
                         max={3}
                         amount={3}
                         padding={2}
-                        onChange={this.onChange}
+                        //onChange={this.onChange}
+                        onAdd={this.onAdd}
+                        onSubtract={this.onSubtract}
                         ref={this.CounterItem}
                     />
                 </div>
                 <div>
                     <Icon 
-                        src={require('images/icons/minus.png')}
+                        src={IconSubtract}
                         onClick={() => {
                             ScoreboardController.DecreaseTeamTimeouts(this.props.Team, 1);
                         }}

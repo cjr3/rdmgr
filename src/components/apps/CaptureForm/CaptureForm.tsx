@@ -129,6 +129,7 @@ class CaptureForm extends React.Component<any, SCaptureForm> {
                 window.IPC.requestState(SlideshowController.Key);
                 window.IPC.requestState(PenaltyController.Key);
                 window.IPC.requestState(ScorekeeperController.Key);
+                window.RDMGR.mainWindow.focus();
             });
         }
     }
