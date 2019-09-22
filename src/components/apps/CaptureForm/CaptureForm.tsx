@@ -21,7 +21,7 @@ import CaptureController, {CaptureControllerState} from 'controllers/CaptureCont
 import IPCX from 'controllers/IPCX';
 import './css/CaptureForm.scss';
 import DataController from 'controllers/DataController';
-import ScoreboardController from 'controllers/ScoreboardController';
+import ScoreboardController, {SScoreboardTeam} from 'controllers/ScoreboardController';
 import CaptureSponsor from './CaptureSponsor';
 import vars from 'tools/vars';
 
@@ -35,14 +35,20 @@ import ScorekeeperController from 'controllers/ScorekeeperController';
 import RaffleController from 'controllers/RaffleController';
 
 interface SCaptureForm extends CaptureControllerState {
-    JamState:number
+    JamState:number,
+    TeamA:SScoreboardTeam,
+    TeamB:SScoreboardTeam
 }
 
 class CaptureForm extends React.Component<any, SCaptureForm> {
 
     readonly state:SCaptureForm = Object.assign({}, 
         CaptureController.getState(),
-        {JamState:ScoreboardController.getState().JamState}
+        {
+            JamState:ScoreboardController.getState().JamState,
+            TeamA:ScoreboardController.getState().TeamA,
+            TeamB:ScoreboardController.getState().TeamB
+        }
         );
 
     remoteCapture:Function
@@ -177,7 +183,11 @@ class CaptureForm extends React.Component<any, SCaptureForm> {
                 <CaptureJamClock shown={this.state.Scoreboard.JamClockShown}/>
                 <CaptureJamCounter shown={this.state.Scoreboard.JamCounterShown}/>
                 <CaptureRaffle shown={this.state.Raffle.Shown}/>
-                <CaptureScorekeeper shown={this.state.Scorekeeper.Shown}/>
+                <CaptureScorekeeper 
+                    shown={this.state.Scorekeeper.Shown}
+                    TeamA={this.state.TeamA}
+                    TeamB={this.state.TeamB}
+                    />
                 <CaptureAnnouncers shown={this.state.Announcers.Shown}/>
                 <CaptureRoster shown={this.state.Roster.Shown}/>
             </div>

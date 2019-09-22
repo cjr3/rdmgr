@@ -125,6 +125,10 @@
                 }
             }
 
+            .button-icon {
+                flex-flow: initial;
+            }
+
             > .record-list {
                 overflow: hidden scroll;
                 flex: 1;
@@ -207,5 +211,9 @@
                 background-color: #999999;
             }
         }
+    }
+    
+    .panel.display-options {
+        max-width:100%;
     }
 }

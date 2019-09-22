@@ -100,6 +100,21 @@
                 }
             }
         }
+
+        .skater-teams {
+            display: flex;
+            flex-flow: row wrap;
+            > button {
+                flex: 0 0 150px;
+                padding: 0px 0px 0px 2px;
+                text-align: left;
+                overflow: hidden;
+            }
+
+            > button:first-child {
+                flex: 1;
+            }
+        }
     }
 }
 

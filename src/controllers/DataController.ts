@@ -1582,7 +1582,7 @@ const DataController = {
      * Gets the skaters assigned to the given team.
      * @param {Number} id Team's record ID
      */
-    getTeamSkaters(id) : Array<SkaterRecord> {
+    getTeamSkaters(id:number, sorted:boolean = true) : Array<SkaterRecord> {
         var team = DataController.getTeam(id);
         var skaters:Array<SkaterRecord> = [];
         if(team === null)
@@ -1591,18 +1591,54 @@ const DataController = {
         records.forEach((skater:SkaterRecord) => {
             if(skater.Teams && skater.Teams.length >= 1) {
                 skater.Teams.forEach((steam:SkaterTeamRecord) => {
-                    if(steam.TeamID === parseInt(id)) {
-                        skaters.push(skater);
+                    if(steam.TeamID === id) {
+                        skaters.push(Object.assign({}, skater, {
+                            Teams:[steam],
+                            Penalties:[],
+                            Position:null
+                        }));
+                        //skaters.push(skater);
                     }
                 });
             }
         });
 
-        return skaters.sort((a:SkaterRecord, b) => {
+        skaters = skaters.sort((a:SkaterRecord, b) => {
             if(a !== undefined && b !== undefined && a.Name !== undefined && b.Name !== undefined)
                 return a.Name.localeCompare(b.Name);
             return 0;
         });
+
+        if(!sorted)
+            return skaters;
+
+        let captains:Array<SkaterRecord> = [];
+        let cocaptains:Array<SkaterRecord> = [];
+        let coaches:Array<SkaterRecord> = [];
+        skaters.forEach((skater, index) => {
+            if(skater.Teams !== undefined && skater.Teams.length === 1) {
+                if(skater.Teams[0].Captain)
+                    captains.push(skater);
+                else if(skater.Teams[0].CoCaptain)
+                    cocaptains.push(skater);
+                else if(skater.Teams[0].Coach)
+                    coaches.push(skater);
+            }
+        });
+
+        captains.forEach((skater) => {
+            skaters.splice(skaters.findIndex(tskater => (tskater.RecordID == skater.RecordID)), 1);
+        });
+
+        cocaptains.forEach((skater) => {
+            skaters.splice(skaters.findIndex(tskater => (tskater.RecordID == skater.RecordID)), 1);
+        });
+
+        coaches.forEach((skater) => {
+            skaters.splice(skaters.findIndex(tskater => (tskater.RecordID == skater.RecordID)), 1);
+        });
+
+        return skaters.concat(cocaptains, captains, coaches);
     },
 
     /**
@@ -1915,13 +1951,13 @@ const DataController = {
      * Shows a dialog for selecting files or folders.
      * @param {Object} options 
      */
-    async showOpenDialog(options) : Promise<Array<string>> {
+    async showOpenDialog(options) : Promise<Array<string>|undefined> {
         let diag:any = DataController.DIALOG;
         let settings = Object.assign({
             title:"Select File(s)",
             defaultPath:Folders.Media,
             buttonLabel:"SELECT",
-            filers:[
+            filters:[
                 {name:'Images', extensions:['jpg', 'png', 'gif', 'jpeg']},
                 {name:'Movies', extensions:['mp4', 'wmv', 'mov', 'webm']}
             ],
@@ -1938,19 +1974,25 @@ const DataController = {
      * @param {String} path 
      * @param {String} dest
      */
-    async uploadFile(path, dest:string = '') {
+    async uploadFile(path:string, dest:string = '') : Promise<any|undefined> {
         let fs:any = DataController.FS;
-        let pather:any = DataController.PATH;
+        let local = dest;
         if(typeof(dest) !== 'string' || dest.indexOf(Folders.Media) !== 0) {
             let tdate = new Date();
             let yfolder = Folders.Media + "/" + tdate.getFullYear();
             let mfolder = yfolder + "/" + ((tdate.getMonth() + 1).toString().padStart(2,'0'));
             await DataController.createFolder(yfolder);
             await DataController.createFolder(mfolder);
-            dest = mfolder;
+            local = mfolder + '/' + DataController.basename(path);
         }
 
-        return fs.promises.copyFile(path, dest + '/' + pather.basename(path));
+        return new Promise(async (res) => {
+            let response = fs.promises.copyFile(path, local);
+            if(response === undefined)
+                res(false);
+            else
+                res(local);
+        });
     },
 
     /**

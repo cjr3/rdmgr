@@ -123,7 +123,16 @@ class CaptureRoster extends React.PureComponent<PCaptureRoster, SCaptureRoster> 
 
                 if(i === this.state.SkaterIndex) {
                     teamName = (skater.Name !== undefined) ? skater.Name : teamName;
-                    if(skater.Number) {
+                    if(skater.Teams !== undefined && skater.Teams.length === 1) {
+                        if(skater.Teams[0].Coach)
+                            teamName = `Coach ${skater.Name}`;
+                        else if(skater.Teams[0].Captain)
+                            teamName = `Captain #${skater.Number} ${skater.Name}`;
+                        else if(skater.Teams[0].CoCaptain)
+                            teamName = `Co-Captain #${skater.Number} ${skater.Name}`;
+                        else
+                            teamName = `#${skater.Number} ${skater.Name}`;
+                    } else if(skater.Number) {
                         teamName = `#${skater.Number} ${skater.Name}`;
                     }
                 }

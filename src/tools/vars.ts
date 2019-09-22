@@ -136,6 +136,7 @@ export interface SkaterTeamRecord {
     CoCaptain?:boolean,
     Coach?:boolean,
     Manager?:boolean,
+    PenaltyTracker?:boolean,
     Regulator?:boolean,
     Trainer?:boolean
 };

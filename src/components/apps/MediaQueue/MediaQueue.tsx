@@ -23,7 +23,7 @@ import {
     IconX,
     MediaThumbnail,
     Icon,
-    IconPlus,
+    IconCheck,
     IconSlideshow,
     IconTicket,
     ToggleButton,
@@ -60,7 +60,8 @@ interface SMediaQueue {
     CaptureSponsor:CaptureStateSponsor,
     CaptureAnthem:CaptureStateAnthem,
     VideoState:SVideoController,
-    Status:SCaptureStatus
+    Status:SCaptureStatus,
+    AnthemClass:string
 }
 
 /**
@@ -86,7 +87,8 @@ class MediaQueue extends React.PureComponent<any, SMediaQueue> {
         CaptureSponsor:CaptureController.getState().SponsorSlideshow,
         CaptureAnthem:CaptureController.getState().NationalAnthem,
         VideoState:VideoController.getState(),
-        Status:CaptureStatus.getState()
+        Status:CaptureStatus.getState(),
+        AnthemClass:CaptureController.getState().NationalAnthem.className
     }
 
     VideoItem:React.RefObject<HTMLVideoElement>
@@ -192,7 +194,10 @@ class MediaQueue extends React.PureComponent<any, SMediaQueue> {
             });
         }
 
-        this.setState({captureClass:cstate.className});
+        this.setState({
+            captureClass:cstate.className,
+            AnthemClass:cstate.NationalAnthem.className
+        });
     }
 
     /**
@@ -526,6 +531,22 @@ class MediaQueue extends React.PureComponent<any, SMediaQueue> {
                             src={IconFlag}
                             onClick={() => {this.setRecordset(vars.RecordType.Anthem);}}
                         >Anthem</IconButton>
+                        <div className="stack-panel s2">
+                            <IconButton
+                                src={(this.state.AnthemClass === 'banner') ? IconCheck : IconX}
+                                active={(this.state.AnthemClass === 'banner')}
+                                onClick={() => {
+                                    CaptureController.SetNationalAnthemClass('banner');
+                                }}
+                                >Banner</IconButton>
+                            <IconButton
+                                src={(this.state.AnthemClass === '') ? IconCheck : IconX}
+                                active={(this.state.AnthemClass === '')}
+                                onClick={() => {
+                                    CaptureController.SetNationalAnthemClass('');
+                                }}
+                                >Full</IconButton>
+                        </div>
                         <RecordList
                             records={this.state.AnthemSingers}
                             onSelect={(record) => {MediaQueueController.Add(record);}}
@@ -597,13 +618,13 @@ class MediaQueue extends React.PureComponent<any, SMediaQueue> {
                         >Raffle</IconButton>
                         <Raffle opened={true}/>
                     </div>
-
-                    <Panel
-                        popup={true}
-                        opened={this.state.DisplayShown}
-                        buttons={[<CaptureDisplayButtons key='buttons'/>]}
-                        />
                 </div>
+                <Panel
+                    popup={true}
+                    opened={this.state.DisplayShown}
+                    buttons={[<CaptureDisplayButtons key='buttons'/>]}
+                    className="display-options"
+                    />
             </Panel>
         )
     }

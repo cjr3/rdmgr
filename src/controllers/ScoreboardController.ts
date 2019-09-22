@@ -6,6 +6,7 @@ import {createStore} from 'redux';
 import DataController from 'controllers/DataController'
 import vars from 'tools/vars'
 import keycodes from 'tools/keycodes'
+import RosterController from './RosterController';
 
 const SET_STATE = 'SET_STATE';
 const RESET_STATE = 'RESET_STATE';
@@ -956,20 +957,24 @@ const ScoreboardController = {
 
     /**
      * Sets both teams of the scoreboard.
-     * @param {Object} a 
-     * @param {Object} b 
+     * @param {SScoreboardTeam} a 
+     * @param {SScoreboardTeam} b 
      * @param {Boolean} reset
+     * @param {Boolean} resetRoster
      */
-    SetTeams(a, b, reset) {
+    SetTeams(a:SScoreboardTeam, b:SScoreboardTeam, reset:boolean = false, resetRoster:boolean = false) {
         if(a === null || typeof(a) !== "object" || b === null || typeof(b) !== "object")
             return;
         ScoreboardController.getStore().dispatch({
             type:SET_TEAMS,
             TeamA:a,
-            TeamB:b
+            TeamB:b,
+            Reset:reset
         });
         if(reset)
             ScoreboardController.Reset();
+        if(resetRoster)
+            RosterController.LoadSkaters();
     },
 
     /**

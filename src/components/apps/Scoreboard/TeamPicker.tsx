@@ -5,9 +5,11 @@ import DataController from 'controllers/DataController';
 import Panel from 'components/Panel';
 import { Button, ToggleButton } from 'components/Elements';
 import { TeamRecord } from 'tools/vars';
+import RosterController from 'controllers/RosterController';
 
 interface STeamPicker {
     resetChecked:boolean,
+    resetRosterChecked:boolean,
     TeamAID:number,
     TeamBID:number,
     Teams:Array<TeamRecord>
@@ -25,6 +27,7 @@ interface PTeamPicker {
 class TeamPicker extends React.PureComponent<PTeamPicker, STeamPicker> {
     readonly state:STeamPicker = {
         resetChecked:false,
+        resetRosterChecked:false,
         TeamAID:ScoreboardController.getState().TeamA.ID,
         TeamBID:ScoreboardController.getState().TeamB.ID,
         Teams:[]
@@ -80,10 +83,11 @@ class TeamPicker extends React.PureComponent<PTeamPicker, STeamPicker> {
         ScoreboardController.SetTeams(
             DataController.getTeam(this.state.TeamAID),
             DataController.getTeam(this.state.TeamBID),
-            this.state.resetChecked
+            this.state.resetChecked, 
+            this.state.resetRosterChecked
         );
         this.setState(() => {
-            return {resetChecked:false};
+            return {resetChecked:false, resetRosterChecked:false};
         });
         if(this.props.onSubmit)
             this.props.onSubmit();
@@ -94,6 +98,14 @@ class TeamPicker extends React.PureComponent<PTeamPicker, STeamPicker> {
      */
     render() {
         var buttons = [
+            <ToggleButton 
+                key="btn-roster" 
+                label="Reset Roster"
+                checked={this.state.resetRosterChecked}
+                onClick={() => {
+                    this.setState({resetRosterChecked:!this.state.resetRosterChecked});
+                }}
+                />,
             <ToggleButton 
                 key="btn-reset" 
                 label="Reset Board"

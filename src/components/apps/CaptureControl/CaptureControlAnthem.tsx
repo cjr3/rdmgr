@@ -59,7 +59,8 @@ class CaptureControlAnthem extends React.PureComponent<PCaptureControlPanel, SCa
         this.setState(() => {
             return {
                 Shown:CaptureController.getState().NationalAnthem.Shown,
-                className:CaptureController.getState().NationalAnthem.className
+                className:CaptureController.getState().NationalAnthem.className,
+                RecordID:CaptureController.getState().NationalAnthem.Record.RecordID
             }
         });
     }

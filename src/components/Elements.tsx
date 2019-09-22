@@ -10,60 +10,60 @@ import {default as UISlider, SliderProps, Mark} from '@material-ui/core/Slider'
 import DataController from 'controllers/DataController';
 
 //static icons
-const IconAttachment = require('images/icons/attachment.png');
-const IconAV = require('images/icons/av.png');
-const IconAuto = require('images/icons/loop-auto.png');
-const IconBolt = require('images/icons/bolt.png');
-const IconCameraDefault = require('images/icons/camera-style-default.png');
-const IconCamera5050 = require('images/icons/camera-style-5050.png');
-const IconCamera2080 = require('images/icons/camera-style-2080.png');
-const IconCameraLeftThird = require('images/icons/camera-style-lower-third.png');
-const IconCameraRightThird = require('images/icons/camera-style-right-third.png');
-const IconChat = require('images/icons/chat.png');
-const IconCheck = require('images/icons/check.png');
-const IconClipboard = require('images/icons/clipboard.png');
-const IconConnected = require('images/icons/online.png');
-const IconDelete = require('images/icons/trash.png');
-const IconDisconnected = require('images/icons/offline.png');
-const IconDown = require('images/icons/down.png');
-const IconFlag = require('images/icons/flag.png');
-const IconFolder = require('images/icons/folder.png');
-const IconHidden = require('images/icons/eye-closed.png');
-const IconInjury = require('images/icons/injury.png');
-const IconLeft = require('images/icons/left.png');
-const IconLoop = require('images/icons/loop.png');
-const IconMic = require('images/icons/microphone.png');
-const IconMonitor = require('images/icons/monitor.png');
-const IconMovie = require('images/icons/movie.png');
-const IconMuted = require('images/icons/volume-mute.png');
-const IconNo = require('images/icons/no.png');
-const IconOfficialTimeout = require('images/icons/oto.png');
-const IconOffline = require('images/icons/offline.png');
-const IconOnline = require('images/icons/online.png');
-const IconPlus = require('images/icons/plus.png');
-const IconQueue = require('images/icons/queue.png');
-const IconRight = require('images/icons/right.png');
-const IconSave = require('images/icons/save.png');
-const IconSettings = require('images/icons/settings.png');
-const IconSlideshow = require('images/icons/slideshow.png');
-const IconSkate = require('images/icons/skate.png');
-const IconSkater = require('images/icons/skater.png');
-const IconStar = require('images/icons/star.png');
-const IconStopwatch = require('images/icons/stopwatch.png');
-const IconStreamOff = require('images/icons/stream.png');
-const IconStreamOn = require('images/icons/stream-live.png');
-const IconShown = require('images/icons/eye-open.png');
-const IconSubtract = require('images/icons/minus.png');
-const IconTeam = require('images/icons/team.png');
-const IconTicket = require('images/icons/ticket.png');
-const IconUnmute = require('images/icons/volume-nomute.png');
-const IconUp = require('images/icons/up.png');
-const IconWhistle = require('images/icons/whistle.png');
-const IconX = require('images/icons/x.png');
-const IconYouTube = require('images/icons/youtube.png');
-const IconFastForward = require('images/icons/fastforward.png');
-const IconPlay = require('images/icons/play.png');
-const IconPause = require('images/icons/pause.png');
+export const IconAttachment:any = require('images/icons/attachment.png');
+export const IconAV:any = require('images/icons/av.png');
+export const IconAuto:any = require('images/icons/loop-auto.png');
+export const IconBolt:any = require('images/icons/bolt.png');
+export const IconCameraDefault:any = require('images/icons/camera-style-default.png');
+export const IconCamera5050:any = require('images/icons/camera-style-5050.png');
+export const IconCamera2080:any = require('images/icons/camera-style-2080.png');
+export const IconCameraLeftThird:any = require('images/icons/camera-style-lower-third.png');
+export const IconCameraRightThird:any = require('images/icons/camera-style-right-third.png');
+export const IconChat:any = require('images/icons/chat.png');
+export const IconCheck:any = require('images/icons/check.png');
+export const IconClipboard:any = require('images/icons/clipboard.png');
+export const IconConnected:any = require('images/icons/online.png');
+export const IconDelete:any = require('images/icons/trash.png');
+export const IconDisconnected:any = require('images/icons/offline.png');
+export const IconDown:any = require('images/icons/down.png');
+export const IconFlag:any = require('images/icons/flag.png');
+export const IconFolder:any = require('images/icons/folder.png');
+export const IconHidden:any = require('images/icons/eye-closed.png');
+export const IconInjury:any = require('images/icons/injury.png');
+export const IconLeft = require('images/icons/left.png');
+export const IconLoop = require('images/icons/loop.png');
+export const IconMic = require('images/icons/microphone.png');
+export const IconMonitor = require('images/icons/monitor.png');
+export const IconMovie = require('images/icons/movie.png');
+export const IconMuted = require('images/icons/volume-mute.png');
+export const IconNo = require('images/icons/no.png');
+export const IconOfficialTimeout = require('images/icons/oto.png');
+export const IconOffline = require('images/icons/offline.png');
+export const IconOnline = require('images/icons/online.png');
+export const IconPlus = require('images/icons/plus.png');
+export const IconQueue = require('images/icons/queue.png');
+export const IconRight = require('images/icons/right.png');
+export const IconSave = require('images/icons/save.png');
+export const IconSettings = require('images/icons/settings.png');
+export const IconSlideshow = require('images/icons/slideshow.png');
+export const IconSkate = require('images/icons/skate.png');
+export const IconSkater = require('images/icons/skater.png');
+export const IconStar = require('images/icons/star.png');
+export const IconStopwatch = require('images/icons/stopwatch.png');
+export const IconStreamOff = require('images/icons/stream.png');
+export const IconStreamOn = require('images/icons/stream-live.png');
+export const IconShown = require('images/icons/eye-open.png');
+export const IconSubtract = require('images/icons/minus.png');
+export const IconTeam = require('images/icons/team.png');
+export const IconTicket = require('images/icons/ticket.png');
+export const IconUnmute = require('images/icons/volume-nomute.png');
+export const IconUp = require('images/icons/up.png');
+export const IconWhistle = require('images/icons/whistle.png');
+export const IconX = require('images/icons/x.png');
+export const IconYouTube = require('images/icons/youtube.png');
+export const IconFastForward = require('images/icons/fastforward.png');
+export const IconPlay = require('images/icons/play.png');
+export const IconPause = require('images/icons/pause.png');
 
 /**
  * Creates a <button> element
@@ -511,59 +511,5 @@ export {
     ToggleButtonElement as ToggleButton,
     ProgressBarElement as ProgressBar,
     SliderElement as Slider,
-    TextboxElement as Textbox,
-    IconAttachment,
-    IconX,
-    IconDelete,
-    IconLeft,
-    IconRight,
-    IconCheck,
-    IconShown,
-    IconHidden,
-    IconLoop,
-    IconSave,
-    IconDisconnected,
-    IconConnected,
-    IconStreamOff,
-    IconStreamOn,
-    IconNo,
-    IconSettings,
-    IconSubtract,
-    IconPlus,
-    IconMovie,
-    IconFlag,
-    IconSkate,
-    IconSkater,
-    IconTeam,
-    IconAV,
-    IconSlideshow,
-    IconWhistle,
-    IconClipboard,
-    IconOffline,
-    IconOnline,
-    IconQueue,
-    IconStopwatch,
-    IconChat,
-    IconMonitor,
-    IconStar,
-    IconFolder,
-    IconTicket,
-    IconMuted,
-    IconUnmute,
-    IconAuto,
-    IconYouTube,
-    IconMic,
-    IconBolt,
-    IconDown,
-    IconUp,
-    IconCameraDefault,
-    IconCamera5050,
-    IconCamera2080,
-    IconCameraLeftThird,
-    IconCameraRightThird,
-    IconFastForward,
-    IconPlay,
-    IconPause,
-    IconInjury,
-    IconOfficialTimeout
+    TextboxElement as Textbox
 };

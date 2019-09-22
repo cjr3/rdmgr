@@ -1,7 +1,8 @@
 import React, { CSSProperties } from 'react';
 import DataController from 'controllers/DataController';
 import ScorekeeperController, {SScorekeeperState} from 'controllers/ScorekeeperController';
-import cnames from 'classnames'
+import {SScoreboardTeam} from 'controllers/ScoreboardController';
+import cnames from 'classnames';
 import './css/CaptureScorekeeper.scss';
 
 /**
@@ -11,7 +12,15 @@ export interface PCaptureScorekeeper {
     /**
      * True to show/hide the component
      */
-    shown:boolean
+    shown:boolean;
+    /**
+     * Left-side team
+     */
+    TeamA:SScoreboardTeam;
+    /**
+     * Right-side team
+     */
+    TeamB:SScoreboardTeam;
 }
 
 /**
@@ -27,7 +36,11 @@ class CaptureScorekeeper extends React.Component<PCaptureScorekeeper, SScorekeep
      */
     protected remoteState:Function
 
-    constructor(props) {
+    /**
+     * 
+     * @param props PCaptureScorekeeper
+     */
+    constructor(props:PCaptureScorekeeper) {
         super(props);
         this.updateState = this.updateState.bind(this);
         this.remoteState = ScorekeeperController.subscribe(this.updateState);
@@ -66,20 +79,24 @@ class CaptureScorekeeper extends React.Component<PCaptureScorekeeper, SScorekeep
         if(this.state.TeamA.Track.Jammer !== null) {
             if(this.state.TeamA.Track.Jammer.Thumbnail)
                 srcA = DataController.mpath(this.state.TeamA.Track.Jammer.Thumbnail);
+            else
+                srcA = DataController.mpath(this.props.TeamA.Thumbnail);
             if(this.state.TeamA.Track.Jammer.Number !== undefined)
                 nameA = this.state.TeamA.Track.Jammer.Number;
             styleA = {
-                backgroundImage:`linear-gradient(0deg, rgba(0,0,0,0), ${this.state.TeamA.Track.Jammer.Color})`
+                backgroundImage:`linear-gradient(0deg, rgba(0,0,0,0), ${this.props.TeamA.Color})`
             }
         }
 
         if(this.state.TeamB.Track.Jammer !== null) {
             if(this.state.TeamB.Track.Jammer.Thumbnail)
                 srcB = DataController.mpath(this.state.TeamB.Track.Jammer.Thumbnail);
+            else
+                srcB = DataController.mpath(this.props.TeamB.Thumbnail);
             if(this.state.TeamB.Track.Jammer.Number !== undefined)
                 nameB = this.state.TeamB.Track.Jammer.Number;
             styleB = {
-                backgroundImage:`linear-gradient(0deg, rgba(0,0,0,0), ${this.state.TeamB.Track.Jammer.Color})`,
+                backgroundImage:`linear-gradient(0deg, rgba(0,0,0,0), ${this.props.TeamB.Color})`
             }
         }
 

@@ -1,10 +1,13 @@
-import React from 'react'
+import React, { MouseEventHandler } from 'react'
 import cnames from 'classnames'
-import { Icon, IconDelete, IconFolder } from 'components/Elements';
+import { Icon, IconDelete, IconFolder, IconLoop } from 'components/Elements';
 import DataController from 'controllers/DataController'
 import './css/MediaPreview.scss'
 
-interface PMediaPreview {
+/**
+ * Properties for the media preview element
+ */
+export interface PMediaPreview {
     /**
      * Source
      */
@@ -16,7 +19,7 @@ interface PMediaPreview {
     /**
      * Callback for when the user selects a file
      */
-    onChange?:Function,
+    onChange?:Function
 }
 
 /**
@@ -35,6 +38,7 @@ class MediaPreview extends React.PureComponent<PMediaPreview> {
      * 
      */
     private Brush:CanvasRenderingContext2D|null = null;
+    
     /**
      * 
      * @param props PMediaPreview
@@ -42,6 +46,9 @@ class MediaPreview extends React.PureComponent<PMediaPreview> {
     constructor(props:PMediaPreview) {
         super(props);
         this.onSelectFile = this.onSelectFile.bind(this);
+        this.onClickDelete = this.onClickDelete.bind(this);
+        this.onClickSelect = this.onClickSelect.bind(this);
+        this.onClickReplace = this.onClickReplace.bind(this);
         this.paint = this.paint.bind(this);
         this.clear = this.clear.bind(this);
         this.CurrentImage.onload = this.paint;
@@ -75,6 +82,44 @@ class MediaPreview extends React.PureComponent<PMediaPreview> {
     private onSelectFile(filename:string) {
         if(this.props.onChange)
             this.props.onChange(filename);
+    }
+
+    /**
+     * Triggered when the user clicks the delete icon
+     */
+    private onClickDelete() {
+        if(this.props.onChange)
+            this.props.onChange('');
+    }
+
+    /**
+     * Triggered when the user clicks the select folder icon
+     */
+    private onClickSelect() {
+        window.onSelectFile = this.onSelectFile;
+        window.client.showFileBrowser();
+    }
+
+    /**
+     * Triggered when the user clicks the replace icon
+     */
+    private onClickReplace() {
+        DataController.showOpenDialog({
+            filters:[{name:'Images', extensions:['jpg', 'png', 'gif', 'jpeg']}],
+        }).then((files:Array<string>|undefined) => {
+            if(files !== undefined && files instanceof Array && files.length >= 1) {
+                DataController.uploadFile(files[0])
+                    .then((destination:string|boolean) => {
+                        if(typeof(destination) === 'string') {
+                            this.CurrentImage.src = destination;
+                            if(this.props.onChange)
+                                this.props.onChange(DataController.mpath(destination, true));
+                        }
+                    }).catch(() => {
+
+                    });
+            }
+        });
     }
 
     /**
@@ -116,20 +161,9 @@ class MediaPreview extends React.PureComponent<PMediaPreview> {
                 <canvas width="150" height="150" ref={this.CanvasItem}></canvas>
                 <div className="name">{this.props.title}</div>
                 <div className="buttons">
-                    <Icon
-                        src={IconDelete}
-                        onClick={() => {
-                            if(this.props.onChange)
-                                this.props.onChange('');
-                        }}
-                    />
-                    <Icon
-                        src={IconFolder}
-                        onClick={() => {
-                            window.onSelectFile = this.onSelectFile;
-                            window.client.showFileBrowser();
-                        }}
-                    />
+                    <Icon src={IconDelete} onClick={this.onClickDelete}/>
+                    <Icon src={IconLoop} onClick={this.onClickReplace}/>
+                    <Icon src={IconFolder} onClick={this.onClickSelect}/>
                 </div>
             </div>
         );

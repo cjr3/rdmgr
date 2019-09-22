@@ -1,4 +1,5 @@
 import React from 'react';
+import DataController from 'controllers/DataController';
 import SponsorController, {SSponsorController} from 'controllers/SponsorController';
 import cnames from 'classnames';
 import './css/CaptureSponsor.scss';
@@ -65,9 +66,9 @@ class CaptureSponsor extends React.Component<PCaptureSponsor, SCaptureSponsor> {
 
         if(this.state.Slides && this.state.Slides.length && this.state.Slides[this.state.Index]) {
             if(this.state.CurrentSlide === 'A')
-                this.SourceA = this.state.Slides[this.state.Index].Filename;
+                this.SourceA = DataController.mpath(this.state.Slides[this.state.Index].Filename);
             else {
-                this.SourceB = this.state.Slides[this.state.Index].Filename;
+                this.SourceB = DataController.mpath(this.state.Slides[this.state.Index].Filename);
             }
         }
 

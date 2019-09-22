@@ -4,6 +4,9 @@ import CaptureController, {CaptureStateAnnouncer} from 'controllers/CaptureContr
 import {IconMic, Icon} from 'components/Elements';
 import './css/CaptureAnnouncer.scss';
 
+/**
+ * Properties for CaptureAnnouncers
+ */
 interface PCaptureAnnouncers {
     shown:boolean
 }
@@ -13,8 +16,13 @@ interface PCaptureAnnouncers {
  */
 class CaptureAnnouncers extends React.PureComponent<PCaptureAnnouncers, CaptureStateAnnouncer> {
     readonly state:CaptureStateAnnouncer = CaptureController.getState().Announcers;
-    remote:Function
-    constructor(props) {
+    protected remote:Function
+
+    /**
+     * 
+     * @param props 
+     */
+    constructor(props:PCaptureAnnouncers) {
         super(props);
         this.updateState = this.updateState.bind(this);
         this.remote = CaptureController.subscribe(this.updateState);

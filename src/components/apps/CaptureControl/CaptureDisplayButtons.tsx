@@ -51,6 +51,10 @@ interface CaptureDisplayButtonState {
      * Determines if the full-screen jam counter is shown
      */
     JamCounter:boolean
+    /**
+     * Determines if the raffle screen is shown
+     */
+    Raffle:boolean
 };
 
 /**
@@ -61,23 +65,24 @@ class CaptureDisplayButtons extends React.PureComponent<any, CaptureDisplayButto
      * State object
      */
     readonly state:CaptureDisplayButtonState = {
-        Announcers:false,
-        MainCamera:false,
-        MainSlideshow:false,
-        MainVideo:false,
-        NationalAnthem:false,
-        PenaltyTracker:false,
-        Scorebanner:false,
-        Scoreboard:false,
-        SponsorSlideshow:false,
-        JamClock:false,
-        JamCounter:false
+        Announcers:CaptureController.getState().Announcers.Shown,
+        MainCamera:CaptureController.getState().MainCamera.Shown,
+        MainSlideshow:CaptureController.getState().MainSlideshow.Shown,
+        MainVideo:CaptureController.getState().MainVideo.Shown,
+        NationalAnthem:CaptureController.getState().NationalAnthem.Shown,
+        PenaltyTracker:CaptureController.getState().PenaltyTracker.Shown,
+        Scorebanner:CaptureController.getState().Scorebanner.Shown,
+        Scoreboard:CaptureController.getState().Scoreboard.Shown,
+        SponsorSlideshow:CaptureController.getState().SponsorSlideshow.Shown,
+        JamClock:CaptureController.getState().Scoreboard.JamClockShown,
+        JamCounter:CaptureController.getState().Scoreboard.JamCounterShown,
+        Raffle:CaptureController.getState().Raffle.Shown
     };
 
     /**
-     * Subscriber for redux store
+     * Listener for capture controller
      */
-    remote:Function
+    protected remote:Function
 
     /**
      * 
@@ -104,23 +109,29 @@ class CaptureDisplayButtons extends React.PureComponent<any, CaptureDisplayButto
                 PenaltyTracker:cstate.PenaltyTracker.Shown,
                 Scorebanner:cstate.Scorebanner.Shown,
                 Scoreboard:cstate.Scoreboard.Shown,
-                SponsorSlideshow:cstate.SponsorSlideshow.Shown
+                SponsorSlideshow:cstate.SponsorSlideshow.Shown,
+                JamClock:cstate.Scoreboard.JamClockShown,
+                JamCounter:cstate.Scoreboard.JamCounterShown,
+                Raffle:cstate.Raffle.Shown
             };
         });
     }
 
+    /**
+     * Renders the component
+     */
     render() {
         return (
             <React.Fragment>
                 <Button
-                    active={this.state.Scoreboard}
-                    onClick={CaptureController.ToggleScoreboard}>
-                        Board
+                    active={this.state.NationalAnthem}
+                    onClick={CaptureController.ToggleNationalAnthem}>
+                        Anthem
                 </Button>
                 <Button
-                    active={this.state.Scorebanner}
-                    onClick={CaptureController.ToggleScorebanner}>
-                        Banner
+                    active={this.state.MainCamera}
+                    onClick={CaptureController.ToggleMainCamera}>
+                        Camera
                 </Button>
                 <Button
                     active={this.state.JamClock}
@@ -133,14 +144,22 @@ class CaptureDisplayButtons extends React.PureComponent<any, CaptureDisplayButto
                         Jam #
                 </Button>
                 <Button
-                    active={this.state.MainCamera}
-                    onClick={CaptureController.ToggleMainCamera}>
-                        Camera
+                    active={this.state.PenaltyTracker}
+                    onClick={CaptureController.TogglePenaltyTracker}>
+                        Penalties
                 </Button>
                 <Button
-                    active={this.state.MainVideo}
-                    onClick={CaptureController.ToggleMainVideo}>
-                        Video
+                    active={this.state.Raffle}
+                    onClick={CaptureController.ToggleRaffle}>Raffle</Button>
+                <Button
+                    active={this.state.Scorebanner}
+                    onClick={CaptureController.ToggleScorebanner}>
+                        Scorebanner
+                </Button>
+                <Button
+                    active={this.state.Scoreboard}
+                    onClick={CaptureController.ToggleScoreboard}>
+                        Scoreboard
                 </Button>
                 <Button
                     active={this.state.MainSlideshow}
@@ -153,14 +172,9 @@ class CaptureDisplayButtons extends React.PureComponent<any, CaptureDisplayButto
                         Sponsors
                 </Button>
                 <Button
-                    active={this.state.PenaltyTracker}
-                    onClick={CaptureController.TogglePenaltyTracker}>
-                        Penalties
-                </Button>
-                <Button
-                    active={this.state.NationalAnthem}
-                    onClick={CaptureController.ToggleNationalAnthem}>
-                        Anthem
+                    active={this.state.MainVideo}
+                    onClick={CaptureController.ToggleMainVideo}>
+                        Video
                 </Button>
             </React.Fragment>
         )
