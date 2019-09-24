@@ -305,6 +305,84 @@
             transform: translateX(-120px);
         }
     }
+
+    @media screen and (max-width: 1024px) {
+        .jamclock {
+            font-size: 260px;
+            top: 20px;
+            padding-left: 28px;
+        }
+
+        .team {
+            width: 300px;
+            .logo {
+                max-height: 150px;
+            }
+            .score {
+                width: 300px;
+                height: 150px;
+                font-size: 142px;
+                line-height: 122px;
+                border-width: 4px;
+                top: 160px;
+            }
+
+            .status {
+                width: 300px;
+                left: 0;
+                right: 0;
+                top: 110px;
+            }
+
+            .jampoints {
+                top: 200px;
+            }
+
+            .timeouts,
+            .challenges
+            {
+                top: 315px;
+                img {
+                    width: 36px;
+                    height: 36px;
+                }
+            }
+        }
+
+        .phase {
+            bottom: 82px;
+        }
+
+
+        .gameclock,
+        .jam-counter
+        {
+            bottom: 32px;
+        }
+
+        .phase,
+        .jam-counter {
+            width: 300px;
+            font-size: 48px;
+        }
+
+        .board-status {
+            width: 300px;
+            bottom: 28px;
+            font-size: 52px;
+            z-index: 20;
+        }
+
+        .board-status.overturned {
+            font-size: 52px;
+        }
+
+        .breakclock {
+            bottom: 22px;
+            font-size: 96px;
+            right: 22px;
+        }
+    }
 }
 
 .capture-SB.jamming {
