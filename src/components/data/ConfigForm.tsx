@@ -45,7 +45,7 @@ import './css/ConfigForm.scss';
 import RecordList from './RecordList';
 
 interface SConfigForm {
-    currentApp:any,
+    currentApp:string,
     AnthemRecords:Array<AnthemRecord>,
     PenaltyRecords:Array<PenaltyRecord>,
     PhaseRecords:Array<PhaseRecord>,
@@ -62,7 +62,7 @@ interface SConfigForm {
  */
 class ConfigForm extends React.PureComponent<any, SConfigForm> {
     readonly state:SConfigForm = {
-        currentApp:null,
+        currentApp:'',
         AnthemRecords:DataController.getAnthemSingers(true),
         PenaltyRecords:DataController.getPenalties(true),
         PhaseRecords:DataController.getPhases(),
@@ -73,77 +73,79 @@ class ConfigForm extends React.PureComponent<any, SConfigForm> {
         PeerRecords:DataController.getPeers(true)
     }
 
-    private Applications:any = {
-        [vars.RecordType.Anthem]:{
-            type:ConfigPanelAnthem,
-            form:AnthemEditor,
-            name:"Anthem Singers",
-            icon:IconFlag,
-            record:null
-        },
-        [vars.RecordType.Penalty]:{
-            type:ConfigPanelPenalty,
-            form:PenaltyEditor,
-            name:"Penalties",
-            icon:IconWhistle,
-            record:null
-        },
-        [vars.RecordType.Phase]:{
-            type:ConfigPanelPhase,
-            form:PhaseEditor,
-            name:"Quarters",
-            icon:IconStopwatch,
-            record:null
-        },
-        [vars.RecordType.Skater]:{
-            type:ConfigPanelSkaters,
-            form:SkaterEditor,
-            name:"Skaters",
-            icon:IconSkater,
-            record:null
-        },
-        [vars.RecordType.Team]:{
-            type:ConfigPanelTeams,
-            form:TeamEditor,
-            name:"Teams",
-            icon:IconTeam,
-            record:null
-        },
-        [vars.RecordType.Slideshow]:{
-            type:ConfigPanelSlideshows,
-            name:"Slideshows",
-            form:SlideshowEditor,
-            icon:IconSlideshow,
-            record:null
-        },
-        [vars.RecordType.Video]:{
-            type:ConfigPanelVideos,
-            name:"Videos",
-            icon:IconMovie,
-            form:VideoEditor,
-            record:null
-        },
-        [vars.RecordType.Peer]:{
-            type:ConfigPanelPeers,
-            form:PeerEditor,
-            icon:IconOffline,
-            name:"Network",
-            record:null
-        }
-    }
+    private Applications:any = {}
 
     constructor(props) {
         super(props);
         this.onCancelRecord = this.onCancelRecord.bind(this);
+        this.Applications = {
+            [vars.RecordType.Anthem]:{
+                type:ConfigPanelAnthem,
+                form:AnthemEditor,
+                name:"Anthem Singers",
+                icon:IconFlag,
+                record:null
+            },
+            [vars.RecordType.Penalty]:{
+                type:ConfigPanelPenalty,
+                form:PenaltyEditor,
+                name:"Penalties",
+                icon:IconWhistle,
+                record:null
+            },
+            [vars.RecordType.Phase]:{
+                type:ConfigPanelPhase,
+                form:PhaseEditor,
+                name:"Quarters",
+                icon:IconStopwatch,
+                record:null
+            },
+            [vars.RecordType.Skater]:{
+                type:ConfigPanelSkaters,
+                form:SkaterEditor,
+                name:"Skaters",
+                icon:IconSkater,
+                record:null
+            },
+            [vars.RecordType.Team]:{
+                type:ConfigPanelTeams,
+                form:TeamEditor,
+                name:"Teams",
+                icon:IconTeam,
+                record:null
+            },
+            [vars.RecordType.Slideshow]:{
+                type:ConfigPanelSlideshows,
+                name:"Slideshows",
+                form:SlideshowEditor,
+                icon:IconSlideshow,
+                record:null
+            },
+            [vars.RecordType.Video]:{
+                type:ConfigPanelVideos,
+                name:"Videos",
+                icon:IconMovie,
+                form:VideoEditor,
+                record:null
+            },
+            [vars.RecordType.Peer]:{
+                type:ConfigPanelPeers,
+                form:PeerEditor,
+                icon:IconOffline,
+                name:"Network",
+                record:null
+            }
+        }
     }
 
     /**
      * Triggered when the user cancels the editing of a record.
      */
     onCancelRecord() {
-        if(this.state.currentApp)
-            this.state.currentApp.record = null;
-        this.forceUpdate();
+        if(this.Applications[this.state.currentApp]) {
+            this.Applications[this.state.currentApp].record = null;
+            this.forceUpdate();
+        }
     }
 
     /**
@@ -156,7 +158,7 @@ class ConfigForm extends React.PureComponent<any, SConfigForm> {
         var forms:Array<React.ReactElement> = [];
         for(let key in this.Applications) {
             let app = this.Applications[key];
-            let current = (this.state.currentApp === app);
+            let current = (this.state.currentApp === key);
             let form = <app.form
                 key={key}
                 opened={(current)}
@@ -177,14 +179,14 @@ class ConfigForm extends React.PureComponent<any, SConfigForm> {
                 onSelect={(record) => {
                     app.record = record;
                     this.setState(() => {
-                        return {currentApp:app};
+                        return {currentApp:key};
                     }, () => {
                         this.forceUpdate();
                     });
                 }}
                 onClick={() => {
                     this.setState(() => {
-                        return {currentApp:app}
+                        return {currentApp:key}
                     }, () => {
                         this.forceUpdate();
                     });
@@ -716,7 +718,7 @@ class ConfigPanelPeers extends React.PureComponent<any, SConfigPanelPeers> {
                     className="peer-item"
                     >
                     <Button
-                        active={(this.props.record && this.props.record.RecordID == record.RecordID)}
+                        active={(this.props.record && this.props.record.RecordID === record.RecordID)}
                         onClick={() => {
                             this.props.onSelect(record);
                         }}

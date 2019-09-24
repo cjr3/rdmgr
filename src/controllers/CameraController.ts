@@ -11,9 +11,21 @@ export interface CameraControllerState {
     Cameras:Array<MediaDeviceInfo>
 }
 
-const SET_STATE = 'SET_STATE';
-const SET_CAMERA_ID = 'SET_CAMERA_ID';
-const SET_CAMERAS = 'SET_CAMERAS';
+export enum Actions {
+    /**
+     * Set the state of the camera controller
+     */
+    SET_STATE,
+    /**
+     * Sets the device ID of the locally connected camera
+     */
+    SET_CAMERA_ID,
+    /**
+     * Sets the collection of locally connected cameras
+     */
+    SET_CAMERAS
+}
+
 export const InitState:CameraControllerState = {
     DeviceID:'',
     Cameras:new Array<MediaDeviceInfo>()
@@ -21,13 +33,13 @@ export const InitState:CameraControllerState = {
 
 function CameraReducer(state = InitState, action) {
     switch(action.type) {
-        case SET_STATE :
+        case Actions.SET_STATE :
             return Object.assign({}, state, action.values);
-        case SET_CAMERA_ID :
+        case Actions.SET_CAMERA_ID :
             return Object.assign({}, state, {
                 DeviceID:action.deviceId
             });
-        case SET_CAMERAS :
+        case Actions.SET_CAMERAS :
             return Object.assign({}, state, {
                 Cameras:action.records
             });
@@ -82,7 +94,7 @@ const CameraController:CameraControllerDefinition = {
      */
     SetState(state:object) {
         CameraController.getStore().dispatch({
-            type:SET_STATE,
+            type:Actions.SET_STATE,
             values:state
         });
     },
@@ -93,7 +105,7 @@ const CameraController:CameraControllerDefinition = {
      */
     SetDeviceID(deviceId:string) {
         CameraController.getStore().dispatch({
-            type:SET_CAMERA_ID,
+            type:Actions.SET_CAMERA_ID,
             deviceId:deviceId
         });
     },
@@ -119,7 +131,7 @@ const CameraController:CameraControllerDefinition = {
                 }
 
                 CameraController.getStore().dispatch({
-                    type:SET_CAMERAS,
+                    type:Actions.SET_CAMERAS,
                     records:cameras
                 });
             });

@@ -3,36 +3,37 @@ import vars, { AnthemRecord } from 'tools/vars';
 import DataController from './DataController';
 import {startTimeout} from 'tools/functions';
 
-const SET_STATE = 'SET_STATE';
-const SET_SCOREBOARD = 'SET_SCOREBOARD';
-const SET_SCOREBANNER = 'SET_SCOREBANNER';
-const SET_CAMERA = 'SET_CAMERA';
-const SET_VIDEO = 'SET_VIDEO';
-const SET_SLIDESHOW = 'SET_SLIDESHOW';
-const SET_SPONSORS = 'SET_SPONSORS';
-const SET_PENALTY_TRACKER = 'SET_PENALTY_TRACKER';
-const SET_ANTHEM = 'SET_ANTHEM';
-const SET_RAFFLE = 'SET_RAFFLE';
-const SET_CLASS_NAME = 'SET_CLASS_NAME';
-const SET_ANNOUNCERS = 'SET_ANNOUNCERS';
-
-const TOGGLE_SLIDESHOW = 'TOGGLE_SLIDESHOW';
-const TOGGLE_SCOREBOARD = 'TOGGLE_SCOREBOARD';
-const TOGGLE_JAM_CLOCK = 'TOGGLE_JAM_CLOCK';
-const TOGGLE_JAM_COUNTER = 'TOGGLE_JAM_COUNTER';
-const TOGGLE_SCOREBANNER = 'TOGGLE_SCOREBANNER';
-const TOGGLE_SCOREBANNER_CLOCKS = 'TOGGLE_SCOREBANNER_CLOCKS';
-const TOGGLE_MAIN_CAMERA = 'TOGGLE_MAIN_CAMERA';
-const TOGGLE_MAIN_VIDEO = 'TOGGLE_MAIN_VIDEO';
-const TOGGLE_SPONSORS = 'TOGGLE_SPONSORS';
-const TOGGLE_PENALTY_TRACKER = 'TOGGLE_PENALTY_TRACKER';
-const TOGGLE_ANNOUNCER = 'TOGGLE_ANNOUNCER';
-const TOGGLE_ANTHEM = 'TOGGLE_ANTHEM';
-const TOGGLE_RAFFLE = 'TOGGLE_RAFFLE';
-const TOGGLE_ROSTER = 'TOGGLE_ROSTER';
-const TOGGLE_SCOREBOARD_LIGHT = 'TOGGLE_SCOREBOARD_LIGHT';
-const TOGGLE_SCOREKEEPER = 'TOGGLE_SCOREKEEPER';
-const TOGGLE_SPONSOR_VIEW = 'TOGGLE_SPONSOR_VIEW';
+export enum Actions {
+    SET_STATE,
+    SET_SCOREBOARD,
+    SET_SCOREBANNER,
+    SET_CAMERA,
+    SET_VIDEO,
+    SET_SLIDESHOW,
+    SET_SPONSORS,
+    SET_PENALTY_TRACKER,
+    SET_ANTHEM,
+    SET_RAFFLE,
+    SET_CLASS_NAME,
+    SET_ANNOUNCERS,
+    TOGGLE_SLIDESHOW,
+    TOGGLE_SCOREBOARD,
+    TOGGLE_JAM_CLOCK,
+    TOGGLE_JAM_COUNTER,
+    TOGGLE_SCOREBANNER,
+    TOGGLE_SCOREBANNER_CLOCKS,
+    TOGGLE_MAIN_CAMERA,
+    TOGGLE_MAIN_VIDEO,
+    TOGGLE_SPONSORS,
+    TOGGLE_PENALTY_TRACKER,
+    TOGGLE_ANNOUNCER,
+    TOGGLE_ANTHEM,
+    TOGGLE_RAFFLE,
+    TOGGLE_ROSTER,
+    TOGGLE_SCOREBOARD_LIGHT,
+    TOGGLE_SCOREKEEPER,
+    TOGGLE_SPONSOR_VIEW
+}
 
 export interface CaptureStateBase {
     Shown:boolean,
@@ -58,7 +59,11 @@ export interface CaptureStateScoreboard extends CaptureStateBase {
 }
 
 export interface CaptureStateScorebanner extends CaptureStateBase {
-    ClocksShown:boolean
+    ClocksShown:boolean,
+    /**
+     * Background image for the scorebanner
+     */
+    BackgroundImage?:string
 }
 
 export interface CaptureStateSponsor extends CaptureStateBase {
@@ -172,173 +177,173 @@ export const InitState:CaptureControllerState = {
 function CaptureReducer(state:CaptureControllerState = InitState, action) {
     switch(action.type) {
         //update entire state
-        case SET_STATE :
+        case Actions.SET_STATE :
             return Object.assign({}, state, action.state);
 
         //sets the class name
-        case SET_CLASS_NAME :
+        case Actions.SET_CLASS_NAME :
             return Object.assign({}, state, {className:action.className});
 
-        case TOGGLE_SPONSOR_VIEW :
+        case Actions.TOGGLE_SPONSOR_VIEW :
             if(state.className === 'sponsor-board')
                 return Object.assign({}, state, {className:''});
             return Object.assign({}, state, {className:'sponsor-board'});
 
-        case SET_CAMERA :
+        case Actions.SET_CAMERA :
             return Object.assign({}, state, {
                 MainCamera:Object.assign({}, state.MainCamera, action.values)
             });
 
-        case SET_VIDEO :
+        case Actions.SET_VIDEO :
             return Object.assign({}, state, {
                 MainVideo:Object.assign({}, state.MainVideo, action.values)
             });
 
-        case SET_SCOREBANNER :
+        case Actions.SET_SCOREBANNER :
             return Object.assign({}, state, {
                 Scorebanner:Object.assign({}, state.Scorebanner, action.values)
             });
 
-        case SET_SCOREBOARD :
+        case Actions.SET_SCOREBOARD :
             return Object.assign({}, state, {
                 Scoreboard:Object.assign({}, state.Scoreboard, action.values)
             });
 
-        case SET_SLIDESHOW :
+        case Actions.SET_SLIDESHOW :
             return Object.assign({}, state, {
                 MainSlideshow:Object.assign({}, state.MainSlideshow, action.values)
             });
 
-        case SET_SPONSORS :
+        case Actions.SET_SPONSORS :
             return Object.assign({}, state, {
                 SponsorSlideshow:Object.assign({}, state.SponsorSlideshow, action.values)
             });
 
-        case SET_PENALTY_TRACKER :
+        case Actions.SET_PENALTY_TRACKER :
             return Object.assign({}, state, {
                 PenaltyTracker:Object.assign({}, state.PenaltyTracker, action.values)
             });
 
-        case SET_ANNOUNCERS :
+        case Actions.SET_ANNOUNCERS :
             return Object.assign({}, state, {
                 Announcers:Object.assign({}, state.Announcers, action.values)
             });
 
-        case SET_ANTHEM :
+        case Actions.SET_ANTHEM :
             return Object.assign({}, state, {
                 NationalAnthem:Object.assign({}, state.NationalAnthem, action.values)
             });
 
-        case SET_RAFFLE :
+        case Actions.SET_RAFFLE :
             return Object.assign({}, state, {
                 Raffle:Object.assign({}, state.Raffle, action.values)
             });
         
         //toggle slideshow visibility
-        case TOGGLE_SLIDESHOW :
+        case Actions.TOGGLE_SLIDESHOW :
             return Object.assign({}, state, {
                 MainSlideshow:Object.assign({}, state.MainSlideshow, {
                     Shown:!state.MainSlideshow.Shown
                 })
             });
 
-        case  TOGGLE_SCOREBANNER :
+        case Actions.TOGGLE_SCOREBANNER :
             return Object.assign({}, state, {
                 Scoreboard:Object.assign({}, state.Scoreboard, {Shown:false}),
                 Scorebanner:Object.assign({}, state.Scorebanner, {Shown:!state.Scorebanner.Shown})
             });
 
-        case TOGGLE_SCOREBANNER_CLOCKS :
+        case Actions.TOGGLE_SCOREBANNER_CLOCKS :
             return Object.assign({}, state, {
                 Scoreboard:Object.assign({}, state.Scoreboard, {Shown:false}),
                 Scorebanner:Object.assign({}, state.Scorebanner, {ClocksShown:!state.Scorebanner.ClocksShown})
             });
 
 
-        case  TOGGLE_SCOREBOARD :
+        case Actions.TOGGLE_SCOREBOARD :
             return Object.assign({}, state, {
                 Scorebanner:Object.assign({}, state.Scorebanner, {Shown:false}),
                 Scoreboard:Object.assign({}, state.Scoreboard, {Shown:!state.Scoreboard.Shown})
             });
 
-        case TOGGLE_JAM_CLOCK :
+        case Actions.TOGGLE_JAM_CLOCK :
             return Object.assign({}, state, {
                 Scoreboard:Object.assign({}, state.Scoreboard, {
                     JamClockShown:!state.Scoreboard.JamClockShown
                 })
             });
 
-        case TOGGLE_JAM_COUNTER :
+        case Actions.TOGGLE_JAM_COUNTER :
             return Object.assign({}, state, {
                 Scoreboard:Object.assign({}, state.Scoreboard, {
                     JamCounterShown:!state.Scoreboard.JamCounterShown
                 })
             });
 
-        case TOGGLE_MAIN_CAMERA :
+        case Actions.TOGGLE_MAIN_CAMERA :
             return Object.assign({}, state, {
                 MainCamera:Object.assign({}, state.MainCamera, {
                     Shown:!state.MainCamera.Shown
                 })
             });
 
-        case TOGGLE_MAIN_VIDEO :
+        case Actions.TOGGLE_MAIN_VIDEO :
             return Object.assign({}, state, {
                 MainVideo:Object.assign({}, state.MainVideo, {
                     Shown:!state.MainVideo.Shown
                 })
             });
 
-        case TOGGLE_SPONSORS :
+        case Actions.TOGGLE_SPONSORS :
             return Object.assign({}, state, {
                 SponsorSlideshow:Object.assign({}, state.SponsorSlideshow, {
                     Shown:!state.SponsorSlideshow.Shown
                 })
             });
 
-        case TOGGLE_PENALTY_TRACKER :
+        case Actions.TOGGLE_PENALTY_TRACKER :
             return Object.assign({}, state, {
                 PenaltyTracker:Object.assign({}, state.PenaltyTracker, {
                     Shown:!state.PenaltyTracker.Shown
                 })
             });
 
-        case TOGGLE_ANNOUNCER :
+        case Actions.TOGGLE_ANNOUNCER :
             return Object.assign({}, state, {
                 Announcers:Object.assign({}, state.Announcers, {
                     Shown:!state.Announcers.Shown
                 })
             });
 
-        case TOGGLE_ANTHEM :
+        case Actions.TOGGLE_ANTHEM :
             return Object.assign({}, state, {
                 NationalAnthem:Object.assign({}, state.NationalAnthem, {
                     Shown:!state.NationalAnthem.Shown
                 })
             });
 
-        case TOGGLE_RAFFLE :
+        case Actions.TOGGLE_RAFFLE :
             return Object.assign({}, state, {
                 Raffle:Object.assign({}, state.Raffle, {
                     Shown:!state.Raffle.Shown
                 })
             });
 
-        case TOGGLE_ROSTER :
+        case Actions.TOGGLE_ROSTER :
             return Object.assign({}, state, {
                 Roster:Object.assign({}, state.Roster, {
                     Shown:!state.Roster.Shown
                 })
             });
 
-        case TOGGLE_SCOREBOARD_LIGHT :
+        case Actions.TOGGLE_SCOREBOARD_LIGHT :
             return Object.assign({}, state, {
                 Scoreboard:Object.assign({}, state.Scoreboard, {
                     Light:!state.Scoreboard.Light
                 })
             });
 
-        case TOGGLE_SCOREKEEPER :
+        case Actions.TOGGLE_SCOREKEEPER :
             return Object.assign({}, state, {
                 Scorekeeper:Object.assign({}, state.Scorekeeper, {
                     Shown:!state.Scorekeeper.Shown
@@ -374,7 +379,7 @@ const CaptureController = {
      */
     SetState(state:object) {
         CaptureController.getStore().dispatch({
-            type:SET_STATE,
+            type:Actions.SET_STATE,
             state:state
         });
     },
@@ -385,7 +390,7 @@ const CaptureController = {
      */
     SetScoreboardVisibility(value:boolean) {
         CaptureController.getStore().dispatch({
-            type:SET_SCOREBOARD,
+            type:Actions.SET_SCOREBOARD,
             values:{Shown:value}
         });
     },
@@ -396,7 +401,7 @@ const CaptureController = {
      */
     SetScorebannerVisibility(value:boolean) {
         CaptureController.getStore().dispatch({
-            type:SET_SCOREBANNER,
+            type:Actions.SET_SCOREBANNER,
             values:{Shown:value}
         })
     },
@@ -407,8 +412,19 @@ const CaptureController = {
      */
     SetScorebannerClassName(value:string) {
         CaptureController.getStore().dispatch({
-            type:SET_SCOREBANNER,
+            type:Actions.SET_SCOREBANNER,
             values:{className:value}
+        });
+    },
+
+    /**
+     * Sets the background image of the scorebanner
+     * @param value string
+     */
+    SetScorebannerBackground(value:string) {
+        CaptureController.getStore().dispatch({
+            type:Actions.SET_SCOREBANNER,
+            values:{BackgroundImage:value}
         });
     },
 
@@ -418,7 +434,7 @@ const CaptureController = {
      */
     SetMainCameraVisibility(value:boolean) {
         CaptureController.getStore().dispatch({
-            type:SET_CAMERA,
+            type:Actions.SET_CAMERA,
             values:{Shown:value}
         })
     },
@@ -429,7 +445,7 @@ const CaptureController = {
      */
     SetMainVideoVisibility(value:boolean) {
         CaptureController.getStore().dispatch({
-            type:SET_VIDEO,
+            type:Actions.SET_VIDEO,
             values:{Shown:value}
         });
     },
@@ -440,7 +456,7 @@ const CaptureController = {
      */
     SetMainSlideshowVisibility(value:boolean) {
         CaptureController.getStore().dispatch({
-            type:SET_SLIDESHOW,
+            type:Actions.SET_SLIDESHOW,
             values:{Shown:value}
         });
     },
@@ -451,7 +467,7 @@ const CaptureController = {
      */
     SetSponsorSlideshowVisibility(value:boolean) {
         CaptureController.getStore().dispatch({
-            type:SET_SPONSORS,
+            type:Actions.SET_SPONSORS,
             values:{Shown:value}
         });
     },
@@ -462,7 +478,7 @@ const CaptureController = {
      */
     SetPenaltyTrackerVisibility(value:boolean) {
         CaptureController.getStore().dispatch({
-            type:SET_PENALTY_TRACKER,
+            type:Actions.SET_PENALTY_TRACKER,
             values:{Shown:value}
         });
         if(value === true) {
@@ -478,7 +494,7 @@ const CaptureController = {
      */
     SetNationalAnthemSingerVisibility(value:boolean) {
         CaptureController.getStore().dispatch({
-            type:SET_ANTHEM,
+            type:Actions.SET_ANTHEM,
             values:{Shown:value}
         });
     },
@@ -489,7 +505,7 @@ const CaptureController = {
      */
     SetRaffleVisibility(value:boolean) {
         CaptureController.getStore().dispatch({
-            type:SET_RAFFLE,
+            type:Actions.SET_RAFFLE,
             values:{Shown:value}
         });
     },
@@ -500,7 +516,7 @@ const CaptureController = {
      */
     SetNationalAnthemSinger(record:object) {
         CaptureController.getStore().dispatch({
-            type:SET_ANTHEM,
+            type:Actions.SET_ANTHEM,
             values:{Record:Object.assign({}, record)}
         });
     },
@@ -513,7 +529,7 @@ const CaptureController = {
      */
     SetNationalAnthemClass(name:string) {
         CaptureController.getStore().dispatch({
-            type:SET_ANTHEM,
+            type:Actions.SET_ANTHEM,
             values:{className:name}
         });
     },
@@ -524,7 +540,7 @@ const CaptureController = {
      */
     SetJamClockVisibility(value:boolean) {
         CaptureController.getStore().dispatch({
-            type:SET_SCOREBOARD,
+            type:Actions.SET_SCOREBOARD,
             values:{
                 JamClockShown:value
             }
@@ -537,7 +553,7 @@ const CaptureController = {
      */
     SetJamCounterVisibility(value:boolean) {
         CaptureController.getStore().dispatch({
-            type:SET_SCOREBOARD,
+            type:Actions.SET_SCOREBOARD,
             values:{
                 JamCounterShown:value
             }
@@ -550,7 +566,7 @@ const CaptureController = {
      */
     SetMainVideoClass(name:string) {
         CaptureController.getStore().dispatch({
-            type:SET_VIDEO,
+            type:Actions.SET_VIDEO,
             values:{
                 className:name
             }
@@ -563,7 +579,7 @@ const CaptureController = {
      */
     SetMainCameraClass(name:string) {
         CaptureController.getStore().dispatch({
-            type:SET_CAMERA,
+            type:Actions.SET_CAMERA,
             values:{
                 className:name
             }
@@ -576,7 +592,7 @@ const CaptureController = {
      */
     SetPenaltyTrackerDuration(duration:number) {
         CaptureController.getStore().dispatch({
-            type:SET_PENALTY_TRACKER,
+            type:Actions.SET_PENALTY_TRACKER,
             values:{
                 Duration:duration
             }
@@ -595,7 +611,7 @@ const CaptureController = {
             Announcer2:announcer2
         }).then(() => {
             CaptureController.getStore().dispatch({
-                type:SET_ANNOUNCERS,
+                type:Actions.SET_ANNOUNCERS,
                 values:{
                     Announcer1:announcer1,
                     Announcer2:announcer2,
@@ -613,7 +629,7 @@ const CaptureController = {
      */
     SetAnnouncerVisibility(value:boolean) {
         CaptureController.getStore().dispatch({
-            type:SET_ANNOUNCERS,
+            type:Actions.SET_ANNOUNCERS,
             values:{
                 Shown:value
             }
@@ -625,7 +641,7 @@ const CaptureController = {
      */
     ToggleScoreboard() {
         CaptureController.getStore().dispatch({
-            type:TOGGLE_SCOREBOARD
+            type:Actions.TOGGLE_SCOREBOARD
         });
     },
 
@@ -634,7 +650,7 @@ const CaptureController = {
      */
     ToggleScoreboardLight() {
         CaptureController.getStore().dispatch({
-            type:TOGGLE_SCOREBOARD_LIGHT
+            type:Actions.TOGGLE_SCOREBOARD_LIGHT
         });
     },
 
@@ -643,7 +659,7 @@ const CaptureController = {
      */
     ToggleJamClock() {
         CaptureController.getStore().dispatch({
-            type:TOGGLE_JAM_CLOCK
+            type:Actions.TOGGLE_JAM_CLOCK
         });
     },
 
@@ -652,7 +668,7 @@ const CaptureController = {
      */
     ToggleJamCounter() {
         CaptureController.getStore().dispatch({
-            type:TOGGLE_JAM_COUNTER
+            type:Actions.TOGGLE_JAM_COUNTER
         });
     },
 
@@ -661,7 +677,7 @@ const CaptureController = {
      */
     ToggleScorebanner() {
         CaptureController.getStore().dispatch({
-            type:TOGGLE_SCOREBANNER
+            type:Actions.TOGGLE_SCOREBANNER
         });
     },
 
@@ -670,7 +686,7 @@ const CaptureController = {
      */
     ToggleScorebannerClocks() {
         CaptureController.getStore().dispatch({
-            type:TOGGLE_SCOREBANNER_CLOCKS
+            type:Actions.TOGGLE_SCOREBANNER_CLOCKS
         });
     },
 
@@ -679,7 +695,7 @@ const CaptureController = {
      */
     ToggleSlideshow() {
         CaptureController.getStore().dispatch({
-            type:TOGGLE_SLIDESHOW
+            type:Actions.TOGGLE_SLIDESHOW
         });
     },
 
@@ -688,7 +704,7 @@ const CaptureController = {
      */
     ToggleSponsors() {
         CaptureController.getStore().dispatch({
-            type:TOGGLE_SPONSORS
+            type:Actions.TOGGLE_SPONSORS
         });
     },
 
@@ -697,7 +713,7 @@ const CaptureController = {
      */
     ToggleMainCamera() {
         CaptureController.getStore().dispatch({
-            type:TOGGLE_MAIN_CAMERA
+            type:Actions.TOGGLE_MAIN_CAMERA
         });
     },
 
@@ -706,7 +722,7 @@ const CaptureController = {
      */
     ToggleMainVideo() {
         CaptureController.getStore().dispatch({
-            type:TOGGLE_MAIN_VIDEO
+            type:Actions.TOGGLE_MAIN_VIDEO
         });
     },
 
@@ -715,7 +731,7 @@ const CaptureController = {
      */
     TogglePenaltyTracker() {
         CaptureController.getStore().dispatch({
-            type:TOGGLE_PENALTY_TRACKER
+            type:Actions.TOGGLE_PENALTY_TRACKER
         });
         Timers.Penalty = startTimeout(Timers.Penalty, () => {
             CaptureController.SetPenaltyTrackerVisibility(false)
@@ -727,7 +743,7 @@ const CaptureController = {
      */
     ToggleNationalAnthem() {
         CaptureController.getStore().dispatch({
-            type:TOGGLE_ANTHEM
+            type:Actions.TOGGLE_ANTHEM
         });
     },
 
@@ -736,7 +752,7 @@ const CaptureController = {
      */
     ToggleAnnouncers() {
         CaptureController.getStore().dispatch({
-            type:TOGGLE_ANNOUNCER
+            type:Actions.TOGGLE_ANNOUNCER
         });
         Timers.Announcers = startTimeout(Timers.Announcers, () => {
             CaptureController.SetAnnouncerVisibility(false);
@@ -748,7 +764,7 @@ const CaptureController = {
      */
     ToggleRaffle() {
         CaptureController.getStore().dispatch({
-            type:TOGGLE_RAFFLE
+            type:Actions.TOGGLE_RAFFLE
         });
     },
 
@@ -757,7 +773,7 @@ const CaptureController = {
      */
     ToggleRoster() {
         CaptureController.getStore().dispatch({
-            type:TOGGLE_ROSTER
+            type:Actions.TOGGLE_ROSTER
         });
     },
 
@@ -766,7 +782,7 @@ const CaptureController = {
      */
     ToggleScorekeeper() {
         CaptureController.getStore().dispatch({
-            type:TOGGLE_SCOREKEEPER
+            type:Actions.TOGGLE_SCOREKEEPER
         });
     },
 
@@ -775,7 +791,7 @@ const CaptureController = {
      */
     ToggleSponsorView() {
         CaptureController.getStore().dispatch({
-            type:TOGGLE_SPONSOR_VIEW
+            type:Actions.TOGGLE_SPONSOR_VIEW
         });
     },
     

@@ -17,7 +17,6 @@ import {
     IconStreamOff,
     IconWhistle,
     IconClipboard,
-    IconMovie,
     IconTicket
 } from 'components/Elements';
 import vars from 'tools/vars';
@@ -47,7 +46,7 @@ class CaptureDisplayControls extends React.PureComponent<any, SCaptureDisplayCon
     }
 
     Panels:any = {
-        ['ANC']:{
+        ANC:{
             type:CaptureControlAnnouncers,
             name:"Announcers",
             icon:IconMic,

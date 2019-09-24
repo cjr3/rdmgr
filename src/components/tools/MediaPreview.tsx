@@ -1,8 +1,8 @@
-import React, { MouseEventHandler } from 'react'
-import cnames from 'classnames'
+import React from 'react';
+import cnames from 'classnames';
 import { Icon, IconDelete, IconFolder, IconLoop } from 'components/Elements';
-import DataController from 'controllers/DataController'
-import './css/MediaPreview.scss'
+import DataController from 'controllers/DataController';
+import './css/MediaPreview.scss';
 
 /**
  * Properties for the media preview element
@@ -23,7 +23,7 @@ export interface PMediaPreview {
 }
 
 /**
- * Component for previewing and changed a media element, such as an Image or video
+ * Component for previewing and changing a media element, such as an Image or video
  */
 class MediaPreview extends React.PureComponent<PMediaPreview> {
     /**

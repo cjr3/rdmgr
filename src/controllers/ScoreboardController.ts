@@ -8,77 +8,190 @@ import vars from 'tools/vars'
 import keycodes from 'tools/keycodes'
 import RosterController from './RosterController';
 
-const SET_STATE = 'SET_STATE';
-const RESET_STATE = 'RESET_STATE';
-const RESET_JAM = 'RESET_JAM';
-const SAVE_STATE = 'SAVE_STATE';
-
-//Board Constants
-const TOGGLE_JAM_CLOCK = 'TOGGLE_JAM_CLOCK';
-const TOGGLE_GAME_CLOCK = 'TOGGLE_GAME_CLOCK';
-const TOGGLE_BREAK_CLOCK = 'TOGGLE_BREAK_CLOCK';
-const TOGGLE_CONFIRM = 'TOGGLE_CONFIRM';
-const SET_BOARD_STATUS = 'SET_BOARD_STATUS';
-const SET_OFFICIAL_TIMEOUT = 'SET_OFFICIAL_TIMEOUT';
-const SET_INJURY_TIMEOUT = 'SET_INJURY_TIMEOUT';
-const SET_PHASES = 'SET_PHASES';
-const SET_PHASE = 'SET_PHASE';
-const SET_PHASE_TIME = 'SET_PHASE_TIME';
-const SET_JAM_COUNTER = 'SET_JAM_COUNTER';
-const SET_GAME_TIME = 'SET_GAME_TIME';
-
-//Team Constants
-const SET_TEAM = 'SET_TEAM';
-const SET_TEAMS = 'SET_TEAMS';
-const SET_TEAM_COLOR = 'SET_TEAM_COLOR';
-const SET_TEAM_CHALLENGES = 'SET_TEAM_CHALLENGES';
-const SET_TEAM_JAMPOINTS = 'SET_TEAM_JAMPOINTS';
-const SET_TEAM_SCORE = 'SET_TEAM_SCORE';
-const SET_TEAM_TIMEOUTS = 'SET_TEAM_TIMEOUTS';
-const SET_TEAM_NAME = 'SET_TEAM_NAME';
-const SET_TEAM_STATUS = 'SET_TEAM_STATUS';
+export enum Actions {
+    SET_STATE,
+    RESET_STATE,
+    RESET_JAM,
+    TOGGLE_JAM_CLOCK,
+    TOGGLE_GAME_CLOCK,
+    TOGGLE_BREAK_CLOCK,
+    TOGGLE_CONFIRM,
+    SET_BOARD_STATUS,
+    SET_OFFICIAL_TIMEOUT,
+    SET_INJURY_TIMEOUT,
+    SET_PHASES,
+    SET_PHASE,
+    SET_PHASE_TIME,
+    SET_JAM_COUNTER,
+    SET_GAME_TIME,
+    SET_TEAM,
+    SET_TEAMS,
+    SET_TEAM_COLOR,
+    SET_TEAM_CHALLENGES,
+    SET_TEAM_JAMPOINTS,
+    SET_TEAM_SCORE,
+    SET_TEAM_TIMEOUTS,
+    SET_TEAM_NAME,
+    SET_TEAM_STATUS
+}
 
 export interface SScoreboardTeam {
+    /**
+     * A = Left, B = Right
+     */
     Side:string,
+    /**
+     * RecordID of assigned team
+     */
     ID:number,
+    /**
+     * Current score
+     */
     Score:number,
+    /**
+     * Remaining timeouts
+     */
     Timeouts:number,
+    /**
+     * Remaining challenges
+     */
     Challenges:number,
+    /**
+     * Jam points
+     */
     JamPoints:number,
+    /**
+     * Status value (timeout, challenge, lead jammer, power jam, injury)
+     */
     Status:number,
+    /**
+     * Color of score background
+     */
     Color:string,
+    /**
+     * Team name
+     */
     Name:string,
+    /**
+     * Logo for main scoreboard
+     */
     Thumbnail:string,
+    /**
+     * Logo for score banner
+     */
     ScoreboardThumbnail:string
 }
 
 export interface SScoreboardState {
+    /**
+     * State's record ID (to be implemented at a later date)
+     */
     ID:number,
+    /**
+     * Current jam #
+     */
     JamCounter:number,
+    /**
+     * Hours of the jam clock
+     */
     JamHour:number,
+    /**
+     * Minutes on the jam clock
+     */
     JamMinute:number,
+    /**
+     * Seconds on the jam clock
+     */
     JamSecond:number,
+    /**
+     * Status of the jam clock
+     */
     JamState:number,
+    /**
+     * Hours on the game clock
+     */
     GameHour:number,
+    /**
+     * Minutes on the game clock
+     */
     GameMinute:number,
+    /**
+     * Seconds on the game clock
+     */
     GameSecond:number,
+    /**
+     * Status of the game clock
+     */
     GameState:number,
+    /**
+     * Hours on the break clock
+     */
     BreakHour:number,
+    /**
+     * Minutes on the break clock
+     */
     BreakMinute:number,
+    /**
+     * Seconds on the break clock
+     */
     BreakSecond:number,
+    /**
+     * Status of the break clock
+     */
     BreakState:number,
+    /**
+     * Current phase/quarter
+     */
     PhaseID:number
+    /**
+     * Name of quarter
+     */
     PhaseName:string,
+    /**
+     * Index of quarter (for cycling through quarters)
+     */
     PhaseIndex:number,
+    /**
+     * Hours of the selected phase
+     * (does not reflect game clock)
+     */
     PhaseHour:number,
+    /**
+     * Minutes of the selected phase
+     */
     PhaseMinute:number,
+    /**
+     * Seconds of the selected phase
+     */
     PhaseSecond:number,
+    /**
+     * Board status (official timeouts, injury, upheld, under review, etc)
+     */
     BoardStatus:number,
+    /**
+     * Determines if elements for confirming changes to the scoreboard
+     * are displayed to the referees
+     */
     ConfirmStatus:number,
+    /**
+     * Left side team
+     */
     TeamA:SScoreboardTeam,
+    /**
+     * Right side team
+     */
     TeamB:SScoreboardTeam,
+    /**
+     * Hour of the game clock when the last jam started
+     */
     StartGameHour:number,
+    /**
+     * Minute of the game clock when the last jam started
+     */
     StartGameMinute:number,
+    /**
+     * Second of the game clock when the last jam started
+     */
     StartGameSecond:number
 }
 
@@ -160,7 +273,7 @@ const MidiControllers = {
  */
 function ControllerReducer(state:SScoreboardState = InitState, action) {
     switch(action.type) {
-        case SET_STATE :
+        case Actions.SET_STATE :
             var obj = Object.assign({}, state, action.state, {
                 TeamA:Object.assign({}, state.TeamA),
                 TeamB:Object.assign({}, state.TeamB)
@@ -172,7 +285,7 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
             return obj;
 
         //reset the state
-        case RESET_STATE :
+        case Actions.RESET_STATE :
             //ignore reset if game/jam clock is running
             if(state.JamState === vars.Clock.Status.Running || state.GameState === vars.Clock.Status.Running)
                 return state;
@@ -228,7 +341,7 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
             });
 
         //calls an official timeout
-        case SET_OFFICIAL_TIMEOUT :
+        case Actions.SET_OFFICIAL_TIMEOUT :
             if(state.BoardStatus === vars.Scoreboard.Status.Timeout) {
                 return Object.assign({}, state, {
                     BoardStatus:vars.Scoreboard.Status.Normal
@@ -249,7 +362,7 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
             }
             
         //calls an injury timeout
-        case SET_INJURY_TIMEOUT :
+        case Actions.SET_INJURY_TIMEOUT :
             if(state.BoardStatus === vars.Scoreboard.Status.Injury) {
                 return Object.assign({}, state, {
                     BoardStatus:vars.Scoreboard.Status.Normal
@@ -270,7 +383,7 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
             }
 
         //toggle the jam clock
-        case TOGGLE_JAM_CLOCK :
+        case Actions.TOGGLE_JAM_CLOCK :
             switch(state.JamState) {
                 case vars.Clock.Status.Ready :
                     var teamAStatus = state.TeamA.Status;
@@ -331,7 +444,7 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
             }
 
         //toggles the game clock
-        case TOGGLE_GAME_CLOCK :
+        case Actions.TOGGLE_GAME_CLOCK :
             //ignore if jam clock is running
             if(state.JamState === vars.Clock.Status.Running)
                 return state;
@@ -349,7 +462,7 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
                     return state;
             }
 
-        case TOGGLE_BREAK_CLOCK :
+        case Actions.TOGGLE_BREAK_CLOCK :
             if(state.JamState === vars.Clock.Status.Running)
                 return state;
             switch(state.BreakState) {
@@ -371,14 +484,14 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
                     return state;
             }
 
-        case SET_GAME_TIME :
+        case Actions.SET_GAME_TIME :
             return Object.assign({}, state, {
                 GameHour:action.hour,
                 GameMinute:action.minute,
                 GameSecond:action.second
             });
             
-        case SET_BOARD_STATUS :
+        case Actions.SET_BOARD_STATUS :
             if(state.JamState === vars.Clock.Status.Running || state.BoardStatus === action.BoardStatus) {
                 return Object.assign({}, state, {
                     BoardStatus:vars.Scoreboard.Status.Normal
@@ -400,12 +513,12 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
                 BreakState:breakState
             });
 
-        case TOGGLE_CONFIRM :
+        case Actions.TOGGLE_CONFIRM :
             return Object.assign({}, state, {
                 ConfirmStatus:(state.ConfirmStatus) ? 0 : 1
             });
 
-        case SET_PHASE :
+        case Actions.SET_PHASE :
             var duration = [0,0,0];
             var name:any = "";
             var id:any = 0;
@@ -434,19 +547,19 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
                 PhaseSecond:duration[2]
             });
 
-        case SET_PHASE_TIME :
+        case Actions.SET_PHASE_TIME :
             return Object.assign({}, state, {
                 PhaseHour:parseInt(action.hour),
                 PhaseMinute:parseInt(action.minute),
                 PhaseSecond:parseInt(action.second)
             });
 
-        case SET_PHASES :
+        case Actions.SET_PHASES :
             return Object.assign({}, state, {
                 Phases:action.records
             });
 
-        case SET_JAM_COUNTER :
+        case Actions.SET_JAM_COUNTER :
             var amount = action.amount;
             if(amount < 0)
                 amount = 0;
@@ -455,7 +568,7 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
             });
 
         /* Team Actions */
-        case SET_TEAM :
+        case Actions.SET_TEAM :
             if(Object.is(action.currentTeam, state.TeamA)) {
                 return Object.assign({}, state, {
                     TeamA:Object.assign({}, state.TeamA, {
@@ -479,7 +592,7 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
             }
 
         //set both teams
-        case SET_TEAMS :
+        case Actions.SET_TEAMS :
             return Object.assign({}, state, {
                 TeamA:Object.assign({}, state.TeamA, {
                     ID:action.TeamA.RecordID,
@@ -497,7 +610,7 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
                 }),
             });
 
-        case SET_TEAM_COLOR :
+        case Actions.SET_TEAM_COLOR :
             if(action.Team.Side === 'A') {
                 return Object.assign({}, state, {
                     TeamA:Object.assign({}, state.TeamA, {
@@ -512,7 +625,7 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
                 });
             }
 
-        case SET_TEAM_NAME :
+        case Actions.SET_TEAM_NAME :
             if(action.Team.Side === 'A') {
                 return Object.assign({}, state, {
                     TeamA:Object.assign({}, state.TeamA, {
@@ -527,7 +640,7 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
                 });
             }
 
-        case SET_TEAM_SCORE :
+        case Actions.SET_TEAM_SCORE :
             if(action.Team.Side === 'A') {
                 let jampoints = state.TeamA.JamPoints;
                 if(typeof(action.jampoints) === 'number')
@@ -550,7 +663,7 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
                 });
             }
 
-        case SET_TEAM_JAMPOINTS :
+        case Actions.SET_TEAM_JAMPOINTS :
             if(Object.is(action.Team, state.TeamA)) {
                 let team = Object.assign({}, state.TeamA, {
                     JamPoints:action.amount
@@ -567,7 +680,7 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
                 });
             }
 
-        case SET_TEAM_TIMEOUTS :
+        case Actions.SET_TEAM_TIMEOUTS :
             if(Object.is(action.Team, state.TeamA)) {
                 let team = Object.assign({}, state.TeamA, {
                     Timeouts:action.amount
@@ -584,7 +697,7 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
                 });
             }
 
-        case SET_TEAM_CHALLENGES :
+        case Actions.SET_TEAM_CHALLENGES :
             if(Object.is(action.Team, state.TeamA)) {
                 let team = Object.assign({}, state.TeamA, {
                     Challenges:action.amount
@@ -604,7 +717,7 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
         //Sets the team status
         //The status is toggled between teams, as no two teams
         //can have the same status
-        case SET_TEAM_STATUS :
+        case Actions.SET_TEAM_STATUS :
             var status = action.value;
             if(state.JamState === vars.Clock.Status.Running) {
                 if(status !== vars.Team.Status.PowerJam && status !== vars.Team.Status.LeadJammer) {
@@ -634,7 +747,7 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
                 });
             }
 
-        case RESET_JAM :
+        case Actions.RESET_JAM :
             return Object.assign({}, state, {
                 GameHour:state.StartGameHour,
                 GameMinute:state.StartGameMinute,
@@ -662,7 +775,7 @@ const ScoreboardController = {
      */
     SetState(state) {
         ScoreboardController.getStore().dispatch({
-            type:SET_STATE,
+            type:Actions.SET_STATE,
             state:state
         });
     },
@@ -672,7 +785,7 @@ const ScoreboardController = {
      */
     ToggleJamClock() {
         ScoreboardController.getStore().dispatch({
-            type:TOGGLE_JAM_CLOCK
+            type:Actions.TOGGLE_JAM_CLOCK
         });
     },
 
@@ -681,7 +794,7 @@ const ScoreboardController = {
      */
     StartJamClock() {
         ScoreboardController.getStore().dispatch({
-            type:SET_STATE,
+            type:Actions.SET_STATE,
             state:{
                 JamState:vars.Clock.Status.Running,
                 GameClock:vars.Clock.Status.Running,
@@ -695,7 +808,7 @@ const ScoreboardController = {
      */
     StopJamClock() {
         ScoreboardController.getStore().dispatch({
-            type:SET_STATE,
+            type:Actions.SET_STATE,
             state:{
                 JamState:vars.Clock.Status.Stopped,
                 BreakState:vars.Clock.Status.Running
@@ -708,7 +821,7 @@ const ScoreboardController = {
      */
     ToggleGameClock() {
         ScoreboardController.getStore().dispatch({
-            type:TOGGLE_GAME_CLOCK
+            type:Actions.TOGGLE_GAME_CLOCK
         });
     },
 
@@ -717,7 +830,7 @@ const ScoreboardController = {
      */
     StartGameClock() {
         ScoreboardController.getStore().dispatch({
-            type:SET_STATE,
+            type:Actions.SET_STATE,
             state:{
                 ClockState:vars.Clock.Status.Running
             }
@@ -729,7 +842,7 @@ const ScoreboardController = {
      */
     StopGameClock() {
         ScoreboardController.getStore().dispatch({
-            type:SET_STATE,
+            type:Actions.SET_STATE,
             state:{
                 GameState:vars.Clock.Status.Stopped
             }
@@ -742,7 +855,7 @@ const ScoreboardController = {
     StopBreakGameClock() {
         if(ScoreboardController.getState().JamState !== vars.Clock.Status.Running) {
             ScoreboardController.getStore().dispatch({
-                type:SET_STATE,
+                type:Actions.SET_STATE,
                 state:{
                     GameState:vars.Clock.Status.Stopped,
                     BreakState:vars.Clock.Status.Stopped
@@ -756,7 +869,7 @@ const ScoreboardController = {
      */
     ToggleBreakClock() {
         ScoreboardController.getStore().dispatch({
-            type:TOGGLE_BREAK_CLOCK
+            type:Actions.TOGGLE_BREAK_CLOCK
         });
     },
 
@@ -765,7 +878,7 @@ const ScoreboardController = {
      */
     StartBreakClock() {
         ScoreboardController.getStore().dispatch({
-            type:SET_STATE,
+            type:Actions.SET_STATE,
             state:{
                 BreakState:vars.Clock.Status.Running
             }
@@ -777,7 +890,7 @@ const ScoreboardController = {
      */
     StopBreakClock() {
         ScoreboardController.getStore().dispatch({
-            type:SET_STATE,
+            type:Actions.SET_STATE,
             state:{
                 BreakState:vars.Clock.Status.Ready
             }
@@ -789,7 +902,7 @@ const ScoreboardController = {
      */
     ToggleConfirm() {
         ScoreboardController.getStore().dispatch({
-            type:TOGGLE_CONFIRM
+            type:Actions.TOGGLE_CONFIRM
         });
     },
 
@@ -798,7 +911,7 @@ const ScoreboardController = {
      */
     Reset() {
         ScoreboardController.getStore().dispatch({
-            type:RESET_STATE
+            type:Actions.RESET_STATE
         });
     },
 
@@ -810,7 +923,7 @@ const ScoreboardController = {
      */
     async SetGameTime(hour, minute, second) {
         ScoreboardController.getStore().dispatch({
-            type:SET_GAME_TIME,
+            type:Actions.SET_GAME_TIME,
             hour:hour,
             minute:minute,
             second:second
@@ -823,7 +936,7 @@ const ScoreboardController = {
      */
     SetBreakTime(second) {
         ScoreboardController.getStore().dispatch({
-            type:SET_STATE,
+            type:Actions.SET_STATE,
             state:{
                 BreakHour:0,
                 BreakMinute:0,
@@ -838,7 +951,7 @@ const ScoreboardController = {
      */
     SetJamTime(second) {
         ScoreboardController.getStore().dispatch({
-            type:SET_STATE,
+            type:Actions.SET_STATE,
             state:{
                 JamHour:0,
                 JamMinute:0,
@@ -853,7 +966,7 @@ const ScoreboardController = {
      */
     SetBoardStatus(value) {
         ScoreboardController.getStore().dispatch({
-            type:SET_BOARD_STATUS,
+            type:Actions.SET_BOARD_STATUS,
             BoardStatus:value
         });
     },
@@ -869,7 +982,7 @@ const ScoreboardController = {
         else if(index >= Phases.length)
             index = 0;
         ScoreboardController.getStore().dispatch({
-            type:SET_PHASE,
+            type:Actions.SET_PHASE,
             index:index
         });
     },
@@ -894,7 +1007,7 @@ const ScoreboardController = {
         else if(second < 0)
             second = 0;
         ScoreboardController.getStore().dispatch({
-            type:SET_PHASE_TIME,
+            type:Actions.SET_PHASE_TIME,
             hour:hour,
             minute:minute,
             second:second
@@ -921,7 +1034,7 @@ const ScoreboardController = {
      */
     SetJamCounter(amount) {
         ScoreboardController.getStore().dispatch({
-            type:SET_JAM_COUNTER,
+            type:Actions.SET_JAM_COUNTER,
             amount:amount
         });
     },
@@ -949,7 +1062,7 @@ const ScoreboardController = {
      */
     SetTeam(currentTeam, nextTeam) {
         ScoreboardController.getStore().dispatch({
-            type:SET_TEAM,
+            type:Actions.SET_TEAM,
             current:currentTeam,
             nextTeam:nextTeam
         });
@@ -966,7 +1079,7 @@ const ScoreboardController = {
         if(a === null || typeof(a) !== "object" || b === null || typeof(b) !== "object")
             return;
         ScoreboardController.getStore().dispatch({
-            type:SET_TEAMS,
+            type:Actions.SET_TEAMS,
             TeamA:a,
             TeamB:b,
             Reset:reset
@@ -991,14 +1104,14 @@ const ScoreboardController = {
 
         if(typeof(jampoints) === "number") {
             ScoreboardController.getStore().dispatch({
-                type:SET_TEAM_SCORE,
+                type:Actions.SET_TEAM_SCORE,
                 Team:team,
                 amount:amount,
                 jampoints:team.JamPoints + jampoints
             });
         } else {
             ScoreboardController.getStore().dispatch({
-                type:SET_TEAM_SCORE,
+                type:Actions.SET_TEAM_SCORE,
                 Team:team,
                 amount:amount
             });
@@ -1016,7 +1129,7 @@ const ScoreboardController = {
         else if(amount > 3)
             amount = 3;
         ScoreboardController.getStore().dispatch({
-            type:SET_TEAM_TIMEOUTS,
+            type:Actions.SET_TEAM_TIMEOUTS,
             Team:team,
             amount:amount
         });
@@ -1034,7 +1147,7 @@ const ScoreboardController = {
             amount = 3;
 
         ScoreboardController.getStore().dispatch({
-            type:SET_TEAM_CHALLENGES,
+            type:Actions.SET_TEAM_CHALLENGES,
             Team:team,
             amount:amount
         });
@@ -1052,7 +1165,7 @@ const ScoreboardController = {
             amount = 99;
 
         ScoreboardController.getStore().dispatch({
-            type:SET_TEAM_JAMPOINTS,
+            type:Actions.SET_TEAM_JAMPOINTS,
             Team:team,
             amount:amount
         });
@@ -1065,7 +1178,7 @@ const ScoreboardController = {
      */
     SetTeamStatus(team, status) {
         ScoreboardController.getStore().dispatch({
-            type:SET_TEAM_STATUS,
+            type:Actions.SET_TEAM_STATUS,
             Team:team,
             value:status
         });
@@ -1078,7 +1191,7 @@ const ScoreboardController = {
      */
     SetTeamName(team, name) {
         ScoreboardController.getStore().dispatch({
-            type:SET_TEAM_NAME,
+            type:Actions.SET_TEAM_NAME,
             Team:team,
             Name:name
         });
@@ -1091,7 +1204,7 @@ const ScoreboardController = {
      */
     SetTeamColor(team, color) {
         ScoreboardController.getStore().dispatch({
-            type:SET_TEAM_COLOR,
+            type:Actions.SET_TEAM_COLOR,
             Team:team,
             Color:color
         });
@@ -1182,7 +1295,7 @@ const ScoreboardController = {
      */
     OfficialTimeout() {
         ScoreboardController.getStore().dispatch({
-            type:SET_OFFICIAL_TIMEOUT
+            type:Actions.SET_OFFICIAL_TIMEOUT
         });
     },
 
@@ -1191,7 +1304,7 @@ const ScoreboardController = {
      */
     InjuryTimeout() {
         ScoreboardController.getStore().dispatch({
-            type:SET_INJURY_TIMEOUT
+            type:Actions.SET_INJURY_TIMEOUT
         });
     },
 
@@ -1204,7 +1317,7 @@ const ScoreboardController = {
      */
     ResetJam() {
         ScoreboardController.getStore().dispatch({
-            type:RESET_JAM
+            type:Actions.RESET_JAM
         });
     },
 
@@ -1219,7 +1332,7 @@ const ScoreboardController = {
         var teamA = DataController.getTeam(config.TeamA.ID);
         var teamB = DataController.getTeam(config.TeamB.ID);
         ScoreboardController.getStore().dispatch({
-            type:SET_STATE,
+            type:Actions.SET_STATE,
             state:{
                 ID: parseInt(config.ID),
                 JamID: parseInt(config.JamID),

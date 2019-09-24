@@ -191,10 +191,10 @@ class Roster extends React.PureComponent<any, SRoster> {
             }
             
             let aindex = this.state.State.TeamA.Skaters.findIndex((s) => {
-                return (s.RecordID == skater.RecordID);
+                return (s.RecordID === skater.RecordID);
             });
             let bindex = this.state.State.TeamB.Skaters.findIndex((s) => {
-                return (s.RecordID == skater.RecordID);
+                return (s.RecordID === skater.RecordID);
             });
             
             skaters.push(

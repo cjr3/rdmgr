@@ -254,13 +254,13 @@ class Scoreboard extends React.Component<PScoreboard, SScoreboard> {
         
         var buttons:Array<React.ReactElement> = [
             <Button key="btn-review" 
-                active={(this.state.BoardStatus == vars.Scoreboard.Status.Review)}
+                active={(this.state.BoardStatus === vars.Scoreboard.Status.Review)}
                 onClick={this.onClickReview}>Review</Button>,
             <Button key="btn-upheld" 
-                active={(this.state.BoardStatus == vars.Scoreboard.Status.Upheld)}
+                active={(this.state.BoardStatus === vars.Scoreboard.Status.Upheld)}
                 onClick={this.onClickUpheld}>Upheld</Button>,
             <Button key="btn-overturned" 
-                active={(this.state.BoardStatus == vars.Scoreboard.Status.Overturned)}
+                active={(this.state.BoardStatus === vars.Scoreboard.Status.Overturned)}
                 onClick={this.onClickOverturned}>Overturned</Button>,
             <Button key="btn-display" 
                 active={(this.state.DisplayOpened)}

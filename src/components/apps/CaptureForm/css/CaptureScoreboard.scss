@@ -442,6 +442,9 @@
     z-index: 10;
     transition: transform 350ms linear, opacity 350ms linear;
     transform: translateY(-150px);
+    background-repeat: no-repeat;
+    background-position: top right;
+    background-size: contain;
 
     .jamclock {
         position: absolute;

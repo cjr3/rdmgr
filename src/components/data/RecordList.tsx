@@ -139,7 +139,7 @@ class RecordList extends React.Component<PRecordList, SRecordList> {
                 }
                 
                 var className = cnames({
-                    active:(record.RecordID == this.props.recordid),
+                    active:(record.RecordID === this.props.recordid),
                     hidden:hidden
                 });
                 items.push(

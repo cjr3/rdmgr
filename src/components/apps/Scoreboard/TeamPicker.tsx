@@ -5,7 +5,6 @@ import DataController from 'controllers/DataController';
 import Panel from 'components/Panel';
 import { Button, ToggleButton } from 'components/Elements';
 import { TeamRecord } from 'tools/vars';
-import RosterController from 'controllers/RosterController';
 
 interface STeamPicker {
     resetChecked:boolean,

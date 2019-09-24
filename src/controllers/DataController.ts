@@ -264,7 +264,7 @@ const FILE_ANTHEM = FOLDER_RECORDS + "/records.anthem.json";
 const FILE_PEERS = FOLDER_RECORDS + "/records.peers.json";
 //const FILE_PRIZES = FOLDER_RECORDS + "/records.raffle.json";
 
-const FILE_TEST = FOLDER_DATA + "/test.txt";
+//const FILE_TEST = FOLDER_DATA + "/test.txt";
 
 //state files
 const FILE_STATE_SCOREBOARD = FOLDER_STATES + "/scoreboard.state.json";
@@ -461,21 +461,6 @@ function DataReducer(state = InitState, action) {
 }
 
 const DataStore = createStore(DataReducer);
-
-var SaveTimer:number = 0;
-var States = {
-    Scoreboard:null,
-    Scorekeeper:null,
-    Camera:null,
-    Capture:null,
-    Chat:null,
-    Penalty:null,
-    Raffle:null,
-    Roster:null,
-    Slideshow:null,
-    Sponsor:null,
-    Video:null
-};
 
 /**
  * Class for the DataController
@@ -717,7 +702,7 @@ const DataController = {
     
             if(srecord.RecordType === vars.RecordType.Phase) {
                 let index = records.findIndex((record) => {
-                    return (record.RecordID == srecord.RecordID);
+                    return (record.RecordID === srecord.RecordID);
                 });
                 if(index >= 0) {
                     records[index] = srecord;
@@ -1627,15 +1612,15 @@ const DataController = {
         });
 
         captains.forEach((skater) => {
-            skaters.splice(skaters.findIndex(tskater => (tskater.RecordID == skater.RecordID)), 1);
+            skaters.splice(skaters.findIndex(tskater => (tskater.RecordID === skater.RecordID)), 1);
         });
 
         cocaptains.forEach((skater) => {
-            skaters.splice(skaters.findIndex(tskater => (tskater.RecordID == skater.RecordID)), 1);
+            skaters.splice(skaters.findIndex(tskater => (tskater.RecordID === skater.RecordID)), 1);
         });
 
         coaches.forEach((skater) => {
-            skaters.splice(skaters.findIndex(tskater => (tskater.RecordID == skater.RecordID)), 1);
+            skaters.splice(skaters.findIndex(tskater => (tskater.RecordID === skater.RecordID)), 1);
         });
 
         return skaters.concat(cocaptains, captains, coaches);
@@ -1751,7 +1736,7 @@ const DataController = {
                 break;
                 //Compare function code
                 case 'function':
-                    if (typeof (obj2[p]) == 'undefined' || (p !== 'compare' && obj1[p].toString() !== obj2[p].toString())) return false;
+                    if (typeof (obj2[p]) === 'undefined' || (p !== 'compare' && obj1[p].toString() !== obj2[p].toString())) return false;
                 break;
                 //Compare values
                 default:
@@ -1763,7 +1748,7 @@ const DataController = {
      
         //Check object 2 for any extra properties
         for (var p2 in obj2) {
-            if (typeof (obj1[p2]) == 'undefined') return false;
+            if (typeof (obj1[p2]) === 'undefined') return false;
         }
 
         return true;
@@ -1805,7 +1790,7 @@ const DataController = {
      * @param {Object} record 
      */
     PrepareObjectForSending(record) {
-        if(typeof(record) !== 'object' || record == null)
+        if(typeof(record) !== 'object' || record === null)
             return record;
         
         for(let key in record) {
@@ -2037,7 +2022,7 @@ const DataController = {
         });
 
         //get all records of the specified type
-        exp.get(/^\/api\/record\/([A-Z]{3})$/i, (req, res) => {
+        exp.get(/^\/api\/record\/([A-Z]{3})(\/?)$/i, (req, res) => {
             var records:Array<any> = [];
             if(req.params[0]) {
                 let results:any = DataController.getRecords(req.params[0], true);
@@ -2045,6 +2030,7 @@ const DataController = {
                     results = results.sort((a, b) => {
                         return a.Name.localeCompare(b.Name)
                     });
+                    records = results;
                 }
             } else {
                 res.send("Please provide a record type code.");

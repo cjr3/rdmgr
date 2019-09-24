@@ -1,17 +1,8 @@
 import DataController, {Files} from 'controllers/DataController';
-
 import ScoreboardController from 'controllers/ScoreboardController';
-//import ScorekeeperController from 'controllers/ScorekeeperController';
-//import SlideshowController from 'controllers/SlideshowController';
-//import VideoController from 'controllers/VideoController';
 import RosterController from 'controllers/RosterController';
 import ChatController from 'controllers/ChatController';
 import CaptureController from 'controllers/CaptureController';
-//import CameraController from 'controllers/CameraController';
-//import PenaltyController from 'controllers/PenaltyController';
-//import RaffleController from 'controllers/RaffleController';
-//import SponsorController from 'controllers/SponsorController';
-//import MediaQueueController from 'controllers/MediaQueueController';
 
 /**
  * Class used for queuing and saving state updates from the controllers
@@ -26,6 +17,9 @@ class IO {
      */
     protected StateRecords:Array<IOController> = [];
 
+    /**
+     * File system access object
+     */
     protected FS:any  = null;
 
     /**
@@ -38,6 +32,13 @@ class IO {
             this.FS = require('fs');
     }
 
+    /**
+     * Initializes the IO process to watch for changes in states:
+     * - Scoreboard
+     * - Chat
+     * - Roster
+     * - Capture
+     */
     Init() {
         this.StateRecords.push(new IOController(ScoreboardController, Files.Scoreboard));
         this.StateRecords.push(new IOController(ChatController, Files.Chat));
@@ -192,6 +193,7 @@ class IOController {
             this.Saving = true;
             try {
                 let data:string = JSON.stringify(state, null, 4);
+                // eslint-disable-next-line
                 let js = JSON.parse(data);
                 let response = await this.FS.promises.writeFile(this.FileName, data);
                 if(response === undefined) {
@@ -305,6 +307,7 @@ class IOFileQueue
             try {
                 let data = content;
                 if(this.Extension === 'json') {
+                    // eslint-disable-next-line
                     let js = JSON.parse(data);
                 }
                 let response = await this.FS.promises.writeFile(this.FileName, data);

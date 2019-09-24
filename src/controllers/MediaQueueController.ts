@@ -302,7 +302,7 @@ const MediaQueueController = {
         if((index in state.Records)) {
             var records = state.Records.slice();
             var record = records[index];
-            if(index == state.Index) {
+            if(index === state.Index) {
                 switch(record.RecordType) {
                     case vars.RecordType.Video :
                         VideoController.Stop();
@@ -424,7 +424,7 @@ const MediaQueueController = {
 
                 //loop video when complete
                 if(state.Record.RecordType === vars.RecordType.Video
-                    && status.Video.Status == vars.Video.Status.Stopped
+                    && status.Video.Status === vars.Video.Status.Stopped
                     && status.Video.CurrentTime >= status.Video.Duration
                     && status.Video.Duration > 0
                     ) {

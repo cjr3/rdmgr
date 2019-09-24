@@ -1,5 +1,4 @@
 import React from 'react';
-import cnames from 'classnames';
 import Panel from 'components/Panel';
 import { IconButton, IconCheck, IconNo } from 'components/Elements';
 

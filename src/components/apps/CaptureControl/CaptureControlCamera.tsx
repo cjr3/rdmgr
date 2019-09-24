@@ -146,7 +146,7 @@ class CaptureControlCamera extends React.PureComponent<PCaptureControlPanel,ICap
                     }}
                 >{`Camera #${index+1}`}</Button>
             );
-            if(camera.deviceId == this.state.DeviceID)
+            if(camera.deviceId === this.state.DeviceID)
                 label = camera.label;
         });
 

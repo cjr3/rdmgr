@@ -1,6 +1,6 @@
 import React from 'react';
 import cnames from 'classnames';
-import RosterController, {SRosterController} from 'controllers/RosterController';
+import RosterController from 'controllers/RosterController';
 import DataController from 'controllers/DataController';
 import ScoreboardController from 'controllers/ScoreboardController';
 

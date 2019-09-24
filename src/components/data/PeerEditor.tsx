@@ -478,7 +478,7 @@ class PeerRecordRequest extends React.PureComponent<PPeerRecordRequest, SPeerRec
      * Triggered when the component updates.
      */
     componentDidUpdate(prevProps, prevState) {
-        if(prevProps.types != this.props.types && this.props.types) {
+        if(prevProps.types !== this.props.types && this.props.types) {
             let changes:SPeerRecordRequest = {
                 AnthemSingers:false,
                 Penalties:false,

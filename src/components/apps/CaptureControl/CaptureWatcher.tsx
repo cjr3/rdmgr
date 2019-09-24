@@ -76,14 +76,14 @@ class CaptureWatcher extends React.PureComponent<PCaptureWorker> {
                                 that.worker.postMessage('play');
                                 that.CaptureVideo.play();
                             }
-                        }.bind(that)).catch(function(er) {
+                        }).catch(function(er) {
 
                         });
                         break;
                     }
                 }
             }
-        }.bind(this));
+        });
     }
 
     componentDidMount() {

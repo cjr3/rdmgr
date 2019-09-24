@@ -114,11 +114,11 @@ class ClientCaptureStatus extends React.PureComponent<any, SClientCaptureStatus>
         var progress = 0;
 
         //Video
-        if(this.state.CaptureVideo.Shown && this.state.Video.Status == vars.Video.Status.Playing) {
+        if(this.state.CaptureVideo.Shown && this.state.Video.Status === vars.Video.Status.Playing) {
             progress = this.state.State.Video.CurrentTime;
             max = this.state.State.Video.Duration;
             if(!Number.isNaN(progress) && !Number.isNaN(max)) {
-                var str = 
+                let str = 
                     DataController.basename(this.state.Video.Source) + " - " +
                     DataController.secondsToTime(progress) + " / " + 
                     DataController.secondsToTime(max);
@@ -133,7 +133,7 @@ class ClientCaptureStatus extends React.PureComponent<any, SClientCaptureStatus>
             max = this.state.Slideshow.Slides.length;
             if(progress > max)
                 progress = max;
-            var str = this.state.Slideshow.Name + " - " + progress + " / " + max + " - " +
+            let str = this.state.Slideshow.Name + " - " + progress + " / " + max + " - " +
                 this.state.Slideshow.Slides[this.state.Slideshow.Index].Name;
             children = <React.Fragment>
                 <div className="text">{str}</div>
@@ -143,7 +143,7 @@ class ClientCaptureStatus extends React.PureComponent<any, SClientCaptureStatus>
         else if(this.state.CaptureSponsor.Shown && this.state.Sponsors.Slides.length) {
             progress = Math.min(this.state.Sponsors.Index + 1, this.state.Sponsors.Slides.length);
             max = this.state.Sponsors.Slides.length;
-            var str = "Sponsor Slide: " + progress + " / " + max;
+            let str = "Sponsor Slide: " + progress + " / " + max;
             children = <React.Fragment>
                 <div className="text">{str}</div>
             </React.Fragment>

@@ -63,7 +63,7 @@ class CaptureControlMonitor extends React.PureComponent<any, SCaptureControlMoni
      */
     onClickSubmit() {
         this.state.Monitors.forEach((monitor) => {
-            if(monitor.id == this.state.MonitorID) {
+            if(monitor.id === this.state.MonitorID) {
                 if(window && window.RDMGR && window.RDMGR.captureWindow) {
                     var bounds = monitor.bounds;
                     var width = this.state.Width;
@@ -118,7 +118,7 @@ class CaptureControlMonitor extends React.PureComponent<any, SCaptureControlMoni
         this.setState(() => {
             var changes:any = {Width:value};
             this.Dimensions.forEach((dim) => {
-                if(dim.width == value)
+                if(dim.width === value)
                     changes.Height = dim.height;
             });
             return changes;
@@ -130,16 +130,15 @@ class CaptureControlMonitor extends React.PureComponent<any, SCaptureControlMoni
      */
     componentDidMount() {
         if(window && window.RDMGR && window.RDMGR.captureWindow) {
-            var bounds:any = {};
             this.setState(() => {
-                var screen = window.require('electron').remote.screen;
-                var monitors = screen.getAllDisplays();
-                var changes:any = {Monitors:monitors};
+                let screen = window.require('electron').remote.screen;
+                let monitors = screen.getAllDisplays();
+                let changes:any = {Monitors:monitors};
                 if(monitors.length > 1) {
-                    var primary = screen.getPrimaryDisplay();
+                    let primary = screen.getPrimaryDisplay();
                     let index = 0;
                     monitors.forEach((monitor, mindex) => {
-                        if(primary && monitor.id == primary.id) {
+                        if(primary && monitor.id === primary.id) {
                             return;
                         }
                         if(index <= 0)

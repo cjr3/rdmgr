@@ -6,7 +6,7 @@
 import React from 'react'
 import cnames from 'classnames'
 import './css/Elements.scss'
-import {default as UISlider, SliderProps, Mark} from '@material-ui/core/Slider'
+import {default as UISlider, SliderProps} from '@material-ui/core/Slider'
 import DataController from 'controllers/DataController';
 
 //static icons

@@ -7,17 +7,44 @@
 const vars = {
     //RecordType codes
     RecordType:{
+        /**
+         * RecordType code for skaters
+         */
         Skater:"SKR",
+        /**
+         * RecordType code for Teams
+         */
         Team:"TEM",
+        /**
+         * RecordType code for penalties
+         */
         Penalty:"PEN",
+        /**
+         * RecordType code for videos
+         */
         Video:"VID",
+        /**
+         * RecordType code for phases
+         */
         Phase:"PHS",
+        /**
+         * RecordType code for slideshows
+         */
         Slideshow:"SLS",
+        /**
+         * RecordType code for national anthem singers
+         */
         Anthem:"ANT",
+        /**
+         * RecordType code for Sponsors
+         */
         Sponsor:"SPN",
+        /**
+         * RecordType code for peers
+         */
         Peer:"PER",
         /**
-         * Raffle Prize
+         * RaffleType code for Raffle Prize
          */
         RafflePrize:"RPZ"
     },
@@ -90,31 +117,104 @@ const vars = {
 export default vars;
 
 export interface Record {
+    /**
+     * Record's internal ID (used for databases)
+     */
     ID?:number,
+    /**
+     * Record's ID relative to its RecordType
+     * (ie, a Skater and a Team record can have the same RecordID)
+     */
     RecordID:number,
+    /**
+     * RecordType code (see vars.RecordType)
+     */
     RecordType:string,
-    Acronym?:string,
-    Code?:string,
-    Color?:string,
+    /**
+     * Name of the record
+     */
     Name:string,
+    /**
+     * Acronym
+     */
+    Acronym?:string,
+    /**
+     * Alias for Acronym
+     */
+    Code?:string,
+    /**
+     * Represents the record's color, such as a team's primary color
+     */
+    Color?:string,
+    /**
+     * Short name
+     */
     ShortName?:string,
+    /**
+     * Photo path, relative to the media directory
+     */
     Photo?:string,
+    /**
+     * Background path, relative the media directory
+     */
     Background?:string,
+    /**
+     * Thumbnail/logo path, relative to the media directory
+     */
     Thumbnail?:string,
+    /**
+     * Thumbnail for the scorebanner, relative to the media directory
+     */
     ScoreboardThumbnail?:string,
+    /**
+     * Record's description, as as skater's bio
+     */
     Description?:string,
+    /**
+     * Associated file path, relative to media directory (video, slide, etc.)
+     */
     Filename?:string,
+    /**
+     * Alias for Filename
+     */
     FileName?:string,
+    /**
+     * Record's assigned number (jersey #, usually)
+     */
     Number?:string,
+    /**
+     * Path to slide image, relative to media directory
+     */
     Slide?:string,
+    /**
+     * Collection of associated records
+     */
     Records?:Array<any>
 };
 
+/**
+ * Interface for a Team record
+ */
 export interface TeamRecord extends Record {
+    /**
+     * Team's tagline
+     */
     Tagline?:string,
+    /**
+     * Collection of skaters assigned to the team
+     */
     Skaters?:Array<SkaterRecord>,
+    /**
+     * Determines the team type
+     */
     TeamType?:string,
+    /**
+     * League's ID number (for future use)
+     */
     LeagueID?:number,
+    /**
+     * Determines if team is a Youth team or not
+     */
     YouthTeam?:string
 };
 

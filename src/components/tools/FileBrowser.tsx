@@ -309,7 +309,7 @@ class FileBrowserFolder extends React.PureComponent<PFileBrowserFolder, SFileBro
         return (
             <div className="folder-item">
                 <Button
-                    active={(this.props.folder.path == this.props.path)}
+                    active={(this.props.folder.path === this.props.path)}
                     onClick={() => {
                         this.props.onClick(this.props.folder.path);
                     }}

@@ -184,8 +184,8 @@ function ScorekeeperReducer(state = InitState, action) {
 
         //performs a star pass, which swaps the target team's
         //pivot and jammer
-        case STAR_PASS :
-            var key = (action.team === 'A') ? 'TeamA' : 'TeamB';
+        case STAR_PASS : {
+            let key = (action.team === 'A') ? 'TeamA' : 'TeamB';
             return Object.assign({}, state, {
                 [key]:Object.assign({}, state[key], {
                     Track:Object.assign({}, state[key].Track,{
@@ -194,12 +194,13 @@ function ScorekeeperReducer(state = InitState, action) {
                     })
                 })
             });
+        }
 
         //shifts the decks of a given team or both teams
         //moving the skaters from on-deck to on-track
         case SHIFT_DECKS :
             if(typeof(action.team) === 'string') {
-                var key = (action.team === 'A') ? 'TeamA' : 'TeamB';
+                let key = (action.team === 'A') ? 'TeamA' : 'TeamB';
                 return Object.assign({}, state, {
                     [key]:Object.assign({}, state[key], {
                         Track:Object.assign({}, {

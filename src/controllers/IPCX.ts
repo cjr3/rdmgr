@@ -1,5 +1,5 @@
 import CameraController from 'controllers/CameraController';
-import DataController from 'controllers/DataController';
+//import DataController from 'controllers/DataController';
 import ScoreboardController from 'controllers/ScoreboardController';
 import CaptureController from 'controllers/CaptureController';
 import SlideshowController from 'controllers/SlideshowController';

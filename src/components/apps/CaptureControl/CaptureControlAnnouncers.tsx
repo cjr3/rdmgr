@@ -2,7 +2,6 @@ import React from 'react';
 import CaptureController from 'controllers/CaptureController';
 import CaptureControlPanel, {PCaptureControlPanel} from './CaptureControlPanel';
 import {IconX, IconCheck, IconButton} from 'components/Elements';
-import DataController from 'controllers/DataController';
 
 interface SCaptureControlAnnouncers {
     /**
@@ -118,9 +117,9 @@ class CaptureControlAnnouncers extends React.PureComponent<PCaptureControlPanel,
     render() {
         //submit button is active if values don't match the state
         var active = (
-            this.state.Announcer1 !== this.state.Announcer1 ||
-            this.state.Announcer2 !== this.state.Announcer2 ||
-            (this.state.Duration*1000) !== this.state.Duration
+            this.state.Announcer1 !== CaptureController.getState().Announcers.Announcer1 ||
+            this.state.Announcer2 !== CaptureController.getState().Announcers.Announcer2 ||
+            (this.state.Duration*1000) !== CaptureController.getState().Announcers.Duration
         );
 
         var buttons = [

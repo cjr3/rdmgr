@@ -22,7 +22,6 @@ export const InitState:SChatController = {
 };
 
 function ChatReducer(state = InitState, action) {
-    const date:Date = new Date();
     let messages:Array<MessageRecord> = [];
     switch(action.type) {
         //sets the state

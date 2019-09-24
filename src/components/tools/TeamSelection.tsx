@@ -27,7 +27,7 @@ class TeamSelection extends React.PureComponent<PTeamSelection, STeamSelection> 
 
         if(this.props.teamid) {
             for(let i=0; i < this.state.teams.length; i++) {
-                if(this.state.teams[i].RecordID == this.props.teamid) {
+                if(this.state.teams[i].RecordID === this.props.teamid) {
                     this.state.index = i;
                     break;
                 }
@@ -109,7 +109,7 @@ class TeamSelection extends React.PureComponent<PTeamSelection, STeamSelection> 
             var index = 0;
             if(this.state.teams) {
                 for(var key in this.state.teams) {
-                    if(this.state.teams[key].RecordID == this.props.teamid) {
+                    if(this.state.teams[key].RecordID === this.props.teamid) {
                         index = parseInt(key);
                         break;
                     }
@@ -134,7 +134,7 @@ class TeamSelection extends React.PureComponent<PTeamSelection, STeamSelection> 
                 <option value={i} key={`${team.RecordType}-${team.RecordID}`}>{team.Name.replace('|', ' ')}</option>
             );
     
-            if(i == this.state.index) {
+            if(i === this.state.index) {
                 src = DataController.mpath(team.Thumbnail);
             }
             i++;

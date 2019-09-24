@@ -166,11 +166,11 @@ class PenaltyTracker extends React.PureComponent<any, SPenaltyTracker> {
             var pindex = -1;
             if(skater !== null && skater.Penalties !== undefined) {
                 index = skater.Penalties.findIndex((pen) => {
-                    return (pen.RecordID == penalty.RecordID);
+                    return (pen.RecordID === penalty.RecordID);
                 });
                 pindex = penalized.findIndex((ps) => {
                     if(skater !==  null)
-                        return (ps.RecordID == skater.RecordID);
+                        return (ps.RecordID === skater.RecordID);
                     return false;
                 });
 
@@ -215,7 +215,7 @@ class PenaltyTracker extends React.PureComponent<any, SPenaltyTracker> {
      */
     onSelectSkater(skater) {
         this.setState((state) => {
-            if(state.Skater && state.Skater.RecordID == skater.RecordID) {
+            if(state.Skater && state.Skater.RecordID === skater.RecordID) {
                 return {Skater:null};
             }
             return {Skater:skater};
@@ -238,7 +238,7 @@ class PenaltyTracker extends React.PureComponent<any, SPenaltyTracker> {
      * @param {Number} id 
      */
     getSkaterIndex(id) {
-        return this.state.Penalized.findIndex((s) => {return (s.RecordID == id)});
+        return this.state.Penalized.findIndex((s) => {return (s.RecordID === id)});
     }
 
     /**
@@ -299,14 +299,14 @@ class PenaltyTracker extends React.PureComponent<any, SPenaltyTracker> {
             let penalty = this.state.Penalties[key];
             let active = false;
             if(skater !== null && skater.Penalties !== undefined) {
-                var pindex = skater.Penalties.findIndex((p) => {
-                    return (p.RecordID == penalty.RecordID);
+                let pindex = skater.Penalties.findIndex((p) => {
+                    return (p.RecordID === penalty.RecordID);
                 });
                 if(pindex >= 0)
                     active = true;
             }
 
-            var code = penalty.Acronym;
+            let code = penalty.Acronym;
             if(code === null || code === '' || code === undefined)
                 code = penalty.Code;
 
@@ -327,7 +327,7 @@ class PenaltyTracker extends React.PureComponent<any, SPenaltyTracker> {
                     className="skater-penalized"
                     key={`${pskater.RecordType}-${pskater.RecordID}`}>
                     <Button
-                        active={(skater && skater.RecordID == pskater.RecordID)}
+                        active={(skater && skater.RecordID === pskater.RecordID)}
                         onClick={() => {
                             this.onSelectSkater(pskater);
                         }}
@@ -401,7 +401,7 @@ function PenaltyTrackerTeam(props:PPenaltyTrackerTeam) : React.ReactElement {
     if(props.skaters) {
         props.skaters.forEach((skater) => {
             if(skater.Number !== '' && skater.Number !== null) {
-                var active = (props.skater && props.skater.RecordID == skater.RecordID);
+                var active = (props.skater && props.skater.RecordID === skater.RecordID);
                 skaters.push(
                     <Button
                         key={`${skater.RecordType}-${skater.RecordID}`}

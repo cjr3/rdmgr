@@ -18,7 +18,6 @@ import {
     IconShown,
     IconHidden,
     IconMovie,
-    IconSave,
     IconFlag,
     IconX,
     MediaThumbnail,
@@ -36,7 +35,7 @@ import {
 } from 'components/Elements';
 import Panel from 'components/Panel';
 
-import vars, { VideoRecord, AnthemRecord, SlideshowRecord, SponsorRecord } from 'tools/vars';
+import vars, { VideoRecord, AnthemRecord, SlideshowRecord } from 'tools/vars';
 import CaptureStatus, {SCaptureStatus} from 'tools/CaptureStatus';
 import RecordList from 'components/data/RecordList';
 import cnames from 'classnames';
@@ -225,7 +224,7 @@ class MediaQueue extends React.PureComponent<any, SMediaQueue> {
     updateVideo() {
         var state = VideoController.getState();
         if(this.VideoItem !== null && this.VideoItem.current !== null) {
-            if(state.Status == vars.Video.Status.Stopped) {
+            if(state.Status === vars.Video.Status.Stopped) {
                 try {
                     let vid:any = this.VideoItem.current;
                     vid.stop();
@@ -339,7 +338,7 @@ class MediaQueue extends React.PureComponent<any, SMediaQueue> {
                             </React.Fragment>,
                             recordIndex:i,
                             slideIndex:-1,
-                            className:cnames('video', {active:(i == recordIndex)})
+                            className:cnames('video', {active:(i === recordIndex)})
                         });
                         if(i === recordIndex && VideoController.getState().Source) {
                             index = recordIndex;
@@ -391,7 +390,7 @@ class MediaQueue extends React.PureComponent<any, SMediaQueue> {
                                     }}
                                 />
                             </React.Fragment>,
-                            className:cnames({active:(i == recordIndex)})
+                            className:cnames({active:(i === recordIndex)})
                         });
                     break;
                 }

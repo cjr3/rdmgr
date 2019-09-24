@@ -109,10 +109,10 @@ class SortPanel extends React.PureComponent<PSortPanel, SSortPanel> {
             let item = this.props.items[i];
             className = cnames('sortable', {
                 active:(i === this.props.index),
-                ['drop-target']:(i === this.state.DropIndex && i !== this.state.DragIndex),
-                ['drag-target']:(i === this.state.DragIndex && i !== this.state.DropIndex),
-                ['drop-left']:(i === this.state.DropIndex && this.state.DropLeft),
-                ['drop-right']:(i === this.state.DropIndex && this.state.DropRight)
+                'drop-target':(i === this.state.DropIndex && i !== this.state.DragIndex),
+                'drag-target':(i === this.state.DragIndex && i !== this.state.DropIndex),
+                'drop-left':(i === this.state.DropIndex && this.state.DropLeft),
+                'drop-right':(i === this.state.DropIndex && this.state.DropRight)
             }, item.className);
             items.push(<div
                 className={className}

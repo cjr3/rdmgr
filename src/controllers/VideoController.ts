@@ -155,10 +155,10 @@ function VideoReducer(state:SVideoController = InitState, action) : SVideoContro
             return Object.assign({}, state, {AutoPlay:!state.AutoPlay});
         
         case NEXT_FRAME :
-            if(state.Status == vars.Video.Status.Playing)
+            if(state.Status === vars.Video.Status.Playing)
                 return state;
             if(state.CurrentTime < state.Duration) {
-                var time = state.CurrentTime + state.FrameSpeed;
+                let time = state.CurrentTime + state.FrameSpeed;
                 if(time > state.Duration)
                     time = state.Duration;
                 return Object.assign({}, state, {CurrentTime:time});
@@ -167,28 +167,30 @@ function VideoReducer(state:SVideoController = InitState, action) : SVideoContro
             }
 
         case PREV_FRAME :
-            if(state.CurrentTime <= 0 || state.Status == vars.Video.Status.Playing)
+            if(state.CurrentTime <= 0 || state.Status === vars.Video.Status.Playing)
                 return state;
-            var time = state.CurrentTime - state.FrameSpeed;
+            let time = state.CurrentTime - state.FrameSpeed;
             if(time < 0)
                 time = 0;
             return Object.assign({}, state, {CurrentTime:time});
 
-        case ADJUST_VOLUME :
-            var amount = state.Volume + action.value;
+        case ADJUST_VOLUME : {
+            let amount = state.Volume + action.value;
             if(amount < 0)
                 amount = 0;
             else if(amount > 1)
                 amount = 1;
             return Object.assign({}, state, {Volume:amount});
+        }
 
-        case ADJUST_RATE :
-            var amount = state.Rate + action.value;
+        case ADJUST_RATE : {
+            let amount = state.Rate + action.value;
             if(amount < 0.1)
                 amount = 0.1;
             else if(amount > 3)
                 amount = 3;
             return Object.assign({}, state, {Rate:amount});
+        }
             
         default :
             return state;

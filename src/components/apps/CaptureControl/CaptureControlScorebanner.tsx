@@ -11,6 +11,7 @@ import {
 } from 'components/Elements';
 import { PhaseRecord } from 'tools/vars';
 import Counter from 'components/tools/Counter';
+import MediaPreview from 'components/tools/MediaPreview';
 
 interface SCaptureControlScorebanner {
     /**
@@ -40,7 +41,11 @@ interface SCaptureControlScorebanner {
     /**
      * Determines if the clocks (jam and game) are displayed on the screen
      */
-    ClocksShown:boolean
+    ClocksShown:boolean,
+    /**
+     * Background for the scorebanner
+     */
+    BackgroundImage?:string
 }
 
 /**
@@ -55,7 +60,8 @@ class CaptureControlScorebanner extends React.PureComponent<PCaptureControlPanel
         PhaseIndex:ScoreboardController.getState().PhaseIndex,
         Phases:DataController.getPhases(),
         Shown:CaptureController.getState().Scorebanner.Shown,
-        ClocksShown:CaptureController.getState().Scorebanner.ClocksShown
+        ClocksShown:CaptureController.getState().Scorebanner.ClocksShown,
+        BackgroundImage:CaptureController.getState().Scorebanner.BackgroundImage
     }
 
     /**
@@ -92,6 +98,7 @@ class CaptureControlScorebanner extends React.PureComponent<PCaptureControlPanel
         this.onAddJam = this.onAddJam.bind(this);
         this.onSubtractJam = this.onSubtractJam.bind(this);
         this.onChangePhase = this.onChangePhase.bind(this);
+        this.onChangeBackground = this.onChangeBackground.bind(this);
         this.onClickIncreaseTeamAScore = this.onClickIncreaseTeamAScore.bind(this);
         this.onClickDecreaseTeamAScore = this.onClickDecreaseTeamAScore.bind(this);
         this.onClickIncreaseTeamBScore = this.onClickIncreaseTeamBScore.bind(this);
@@ -123,7 +130,8 @@ class CaptureControlScorebanner extends React.PureComponent<PCaptureControlPanel
         this.setState(() => {
             return {
                 Shown:CaptureController.getState().Scorebanner.Shown,
-                ClocksShown:CaptureController.getState().Scorebanner.ClocksShown
+                ClocksShown:CaptureController.getState().Scorebanner.ClocksShown,
+                BackgroundImage:CaptureController.getState().Scorebanner.BackgroundImage
             }
         });
     }
@@ -191,12 +199,20 @@ class CaptureControlScorebanner extends React.PureComponent<PCaptureControlPanel
     }
 
     /**
+     * Triggered when the user selects a background image for the banner
+     * @param filename string
+     */
+    onChangeBackground(filename:string) {
+        CaptureController.SetScorebannerBackground(filename);
+    }
+
+    /**
      * Triggered when the component updates
      * @param prevProps PCaptureControlPanel
      * @param prevState SCaptureControlScorebanner
      */
     componentDidUpdate(prevProps:PCaptureControlPanel, prevState:SCaptureControlScorebanner) {
-        if(prevState.JamCounter != this.state.JamCounter) {
+        if(prevState.JamCounter !== this.state.JamCounter) {
             if(this.JamCounterItem !== null && this.JamCounterItem.current !== null) {
                 this.JamCounterItem.current.set(this.state.JamCounter, false);
             }
@@ -216,6 +232,8 @@ class CaptureControlScorebanner extends React.PureComponent<PCaptureControlPanel
                     >{phase.Name}</option>
             );
         });
+
+        let bg:string = (this.state.BackgroundImage !== undefined) ? this.state.BackgroundImage : '';
 
         return (
             <CaptureControlPanel
@@ -273,6 +291,11 @@ class CaptureControlScorebanner extends React.PureComponent<PCaptureControlPanel
                             />
                         </div>
                     </div>
+                    <MediaPreview
+                        src={bg}
+                        onChange={this.onChangeBackground}
+                        title="Background"
+                    />
                 </CaptureControlPanel>
         )
     }

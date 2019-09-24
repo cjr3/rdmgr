@@ -1,11 +1,7 @@
-import React from 'react'
-import cnames from 'classnames'
-import {Icon, IconX} from 'components/Elements'
-import './css/Panel.scss'
-
-interface SPanel {
-
-}
+import React from 'react';
+import cnames from 'classnames';
+import {Icon} from 'components/Elements';
+import './css/Panel.scss';
 
 interface PPanel {
     opened:boolean;

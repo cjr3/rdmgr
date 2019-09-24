@@ -46,12 +46,6 @@ class PhaseControl extends React.PureComponent<any, SPhaseControl> {
     onChangeMinute(ev) {
         var value = ev.target.value;
         ScoreboardController.SetPhaseTime(0, value, this.state.PhaseSecond);
-        return;
-        this.setState(() => {
-            return {PhaseMinute:value};
-        }, () => {
-            ScoreboardController.SetPhaseTime(0, this.state.PhaseMinute, this.state.PhaseSecond);
-        });
     }
 
     /**
@@ -61,12 +55,6 @@ class PhaseControl extends React.PureComponent<any, SPhaseControl> {
     onChangeSecond(ev) {
         var value = ev.target.value;
         ScoreboardController.SetPhaseTime(0, this.state.PhaseMinute, value);
-        return;
-        this.setState(() => {
-            return {PhaseSecond:value};
-        }, () => {
-            ScoreboardController.SetPhaseTime(0, this.state.PhaseMinute, this.state.PhaseSecond);
-        });
     }
 
     /**
