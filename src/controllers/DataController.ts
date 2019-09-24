@@ -22,6 +22,8 @@ import CaptureController from './CaptureController';
 import ChatController from './ChatController';
 import Installation from 'tools/Installation';
 import IO, { IOFileQueue } from 'tools/IO';
+import PenaltyController from './PenaltyController';
+import ScorekeeperController from './ScorekeeperController';
 
 const os = require('os');
 const USER_PATH = os.homedir();
@@ -867,7 +869,9 @@ const DataController = {
                 DataController.loadScoreboardState(),
                 DataController.loadCaptureState(),
                 DataController.loadRosterState(),
-                DataController.loadChatState()
+                DataController.loadChatState(),
+                DataController.loadPenaltyState(),
+                DataController.loadScorekeeperState()
             ]);
         })
     },
@@ -929,6 +933,36 @@ const DataController = {
                 try {
                     var content = JSON.parse(data);
                     ChatController.SetState(content);
+                } catch(er) {
+
+                }
+            });
+    },
+
+    /**
+     * Loads the state of the penalty controller
+     */
+    loadPenaltyState() {
+        return DataController.loadFile(Files.Penalty)
+            .then((data:any) => {
+                try {
+                    var content = JSON.parse(data);
+                    PenaltyController.SetState(content);
+                } catch(er) {
+
+                }
+            });
+    },
+
+    /**
+     * Loads the scorekeeper state from the local file
+     */
+    loadScorekeeperState() {
+        return DataController.loadFile(Files.Scorekeeper)
+            .then((data:any) => {
+                try {
+                    var content = JSON.parse(data);
+                    ScorekeeperController.SetState(content);
                 } catch(er) {
 
                 }

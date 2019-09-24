@@ -20,3 +20,10 @@ html, body {
         border: solid 16px #FFFFFF;
     }
 }
+
+@media screen and (max-height: 576px) {
+    video {
+        max-width: 1024px;
+        max-height: 576px;
+    }
+}

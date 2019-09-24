@@ -76,12 +76,13 @@ class CaptureDisplayControls extends React.PureComponent<any, SCaptureDisplayCon
             icon:IconClipboard,
             toggle:CaptureController.ToggleScorekeeper
         },
+        /*
         [RaffleController.Key]:{
             type:CaptureControlRaffle,
             name:"Raffle",
             icon:IconTicket,
             toggle:CaptureController.ToggleRaffle
-        }
+        }*/
     }
 
     /**

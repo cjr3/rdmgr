@@ -52,6 +52,9 @@
     height: 84.375%;
     padding: 0px 15.625% 0px 15.625%;
     transition: opacity 500ms ease-in-out 800ms;
+    @media screen and (max-width: 1024px) {
+        height: 85.75%;
+    }
 }
 
 .capture-form.sponsor-board.jamming > .capture-sponsors.shown {

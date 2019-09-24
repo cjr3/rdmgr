@@ -44,6 +44,8 @@ class Timeouts extends React.PureComponent<PTimeouts, STimeouts> {
 
         //bindings
         this.onChange = this.onChange.bind(this);
+        this.onAdd = this.onAdd.bind(this);
+        this.onSubtract = this.onSubtract.bind(this);
         this.updateState = this.updateState.bind(this);
         this.remoteScore = ScoreboardController.subscribe(this.updateState);
     }

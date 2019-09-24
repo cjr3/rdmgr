@@ -87,7 +87,7 @@
                 bottom: 0;
                 font-size: 96px;
                 line-height: 84px;
-                height: 100px;
+                height: 100%;
                 width: auto;
                 min-width: 200px;
                 padding: 0px 0px 0px 16px;
@@ -101,6 +101,30 @@
             label {
                 right: 100px;
                 left: initial;
+            }
+        }
+    }
+
+    @media screen and (max-width:1024px) {
+        .jammers {
+            bottom: 80px;
+            > .skater {
+                height: 75px;
+                > label {
+                    font-size: 64px;
+                    line-height: 64px;
+                    left: 75px;
+                }
+            }
+
+            > .skater:nth-child(2) {
+                img {
+                    right: 0;
+                }
+                label {
+                    right: 75px;
+                    left: initial;
+                }
             }
         }
     }

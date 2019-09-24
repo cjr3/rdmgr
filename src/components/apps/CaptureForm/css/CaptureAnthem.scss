@@ -50,6 +50,19 @@
     {
         opacity: 1;
     }
+
+    @media screen and (max-width: 1024px) {
+        .name {
+            font-size: 26px;
+            font-weight: bold;
+            width: 340px;
+        }
+        .bio {
+            font-size: 22px;
+            width: 340px;
+            top: 124px;
+        }
+    }
 }
 
 .capture-anthem.shown {

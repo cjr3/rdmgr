@@ -28,6 +28,17 @@ body {
     }
 }
 
+@media screen and (max-width: 1024px) {
+    body.capture {
+        width: 1024px;
+        height: 576px;
+        #root {
+            width: 1024px;
+            height: 576px;   
+        }
+    }
+}
+
 h1, h2, h3, h4, h5, h6 {
     margin: 3px 0px 3px 0px;
 }

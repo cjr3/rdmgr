@@ -4,6 +4,7 @@ import DataController from 'controllers/DataController';
 import cnames from 'classnames';
 import vars from 'tools/vars';
 import CaptureController from 'controllers/CaptureController';
+import './css/CaptureScorebanner.scss';
 
 interface SCaptureScorebanner {
     State:SScoreboardState,

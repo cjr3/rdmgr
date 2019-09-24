@@ -1,0 +1,573 @@
+@import 'src/css/vars.scss';
+
+.capture-SB-banner {
+    position: absolute;
+    margin: auto;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 65px;
+    overflow: visible;
+    background-color: $black;
+    font-family: $base-font-display;
+    opacity: 0;
+    z-index: 10;
+    transition: transform 350ms linear, opacity 350ms linear;
+    transform: translateY(-150px);
+    background-repeat: no-repeat;
+    background-position: top right;
+    background-size: contain;
+
+    .jamclock {
+        position: absolute;
+        margin: auto;
+        font-size: 52px;
+        top: 0px;
+        left: 620px;
+        width: 70px;
+        height: 65px;
+        padding-left: 12px;
+        line-height: 65px;
+        border-radius: 8px;
+        background-color: $black-faded;
+    }
+
+    .gameclock {
+        position: absolute;
+        margin: auto;
+        font-size: 48px;
+        top: 0px;
+        left: 500px;
+        height: 65px;
+        line-height: 65px;
+    }
+
+    .phase {
+        position: absolute;
+        margin: auto;
+        font-size: 36px;
+        line-height: 65px;
+        top: 0px;
+        left: 705px;
+        height: 65px;
+        text-align: center;
+        width: 200px;
+    }
+
+    .jam-counter {
+        position: absolute;
+        margin: auto;
+        font-size: 36px;
+        line-height: 64px;
+        top: 0px;
+        left: 910px;
+        width: 50px;
+        height: 65px;
+        text-align: center;
+        padding-left: 5px;
+        background-color: $black-faded;
+    }
+
+    .board-status {
+        position: absolute;
+        margin: auto;
+        left: 500px;
+        width: 185px;
+        height: 35px;
+        bottom: -35px;
+        text-align: center;
+        line-height: 30px;
+        border-radius: 0px 0px 16px 16px;
+        transition: transform 150ms linear;
+        transform-origin: 0% 0%;
+        transform: rotateY(90deg);
+    }
+
+    .board-status.shown {
+        transform: rotateY(0deg);
+    }
+
+    .board-status.timeout,
+    .board-status.review
+    {
+        background-image: linear-gradient($blood, rgba(0,0,0,0));
+    }
+
+    .board-status.injury {
+        background-image: linear-gradient($blue, rgba(0,0,0,0));
+    }
+
+    .board-status.upheld {
+        background-image: linear-gradient(#666666, rgba(0,0,0,0));
+    }
+
+    .board-status.overturned {
+        background-image: linear-gradient($green, rgba(0,0,0,0));
+    }
+
+    .team {
+        position: absolute;
+        margin: auto;
+        top: 0px;
+        width: 225px;
+        height: 65px;
+        z-index: 1;
+
+        .team-top {
+            position: absolute;
+            margin: auto;
+            top: 0;
+            left: 0;
+            height: 65px;
+            width: 100%;
+            background-color: $black;
+            background-size: 100% auto;
+            background-repeat: no-repeat;
+            background-position: center center;
+            z-index: 2;
+        }
+
+        .team-top .score {
+            position: absolute;
+            margin: auto;
+            top: 0;
+            right: 0;
+            font-size: 58px;
+        }
+
+        .jampoints {
+            position: absolute;
+            margin: auto;
+            right: 0;
+            bottom: -40px;
+            height: 40px;
+            width: 45px;
+            padding: 3px;
+            text-align: center;
+            font-size: 32px;
+            padding-left: 6px;
+            line-height: 28px;
+            border-radius: 0px 0px 8px 8px;
+            transform-origin: 50% 0%;
+            transform: translateY(-40px);
+            transition: transform 150ms linear;
+            z-index: 1;
+        }
+
+        .jampoints.shown {
+            transform: translateY(0px);
+            box-shadow: 0px 2px 2px rgba(0,0,0,0.5);
+        }
+
+        .status {
+            position: absolute;
+            margin: auto;
+            bottom: -30px;
+            left: 0;
+            width: calc(100% - 45px);
+            height: 30px;
+            text-align: center;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+            border-radius: 0px 0px 8px 8px;
+            line-height: 28px;
+            transform-origin: 0% 0%;
+            transform: rotateX(90deg);
+            transition: transform 150ms linear;
+        }
+
+        .status.shown {
+            transform: rotateY(0deg);
+        }
+
+        .status.leadjammer {
+            background-image: linear-gradient($green, rgba(0,0,0,0));
+        }
+
+        .status.powerjam {
+            background-image: linear-gradient($powerjam, rgba(0,0,0,0));
+        }
+
+        .status.timeout,
+        .status.challenge
+        {
+            background-image: linear-gradient($blood, rgba(0,0,0,0));
+        }
+
+        .timeouts {
+            position: absolute;
+            margin: auto;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 8px;
+        }
+
+        .timeouts > div {
+            width: 16px;
+            height: 6px;
+            border-radius: 3px;
+            background-color: #FFFFFF;
+            border: solid 1px $black;
+            float: left;
+        }
+    }
+
+    .team.team-a {
+        left: 15px;
+    }
+
+    .team.team-b {
+        left: 255px;
+    }
+}
+
+.capture-SB-banner.shown
+{
+    opacity: 1;
+    transform: translateY(0px);
+}
+
+.capture-SB-banner.noclocks {
+    .jamclock, .gameclock {
+        display: none;
+    }
+
+    .phase {
+        left: 600px;
+    }
+
+    .jam-counter {
+        left: 520px;
+        width: 70px;
+        background-color: transparent;
+    }
+    .jam-counter:before {
+        content: '#'
+    }
+}
+
+.capture-SB-banner.pos-bottom ,
+.capture-form.sponsor-board > .capture-SB-banner
+{
+    top: initial;
+    bottom: 0;
+    transform: translateY(80px);
+
+    .board-status {
+        bottom: initial;
+        top: -60px;
+        left: 0;
+        right: 0;
+        width: 45%;
+        height: 60px;
+        font-size: 48px;
+        line-height: 48px;
+        border-radius: 0px;
+        width: 100%;
+    }
+
+    .board-status.timeout,
+    .board-status.review
+    {
+        background-image: none;
+        background-color: $blood;
+    }
+
+    .board-status.injury {
+        background-image: none;
+        background-color: $blue;
+    }
+
+    .board-status.upheld {
+        background-color: #666666;
+        background-image: none;
+    }
+
+    .board-status.overturned {
+        background-color: $green;
+        background-image: none;
+    }
+
+    .team {
+        .jampoints {
+            bottom: initial;
+            top: 0px;
+            border-radius: 8px 8px 0px 0px;
+            transform: translateY(0px);
+        }
+
+        .jampoints.shown {
+            transform: translateY(-40px);
+            box-shadow: 0px -2px 2px rgba(0,0,0,0.5);
+        }
+        
+        .status {
+            bottom: initial;
+            top: -30px;
+            transform-origin: 50% 100%;
+            border-radius: 8px 8px 0px 0px;
+            line-height: 35px;
+        }
+
+        .status.shown {
+            transform: rotateY(0deg);
+        }
+
+        .status.leadjammer {
+            background-image: linear-gradient(rgba(0,0,0,0), $green);
+        }
+
+        .status.powerjam {
+            background-image: linear-gradient(rgba(0,0,0,0), $powerjam);
+        }
+
+        .status.timeout,
+        .status.challenge
+        {
+            background-image: linear-gradient(rgba(0,0,0,0), $blood);
+        }
+    }
+}
+
+.capture-form.sponsor-board > .capture-SB-banner.shown,
+.capture-SB-banner.pos-bottom.shown {
+    transform: translateY(0px);
+}
+
+.capture-form.sponsor-board > .capture-SB-banner {
+    z-index: 100;
+    height: 112px;
+    background-color: transparent;
+    transition: transform 150ms, opacity 500ms ease-in-out 150ms;
+    transform: translateY(0px);
+    opacity: 1;
+
+    .phase, .jam-counter, .jamclock {
+        display: none;
+    }
+
+    .gameclock {
+        width: 450px;
+        left: 430px;
+        text-align: center;
+        height: 112px;
+        font-size: 96px;
+        line-height: 96px;
+        padding-right: 24px;
+        background-color: #000000;
+    }
+
+    .team {
+        background-color: #000000;
+        .team-top {
+            background-position: top center;
+            background-size: cover;
+            .score {
+                min-width: 40%;
+                text-align: center;
+            }
+        }
+
+        .timeouts {
+            transform: rotateY(180deg) rotateZ(90deg) translateY(125px) translateX(60px) rotateX(180deg) scale(0.97);
+            background-color: #000000;
+            padding: 16px 16px 16px 12px;
+            > div {
+                height: 16px;
+                margin-top: -8px;
+            }
+        }
+    }
+
+    .team.team-a {
+        transform-origin: 0 0;
+        transform: scale(1.72);
+        left: 0;
+
+        .jampoints {
+            transform: translateX(-15px) scale(1.5);
+        }
+
+        .jampoints.shown {
+            transform: translateX(-15px) translateY(-55px) scale(1.5);
+        }
+
+        .status {
+            position: fixed;
+            transform: rotateZ(90deg) translateX(-100%) translateY(90px) scale(2.01);
+            color: transparent;
+            text-shadow: none;
+        }
+    }
+
+    .team.team-b {
+        transform-origin: 50% 0;
+        transform: rotateY(180deg) scale(1.72);
+        left: initial;
+        right: 80px;
+        .score
+        {
+            transform: rotateY(180deg);
+            padding-left: 6px;
+        }
+
+        .status {
+            position: fixed;
+            line-height: 24px;
+            border-radius: 0px;
+            transform: rotateY(180deg) rotateZ(90deg) translateX(-100%) translateY(-31px) scale(2.01);
+            color: transparent;
+            text-shadow: none;
+        }
+
+        .status.leadjammer {
+            background-image: linear-gradient(0deg, rgba(0,0,0,0), $green);
+        }
+
+        .status.powerjam {
+            background-image: linear-gradient(0deg, rgba(0,0,0,0), $powerjam);
+        }
+
+        .status.timeout,
+        .status.challenge
+        {
+            background-image: linear-gradient(0deg, rgba(0,0,0,0), $blood);
+        }
+
+        .jampoints {
+            transform: rotateY(180deg) translateX(15px) scale(1.5);
+        }
+
+        .jampoints.shown {
+            transform: rotateY(180deg) translateX(15px) translateY(-55px) scale(1.5);
+        }
+    }
+
+    @media screen and (max-width: 1024px) {
+        .board-status {
+            top: -29px;
+        }
+        .team.team-a {
+            transform: translateY(31px) scale(1.25);
+    
+            .jampoints {
+                transform: translateX(-15px) scale(1.25);
+            }
+    
+            .jampoints.shown {
+                transform: translateX(-15px) translateY(-50px) scale(1.25);
+            }
+    
+            .status {
+                transform: rotateZ(90deg) translateX(-120%) translateY(90px) scale(2.45, 1.2);
+            }
+        }
+
+        .team.team-b {
+            transform: rotateY(180deg) translateY(31px) scale(1.25);
+            right: 0;
+            .score
+            {
+                transform: rotateY(180deg);
+                padding-left: 6px;
+            }
+
+            .status {
+                position: fixed;
+                line-height: 24px;
+                border-radius: 0px;
+                transform: rotateY(180deg) rotateZ(90deg) translateX(-120%) translateY(-31px) scale(2.45, 1.5);
+                color: transparent;
+                text-shadow: none;
+            }
+
+            .jampoints {
+                transform: rotateY(180deg) translateX(15px) scale(1.25);
+            }
+
+            .jampoints.shown {
+                transform: rotateY(180deg) translateX(15px) translateY(-50px) scale(1.25);
+            }
+        }
+
+        .gameclock {
+            width: 450px;
+            left: 0;
+            right: 0;
+            bottom: 15px;
+            height: 35px;
+            font-size: 72px;
+            line-height: 72px;
+            padding-right: 16px;
+            background-color: #000000;
+        }
+    }
+}
+
+.capture-jam-counter,
+.capture-jam-clock
+{
+    position: absolute;
+    margin: auto;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 999;
+    font-family: $base-font-display;
+    font-size: 700px;
+    line-height: 650px;
+    width: 100%;
+    text-align: center;
+    padding-left: 64px;
+    opacity: 0;
+    transition: opacity 150ms, font-size 150ms, line-height 150ms;
+}
+
+.capture-jam-counter.shown,
+.capture-jam-clock.shown
+{
+    opacity: 1;
+}
+
+.capture-jam-clock.warning {
+    color: $warning;
+}
+
+.capture-jam-clock.danger {
+    color: $danger;
+}
+
+
+//sponsor board 
+.capture-form.sponsor-board {
+    .capture-jam-clock {
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+    }
+}
+
+.capture-form.sponsor-board.jamming {
+    .capture-jam-clock {
+        bottom: initial;
+        font-size: 600px;
+        line-height: 575px;
+        background-color: #000000;
+        height: calc(100% - 112px);
+        z-index: 99;
+    }
+
+    @media screen and (max-width: 1024px) {
+        .capture-jam-clock {
+            font-size: 480px;
+            line-height: 480px;
+            height: calc(100% - 50px);
+        }
+    }
+
+    .capture-jam-clock.shown {
+        opacity: 1;
+    }
+}

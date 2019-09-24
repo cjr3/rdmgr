@@ -107,6 +107,7 @@ class CaptureForm extends React.Component<any, SCaptureForm> {
         
         if(window && window.RDMGR && window.RDMGR.captureWindow) {
             window.RDMGR.captureWindow.setTitle('RDMGR : Capture Window');
+            document.body.className = 'capture';
             const displays = window.require('electron').remote.screen.getAllDisplays();
             if(displays.length > 1) {
                 const bounds = displays[1].bounds;
