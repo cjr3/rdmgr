@@ -84,7 +84,7 @@ class CaptureScorekeeper extends React.Component<PCaptureScorekeeper, SScorekeep
             if(this.state.TeamA.Track.Jammer.Number !== undefined)
                 nameA = this.state.TeamA.Track.Jammer.Number;
             styleA = {
-                backgroundImage:`linear-gradient(0deg, rgba(0,0,0,0), ${this.props.TeamA.Color})`
+                backgroundImage:`linear-gradient(0deg, rgba(0,0,0,0), ${this.state.TeamA.Track.Jammer.Color})`
             }
         }
 
@@ -96,7 +96,7 @@ class CaptureScorekeeper extends React.Component<PCaptureScorekeeper, SScorekeep
             if(this.state.TeamB.Track.Jammer.Number !== undefined)
                 nameB = this.state.TeamB.Track.Jammer.Number;
             styleB = {
-                backgroundImage:`linear-gradient(0deg, rgba(0,0,0,0), ${this.props.TeamB.Color})`
+                backgroundImage:`linear-gradient(0deg, rgba(0,0,0,0), ${this.state.TeamB.Track.Jammer.Color})`
             }
         }
 

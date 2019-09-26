@@ -55,7 +55,7 @@ class P2PServer {
                     }
 
                     if(this.LocalPeer !== null) {
-                        this.LocalPeer.addPeer(id, record.Host, port);
+                        //this.LocalPeer.addPeer(id, record.Host, port);
                     }
 
                     this.InitState.Peers[id] = {
@@ -71,6 +71,11 @@ class P2PServer {
         }
         if(this.LocalPeer === null) {
             this.LocalPeer = new LocalPeer(this.PeerID, "localhost", this.Port, this.Path);
+        }
+
+        for(let key in this.InitState.Peers) {
+            let peer = this.InitState.Peers[key];
+            this.LocalPeer.addPeer(peer.ID, peer.Host, peer.Port);
         }
 
         this.ExpressApp = express();

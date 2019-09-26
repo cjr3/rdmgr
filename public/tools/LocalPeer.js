@@ -126,7 +126,7 @@ class LocalPeer {
 
             peer.PeerItem.on('open', (id) => {
                 console.log(`${id} connected to remote peer ${peer.ID}`);
-                this.connectToPeer(id, local);
+                //this.connectToPeer(id, local);
             });
             peer.PeerItem.on('connection', (dcnx) => {
                 console.log(`${dcnx.peer} created a data connection`);
@@ -167,12 +167,12 @@ class LocalPeer {
             return;
         }
 
-        if(peer.DataConnection !== null && typeof(peer.DataConnection) === "object") {
-            peer.DataConnection.close();
+        if(peer.DataConnection !== null && typeof(peer.DataConnection) === "object" && peer.DataConnection.connected) {
+            //peer.DataConnection.close();
         }
 
-        if(peer.MediaConnection !== null && typeof(peer.MediaCOnnection) === "object") {
-            peer.MediaCOnnection.close();
+        if(peer.MediaConnection !== null && typeof(peer.MediaCOnnection) === "object" && peer.MediaConnection.connected) {
+            //peer.MediaCOnnection.close();
         }
 
         if(peer.PeerItem)
@@ -339,7 +339,8 @@ class LocalPeer {
 
         //ignore and close data connections from unknown peers
         if(peer === null || peer === undefined) {
-            dcnx.close();
+            console.log('peer is not found');
+            //dcnx.close();
             return;
         }
 

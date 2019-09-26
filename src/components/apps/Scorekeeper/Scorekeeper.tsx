@@ -249,7 +249,7 @@ class ScorekeeperTeam extends React.PureComponent<PScorekeeperTeam> {
                             skater={skater}
                             active={active}
                             onClick={() => {
-                                this.onSelectSkater(skater);
+                                this.onSelectSkater(Object.assign({}, skater, {Color:this.props.color}));
                             }}
                         >{skater.Number}</Button>
                     );

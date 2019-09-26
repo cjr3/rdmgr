@@ -409,7 +409,7 @@ function PenaltyTrackerTeam(props:PPenaltyTrackerTeam) : React.ReactElement {
                         title={skater.Name}
                         onClick={() => {
                             if(props.onSelectSkater !== undefined)
-                                props.onSelectSkater(skater);
+                                props.onSelectSkater(Object.assign({}, skater, {Color:props.color}));
                         }}
                     >{skater.Number}</Button>
                 );
