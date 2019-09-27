@@ -504,10 +504,12 @@ const MediaQueueController = {
             break;
             case keycodes.SPACEBAR :
             case keycodes.RIGHT :
+            case keycodes.DOWN :
                 MediaQueueController.Next();
             break;
 
             case keycodes.LEFT :
+            case keycodes.UP :
                 if(ev.ctrlKey)
                     MediaQueueController.Start();
                 else

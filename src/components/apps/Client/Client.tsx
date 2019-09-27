@@ -128,7 +128,8 @@ class Client extends React.PureComponent<any, SClient> {
                 type:Scoreboard,
                 controller:ScoreboardController,
                 key:ScoreboardController.Key,
-                remote:''
+                remote:'',
+                ref:React.createRef()
             },
             [CaptureController.Key]:{
                 name:"Capture Control",
@@ -136,7 +137,8 @@ class Client extends React.PureComponent<any, SClient> {
                 type:CaptureControl,
                 controller:CaptureController,
                 key:CaptureController.Key,
-                remote:''
+                remote:'',
+                ref:React.createRef()
             },
             [PenaltyController.Key]:{
                 name:'Penalty Tracker',
@@ -144,7 +146,8 @@ class Client extends React.PureComponent<any, SClient> {
                 type:PenaltyTracker,
                 controller:PenaltyController,
                 key:PenaltyController.Key,
-                remote:''
+                remote:'',
+                ref:React.createRef()
             },
             [ScorekeeperController.Key]:{
                 name:'Scorekeeper',
@@ -153,6 +156,7 @@ class Client extends React.PureComponent<any, SClient> {
                 controller:ScorekeeperController,
                 key:ScorekeeperController.Key,
                 remote:'',
+                ref:React.createRef()
             },
             [RosterController.Key]:{
                 name:'Roster',
@@ -160,15 +164,17 @@ class Client extends React.PureComponent<any, SClient> {
                 type:Roster,
                 controller:RosterController,
                 key:RosterController.Key,
-                remote:''
+                remote:'',
+                ref:React.createRef()
             },
             [MediaQueueController.Key]:{
                 name:'Media Queue',
                 icon:IconAV,
                 type:MediaQueue,
                 controller:MediaQueueController,
-                key:'MEQ',
-                remote:''
+                key:MediaQueueController.Key,
+                remote:'',
+                ref:React.createRef()
             }
         };
 
@@ -252,10 +258,150 @@ class Client extends React.PureComponent<any, SClient> {
 
             break;
         }
+        
+        //global keyup options - do not map these to controllers
+        switch(ev.keyCode) {
+            //ignore when windows/super/meta key is held down
+            case keycodes.RWINDOW :
+            case keycodes.LWINDOW : {
+                return;
+            }
+            break;
 
-        //ignore when windows/super/meta key is held down
-        if(ev.keyCode === keycodes.RWINDOW || ev.keyCode === keycodes.LWINDOW)
-            return;
+            //toggle current applications display
+            case keycodes.ESCAPE : {
+                switch(this.state.currentApp.key) {
+                    //Main Scoreboard
+                    case ScoreboardController.Key : {
+                        CaptureController.ToggleScoreboard();
+                    }
+                    break;
+
+                    //Scorebanner
+                    case CaptureController.Key : {
+                        if(ev.ctrlKey)
+                            CaptureController.ToggleScoreboard();
+                        else
+                            CaptureController.ToggleScorebanner();
+                    }
+                    break;
+
+                    //Penalty Tracker
+                    case PenaltyController.Key : {
+                        CaptureController.TogglePenaltyTracker();
+                    }
+                    break;
+
+                    //Scorekeeper
+                    case ScorekeeperController.Key : {
+                        CaptureController.ToggleScorekeeper();
+                    }
+                    break;
+
+                    //Roster
+                    case RosterController.Key : {
+                        CaptureController.ToggleRoster();
+                    }
+                    break;
+
+                    default : break;
+                }
+                return;
+            }
+            break;
+
+            //Main Scoreboard
+            case keycodes.F1 : {
+                this.setState({
+                    currentApp:this.Applications[ScoreboardController.Key]
+                });
+                return;
+            }
+            break;
+
+            //Capture Controller
+            case keycodes.F2 : {
+                this.setState({
+                    currentApp:this.Applications[CaptureController.Key]
+                });
+                return;
+            }
+            break;
+
+            //Penalty Tracker 
+            case keycodes.F3 : {
+                this.setState({
+                    currentApp:this.Applications[PenaltyController.Key]
+                });
+                return;
+            }
+            break;
+
+            //Scorekeeper 
+            case keycodes.F4 : {
+                this.setState({
+                    currentApp:this.Applications[ScorekeeperController.Key]
+                });
+                return;
+            }
+            break;
+
+            //Roster
+            case keycodes.F5 : {
+                this.setState({
+                    currentApp:this.Applications[RosterController.Key]
+                });
+                return;
+            }
+            break;
+
+            //Media Queue
+            case keycodes.F6 : {
+                this.setState({
+                    currentApp:this.Applications[MediaQueueController.Key]
+                });
+                return;
+            }
+            break;
+
+            case keycodes.F12 : {
+                let state = CaptureController.getState();
+                if(state.Raffle.Shown) {
+                    CaptureController.ToggleRaffle();
+                } else {
+                    this.setState({
+                        currentApp:this.Applications[MediaQueueController.Key]
+                    }, () => {
+                        CaptureController.ToggleRaffle();
+                        if(this.Applications[MediaQueueController.Key].ref !== null 
+                            && this.Applications[MediaQueueController.Key].ref.current !== null ) {
+                            this.Applications[MediaQueueController.Key].ref.current.setState({
+                                recordset:''
+                            }, () => {
+                                this.Applications[MediaQueueController.Key].ref.current.RaffleItem.current.TicketItem.current.focus();
+                            });
+                        }
+                    });
+                }
+                return;
+            }
+            break;
+
+            //fullscreen - ignore
+            case keycodes.F11 : {
+                return;
+            }
+            break;
+
+            //Open Chat
+            case keycodes.F9 : {
+                this.setState({ChatShown:true});
+                return;
+            }
+            break;
+
+            default : break;
+        }
 
         //send key commands to the active application
         if(this.state.currentApp.controller && this.state.currentApp.controller.onKeyUp)
@@ -652,6 +798,7 @@ class Client extends React.PureComponent<any, SClient> {
         this.setState(() => {
             return {visible:true};
         }, () => {
+            CaptureController.Init();
             GameController.Init();
             if(this.state.currentApp)
                 GameController.Receiver = this.state.currentApp;

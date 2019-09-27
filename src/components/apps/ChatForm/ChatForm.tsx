@@ -63,9 +63,21 @@ class ChatForm extends React.PureComponent<any, SChatForm> {
                 this.addMessage();
             break;
             case keycodes.ESCAPE :
-                if(this.state.MessageText === '' && this.props.onClose)
+                if(this.state.MessageText === '' && this.props.onClose) {
                     this.props.onClose();
+                    if(this.MessageItem !== null && this.MessageItem.current !== null) {
+                        this.MessageItem.current.blur();
+                    }
+                }
                 this.setState(() => { return {MessageText:''} });
+            break;
+            case keycodes.F9 :
+                if(this.props.onClose) {
+                    this.props.onClose();
+                    if(this.MessageItem !== null && this.MessageItem.current !== null) {
+                        this.MessageItem.current.blur();
+                    }
+                }
             break;
             default: break;
         }

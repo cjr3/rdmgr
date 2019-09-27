@@ -161,17 +161,24 @@
 
     .roster-skaters {
         > button {
-            display: flex;
-            flex-flow: row wrap;
-            font-size: 18px;
-            > .num {
-                flex: 0 0 100px;
-                > img {
-                    max-height: 48px;
+            border: none;
+            padding: 0px;
+            > div {
+                display: flex;
+                flex-flow: row wrap;
+                font-size: 18px;
+                border: solid 1px #999999;
+                border-bottom: none;
+                padding: 3px;
+                > .num {
+                    flex: 0 0 100px;
+                    > img {
+                        max-height: 48px;
+                    }
                 }
-            }
-            > .name {
-                flex: 1;
+                > .name {
+                    flex: 1;
+                }
             }
         }
     }

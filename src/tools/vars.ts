@@ -46,7 +46,11 @@ const vars = {
         /**
          * RaffleType code for Raffle Prize
          */
-        RafflePrize:"RPZ"
+        RafflePrize:"RPZ",
+        /**
+         * RecordType code for Announcers
+         */
+        Announcer:"ANC"
     },
 
     //Clocks
@@ -273,3 +277,21 @@ export interface PeerRecord extends Record {
     CapturePort?:number,
     Host?:string
 }
+
+export enum Controllers {
+    CAMERA,
+    CAPTURE,
+    CHAT,
+    DATA,
+    MEDIAQUEUE,
+    PENALTY,
+    RAFFLE,
+    ROSTER,
+    SCOREBOARD,
+    SCOREKEEPER,
+    SLIDESHOW,
+    SPONSOR,
+    VIDEO,
+    ANNOUNCER,
+    ANTHEM
+};

@@ -46,6 +46,8 @@ class CaptureControlSponsor extends React.PureComponent<PCaptureControlPanel, SC
                 icon={this.props.icon}
                 toggle={this.props.toggle}
                 shown={this.state.Shown}
+                onClickControl={this.props.onClickControl}
+                controlled={this.props.controlled}
                 onClick={this.props.onClick}>
                     Sponsor
                 </CaptureControlPanel>

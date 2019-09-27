@@ -65,6 +65,7 @@ export const IconYouTube = require('images/icons/youtube.png');
 export const IconFastForward = require('images/icons/fastforward.png');
 export const IconPlay = require('images/icons/play.png');
 export const IconPause = require('images/icons/pause.png');
+export const IconController = require('images/icons/gamepad.png');
 
 /**
  * Creates a <button> element

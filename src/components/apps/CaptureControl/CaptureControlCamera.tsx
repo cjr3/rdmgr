@@ -169,6 +169,8 @@ class CaptureControlCamera extends React.PureComponent<PCaptureControlPanel,ICap
                 toggle={this.props.toggle}
                 shown={this.state.Shown}
                 buttons={buttons}
+                onClickControl={this.props.onClickControl}
+                controlled={this.props.controlled}
                 onClick={this.props.onClick}>
                     <div className="record-list">
                         {cameras}

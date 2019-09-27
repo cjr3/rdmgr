@@ -1,6 +1,6 @@
 import React from 'react';
 import CameraController from 'controllers/CameraController';
-import CaptureController, {DisplayControls} from 'controllers/CaptureController';
+import CaptureController, {CapturePanels} from 'controllers/CaptureController';
 import ScorekeeperController from 'controllers/ScorekeeperController';
 import PenaltyController from 'controllers/PenaltyController';
 
@@ -17,23 +17,23 @@ import {
     IconStreamOff,
     IconWhistle,
     IconClipboard,
-    IconTicket
+    IconTicket,
+    IconTeam
 } from 'components/Elements';
 import vars from 'tools/vars';
 import RaffleController from 'controllers/RaffleController';
+import RosterController from 'controllers/RosterController';
+import CaptureControlRoster from './CaptureControlRoster';
 
 interface SCaptureDisplayControls {
     /**
-     * Current controller key
+     * currently controlled panel
      */
-    currentControl:string
-}
-
-type PanelRecord = {
-    type:any,
-    name:string,
-    icon:string,
-    toggle:Function
+    control:number;
+    /**
+     * Current panel to display
+     */
+    panel:string;
 }
 
 /**
@@ -42,39 +42,52 @@ type PanelRecord = {
 class CaptureDisplayControls extends React.PureComponent<any, SCaptureDisplayControls> {
 
     readonly state:SCaptureDisplayControls = {
-        currentControl:CaptureController.getState().DisplayControl
+        control:CaptureController.getState().Control,
+        panel:vars.RecordType.Announcer
     }
 
     Panels:any = {
-        [DisplayControls.ANNOUNCERS]:{
+        [RosterController.Key]:{
+            type:CaptureControlRoster,
+            name:"Intros",
+            icon:IconTeam,
+            toggle:CaptureController.ToggleRoster,
+            control:CapturePanels.ROSTER
+        },
+        [vars.RecordType.Announcer]:{
             type:CaptureControlAnnouncers,
             name:"Announcers",
             icon:IconMic,
-            toggle:CaptureController.ToggleAnnouncers
+            toggle:CaptureController.ToggleAnnouncers,
+            control:CapturePanels.ANNOUNCER
         },
-        [DisplayControls.ANTHEM]:{
+        [vars.RecordType.Anthem]:{
             type:CaptureControlAnthem,
             name:"Anthem",
             icon:IconFlag,
-            toggle:CaptureController.ToggleNationalAnthem
+            toggle:CaptureController.ToggleNationalAnthem,
+            control:CapturePanels.ANTHEM
         },
-        [DisplayControls.CAMERA]:{
+        [CameraController.Key]:{
             type:CaptureControlCamera,
             name:"Camera",
             icon:IconStreamOff,
-            toggle:CaptureController.ToggleMainCamera
+            toggle:CaptureController.ToggleMainCamera,
+            control:CapturePanels.CAMERA
         },
-        [DisplayControls.PENALTY]:{
+        [PenaltyController.Key]:{
             type:CaptureControlPenaltyTracker,
             name:"Penalty Tracker",
             icon:IconWhistle,
-            toggle:CaptureController.TogglePenaltyTracker
+            toggle:CaptureController.TogglePenaltyTracker,
+            control:CapturePanels.PENALTY
         },
-        [DisplayControls.SCOREKEEPER]:{
+        [ScorekeeperController.Key]:{
             type:CaptureControlScorekeeper,
             name:"Scorekeeper",
             icon:IconClipboard,
-            toggle:CaptureController.ToggleScorekeeper
+            toggle:CaptureController.ToggleScorekeeper,
+            control:CapturePanels.SCOREKEEPER
         }
     }
 
@@ -93,7 +106,7 @@ class CaptureDisplayControls extends React.PureComponent<any, SCaptureDisplayCon
      */
     protected updateState() {
         this.setState({
-            currentControl:CaptureController.getState().DisplayControl
+            control:CaptureController.getState().Control
         });
     }
 
@@ -127,10 +140,13 @@ class CaptureDisplayControls extends React.PureComponent<any, SCaptureDisplayCon
                     name={panel.name}
                     toggle={panel.toggle}
                     icon={panel.icon}
-                    active={(this.state.currentControl === pkey)}
+                    active={(this.state.control === panel.control)}
+                    controlled={(this.state.control === panel.control)}
                     onClick={() => {
-                        //this.setState({currentControl:pkey});
-                        CaptureController.SetDisplayControl(pkey);
+                        this.setState({panel:pkey});
+                    }}
+                    onClickControl={() => {
+                        CaptureController.SetCurrentControl(panel.control);
                     }}
                     />
             );

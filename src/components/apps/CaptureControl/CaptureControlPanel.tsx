@@ -3,6 +3,7 @@ import * as cnames from 'classnames';
 import {
     IconShown,
     IconHidden,
+    IconController,
     Icon,
     IconButton
 } from 'components/Elements';
@@ -15,35 +16,44 @@ export interface PCaptureControlPanel {
     /**
      * True if active, false if not
      */
-    active:boolean,
+    active:boolean;
     /**
      * Name to display on the button
      */
-    name:string,
+    name:string;
     /**
      * Icon to display on the button
      */
-    icon?:any,
+    icon?:any;
     /**
      * Function to toggle visibility of capture element
      */
-    toggle?:Function,
+    toggle?:Function;
     /**
      * Determines if the controlled capture element is visible or not
      */
-    shown?:boolean,
+    shown?:boolean;
     /**
      * Buttons to attach to the panel
      */
-    buttons?:any,
+    buttons?:any;
     /**
      * Triggered when the user presses the accordion button
      */
-    onClick:Function,
+    onClick:Function;
     /**
      * Child elements to put inside the panel
      */
-    children?:any
+    children?:any;
+    /**
+     * Determines if this panel is the one that receives input response from 
+     * keyboard and gamepad input
+     */
+    controlled:boolean;
+    /**
+     * Triggered when the user presses the gamepad icon
+     */
+    onClickControl:Function;
 }
 
 /**
@@ -59,6 +69,10 @@ export default function CaptureControlPanel(props:PCaptureControlPanel) {
                     active={(props.active)}
                     onClick={props.onClick}
                     >{props.name}</IconButton>
+                <Icon
+                    src={IconController}
+                    active={props.controlled}
+                    onClick={props.onClickControl}/>
                 <Icon
                     src={(props.shown) ? IconShown : IconHidden}
                     active={props.shown}

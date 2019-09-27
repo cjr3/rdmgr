@@ -1,3 +1,6 @@
+/**
+ * Module used for game controllers
+ */
 
 export interface GameButton {
     /**
@@ -22,11 +25,27 @@ export interface GameButton {
      * The number of frames the button has been pressed down
      */
     frames:number;
+    /**
+     * index of gamepad button associated to the 'standard' mapping
+     */
+    index:number;
 }
 
-interface GamepadAxesItem {
+export interface GameAxis {
+    /**
+     * Common name
+     */
     label:string;
-
+    /**
+     * The horizontal distance from the center
+     * Positive is right, negative is left
+     */
+    x:number;
+    /**
+     * The vertical distance from the center
+     * Positive is down, negative is up
+     */
+    y:number;
 }
 
 export interface IGamepadButtonMap {
@@ -96,119 +115,160 @@ export interface IGamepadButtonMap {
     RIGHT:GameButton;
 }
 
+export interface IGamepadAxes {
+
+    /**
+     * Left stick of the controller
+     */
+    LSTICK:GameAxis;
+    /**
+     * Right stick of the controller
+     */
+    RSTICK:GameAxis;
+}
+
 export const GamepadButtonMap:IGamepadButtonMap = {
     A:{
         label:'A',
         pressed:false,
         released:false,
         toggle:false,
-        frames:0
+        frames:0,
+        index:0
     },
     B:{
         label:'B',
         pressed:false,
         released:false,
         toggle:false,
-        frames:0
+        frames:0,
+        index:1
     },
     X:{
         label:'X',
         pressed:false,
         released:false,
         toggle:false,
-        frames:0
+        frames:0,
+        index:2
     },
     Y:{
         label:'Y',
         pressed:false,
         released:false,
         toggle:false,
-        frames:0
+        frames:0,
+        index:3
     },
     L1:{
         label:'L1',
         pressed:false,
         released:false,
         toggle:false,
-        frames:0
+        frames:0,
+        index:4
     },
     R1:{
         label:'R1',
         pressed:false,
         released:false,
         toggle:false,
-        frames:0
+        frames:0,
+        index:5
     },
     L2:{
         label:'L2',
         pressed:false,
         released:false,
         toggle:false,
-        frames:0
+        frames:0,
+        index:6
     },
     R2:{
         label:'R2',
         pressed:false,
         released:false,
         toggle:false,
-        frames:0
+        frames:0,
+        index:7
     },
     SELECT:{
         label:'SELECT',
         pressed:false,
         released:false,
         toggle:false,
-        frames:0
+        frames:0,
+        index:8
     },
     START:{
         label:'START',
         pressed:false,
         released:false,
         toggle:false,
-        frames:0
+        frames:0,
+        index:9
     },
     L3:{
         label:'L3',
         pressed:false,
         released:false,
         toggle:false,
-        frames:0
+        frames:0,
+        index:10
     },
     R3:{
         label:'R3',
         pressed:false,
         released:false,
         toggle:false,
-        frames:0
+        frames:0,
+        index:11
     },
     UP:{
         label:'UP',
         pressed:false,
         released:false,
         toggle:false,
-        frames:0
+        frames:0,
+        index:12
     },
     DOWN:{
         label:'DOWN',
         pressed:false,
         released:false,
         toggle:false,
-        frames:0
+        frames:0,
+        index:13
     },
     LEFT:{
         label:'LEFT',
         pressed:false,
         released:false,
         toggle:false,
-        frames:0
+        frames:0,
+        index:14
     },
     RIGHT:{
         label:'RIGHT',
         pressed:false,
         released:false,
         toggle:false,
-        frames:0
+        frames:0,
+        index:15
+    }
+}
+
+export const GamepadAxisMap:IGamepadAxes = {
+    LSTICK:{
+        label:"Left Stick",
+        x:0,
+        y:0
     },
+    RSTICK:{
+        label:"Right Stick",
+        x:0,
+        y:0
+    }
 }
 
 class GameControllerHandler {
@@ -233,6 +293,9 @@ class GameControllerHandler {
      */
     protected Gamepads:any = {};
 
+    /**
+     * Constructor
+     */
     constructor() {
         this.queryGamepad = this.queryGamepad.bind(this);
         this.onGamePadConnected = this.onGamePadConnected.bind(this);
@@ -243,32 +306,51 @@ class GameControllerHandler {
      * Initializes the game controller
      * This should be called when the window object is ready
      */
-    async Init() {
+    Init() {
         if(window && window.addEventListener) {
             window.addEventListener('gamepadconnected', this.onGamePadConnected);
             window.addEventListener('gamepaddisconnected', this.onGamePadDisconnected);
-            this.Gamepads = await this.LoadControllers();
-            this.Timer = window.requestAnimationFrame(this.queryGamepad);
+            this.LoadControllers().then((controllers) => {
+                this.Gamepads = controllers;
+                this.Timer = window.requestAnimationFrame(this.queryGamepad);
+            }).catch(() => {
+
+            })
         }
     }
 
+    /**
+     * Loads the controllers and returns a promise with an array of those controllers
+     * The returned value is an object, because the Gamepad API returns an object,
+     * not an Array, even though the properties are numbers
+     */
     async LoadControllers() :Promise<any> {
-        return new Promise((res, rej) => {
+        return new Promise((res) => {
             if(navigator && navigator.getGamepads) {
                 res(navigator.getGamepads());
             } else {
-                res([]);
+                res({});
             }
-        })
+        });
     }
 
+    /**
+     * Triggered when a gamepad has been connected
+     * @param e GamepadEvent
+     */
     protected async onGamePadConnected(e:any|GamepadEvent) {
         this.Gamepads = await this.LoadControllers();
         if(e instanceof GamepadEvent && this.Gamepads[e.gamepad.index]) {
             this.Gamepad = this.Gamepads[e.gamepad.index];
+            if(this.Gamepad !== null)
+                console.log(this.Gamepad)
         }
     }
 
+    /**
+     * Triggered when a gamepad has been disconnected
+     * @param e GamepadEvent
+     */
     protected async onGamePadDisconnected(e:any|GamepadEvent) {
         this.Gamepads = await this.LoadControllers();
         if(e instanceof GamepadEvent && this.Gamepad !== null && e.gamepad.id == this.Gamepad.id) {
@@ -276,8 +358,45 @@ class GameControllerHandler {
         }
     }
 
+    /**
+     * Checks the state of the gamepad button, and sets necessary values:
+     * @param gpb GamepadButton
+     * @param button GameButton
+     */
+    protected checkGamepadButton(gpb:GamepadButton, button:GameButton) {
+        if(gpb.pressed) {
+            button.pressed = true;
+            button.released = false;
+            button.frames++;
+        } else {
+            button.pressed = false;
+
+            //if the button was recently pressed/held, then we need to mark
+            //that it has been released
+            if(button.frames > 0)
+                button.released = true;
+            button.frames = 0;
+        }
+    }
+
+    /**
+     * Resets the state of the buttons after being queried and sent to controllers
+     */
+    protected resetButtons() {
+        for(let key in GamepadButtonMap) {
+            GamepadButtonMap[key].released = false;
+            if(GamepadButtonMap[key].frames > 60)
+                GamepadButtonMap[key].frames = 1;
+        }
+    }
+
+    /**
+     * The animation frame query.
+     * The gamepads should be queried at the end of each frame to reset the gamepad buttons
+     * (I think this is a 'bug' in Chrome, or by design to poll the gamepad)
+     */
     protected queryGamepad() {
-        if(this.Gamepad === null || this.Receiver === null) {
+        if(this.Gamepad === null || this.Receiver === null || this.Receiver.controller === null) {
             this.LoadControllers().then((controllers) => {
                 this.Gamepads = controllers;
             });
@@ -285,272 +404,59 @@ class GameControllerHandler {
             return;
         }
 
-        //Button 0 - A
-        if(this.Gamepad.buttons[0].pressed) {
-            GamepadButtonMap.A.pressed = true;
-            GamepadButtonMap.A.released = false;
-            GamepadButtonMap.A.frames++;
-        } else {
-            GamepadButtonMap.A.pressed = false;
-            if(GamepadButtonMap.A.frames > 0)
-                GamepadButtonMap.A.released = true;
-            GamepadButtonMap.A.frames = 0;
-        }
-
-        //Button 1 - B
-        if(this.Gamepad.buttons[1].pressed) {
-            GamepadButtonMap.B.pressed = true;
-            GamepadButtonMap.B.released = false;
-            GamepadButtonMap.B.frames++;
-        } else {
-            GamepadButtonMap.B.pressed = false;
-            if(GamepadButtonMap.B.frames > 0)
-                GamepadButtonMap.B.released = true;
-            GamepadButtonMap.B.frames = 0;
-        }
-
-        //Button 2 - X
-        if(this.Gamepad.buttons[2].pressed) {
-            GamepadButtonMap.X.pressed = true;
-            GamepadButtonMap.X.released = false;
-            GamepadButtonMap.X.frames++;
-        } else {
-            GamepadButtonMap.X.pressed = false;
-            if(GamepadButtonMap.X.frames > 0)
-                GamepadButtonMap.X.released = true;
-            GamepadButtonMap.X.frames = 0;
-        }
-
-        //Button 3 - Y
-        if(this.Gamepad.buttons[3].pressed) {
-            GamepadButtonMap.Y.pressed = true;
-            GamepadButtonMap.Y.released = false;
-            GamepadButtonMap.Y.frames++;
-        } else {
-            GamepadButtonMap.Y.pressed = false;
-            if(GamepadButtonMap.Y.frames > 0)
-                GamepadButtonMap.Y.released = true;
-            GamepadButtonMap.Y.frames = 0;
-        }
-
-        //Button 4 - L1
-        if(this.Gamepad.buttons[4].pressed) {
-            GamepadButtonMap.L1.pressed = true;
-            GamepadButtonMap.L1.released = false;
-            GamepadButtonMap.L1.frames++;
-        } else {
-            GamepadButtonMap.L1.pressed = false;
-            if(GamepadButtonMap.L1.frames > 0)
-                GamepadButtonMap.L1.released = true;
-            GamepadButtonMap.L1.frames = 0;
-        }
-
-        //Button 5 - R1
-        if(this.Gamepad.buttons[5].pressed) {
-            GamepadButtonMap.R1.pressed = true;
-            GamepadButtonMap.R1.released = false;
-            GamepadButtonMap.R1.frames++;
-        } else {
-            GamepadButtonMap.R1.pressed = false;
-            if(GamepadButtonMap.R1.frames > 0)
-                GamepadButtonMap.R1.released = true;
-            GamepadButtonMap.R1.frames = 0;
-        }
-
-        //Button 6 - L2
-        if(this.Gamepad.buttons[6].pressed) {
-            GamepadButtonMap.L2.pressed = true;
-            GamepadButtonMap.L2.released = false;
-            GamepadButtonMap.L2.frames++;
-        } else {
-            GamepadButtonMap.L2.pressed = false;
-            if(GamepadButtonMap.L2.frames > 0)
-                GamepadButtonMap.L2.released = true;
-            GamepadButtonMap.L2.frames = 0;
-        }
-
-        //Button 7 - R2
-        if(this.Gamepad.buttons[7].pressed) {
-            GamepadButtonMap.R2.pressed = true;
-            GamepadButtonMap.R2.released = false;
-            GamepadButtonMap.R2.frames++;
-        } else {
-            GamepadButtonMap.R2.pressed = false;
-            if(GamepadButtonMap.R2.frames > 0)
-                GamepadButtonMap.R2.released = true;
-            GamepadButtonMap.R2.frames = 0;
-        }
-
-        //Button 8 - SELECT/BACK
-        if(this.Gamepad.buttons[8].pressed) {
-            GamepadButtonMap.SELECT.pressed = true;
-            GamepadButtonMap.SELECT.released = false;
-            GamepadButtonMap.SELECT.frames++;
-        } else {
-            GamepadButtonMap.SELECT.pressed = false;
-            if(GamepadButtonMap.SELECT.frames > 0)
-                GamepadButtonMap.SELECT.released = true;
-            GamepadButtonMap.SELECT.frames = 0;
-        }
-
-        //Button 9 - START/PAUSE
-        if(this.Gamepad.buttons[9].pressed) {
-            GamepadButtonMap.START.pressed = true;
-            GamepadButtonMap.START.released = false;
-            GamepadButtonMap.START.frames++;
-        } else {
-            GamepadButtonMap.START.pressed = false;
-            if(GamepadButtonMap.START.frames > 0)
-                GamepadButtonMap.START.released = true;
-            GamepadButtonMap.START.frames = 0;
-        }
-
-        //Button 10 - L3
-        if(this.Gamepad.buttons[10].pressed) {
-            GamepadButtonMap.L3.pressed = true;
-            GamepadButtonMap.L3.released = false;
-            GamepadButtonMap.L3.frames++;
-        } else {
-            GamepadButtonMap.L3.pressed = false;
-            if(GamepadButtonMap.L3.frames > 0)
-                GamepadButtonMap.L3.released = true;
-            GamepadButtonMap.L3.frames = 0;
-        }
-
-        //Button 11 - R3
-        if(this.Gamepad.buttons[11].pressed) {
-            GamepadButtonMap.R3.pressed = true;
-            GamepadButtonMap.R3.released = false;
-            GamepadButtonMap.R3.frames++;
-        } else {
-            GamepadButtonMap.R3.pressed = false;
-            if(GamepadButtonMap.R3.frames > 0)
-                GamepadButtonMap.R3.released = true;
-            GamepadButtonMap.R3.frames = 0;
-        }
-
-        //Button 12 - UP
-        if(this.Gamepad.buttons[12].pressed) {
-            GamepadButtonMap.UP.pressed = true;
-            GamepadButtonMap.UP.released = false;
-            GamepadButtonMap.UP.frames++;
-        } else {
-            GamepadButtonMap.UP.pressed = false;
-            if(GamepadButtonMap.UP.frames > 0)
-                GamepadButtonMap.UP.released = true;
-            GamepadButtonMap.UP.frames = 0;
-        }
-
-        //Button 13 - DOWN
-        if(this.Gamepad.buttons[13].pressed) {
-            GamepadButtonMap.DOWN.pressed = true;
-            GamepadButtonMap.DOWN.released = false;
-            GamepadButtonMap.DOWN.frames++;
-        } else {
-            GamepadButtonMap.DOWN.pressed = false;
-            if(GamepadButtonMap.DOWN.frames > 0)
-                GamepadButtonMap.DOWN.released = true;
-            GamepadButtonMap.DOWN.frames = 0;
-        }
-
-        //Button 14 - LEFT
-        if(this.Gamepad.buttons[14].pressed) {
-            GamepadButtonMap.LEFT.pressed = true;
-            GamepadButtonMap.LEFT.released = false;
-            GamepadButtonMap.LEFT.frames++;
-        } else {
-            GamepadButtonMap.LEFT.pressed = false;
-            if(GamepadButtonMap.LEFT.frames > 0)
-                GamepadButtonMap.LEFT.released = true;
-            GamepadButtonMap.LEFT.frames = 0;
-        }
-
-        //Button 15 - RIGHT
-        if(this.Gamepad.buttons[15].pressed) {
-            GamepadButtonMap.RIGHT.pressed = true;
-            GamepadButtonMap.RIGHT.released = false;
-            GamepadButtonMap.RIGHT.frames++;
-        } else {
-            GamepadButtonMap.RIGHT.pressed = false;
-            if(GamepadButtonMap.RIGHT.frames > 0)
-                GamepadButtonMap.RIGHT.released = true;
-            GamepadButtonMap.RIGHT.frames = 0;
-        }
-
-        //Button Press
-        if(this.Receiver.controller && this.Receiver.controller.onGamepadButtonPress) {
-            if((GamepadButtonMap.A.pressed && GamepadButtonMap.A.frames === 1)
-                ||(GamepadButtonMap.B.pressed && GamepadButtonMap.B.frames === 1)
-                || (GamepadButtonMap.X.pressed && GamepadButtonMap.X.frames === 1)
-                || (GamepadButtonMap.Y.pressed && GamepadButtonMap.Y.frames === 1)
-                || (GamepadButtonMap.L1.pressed && GamepadButtonMap.L1.frames === 1)
-                || (GamepadButtonMap.R1.pressed && GamepadButtonMap.R1.frames === 1)
-                || (GamepadButtonMap.L2.pressed && GamepadButtonMap.L2.frames === 1)
-                || (GamepadButtonMap.R2.pressed && GamepadButtonMap.R2.frames === 1)
-                || (GamepadButtonMap.SELECT.pressed && GamepadButtonMap.SELECT.frames === 1)
-                || (GamepadButtonMap.START.pressed && GamepadButtonMap.START.frames === 1)
-                || (GamepadButtonMap.L3.pressed && GamepadButtonMap.L3.frames === 1)
-                || (GamepadButtonMap.R3.pressed && GamepadButtonMap.R3.frames === 1)
-                || (GamepadButtonMap.UP.pressed && GamepadButtonMap.UP.frames === 1)
-                || (GamepadButtonMap.DOWN.pressed && GamepadButtonMap.DOWN.frames === 1)
-                || (GamepadButtonMap.LEFT.pressed && GamepadButtonMap.LEFT.frames === 1)
-                || (GamepadButtonMap.RIGHT.pressed && GamepadButtonMap.RIGHT.frames === 1)
-                ) {
-                this.Receiver.controller.onGamepadButtonPress(GamepadButtonMap);
-            }
-        }
-
-        //Button Down (Held down for more than 1 frame)
-        if(this.Receiver.controller && this.Receiver.controller.onGamepadButtonDown) {
-            if((GamepadButtonMap.A.pressed && GamepadButtonMap.A.frames > 1)
-                ||(GamepadButtonMap.B.pressed && GamepadButtonMap.B.frames > 1)
-                || (GamepadButtonMap.X.pressed && GamepadButtonMap.X.frames > 1)
-                || (GamepadButtonMap.Y.pressed && GamepadButtonMap.Y.frames > 1)
-                || (GamepadButtonMap.L1.pressed && GamepadButtonMap.L1.frames > 1)
-                || (GamepadButtonMap.R1.pressed && GamepadButtonMap.R1.frames > 1)
-                || (GamepadButtonMap.L2.pressed && GamepadButtonMap.L2.frames > 1)
-                || (GamepadButtonMap.R2.pressed && GamepadButtonMap.R2.frames > 1)
-                || (GamepadButtonMap.SELECT.pressed && GamepadButtonMap.SELECT.frames > 1)
-                || (GamepadButtonMap.START.pressed && GamepadButtonMap.START.frames > 1)
-                || (GamepadButtonMap.L3.pressed && GamepadButtonMap.L3.frames > 1)
-                || (GamepadButtonMap.R3.pressed && GamepadButtonMap.R3.frames > 1)
-                || (GamepadButtonMap.UP.pressed && GamepadButtonMap.UP.frames > 1)
-                || (GamepadButtonMap.DOWN.pressed && GamepadButtonMap.DOWN.frames > 1)
-                || (GamepadButtonMap.LEFT.pressed && GamepadButtonMap.LEFT.frames > 1)
-                || (GamepadButtonMap.RIGHT.pressed && GamepadButtonMap.RIGHT.frames > 1)
-                ) {
-                this.Receiver.controller.onGamepadButtonDown(GamepadButtonMap);
-            }
-        }
-
-        //Button Up / Release
-        if(this.Receiver.controller && this.Receiver.controller.onGamepadButtonUp) {
-            if((GamepadButtonMap.A.released)
-                ||(GamepadButtonMap.B.released)
-                || (GamepadButtonMap.X.released)
-                || (GamepadButtonMap.Y.released)
-                || (GamepadButtonMap.L1.released)
-                || (GamepadButtonMap.R1.released)
-                || (GamepadButtonMap.L2.released)
-                || (GamepadButtonMap.R2.released)
-                || (GamepadButtonMap.SELECT.released)
-                || (GamepadButtonMap.START.released)
-                || (GamepadButtonMap.L3.released)
-                || (GamepadButtonMap.R3.released)
-                || (GamepadButtonMap.UP.released)
-                || (GamepadButtonMap.DOWN.released)
-                || (GamepadButtonMap.LEFT.released)
-                || (GamepadButtonMap.RIGHT.released)
-                ) {
-                this.Receiver.controller.onGamepadButtonUp(GamepadButtonMap);
-            }
-        }
-
+        //check state of buttons
+        let buttonPressed:boolean = false;
+        let buttonDown:boolean = false;
+        let buttonReleased:boolean = false;
+        let stickMoved:boolean = false;
         for(let key in GamepadButtonMap) {
-            GamepadButtonMap[key].released = false;
-            if(GamepadButtonMap[key].frames > 60)
-                GamepadButtonMap[key].frames = 1;
+            let button:GameButton = GamepadButtonMap[key];
+            this.checkGamepadButton(this.Gamepad.buttons[button.index], button);
+            if(button.pressed && button.frames === 1)
+                buttonPressed = true;
+            if(button.pressed && button.frames > 1)
+                buttonDown = true;
+            if(button.released)
+                buttonReleased = true;
         }
+
+        //check control sticks
+        if(this.Gamepad.axes && this.Gamepad.axes.length >= 4) {
+            let lx = GamepadAxisMap.LSTICK.x;
+            let ly = GamepadAxisMap.LSTICK.y;
+            let rx = GamepadAxisMap.RSTICK.x;
+            let ry = GamepadAxisMap.RSTICK.y;
+            GamepadAxisMap.LSTICK.x = parseFloat(this.Gamepad.axes[0].toFixed(2));
+            GamepadAxisMap.LSTICK.y = parseFloat(this.Gamepad.axes[1].toFixed(2));
+            GamepadAxisMap.RSTICK.x = parseFloat(this.Gamepad.axes[2].toFixed(2));
+            GamepadAxisMap.RSTICK.y = parseFloat(this.Gamepad.axes[3].toFixed(2));
+            if(GamepadAxisMap.LSTICK.x != lx || GamepadAxisMap.LSTICK.y != ly
+                || GamepadAxisMap.RSTICK.x != rx || GamepadAxisMap.RSTICK.y != ry) {
+                stickMoved = true;
+            }
+        }
+
+        //Button Pressed
+        if(buttonPressed && this.Receiver.controller.onGamepadButtonPress) {
+            this.Receiver.controller.onGamepadButtonPress(GamepadButtonMap);
+        }
+
+        //Button Down
+        if(buttonDown && this.Receiver.controller.onGamepadButtonDown) {
+            this.Receiver.controller.onGamepadButtonDown(GamepadButtonMap);
+        }
+
+        //Button Released
+        if(buttonReleased && this.Receiver.controller.onGamepadButtonUp) {
+            this.Receiver.controller.onGamepadButtonUp(GamepadButtonMap);
+        }
+
+        //moved control sticks
+        if(stickMoved && this.Receiver.controller.onGamepadAxis) {
+            this.Receiver.controller.onGamepadAxis(GamepadAxisMap);
+        }
+
+        this.resetButtons();
 
         this.LoadControllers().then((controllers) => {
             this.Gamepads = controllers;
@@ -558,12 +464,8 @@ class GameControllerHandler {
         this.Gamepad = this.Gamepads[this.Gamepad.index];
         this.Timer = window.requestAnimationFrame(this.queryGamepad);
     }
-
-    protected buttonPressed(b:GamepadButton) : boolean {
-        return b.pressed;
-    }
 }
 
+//export a single instance
 const GameController = new GameControllerHandler();
-
 export default GameController;

@@ -2,9 +2,10 @@ import {createStore} from 'redux'
 import vars, { AnthemRecord } from 'tools/vars';
 import DataController from './DataController';
 import {startTimeout} from 'tools/functions';
-import { IGamepadButtonMap } from './GameController';
+import { IGamepadButtonMap, IGamepadAxes } from './GameController';
 import ScoreboardController from './ScoreboardController';
 import RosterController from './RosterController';
+import keycodes from 'tools/keycodes';
 
 export enum Actions {
     SET_STATE,
@@ -22,6 +23,7 @@ export enum Actions {
     SET_ANNOUNCERS,
     SET_STREAM_CONTROL,
     SET_DISPLAY_CONTROL,
+    SET_CONTROL,
     TOGGLE_SLIDESHOW,
     TOGGLE_SCOREBOARD,
     TOGGLE_JAM_CLOCK,
@@ -39,6 +41,16 @@ export enum Actions {
     TOGGLE_SCOREBOARD_LIGHT,
     TOGGLE_SCOREKEEPER,
     TOGGLE_SPONSOR_VIEW
+}
+
+export enum CapturePanels {
+    SCOREBOARD,
+    ROSTER,
+    ANNOUNCER,
+    ANTHEM,
+    CAMERA,
+    PENALTY,
+    SCOREKEEPER,
 }
 
 export enum StreamControls {
@@ -101,6 +113,7 @@ export interface CaptureControllerState {
     className:string;
     StreamControl:string;
     DisplayControl:string;
+    Control:number;
     Announcers:CaptureStateAnnouncer;
     Monitor:CaptureStateMonitor;
     Scoreboard:CaptureStateScoreboard;
@@ -114,11 +127,12 @@ export interface CaptureControllerState {
     NationalAnthem:CaptureStateAnthem;
     Raffle:CaptureStateBase;
     Roster:CaptureStateBase;
-    Scorekeeper:CaptureStateBase
+    Scorekeeper:CaptureStateBase;
 }
 
 export const InitState:CaptureControllerState = {
     className:'',
+    Control:0,
     StreamControl:StreamControls.SCOREBOARD,
     DisplayControl:DisplayControls.ANTHEM,
     Monitor:{
@@ -278,6 +292,12 @@ function CaptureReducer(state:CaptureControllerState = InitState, action) {
                 DisplayControl:action.value
             });
         }
+
+        case Actions.SET_CONTROL : {
+            return Object.assign({}, state, {
+                Control:action.value
+            });
+        }
         
         //toggle slideshow visibility
         case Actions.TOGGLE_SLIDESHOW :
@@ -412,6 +432,17 @@ const Timers:CaptureTimers = {
 
 const CaptureController = {
     Key:"CC",
+    /**
+     * Number of controllers available to the user
+     */
+    PanelSize:0,
+
+    Init() {
+        for(var key in CapturePanels) {
+            if(typeof(CapturePanels[key]) === 'number')
+                CaptureController.PanelSize++;
+        }
+    },
 
     /**
      * Sets the state of the capture controller.
@@ -688,6 +719,17 @@ const CaptureController = {
     },
 
     /**
+     * Sets the current control for the capture control form
+     * @param control number
+     */
+    SetCurrentControl(control:number) {
+        CaptureController.getStore().dispatch({
+            type:Actions.SET_CONTROL,
+            value:control
+        });
+    },
+
+    /**
      * Sets the current stream control for the capture control form
      * @param control string
      */
@@ -869,20 +911,208 @@ const CaptureController = {
     },
 
     /**
+     * Triggered when the capture controller receives the KeyUp event from the user
+     * @param ev KeyEvent
+     */
+    onKeyUp(ev:any) {
+
+        const state = CaptureController.getState();
+
+        switch(ev.keyCode) {
+            case keycodes.PAGEDOWN : {
+                CaptureController.__nextControl();
+                return;
+            }
+            break;
+
+            case keycodes.PAGEUP : {
+                CaptureController.__prevControl();
+                return;
+            }
+            break;
+
+            case keycodes.V : {
+                switch(state.Control) {
+                    case CapturePanels.SCOREBOARD :
+                        CaptureController.ToggleScorebanner();
+                    break;
+
+                    case CapturePanels.ROSTER :
+                        CaptureController.ToggleRoster();
+                    break;
+
+                    case CapturePanels.ANNOUNCER :
+                        CaptureController.ToggleAnnouncers();
+                    break;
+
+                    case CapturePanels.ANTHEM :
+                        CaptureController.ToggleNationalAnthem();
+                    break;
+
+                    case CapturePanels.CAMERA :
+                        CaptureController.ToggleMainCamera();
+                    break;
+
+                    case CapturePanels.PENALTY :
+                        CaptureController.TogglePenaltyTracker();
+                    break;
+
+                    case CapturePanels.SCOREKEEPER :
+                        CaptureController.ToggleScorekeeper();
+                    break;
+                }
+
+                return;
+            }
+            break;
+
+            default : break;
+        }
+
+        //send command up to controller
+        switch(state.Control) {
+            case CapturePanels.SCOREBOARD :
+                ScoreboardController.onKeyUp(ev);
+            break;
+            case CapturePanels.ROSTER :
+                RosterController.onKeyUp(ev);
+            break;
+            default : break;
+        }
+    },
+
+    /**
      * Triggered when the user presses a controller button
      * @param buttons IGamepadButtonMap
      */
     onGamepadButtonPress(buttons:IGamepadButtonMap) {
+
+        //L3
+        if(buttons.L3.pressed) {
+            CaptureController.__prevControl();
+            return;
+        }
+
+        //R3
+        if(buttons.R3.pressed) {
+            CaptureController.__nextControl();
+            return;
+        }
+
         const state = CaptureController.getState();
 
         //send command up to controller
-        switch(state.StreamControl) {
-            case StreamControls.SCOREBOARD :
+        switch(state.Control) {
+            //Scoreboard / Scorebanner
+            case CapturePanels.SCOREBOARD :
+                if(buttons.Y.pressed) {
+                    CaptureController.ToggleScorebanner();
+                    return;
+                }
                 ScoreboardController.onGamepadButtonPress(buttons);
             break;
-            case StreamControls.ROSTER :
+            //Roster / Intros
+            case CapturePanels.ROSTER :
                 RosterController.onGamepadButtonPress(buttons);
             break;
+
+            //Announcers
+            case CapturePanels.ANNOUNCER : {
+                if(buttons.Y.pressed) {
+                    CaptureController.ToggleAnnouncers();
+                    return;
+                }
+            }
+            break;
+
+            //National Anthem
+            case CapturePanels.ANTHEM : {
+                //Toggle visibility
+                if(buttons.Y.pressed) {
+                    CaptureController.ToggleNationalAnthem();
+                    return;
+                }
+
+                //Toggle Banner
+                if(buttons.B.pressed) {
+                    if(state.NationalAnthem.className === 'banner')
+                        CaptureController.SetNationalAnthemClass('');
+                    else
+                        CaptureController.SetNationalAnthemClass('banner');
+                    return;
+                }
+
+                //select previous anthem singer
+                if(buttons.UP.pressed) {
+                    let singers:Array<AnthemRecord> = DataController.getAnthemSingers(true);
+                    let sindex:number = 0;
+                    if(state.NationalAnthem.Record.RecordID > 0) {
+                        let index:number = singers.findIndex((singer) => {
+                            return (singer.RecordID === state.NationalAnthem.Record.RecordID)
+                        });
+                        index--;
+                        if(index < 0)
+                            index = singers.length - 1;
+                        sindex = index;
+                    } else if(singers.length >= 1) {
+                        sindex = 0;
+                    }
+
+                    if(singers[sindex] !== undefined)
+                        CaptureController.SetNationalAnthemSinger(singers[sindex]);
+                    return;
+                }
+
+                //select next anthem singer
+                if(buttons.DOWN.pressed) {
+                    let singers:Array<AnthemRecord> = DataController.getAnthemSingers(true);
+                    let sindex:number = 0;
+                    if(state.NationalAnthem.Record.RecordID > 0) {
+                        let index:number = singers.findIndex((singer) => {
+                            return (singer.RecordID === state.NationalAnthem.Record.RecordID)
+                        });
+                        index++;
+                        if(index >= singers.length)
+                            index = 0;
+                        sindex = index;
+                    } else if(singers.length >= 1) {
+                        sindex = 0;
+                    }
+
+                    if(singers[sindex] !== undefined)
+                        CaptureController.SetNationalAnthemSinger(singers[sindex]);
+                    return;
+                }
+            }
+            break;
+
+            //Camera
+            case CapturePanels.CAMERA : {
+                if(buttons.Y.pressed) {
+                    CaptureController.ToggleMainCamera();
+                    return;
+                }
+            }
+            break;
+
+            //Penalty Tracker
+            case CapturePanels.PENALTY : {
+                if(buttons.Y.pressed) {
+                    CaptureController.TogglePenaltyTracker();
+                    return;
+                }
+            }
+            break;
+
+            //Scorekeeper
+            case CapturePanels.SCOREKEEPER : {
+                if(buttons.Y.pressed) {
+                    CaptureController.ToggleScorekeeper();
+                    return;
+                }
+            }
+            break;
+
             default : break;
         }
     },
@@ -892,56 +1122,41 @@ const CaptureController = {
      * @param buttons IGamepadButtonMap
      */
     onGamepadButtonDown(buttons:IGamepadButtonMap) {
-        const state = CaptureController.getState();
-        //L2 held down
-        if(buttons.L2.pressed && buttons.L2.frames%30 === 0) {
-            switch(state.StreamControl) {
-                case StreamControls.SCOREBOARD :
-                    CaptureController.SetStreamControl(StreamControls.ROSTER);
-                break;
-                case StreamControls.ROSTER :
-                    CaptureController.SetStreamControl(StreamControls.SCOREBOARD);
-                break;
-                default :
-                    CaptureController.SetStreamControl(StreamControls.SCOREBOARD);
-                break;
-            }
-            return;
-        }
+        
+    },
 
-        //R2 held down
-        if(buttons.R2.pressed && buttons.R2.frames%30 === 0) {
-            switch(state.DisplayControl) {
-                case DisplayControls.ANNOUNCERS :
-                    CaptureController.SetDisplayControl(DisplayControls.ANTHEM);
-                break;
-                case DisplayControls.ANTHEM :
-                    CaptureController.SetDisplayControl(DisplayControls.CAMERA);
-                break;
-                case DisplayControls.CAMERA :
-                    CaptureController.SetDisplayControl(DisplayControls.PENALTY);
-                break;
-                case DisplayControls.PENALTY :
-                    CaptureController.SetDisplayControl(DisplayControls.SCOREKEEPER);
-                break;
-                case DisplayControls.SCOREKEEPER :
-                    CaptureController.SetDisplayControl(DisplayControls.ANNOUNCERS);
-                break;
-                default : 
-                    CaptureController.SetDisplayControl(DisplayControls.ANNOUNCERS);
-                break;
-            }
-            return;
-        }
+    /**
+     * Triggered when the control stick value has changed
+     * @param buttons IGamepadButtonMap
+     */
+    onGamepadAxis(buttons:IGamepadAxes) {
+        // if(buttons.RSTICK.x === -1 && (buttons.RSTICK.y < 0.2 || buttons.RSTICK.y > -0.2)) {
+        //     CaptureController.__prevControl();
+        // } else if(buttons.RSTICK.x === 1 && (buttons.RSTICK.y < 0.2 || buttons.RSTICK.y > -0.2)) {
+        //     CaptureController.__nextControl();
+        // }
+    },
 
-        switch(state.StreamControl) {
-            case 'scorebanner' :
-                ScoreboardController.onGamepadButtonDown(buttons);
-            break;
-            case 'roster' :
-                RosterController.onGamepadButtonDown(buttons);
-            break;
-        }
+    /**
+     * Moves control of the keyboard / game controls to the next panel
+     */
+    __nextControl() {
+        let control:number = CaptureController.getState().Control;
+        control++;
+        if(control >= CaptureController.PanelSize)
+            control = 0;
+        CaptureController.SetCurrentControl(control);
+    },
+
+    /**
+     * Moves control of the keyboard / game controls to the previous panel
+     */
+    __prevControl() {
+        let control:number = CaptureController.getState().Control;
+        control--;
+        if(control < 0)
+            control = CaptureController.PanelSize - 1;
+        CaptureController.SetCurrentControl(control);
     },
     
     getState() {

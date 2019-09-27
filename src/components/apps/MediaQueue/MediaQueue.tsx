@@ -101,6 +101,8 @@ class MediaQueue extends React.PureComponent<any, SMediaQueue> {
     remoteVideo:Function
     remoteStatus:Function
 
+    protected RaffleItem:React.RefObject<Raffle> = React.createRef();
+
     /**
      * Constructs the component.
      * @param {Object} props 
@@ -608,7 +610,7 @@ class MediaQueue extends React.PureComponent<any, SMediaQueue> {
                             src={IconTicket}
                             onClick={() => {this.setRecordset('');}}
                         >Raffle</IconButton>
-                        <Raffle opened={true}/>
+                        <Raffle opened={true} ref={this.RaffleItem}/>
                     </div>
                 </div>
             </Panel>

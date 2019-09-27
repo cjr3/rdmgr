@@ -187,6 +187,8 @@ class CaptureControlPenaltyTracker extends React.PureComponent<PCaptureControlPa
                 toggle={this.props.toggle}
                 shown={this.state.Shown}
                 buttons={buttons}
+                onClickControl={this.props.onClickControl}
+                controlled={this.props.controlled}
                 onClick={this.props.onClick}>
                     {skaters}
                 </CaptureControlPanel>

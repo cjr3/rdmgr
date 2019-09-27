@@ -1628,6 +1628,7 @@ const ScoreboardController = {
         }
 
         //L3
+        /*
         if(buttons.L3.pressed) {
             if(buttons.R2.pressed) {
                 ScoreboardController.SetTeamStatus(state.TeamA, vars.Team.Status.Challenge);
@@ -1645,7 +1646,7 @@ const ScoreboardController = {
                 ScoreboardController.SetTeamStatus(state.TeamB, vars.Team.Status.Timeout);
             }
             return;
-        }
+        }*/
 
         //A
         if(buttons.A.pressed) {

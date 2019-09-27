@@ -138,6 +138,10 @@ class Raffle extends React.PureComponent<any, SRaffle> {
                 }
             break;
 
+            case keycodes.F12 :
+                CaptureController.ToggleRaffle();
+            break;
+
             default :
             break;
         }

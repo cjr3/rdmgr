@@ -4,6 +4,7 @@ import ScoreboardController from 'controllers/ScoreboardController';
 import {SkaterRecord} from 'tools/vars';
 import { IGamepadButtonMap } from './GameController';
 import CaptureController from './CaptureController';
+import keycodes from 'tools/keycodes';
 
 const SET_STATE = 'SET_STATE';
 const SET_TEAM = 'SET_TEAM';
@@ -375,8 +376,26 @@ const RosterController = {
         })
     },
 
-    onKeyUp(e) {
-
+    /**
+     * Triggered when the user presses a key on the keyboard
+     * @param ev KeyEvent
+     */
+    onKeyUp(ev) {
+        switch(ev.keyCode) {
+            case keycodes.ENTER :
+            case keycodes.SPACEBAR :
+            case keycodes.RIGHT :
+            case keycodes.DOWN :
+                RosterController.Next();
+            break;
+            case keycodes.UP :
+            case keycodes.LEFT :
+                RosterController.Prev();
+            break;
+            case keycodes.V :
+                CaptureController.ToggleRoster();
+            break;
+        }
     },
 
     /**
@@ -385,7 +404,7 @@ const RosterController = {
      */
     onGamepadButtonPress(buttons:IGamepadButtonMap) {
         //LEFT
-        if(buttons.LEFT.pressed || buttons.UP.pressed) {
+        if(buttons.LEFT.pressed || buttons.UP.pressed || buttons.L1.pressed) {
             if(buttons.R2.pressed) {
                 RosterController.SetSkater('A', -1);
                 CaptureController.SetRosterVisibility(false);
@@ -396,7 +415,7 @@ const RosterController = {
         }
 
         //RIGHT
-        if(buttons.RIGHT.pressed || buttons.DOWN.pressed) {
+        if(buttons.RIGHT.pressed || buttons.DOWN.pressed || buttons.R1.pressed) {
             RosterController.Next();
             return;
         }

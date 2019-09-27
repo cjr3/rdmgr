@@ -7,19 +7,19 @@ interface SCaptureControlAnnouncers {
     /**
      * Name of the first announcer
      */
-    Announcer1:string,
+    Announcer1:string;
     /**
      * Name of the second announcer
      */
-    Announcer2:string,
+    Announcer2:string;
     /**
      * How long, in seconds, to display the announcer names
      */
-    Duration:number,
+    Duration:number;
     /**
      * Determines if the announcer names are shown or not
      */
-    Shown:boolean
+    Shown:boolean;
 }
 
 /**
@@ -144,6 +144,8 @@ class CaptureControlAnnouncers extends React.PureComponent<PCaptureControlPanel,
                 toggle={this.props.toggle}
                 shown={this.state.Shown}
                 buttons={buttons}
+                onClickControl={this.props.onClickControl}
+                controlled={this.props.controlled}
                 onClick={this.props.onClick}>
                     <p>Announcer #1:</p>
                     <div>

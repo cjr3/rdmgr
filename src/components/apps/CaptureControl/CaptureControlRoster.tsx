@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { ReactElement } from 'react';
+import ReactDOM from 'react-dom';
 import RosterController from 'controllers/RosterController';
 import ScoreboardController from 'controllers/ScoreboardController';
 import CaptureController from 'controllers/CaptureController';
@@ -17,13 +18,14 @@ import {
 } from 'components/Elements';
 
 interface SCaptureControlRoster {
-    Shown:boolean,
-    CurrentTeam:string,
-    SkaterIndex:number,
-    TeamA:any,
-    TeamB:any,
-    SkatersA:any,
-    SkatersB:any
+    Shown:boolean;
+    CurrentTeam:string;
+    SkaterIndex:number;
+    TeamA:any;
+    TeamB:any;
+    SkatersA:any;
+    SkatersB:any;
+    ScrollPosition:number;
 }
 
 /**
@@ -38,12 +40,17 @@ class CaptureControlRoster extends React.PureComponent<PCaptureControlPanel, SCa
         TeamA:ScoreboardController.getState().TeamA,
         TeamB:ScoreboardController.getState().TeamB,
         SkatersA:RosterController.getState().TeamA.Skaters,
-        SkatersB:RosterController.getState().TeamB.Skaters
+        SkatersB:RosterController.getState().TeamB.Skaters,
+        ScrollPosition:0
     }
 
     remoteState:Function
     remoteCapture:Function
     remoteScoreboard:Function
+
+    protected RecordsItem:React.RefObject<HTMLDivElement> = React.createRef();
+    protected CurrentRecord:React.ReactElement|null = null;
+    protected RecordItem:React.RefObject<HTMLDivElement> = React.createRef();
 
     constructor(props) {
         super(props);
@@ -97,37 +104,6 @@ class CaptureControlRoster extends React.PureComponent<PCaptureControlPanel, SCa
      */
     onClickNext() {
         RosterController.Next();
-        return;
-        let team = this.state.CurrentTeam;
-        let index = this.state.SkaterIndex;
-        if(!this.state.Shown && team === 'A' && index < 0) {
-            CaptureController.ToggleRoster();
-            return;
-        }
-
-        if(!this.state.Shown && team === 'B' && (index+1) >= this.state.SkatersB.length) {
-             RosterController.SetSkater('A', -1);
-             return;
-        }
-
-        if(team === 'A' && (index+1) >= this.state.SkatersA.length) {
-            if(this.state.Shown) {
-                CaptureController.ToggleRoster();
-            } else {
-                RosterController.Next();
-                CaptureController.ToggleRoster();
-            }
-        } else {
-            if(this.state.Shown) {
-                if(team === 'B' && (index+1) >= this.state.SkatersB.length) {
-                    CaptureController.ToggleRoster();
-                } else {
-                    RosterController.Next();
-                }
-            } else {
-                CaptureController.ToggleRoster();
-            }
-        }
     }
 
     /**
@@ -135,35 +111,12 @@ class CaptureControlRoster extends React.PureComponent<PCaptureControlPanel, SCa
      */
     onClickPrev() {
         RosterController.Prev();
-        return;
-        let team = this.state.CurrentTeam;
-        let index = this.state.SkaterIndex;
-        if(team === 'A' && index < 0) {
-            CaptureController.ToggleRoster();
-            return;
-        } else if(team === 'A' && (index - 1) === -1) {
-            RosterController.Prev();
-            return;
-        }
+    }
 
-        if(team === 'B' && (index-1) === -1) {
-            RosterController.Prev();
-            return;
-        }
-        
-        if(team === 'B' && (index-1) < 0) {
-            if(this.state.Shown) {
-                CaptureController.ToggleRoster();
-            } else {
-                RosterController.Prev();
-                CaptureController.ToggleRoster();
-            }
-        } else {
-            if(this.state.Shown) {
-                RosterController.Prev();
-            } else {
-                CaptureController.ToggleRoster();
-            }
+    componentDidUpdate() {
+        if(this.RecordItem !== null && this.RecordItem.current !== null
+            && this.RecordsItem !== null && this.RecordsItem.current !== null) {
+            this.RecordItem.current.scrollIntoView({behavior:"smooth"});
         }
     }
 
@@ -171,7 +124,7 @@ class CaptureControlRoster extends React.PureComponent<PCaptureControlPanel, SCa
      * Renders the component.
      */
     render() {
-        var skaters = [
+        let skaters:Array<React.ReactElement> = [
             <Button
                 key="team-a"
                 active={(this.state.CurrentTeam === 'A' && this.state.SkaterIndex < 0 && this.state.Shown)}
@@ -180,12 +133,15 @@ class CaptureControlRoster extends React.PureComponent<PCaptureControlPanel, SCa
                     RosterController.SetSkater('A', -1)
                 }}
                 >
-                    <div className="num">
-                        <img src={DataController.mpath(this.state.TeamA.Thumbnail, false)} alt=""/>
+                    <div ref={(this.state.CurrentTeam === 'A' && this.state.SkaterIndex < 0 && this.state.Shown) ? this.RecordItem : null}>
+                        <div className="num">
+                            <img src={DataController.mpath(this.state.TeamA.Thumbnail, false)} alt=""/>
+                        </div>
+                        <div className="name">{this.state.TeamA.Name}</div>
                     </div>
-                    <div className="name">{this.state.TeamA.Name}</div>
                 </Button>
         ];
+        this.CurrentRecord = skaters[0];
 
         this.state.SkatersA.forEach((skater, index) => {
             skaters.push(
@@ -197,10 +153,14 @@ class CaptureControlRoster extends React.PureComponent<PCaptureControlPanel, SCa
                         RosterController.SetSkater('A', index)
                     }}
                     >
-                        <div className="num">{skater.Number}</div>
-                        <div className="name">{skater.Name}</div>
+                        <div ref={(this.state.CurrentTeam === 'A' && this.state.SkaterIndex === index && this.state.Shown) ? this.RecordItem : null}>
+                            <div className="num">{skater.Number}</div>
+                            <div className="name">{skater.Name}</div>
+                        </div>
                     </Button>
             );
+            if(this.state.CurrentTeam === 'A' && this.state.SkaterIndex === index)
+                this.CurrentRecord = skaters[skaters.length - 1];
         });
 
         skaters.push(
@@ -212,12 +172,17 @@ class CaptureControlRoster extends React.PureComponent<PCaptureControlPanel, SCa
                     RosterController.SetSkater('B', -1)
                 }}
                 >
-                    <div className="num">
-                        <img src={DataController.mpath(this.state.TeamB.Thumbnail, false)} alt=""/>
+                    <div ref={(this.state.CurrentTeam === 'B' && this.state.SkaterIndex < 0 && this.state.Shown) ? this.RecordItem : null}>
+                        <div className="num">
+                            <img src={DataController.mpath(this.state.TeamB.Thumbnail, false)} alt=""/>
+                        </div>
+                        <div className="name">{this.state.TeamB.Name}</div>
                     </div>
-                    <div className="name">{this.state.TeamB.Name}</div>
                 </Button>
         );
+
+        if(this.state.CurrentTeam === 'B' && this.state.SkaterIndex < 0 && this.state.Shown)
+            this.CurrentRecord = skaters[skaters.length - 1];
 
         this.state.SkatersB.forEach((skater, index) => {
             skaters.push(
@@ -229,13 +194,17 @@ class CaptureControlRoster extends React.PureComponent<PCaptureControlPanel, SCa
                         RosterController.SetSkater('B', index)
                     }}
                     >
-                        <div className="num">{skater.Number}</div>
-                        <div className="name">{skater.Name}</div>
+                        <div ref={(this.state.CurrentTeam === 'B' && this.state.SkaterIndex === index && this.state.Shown) ? this.RecordItem : null}>
+                            <div className="num">{skater.Number}</div>
+                            <div className="name">{skater.Name}</div>
+                        </div>
                     </Button>
             );
+            if(this.state.CurrentTeam === 'B' && this.state.SkaterIndex === index)
+                this.CurrentRecord = skaters[skaters.length - 1];
         });
 
-        var buttons = [
+        let buttons:Array<React.ReactElement> = [
             <IconButton
                 key="btn-load"
                 src={IconLoop}
@@ -271,8 +240,10 @@ class CaptureControlRoster extends React.PureComponent<PCaptureControlPanel, SCa
                 toggle={CaptureController.ToggleRoster}
                 shown={this.state.Shown}
                 buttons={buttons}
+                onClickControl={this.props.onClickControl}
+                controlled={this.props.controlled}
                 onClick={this.props.onClick}>
-                <div className="record-list roster-skaters">
+                <div className="record-list roster-skaters" ref={this.RecordsItem}>
                     {skaters}
                 </div>
             </CaptureControlPanel>
