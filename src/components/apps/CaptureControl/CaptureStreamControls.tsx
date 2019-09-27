@@ -1,5 +1,5 @@
 import React from 'react';
-import CaptureController from 'controllers/CaptureController';
+import CaptureController, {StreamControls} from 'controllers/CaptureController';
 import CaptureControlRoster from './CaptureControlRoster';
 import CaptureControlScorebanner from './CaptureControlScorebanner';
 
@@ -18,30 +18,59 @@ interface SCaptureStreamControls {
  * - YouTube Chat
  */
 class CaptureStreamControls extends React.PureComponent<any, SCaptureStreamControls> {
-    constructor(props) {
-        super(props);
-        this.state = {
-            currentControl:'scorebanner'
-        };
+    readonly state:SCaptureStreamControls = {
+        currentControl:CaptureController.getState().StreamControl
     }
 
+    protected remoteState:Function|null = null;
+
+    constructor(props) {
+        super(props);
+        this.updateState = this.updateState.bind(this);
+    }
+
+    updateState() {
+        this.setState({
+            currentControl:CaptureController.getState().StreamControl
+        })
+    }
+
+    /**
+     * Triggered when the component mounts to the DOM
+     */
+    componentDidMount() {
+        this.remoteState = CaptureController.subscribe(this.updateState);
+    }
+
+    /**
+     * Triggered when the component will unmount from the DOM
+     */
+    componentWillUnmount() {
+        if(this.remoteState)
+            this.remoteState();
+    }
+
+    /**
+     * Renders the component
+     */
     render() {
         return (
             <div className="config-panels stream">
                 <CaptureControlScorebanner
                     icon={IconSkate}
-                    active={(this.state.currentControl === 'scorebanner')}
+                    active={(this.state.currentControl === StreamControls.SCOREBOARD)}
                     name="Scorebanner"
                     toggle={CaptureController.ToggleScorebanner}
                     onClick={() => {
-                        this.setState({currentControl:'scorebanner'});
+                        CaptureController.SetStreamControl(StreamControls.SCOREBOARD);
                     }}
                 />
                 <CaptureControlRoster
                     name="Intros"
-                    active={(this.state.currentControl === 'roster')}
+                    active={(this.state.currentControl === StreamControls.ROSTER)}
                     onClick={() => {
-                        this.setState({currentControl:'roster'})
+                        //this.setState({currentControl:'roster'})
+                        CaptureController.SetStreamControl(StreamControls.ROSTER);
                     }}
                 />
             </div>

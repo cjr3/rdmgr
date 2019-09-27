@@ -96,6 +96,8 @@ class CaptureControlRoster extends React.PureComponent<PCaptureControlPanel, SCa
      * 
      */
     onClickNext() {
+        RosterController.Next();
+        return;
         let team = this.state.CurrentTeam;
         let index = this.state.SkaterIndex;
         if(!this.state.Shown && team === 'A' && index < 0) {
@@ -132,6 +134,8 @@ class CaptureControlRoster extends React.PureComponent<PCaptureControlPanel, SCa
      * 
      */
     onClickPrev() {
+        RosterController.Prev();
+        return;
         let team = this.state.CurrentTeam;
         let index = this.state.SkaterIndex;
         if(team === 'A' && index < 0) {
@@ -170,7 +174,7 @@ class CaptureControlRoster extends React.PureComponent<PCaptureControlPanel, SCa
         var skaters = [
             <Button
                 key="team-a"
-                active={(this.state.CurrentTeam === 'A' && this.state.SkaterIndex < 0)}
+                active={(this.state.CurrentTeam === 'A' && this.state.SkaterIndex < 0 && this.state.Shown)}
                 className="skater"
                 onDoubleClick={() => {
                     RosterController.SetSkater('A', -1)
@@ -202,7 +206,7 @@ class CaptureControlRoster extends React.PureComponent<PCaptureControlPanel, SCa
         skaters.push(
             <Button
                 key="team-b"
-                active={(this.state.CurrentTeam === 'B' && this.state.SkaterIndex < 0)}
+                active={(this.state.CurrentTeam === 'B' && this.state.SkaterIndex < 0 && this.state.Shown)}
                 className="skater"
                 onDoubleClick={() => {
                     RosterController.SetSkater('B', -1)

@@ -2,6 +2,9 @@ import {createStore} from 'redux'
 import vars, { AnthemRecord } from 'tools/vars';
 import DataController from './DataController';
 import {startTimeout} from 'tools/functions';
+import { IGamepadButtonMap } from './GameController';
+import ScoreboardController from './ScoreboardController';
+import RosterController from './RosterController';
 
 export enum Actions {
     SET_STATE,
@@ -14,8 +17,11 @@ export enum Actions {
     SET_PENALTY_TRACKER,
     SET_ANTHEM,
     SET_RAFFLE,
+    SET_ROSTER,
     SET_CLASS_NAME,
     SET_ANNOUNCERS,
+    SET_STREAM_CONTROL,
+    SET_DISPLAY_CONTROL,
     TOGGLE_SLIDESHOW,
     TOGGLE_SCOREBOARD,
     TOGGLE_JAM_CLOCK,
@@ -35,69 +41,86 @@ export enum Actions {
     TOGGLE_SPONSOR_VIEW
 }
 
+export enum StreamControls {
+    SCOREBOARD = 'scorebanner',
+    ROSTER = 'roster'
+}
+
+export enum DisplayControls {
+    ANNOUNCERS = 'annoucners',
+    ANTHEM = 'anthem',
+    CAMERA = 'camera',
+    PENALTY = 'penalty',
+    SCOREKEEPER = 'scorekeeper'
+}
+
 export interface CaptureStateBase {
-    Shown:boolean,
-    className:string
+    Shown:boolean;
+    className:string;
 }
 
 export interface CaptureStateAnnouncer extends CaptureStateBase {
-    Announcer1:string,
-    Announcer2:string,
+    Announcer1:string;
+    Announcer2:string;
     Duration:number
 }
 
 export interface CaptureStateMonitor extends CaptureStateBase {
-    ID:string,
-    Width:number,
-    Height:number
+    ID:string;
+    Width:number;
+    Height:number;
 }
 
 export interface CaptureStateScoreboard extends CaptureStateBase {
-    Light:boolean,
-    JamCounterShown:boolean,
-    JamClockShown:boolean
+    Light:boolean;
+    JamCounterShown:boolean;
+    JamClockShown:boolean;
 }
 
 export interface CaptureStateScorebanner extends CaptureStateBase {
-    ClocksShown:boolean,
+    ClocksShown:boolean;
     /**
      * Background image for the scorebanner
      */
-    BackgroundImage?:string
+    BackgroundImage?:string;
 }
 
 export interface CaptureStateSponsor extends CaptureStateBase {
-    Delay:number
+    Delay:number;
 }
 
 export interface CaptureStatePenalty extends CaptureStateBase {
-    Duration:number
+    Duration:number;
 }
 
 export interface CaptureStateAnthem extends CaptureStateBase {
-    Record:AnthemRecord
+    Record:AnthemRecord;
 }
 
 export interface CaptureControllerState {
-    className:string,
-    Announcers:CaptureStateAnnouncer,
-    Monitor:CaptureStateMonitor,
-    Scoreboard:CaptureStateScoreboard,
-    Scorebanner:CaptureStateScorebanner,
-    MainCamera:CaptureStateBase,
-    PeerCamera:CaptureStateBase,
-    MainVideo:CaptureStateBase,
-    SponsorSlideshow:CaptureStateSponsor,
-    MainSlideshow:CaptureStateBase,
-    PenaltyTracker:CaptureStatePenalty,
-    NationalAnthem:CaptureStateAnthem,
-    Raffle:CaptureStateBase,
-    Roster:CaptureStateBase,
+    className:string;
+    StreamControl:string;
+    DisplayControl:string;
+    Announcers:CaptureStateAnnouncer;
+    Monitor:CaptureStateMonitor;
+    Scoreboard:CaptureStateScoreboard;
+    Scorebanner:CaptureStateScorebanner;
+    MainCamera:CaptureStateBase;
+    PeerCamera:CaptureStateBase;
+    MainVideo:CaptureStateBase;
+    SponsorSlideshow:CaptureStateSponsor;
+    MainSlideshow:CaptureStateBase;
+    PenaltyTracker:CaptureStatePenalty;
+    NationalAnthem:CaptureStateAnthem;
+    Raffle:CaptureStateBase;
+    Roster:CaptureStateBase;
     Scorekeeper:CaptureStateBase
 }
 
 export const InitState:CaptureControllerState = {
     className:'',
+    StreamControl:StreamControls.SCOREBOARD,
+    DisplayControl:DisplayControls.ANTHEM,
     Monitor:{
         Shown:true,
         className:'',
@@ -238,6 +261,23 @@ function CaptureReducer(state:CaptureControllerState = InitState, action) {
             return Object.assign({}, state, {
                 Raffle:Object.assign({}, state.Raffle, action.values)
             });
+
+        case Actions.SET_ROSTER :
+            return Object.assign({}, state, {
+                Roster:Object.assign({}, state.Roster, action.values)
+            });
+
+        case Actions.SET_STREAM_CONTROL : {
+            return Object.assign({}, state, {
+                StreamControl:action.value
+            });
+        }
+
+        case Actions.SET_DISPLAY_CONTROL : {
+            return Object.assign({}, state, {
+                DisplayControl:action.value
+            });
+        }
         
         //toggle slideshow visibility
         case Actions.TOGGLE_SLIDESHOW :
@@ -511,6 +551,17 @@ const CaptureController = {
     },
 
     /**
+     * Sets the roster visibility flag.
+     * @param {Boolean} value 
+     */
+    SetRosterVisibility(value:boolean) {
+        CaptureController.getStore().dispatch({
+            type:Actions.SET_ROSTER,
+            values:{Shown:value}
+        });
+    },
+
+    /**
      * Sets the National Anthem singer and bio.
      * @param {Object} record
      */
@@ -633,6 +684,28 @@ const CaptureController = {
             values:{
                 Shown:value
             }
+        });
+    },
+
+    /**
+     * Sets the current stream control for the capture control form
+     * @param control string
+     */
+    SetStreamControl(control:string) {
+        CaptureController.getStore().dispatch({
+            type:Actions.SET_STREAM_CONTROL,
+            value:control
+        });
+    },
+
+    /**
+     * Sets the current display control for the capture control form
+     * @param control string
+     */
+    SetDisplayControl(control:string) {
+        CaptureController.getStore().dispatch({
+            type:Actions.SET_DISPLAY_CONTROL,
+            value:control
         });
     },
 
@@ -793,6 +866,82 @@ const CaptureController = {
         CaptureController.getStore().dispatch({
             type:Actions.TOGGLE_SPONSOR_VIEW
         });
+    },
+
+    /**
+     * Triggered when the user presses a controller button
+     * @param buttons IGamepadButtonMap
+     */
+    onGamepadButtonPress(buttons:IGamepadButtonMap) {
+        const state = CaptureController.getState();
+
+        //send command up to controller
+        switch(state.StreamControl) {
+            case StreamControls.SCOREBOARD :
+                ScoreboardController.onGamepadButtonPress(buttons);
+            break;
+            case StreamControls.ROSTER :
+                RosterController.onGamepadButtonPress(buttons);
+            break;
+            default : break;
+        }
+    },
+
+    /**
+     * Triggered when the user holds down a controller button
+     * @param buttons IGamepadButtonMap
+     */
+    onGamepadButtonDown(buttons:IGamepadButtonMap) {
+        const state = CaptureController.getState();
+        //L2 held down
+        if(buttons.L2.pressed && buttons.L2.frames%30 === 0) {
+            switch(state.StreamControl) {
+                case StreamControls.SCOREBOARD :
+                    CaptureController.SetStreamControl(StreamControls.ROSTER);
+                break;
+                case StreamControls.ROSTER :
+                    CaptureController.SetStreamControl(StreamControls.SCOREBOARD);
+                break;
+                default :
+                    CaptureController.SetStreamControl(StreamControls.SCOREBOARD);
+                break;
+            }
+            return;
+        }
+
+        //R2 held down
+        if(buttons.R2.pressed && buttons.R2.frames%30 === 0) {
+            switch(state.DisplayControl) {
+                case DisplayControls.ANNOUNCERS :
+                    CaptureController.SetDisplayControl(DisplayControls.ANTHEM);
+                break;
+                case DisplayControls.ANTHEM :
+                    CaptureController.SetDisplayControl(DisplayControls.CAMERA);
+                break;
+                case DisplayControls.CAMERA :
+                    CaptureController.SetDisplayControl(DisplayControls.PENALTY);
+                break;
+                case DisplayControls.PENALTY :
+                    CaptureController.SetDisplayControl(DisplayControls.SCOREKEEPER);
+                break;
+                case DisplayControls.SCOREKEEPER :
+                    CaptureController.SetDisplayControl(DisplayControls.ANNOUNCERS);
+                break;
+                default : 
+                    CaptureController.SetDisplayControl(DisplayControls.ANNOUNCERS);
+                break;
+            }
+            return;
+        }
+
+        switch(state.StreamControl) {
+            case 'scorebanner' :
+                ScoreboardController.onGamepadButtonDown(buttons);
+            break;
+            case 'roster' :
+                RosterController.onGamepadButtonDown(buttons);
+            break;
+        }
     },
     
     getState() {

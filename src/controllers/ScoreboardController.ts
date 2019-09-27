@@ -7,6 +7,7 @@ import DataController from 'controllers/DataController'
 import vars from 'tools/vars'
 import keycodes from 'tools/keycodes'
 import RosterController from './RosterController';
+import { GameButton, IGamepadButtonMap } from './GameController';
 
 export enum Actions {
     SET_STATE,
@@ -24,6 +25,7 @@ export enum Actions {
     SET_PHASE_TIME,
     SET_JAM_COUNTER,
     SET_GAME_TIME,
+    COPY_PHASE_TIME,
     SET_TEAM,
     SET_TEAMS,
     SET_TEAM_COLOR,
@@ -484,11 +486,23 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
                     return state;
             }
 
+        //sets the game clock time
         case Actions.SET_GAME_TIME :
             return Object.assign({}, state, {
                 GameHour:action.hour,
                 GameMinute:action.minute,
                 GameSecond:action.second
+            });
+
+        //sets the game clock time to match the phase time
+        case Actions.COPY_PHASE_TIME :
+            if(state.GameState === vars.Clock.Status.Running || state.JamState === vars.Clock.Status.Running)
+                return state;
+
+            return Object.assign({}, state, {
+                GameHour:state.PhaseHour,
+                GameMinute:state.PhaseMinute,
+                GameSecond:state.PhaseSecond
             });
             
         case Actions.SET_BOARD_STATUS :
@@ -927,6 +941,15 @@ const ScoreboardController = {
             hour:hour,
             minute:minute,
             second:second
+        });
+    },
+
+    /**
+     * Sets the game time
+     */
+    async CopyGameTime() {
+        ScoreboardController.getStore().dispatch({
+            type:Actions.COPY_PHASE_TIME
         });
     },
 
@@ -1502,6 +1525,183 @@ const ScoreboardController = {
         //console.log(MidiControllers[controller.Name][button]);
         if(MidiControllers[controller.Name] && MidiControllers[controller.Name][button]) {
             MidiControllers[controller.Name][button]();
+        }
+    },
+
+    /**
+     * Triggered when the user presses a button on a connected GamePad
+     * @param button GameButton
+     */
+    onGamepadButtonPress(buttons:IGamepadButtonMap) {
+        let state = ScoreboardController.getState();
+        //X
+        if(buttons.X.pressed) {
+            if(buttons.L2.pressed && buttons.R2.pressed) {
+                ScoreboardController.ResetJam();
+            } else {
+                ScoreboardController.ToggleJamClock();
+            }
+            return;
+        }
+
+        //RESET
+        if(buttons.SELECT.pressed 
+            && buttons.START.pressed 
+            && buttons.L2.pressed 
+            && buttons.R2.pressed
+            && buttons.L1.pressed
+            && buttons.R1.pressed
+            ) {
+            ScoreboardController.Reset();
+            return;
+        }
+
+        //Y
+        if(buttons.Y.pressed) {
+            
+            return;
+        }
+
+        //UP - Game Clock / Official Timeout
+        if(buttons.UP.pressed) {
+            if(buttons.R2.pressed) {
+                ScoreboardController.OfficialTimeout();
+            } else {
+                ScoreboardController.ToggleGameClock();
+            }
+            return;
+        }
+
+        //DOWN - Break Clock / Injury Timeout
+        if(buttons.DOWN.pressed) {
+            if(buttons.R2.pressed) {
+                ScoreboardController.InjuryTimeout();
+            } else {
+                ScoreboardController.ToggleBreakClock();
+            }
+
+            return;
+        }
+
+        //LEFT 
+        if(buttons.LEFT.pressed) {
+            if(buttons.L2.pressed) {
+                ScoreboardController.DecreaseJamCounter(1);
+            } else if(buttons.R2.pressed) {
+                ScoreboardController.DecreaseTeamScore(state.TeamA, 1);
+            } else {
+                ScoreboardController.IncreaseTeamScore(state.TeamA, 1);
+            }
+
+            return;
+        }
+
+        //RIGHT 
+        if(buttons.RIGHT.pressed) {
+            if(buttons.L2.pressed) {
+                ScoreboardController.IncreaseJamCounter(1);
+            } else if(buttons.R2.pressed) {
+                ScoreboardController.DecreaseTeamScore(state.TeamB, 1);
+            } else {
+                ScoreboardController.IncreaseTeamScore(state.TeamB, 1);
+            }
+
+            return;
+        }
+
+        //L1
+        if(buttons.L1.pressed) {
+            if(buttons.R2.pressed)
+                ScoreboardController.SetTeamStatus(state.TeamA, vars.Team.Status.PowerJam);
+            else
+                ScoreboardController.SetTeamStatus(state.TeamA, vars.Team.Status.LeadJammer);
+            return;
+        }
+
+        //R1
+        if(buttons.R1.pressed) {
+            if(buttons.R2.pressed)
+                ScoreboardController.SetTeamStatus(state.TeamB, vars.Team.Status.PowerJam);
+            else
+                ScoreboardController.SetTeamStatus(state.TeamB, vars.Team.Status.LeadJammer);
+            return;
+        }
+
+        //L3
+        if(buttons.L3.pressed) {
+            if(buttons.R2.pressed) {
+                ScoreboardController.SetTeamStatus(state.TeamA, vars.Team.Status.Challenge);
+            } else {
+                ScoreboardController.SetTeamStatus(state.TeamA, vars.Team.Status.Timeout);
+            }
+            return;
+        }
+
+        //R3
+        if(buttons.R3.pressed) {
+            if(buttons.R2.pressed) {
+                ScoreboardController.SetTeamStatus(state.TeamB, vars.Team.Status.Challenge);
+            } else {
+                ScoreboardController.SetTeamStatus(state.TeamB, vars.Team.Status.Timeout);
+            }
+            return;
+        }
+
+        //A
+        if(buttons.A.pressed) {
+            ScoreboardController.ToggleConfirm();
+            return;
+        }
+
+        //SELECT
+        if(buttons.SELECT.pressed) {
+            if(buttons.L2.pressed && buttons.R2.pressed) {
+                ScoreboardController.CopyGameTime();
+            } else if(buttons.R2.pressed) {
+                ScoreboardController.DecreasePhase();
+            } else {
+                ScoreboardController.IncreasePhase();
+            }
+            return;
+        }
+
+        //START
+        if(buttons.START.pressed) {
+            if(buttons.L2.pressed && buttons.R2.pressed) {
+                ScoreboardController.ResetJam();
+            }
+            return;
+        }
+    },
+
+    /**
+     * Triggered when the user holds a button down
+     * @param buttons IGamepadButtonMap
+     */
+    onGamepadButtonDown(buttons:IGamepadButtonMap) {
+        let state = ScoreboardController.getState();
+        //LEFT
+        if(buttons.LEFT.pressed && buttons.LEFT.frames%12 === 0) {
+            if(buttons.L2.pressed) {
+                ScoreboardController.DecreaseJamCounter(1);
+            } else if(buttons.R2.pressed) {
+                ScoreboardController.DecreaseTeamScore(state.TeamA, 1);
+            } else {
+                ScoreboardController.IncreaseTeamScore(state.TeamA, 1);
+            }
+            return;
+        }
+
+        //RIGHT
+        if(buttons.RIGHT.pressed && buttons.RIGHT.frames%12 === 0) {
+            if(buttons.L2.pressed) {
+                ScoreboardController.IncreaseJamCounter(1);
+            } else if(buttons.R2.pressed) {
+                ScoreboardController.DecreaseTeamScore(state.TeamB, 1);
+            } else {
+                ScoreboardController.IncreaseTeamScore(state.TeamB, 1);
+            }
+            return;
         }
     },
 

@@ -35,6 +35,8 @@ import SlideshowController from 'controllers/SlideshowController';
 import SponsorController from 'controllers/SponsorController';
 import VideoController from 'controllers/VideoController';
 
+import GameController from 'controllers/GameController';
+
 //inter-process communication
 import IPCX from 'controllers/IPCX';
 
@@ -58,6 +60,7 @@ import ClientDialog from './ClientDialog';
 import {PeerRecordRequest} from 'components/data/PeerEditor';
 import vars from 'tools/vars';
 import CaptureDisplayButtons from 'components/apps/CaptureControl/CaptureDisplayButtons';
+import keycodes from 'tools/keycodes';
 
 interface SClient {
     currentApp:any,
@@ -220,6 +223,7 @@ class Client extends React.PureComponent<any, SClient> {
           return {currentApp:app};
         }, () => {
             DataController.SaveMiscRecord('DefaultApp', this.state.currentApp.key);
+            GameController.Receiver = this.state.currentApp;
         });
     }
 
@@ -248,6 +252,10 @@ class Client extends React.PureComponent<any, SClient> {
 
             break;
         }
+
+        //ignore when windows/super/meta key is held down
+        if(ev.keyCode === keycodes.RWINDOW || ev.keyCode === keycodes.LWINDOW)
+            return;
 
         //send key commands to the active application
         if(this.state.currentApp.controller && this.state.currentApp.controller.onKeyUp)
@@ -643,6 +651,10 @@ class Client extends React.PureComponent<any, SClient> {
         //Show the component
         this.setState(() => {
             return {visible:true};
+        }, () => {
+            GameController.Init();
+            if(this.state.currentApp)
+                GameController.Receiver = this.state.currentApp;
         });
     }
 

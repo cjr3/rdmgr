@@ -1,6 +1,6 @@
 import React from 'react';
 import CameraController from 'controllers/CameraController';
-import CaptureController from 'controllers/CaptureController';
+import CaptureController, {DisplayControls} from 'controllers/CaptureController';
 import ScorekeeperController from 'controllers/ScorekeeperController';
 import PenaltyController from 'controllers/PenaltyController';
 
@@ -42,47 +42,76 @@ type PanelRecord = {
 class CaptureDisplayControls extends React.PureComponent<any, SCaptureDisplayControls> {
 
     readonly state:SCaptureDisplayControls = {
-        currentControl:vars.RecordType.Anthem
+        currentControl:CaptureController.getState().DisplayControl
     }
 
     Panels:any = {
-        ANC:{
+        [DisplayControls.ANNOUNCERS]:{
             type:CaptureControlAnnouncers,
             name:"Announcers",
             icon:IconMic,
             toggle:CaptureController.ToggleAnnouncers
         },
-        [vars.RecordType.Anthem]:{
+        [DisplayControls.ANTHEM]:{
             type:CaptureControlAnthem,
             name:"Anthem",
             icon:IconFlag,
             toggle:CaptureController.ToggleNationalAnthem
         },
-        [CameraController.Key]:{
+        [DisplayControls.CAMERA]:{
             type:CaptureControlCamera,
             name:"Camera",
             icon:IconStreamOff,
             toggle:CaptureController.ToggleMainCamera
         },
-        [PenaltyController.Key]:{
+        [DisplayControls.PENALTY]:{
             type:CaptureControlPenaltyTracker,
             name:"Penalty Tracker",
             icon:IconWhistle,
             toggle:CaptureController.TogglePenaltyTracker
         },
-        [ScorekeeperController.Key]:{
+        [DisplayControls.SCOREKEEPER]:{
             type:CaptureControlScorekeeper,
             name:"Scorekeeper",
             icon:IconClipboard,
             toggle:CaptureController.ToggleScorekeeper
-        },
-        /*
-        [RaffleController.Key]:{
-            type:CaptureControlRaffle,
-            name:"Raffle",
-            icon:IconTicket,
-            toggle:CaptureController.ToggleRaffle
-        }*/
+        }
+    }
+
+    /**
+     * Listener for changes to the remote
+     */
+    protected remoteState:Function|null = null;
+
+    constructor(props) {
+        super(props);
+        this.updateState = this.updateState.bind(this);
+    }
+
+    /**
+     * Updates the state to match the capture controller
+     */
+    protected updateState() {
+        this.setState({
+            currentControl:CaptureController.getState().DisplayControl
+        });
+    }
+
+    /**
+     * Triggered when the component mounts to the DOM
+     * - Listen to the controller
+     */
+    componentDidMount() {
+        this.remoteState = CaptureController.subscribe(this.updateState);
+    }
+
+    /**
+     * Triggered when the component will unmount from the DOM
+     * - Stop listening to the controller
+     */
+    componentWillUnmount() {
+        if(this.remoteState)
+            this.remoteState();
     }
 
     /**
@@ -100,7 +129,8 @@ class CaptureDisplayControls extends React.PureComponent<any, SCaptureDisplayCon
                     icon={panel.icon}
                     active={(this.state.currentControl === pkey)}
                     onClick={() => {
-                        this.setState({currentControl:pkey});
+                        //this.setState({currentControl:pkey});
+                        CaptureController.SetDisplayControl(pkey);
                     }}
                     />
             );

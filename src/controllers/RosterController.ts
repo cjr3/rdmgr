@@ -2,6 +2,8 @@ import {createStore} from 'redux';
 import DataController from 'controllers/DataController';
 import ScoreboardController from 'controllers/ScoreboardController';
 import {SkaterRecord} from 'tools/vars';
+import { IGamepadButtonMap } from './GameController';
+import CaptureController from './CaptureController';
 
 const SET_STATE = 'SET_STATE';
 const SET_TEAM = 'SET_TEAM';
@@ -270,18 +272,94 @@ const RosterController = {
      * Shows the next skater
      */
     Next() {
-        RosterController.getStore().dispatch({
-            type:NEXT_SKATER
-        });
+        let state = RosterController.getState();
+        let capture = CaptureController.getState().Roster;
+        let team = state.CurrentTeam;
+        let index = state.SkaterIndex;
+        if(!capture.Shown && team === 'A' && index < 0) {
+            CaptureController.ToggleRoster();
+            return;
+        }
+
+        if(!capture.Shown && team === 'B' && (index+1) >= state.TeamB.Skaters.length) {
+             RosterController.SetSkater('A', -1);
+             return;
+        }
+
+        if(team === 'A' && (index+1) >= state.TeamA.Skaters.length) {
+            if(capture.Shown) {
+                CaptureController.ToggleRoster();
+            } else {
+                RosterController.getStore().dispatch({
+                    type:NEXT_SKATER
+                });
+                CaptureController.ToggleRoster();
+            }
+        } else {
+            if(capture.Shown) {
+                if(team === 'B' && (index+1) >= state.TeamB.Skaters.length) {
+                    CaptureController.ToggleRoster();
+                } else {
+                    RosterController.getStore().dispatch({
+                        type:NEXT_SKATER
+                    });
+                }
+            } else {
+                CaptureController.ToggleRoster();
+            }
+        }
+        //RosterController.getStore().dispatch({
+        //    type:NEXT_SKATER
+        //});
     },
 
     /**
      * Shows the previous skater
      */
     Prev() {
-        RosterController.getStore().dispatch({
-            type:PREV_SKATER
-        });
+        let state = RosterController.getState();
+        let capture = CaptureController.getState().Roster;
+        let team = state.CurrentTeam;
+        let index = state.SkaterIndex;
+        if(team === 'A' && index < 0) {
+            CaptureController.ToggleRoster();
+            return;
+        } else if(team === 'A' && (index - 1) === -1) {
+            RosterController.getStore().dispatch({
+                type:PREV_SKATER
+            });
+            return;
+        }
+
+        if(team === 'B' && (index-1) === -1) {
+            RosterController.getStore().dispatch({
+                type:PREV_SKATER
+            });
+            return;
+        }
+        
+        if(team === 'B' && (index-1) < 0) {
+            if(capture.Shown) {
+                CaptureController.ToggleRoster();
+            } else {
+                RosterController.getStore().dispatch({
+                    type:PREV_SKATER
+                });
+                CaptureController.ToggleRoster();
+            }
+        } else {
+            if(capture.Shown) {
+                RosterController.getStore().dispatch({
+                    type:PREV_SKATER
+                });
+            } else {
+                CaptureController.ToggleRoster();
+            }
+        }
+
+        // RosterController.getStore().dispatch({
+        //     type:PREV_SKATER
+        // });
     },
 
     /**
@@ -295,6 +373,49 @@ const RosterController = {
             team:team,
             index:index
         })
+    },
+
+    onKeyUp(e) {
+
+    },
+
+    /**
+     * Triggered when the user presses a button on the game controller
+     * @param buttons IGamepadButtonMap
+     */
+    onGamepadButtonPress(buttons:IGamepadButtonMap) {
+        //LEFT
+        if(buttons.LEFT.pressed || buttons.UP.pressed) {
+            if(buttons.R2.pressed) {
+                RosterController.SetSkater('A', -1);
+                CaptureController.SetRosterVisibility(false);
+            } else {
+                RosterController.Prev();
+            }
+            return;
+        }
+
+        //RIGHT
+        if(buttons.RIGHT.pressed || buttons.DOWN.pressed) {
+            RosterController.Next();
+            return;
+        }
+
+        //Y
+        if(buttons.Y.pressed) {
+            CaptureController.ToggleRoster();
+            return;
+        }
+    },
+
+    /**
+     * Triggered when the user holds a button on the game controller
+     * @param buttons IGamepadButtonMap
+     */
+    onGamepadButtonDown(buttons:IGamepadButtonMap) {
+        if(buttons.LEFT.pressed) {
+
+        }
     },
 
     /**
