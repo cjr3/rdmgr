@@ -196,11 +196,15 @@ class ConfigForm extends React.PureComponent<any, SConfigForm> {
             sections.push( section );
         }
 
+        let className = cnames('CFG-app', {
+            record:(this.Applications[this.state.currentApp] !== undefined && this.Applications[this.state.currentApp].record !== null)
+        });
+
         return (
             <Panel
                 opened={this.props.opened}
-                contentName="CFG-app"
-            >
+                contentName={className}
+                >
                 <div className="forms">{forms}</div>
                 <div className="sections">{sections}</div>
             </Panel>

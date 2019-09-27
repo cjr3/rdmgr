@@ -52,6 +52,7 @@ export const IconStar = require('images/icons/star.png');
 export const IconStopwatch = require('images/icons/stopwatch.png');
 export const IconStreamOff = require('images/icons/stream.png');
 export const IconStreamOn = require('images/icons/stream-live.png');
+export const IconCapture = require('images/icons/stream-send.png');
 export const IconShown = require('images/icons/eye-open.png');
 export const IconSubtract = require('images/icons/minus.png');
 export const IconTeam = require('images/icons/team.png');
@@ -133,6 +134,11 @@ class ToggleButtonElement extends React.PureComponent<{
     label?:string,
     title?:string
 }> {
+
+    constructor(props) {
+        super(props);
+    }
+
     /**
      * Renders the component
      */

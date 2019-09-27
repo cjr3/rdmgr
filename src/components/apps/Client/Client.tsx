@@ -13,7 +13,9 @@ import {
     IconTeam,
     IconChat,
     IconMonitor,
-    IconSettings
+    IconSettings,
+    IconShown,
+    IconCapture
 } from 'components/Elements';
 import ClientScorebanner from './ClientScorebanner';
 import cnames from 'classnames'
@@ -55,6 +57,7 @@ import FileBrowser from 'components/tools/FileBrowser';
 import ClientDialog from './ClientDialog';
 import {PeerRecordRequest} from 'components/data/PeerEditor';
 import vars from 'tools/vars';
+import CaptureDisplayButtons from 'components/apps/CaptureControl/CaptureDisplayButtons';
 
 interface SClient {
     currentApp:any,
@@ -62,6 +65,7 @@ interface SClient {
     ConfigShown:boolean,
     ChatShown:boolean,
     FileBrowserShown:boolean,
+    DisplayShown:boolean,
     RecordUpdateShown:boolean,
     RecordUpdatePeerID:string,
     RecordUpdatePeerName:string,
@@ -81,6 +85,7 @@ class Client extends React.PureComponent<any, SClient> {
         ConfigShown:false,
         ChatShown:false,
         FileBrowserShown:false,
+        DisplayShown:false,
         RecordUpdateShown:false,
         RecordUpdatePeerID:'',
         RecordUpdatePeerName:'',
@@ -674,6 +679,15 @@ class Client extends React.PureComponent<any, SClient> {
 
         const recordicons = [
             <Icon
+                src={IconCapture}
+                key="btn-display"
+                title="Display Options"
+                onClick={() => {
+                    this.setState((state) => {
+                        return {DisplayShown:!state.DisplayShown}
+                    });
+                }}/>,
+            <Icon
                 src={IconChat}
                 key="btn-chat"
                 attention={(this.state.UnreadMessageCount >= 1)}
@@ -738,6 +752,15 @@ class Client extends React.PureComponent<any, SClient> {
                         this.setState({RecordUpdateShown:false});
                     }}
                 />
+                <Panel 
+                    popup={true} 
+                    opened={this.state.DisplayShown} 
+                    title="Display Options"
+                    className="display-options">
+                    <div className="record-list">
+                        <CaptureDisplayButtons/>
+                    </div>
+                </Panel>
           </Panel>
         );
     }

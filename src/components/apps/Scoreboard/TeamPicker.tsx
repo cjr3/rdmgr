@@ -122,6 +122,7 @@ class TeamPicker extends React.PureComponent<PTeamPicker, STeamPicker> {
                 opened={this.props.opened}
                 title="Team Selection" 
                 contentName="team-selector"
+                className="team-panel"
                 popup={true}
                 buttons={buttons}
                 {...this.props}

@@ -51,7 +51,9 @@
 }
 
 //90
-.capture-form.camera-video-lt .main-slideshow {
+.capture-form.camera-video-lt .main-slideshow,
+.capture-form.camera-video-lr .main-slideshow
+{
     z-index: 1;
 }
 

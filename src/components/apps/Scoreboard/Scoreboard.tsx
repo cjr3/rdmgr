@@ -140,6 +140,8 @@ class Scoreboard extends React.Component<PScoreboard, SScoreboard> {
         this.onClickOverturned = this.onClickOverturned.bind(this);
         this.onClickUpheld = this.onClickUpheld.bind(this);
         this.onClickReview = this.onClickReview.bind(this);
+        this.onClickTimeout = this.onClickTimeout.bind(this);
+        this.onClickInjury = this.onClickInjury.bind(this);
         this.updateState = this.updateState.bind(this);
         this.remoteScore = ScoreboardController.subscribe(this.updateState);
     }
@@ -242,6 +244,20 @@ class Scoreboard extends React.Component<PScoreboard, SScoreboard> {
     }
 
     /**
+     * Triggered when the user clicks the timeout button.
+     */
+    onClickTimeout() {
+        ScoreboardController.SetBoardStatus(vars.Scoreboard.Status.Timeout);
+    }
+
+    /**
+     * Triggered when the user clicks the injury button.
+     */
+    onClickInjury() {
+        ScoreboardController.SetBoardStatus(vars.Scoreboard.Status.Injury);
+    }
+
+    /**
      * Renders the component
      */
     render() {
@@ -253,6 +269,12 @@ class Scoreboard extends React.Component<PScoreboard, SScoreboard> {
         }
         
         var buttons:Array<React.ReactElement> = [
+            <Button key="btn-oto" 
+                active={(this.state.BoardStatus === vars.Scoreboard.Status.Timeout)}
+                onClick={this.onClickTimeout}>Timeout</Button>,
+            <Button key="btn-injury" 
+                active={(this.state.BoardStatus === vars.Scoreboard.Status.Injury)}
+                onClick={this.onClickInjury}>Injury</Button>,
             <Button key="btn-review" 
                 active={(this.state.BoardStatus === vars.Scoreboard.Status.Review)}
                 onClick={this.onClickReview}>Review</Button>,
@@ -262,9 +284,6 @@ class Scoreboard extends React.Component<PScoreboard, SScoreboard> {
             <Button key="btn-overturned" 
                 active={(this.state.BoardStatus === vars.Scoreboard.Status.Overturned)}
                 onClick={this.onClickOverturned}>Overturned</Button>,
-            <Button key="btn-display" 
-                active={(this.state.DisplayOpened)}
-                onClick={this.onClickDisplay}>Display</Button>,
             <Button key="btn-quarter" 
                 active={(this.state.PhaseOpened)}
                 onClick={this.onClickPhase}>Quarter</Button>,
@@ -344,7 +363,6 @@ class Scoreboard extends React.Component<PScoreboard, SScoreboard> {
                     minute={this.state.StartGameMinute}
                     second={this.state.StartGameSecond}
                     />
-                <DisplayPanel opened={this.state.DisplayOpened}/>
             </Panel>
         )
     }

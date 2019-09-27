@@ -31,6 +31,10 @@
                 }
             }
         }
+
+        .watcher-control {
+            padding: 5px;
+        }
     }
 
     .monitor-control {
@@ -192,6 +196,51 @@
     .record-list {
         > select {
             width: 100%;
+        }
+    }
+}
+
+@media screen and (max-width:960px) and (min-height: 1080px) {
+    .CC-app {
+        .capture-preview {
+            height: 480px;
+            bottom: initial;
+            overflow: hidden;
+            width: 100%;
+            .camera-styles {
+                position: absolute;
+                right: 0;
+                bottom: 116px;
+            }
+            > p {
+                position: absolute;
+                right: 0;
+                width: 300px;
+                top: 100px;
+            }
+
+            > p:nth-child(even) {
+                top: 120px;
+            }
+
+            .monitor-control {
+                position: absolute;
+                right: 4px;
+                height: 34px;
+            }
+
+            .watcher-control {
+                position: absolute;
+                right: 0;
+                top: 48px;
+                width: calc(100% - 640px);
+            }
+        }
+
+        .config-panels {
+            width: 50%;
+            height: calc(100% - 380px);
+            top: initial;
         }
     }
 }

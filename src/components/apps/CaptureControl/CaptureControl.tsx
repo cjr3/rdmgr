@@ -48,7 +48,7 @@ export default class CaptureControl extends React.PureComponent<PCaptureControl,
                 <div className="capture-preview">
                     <CaptureControlMonitor/>
                     <CaptureWatcher shown={this.state.CapturePreviewShown}/>
-                    <div style={{padding:"5px"}}>
+                    <div className="watcher-control">
                         <ToggleButton
                             checked={this.state.CapturePreviewShown}
                             onClick={() => {

@@ -39,6 +39,19 @@ body {
     }
 }
 
+//stuck to the left/right of 1920x1080
+@media screen and (max-width:960px) and (min-height: 1080px) {
+    body.client {
+        width: 960px;
+        height: 1080px;
+        #root {
+            width: 960px;
+            height: 1080px;
+            padding-bottom: 16px;
+        }
+    }
+}
+
 h1, h2, h3, h4, h5, h6 {
     margin: 3px 0px 3px 0px;
 }

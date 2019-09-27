@@ -53,12 +53,18 @@
     }
 }
 
-.CHT-app-panel > .buttons {
-    display: flex;
-    flex-flow: row wrap;
-    justify-content: flex-end;
+.CHT-app-panel {
+    > .content {
+        padding-bottom: 24px;
+    }
 
-    > input[type="text"] {
-        flex: 1;
+    > .buttons {
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: flex-end;
+    
+        > input[type="text"] {
+            flex: 1;
+        }
     }
 }

@@ -17,9 +17,10 @@ export default function DisplayPanel(props:PDisplayPanel) {
     return (
         <Panel
             opened={props.opened}
-            popup={true}
-            buttons={[<CaptureDisplayButtons key="btn-display"/>]}
-            className="display-options">
+            popup={true}>
+            <div className="record-list">
+                <CaptureDisplayButtons/>
+            </div>
         </Panel>
     )
 }

@@ -42,7 +42,7 @@ type PanelRecord = {
 class CaptureDisplayControls extends React.PureComponent<any, SCaptureDisplayControls> {
 
     readonly state:SCaptureDisplayControls = {
-        currentControl:CameraController.Key
+        currentControl:vars.RecordType.Anthem
     }
 
     Panels:any = {

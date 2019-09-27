@@ -450,13 +450,6 @@ class MediaQueue extends React.PureComponent<any, SMediaQueue> {
                     />
             </Button>,
             <IconButton
-                key="btn-display"
-                src={IconMonitor}
-                active={(this.state.DisplayShown)}
-                onClick={() => {
-                    this.setState({DisplayShown:!this.state.DisplayShown});
-                }}>Display</IconButton>,
-            <IconButton
                 key="btn-hide"
                 src={(shown) ? IconShown : IconHidden}
                 active={(shown)}
@@ -618,12 +611,6 @@ class MediaQueue extends React.PureComponent<any, SMediaQueue> {
                         <Raffle opened={true}/>
                     </div>
                 </div>
-                <Panel
-                    popup={true}
-                    opened={this.state.DisplayShown}
-                    buttons={[<CaptureDisplayButtons key='buttons'/>]}
-                    className="display-options"
-                    />
             </Panel>
         )
     }

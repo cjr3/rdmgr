@@ -21,20 +21,13 @@ class CaptureStreamControls extends React.PureComponent<any, SCaptureStreamContr
     constructor(props) {
         super(props);
         this.state = {
-            currentControl:'roster'
+            currentControl:'scorebanner'
         };
     }
 
     render() {
         return (
             <div className="config-panels stream">
-                <CaptureControlRoster
-                    name="Intros"
-                    active={(this.state.currentControl === 'roster')}
-                    onClick={() => {
-                        this.setState({currentControl:'roster'})
-                    }}
-                />
                 <CaptureControlScorebanner
                     icon={IconSkate}
                     active={(this.state.currentControl === 'scorebanner')}
@@ -42,6 +35,13 @@ class CaptureStreamControls extends React.PureComponent<any, SCaptureStreamContr
                     toggle={CaptureController.ToggleScorebanner}
                     onClick={() => {
                         this.setState({currentControl:'scorebanner'});
+                    }}
+                />
+                <CaptureControlRoster
+                    name="Intros"
+                    active={(this.state.currentControl === 'roster')}
+                    onClick={() => {
+                        this.setState({currentControl:'roster'})
                     }}
                 />
             </div>

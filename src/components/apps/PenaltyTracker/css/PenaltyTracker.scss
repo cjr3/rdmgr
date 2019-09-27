@@ -109,3 +109,36 @@
         }
     }
 }
+
+@media screen and (max-width:960px) and (min-height: 1080px) { 
+    .PT-app {
+        .team.team-A,
+        .team.team-B
+        {
+            width: 50%;
+        }
+
+        .team.team-B {
+            right: 0;
+            left: initial;
+        }
+
+        .penalty-list {
+            left: 0;
+            width: 50%;
+            height: auto;
+            bottom: 0;
+            top: initial;
+            right: initial;
+            > button {
+                width: 25%;
+            }
+        }
+
+        .penalized-skaters {
+            width: 50%;
+            left: initial;
+            flex-flow: column wrap;
+        }
+    }
+}

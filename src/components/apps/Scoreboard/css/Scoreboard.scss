@@ -326,3 +326,78 @@
         }
     }
 }
+
+//half 1920
+@media screen and (max-width:960px) and (min-height: 1080px) {
+    .SB-app {
+        .team {
+            width: 49%;
+            top: initial;
+            bottom: 0;
+            .status {
+                bottom: initial;
+                left: initial;
+                right: 0;
+                top: 464px;
+            }
+        }
+
+        .team.side-a,
+        .team.side-b
+        {
+            border: none;
+        }
+
+        .scoreboard-center {
+            width: 100%;
+            height: 360px;
+            top: initial;
+            bottom: 64px;
+        }
+
+        .phase,
+        .boardstatus,
+        .jamn-break
+        {
+            width: 45%;
+            right: 16px;
+            top: initial;
+            left: initial;
+        }
+
+        .jamn-break {
+            bottom: 200px;
+        }
+
+        .jam-clock,
+        .game-clock,
+        .jam-controls
+        {
+            left: 16px;
+            right: initial;
+            width: 50%;
+        }
+
+        .phase {
+            bottom: 0px;
+        }
+
+        .boardstatus {
+            bottom: 72px;
+        }
+
+        .team-selector {
+            .team-selection {
+                select {
+                    display: block;
+                }
+            }
+        }
+
+        .team-panel {
+            max-width: calc(75%);
+            max-height: 450px;
+            width: 100%;
+        }
+    }
+}

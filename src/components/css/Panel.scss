@@ -126,13 +126,20 @@
 }
 
 .panel.buttons-only {
-    width: 100%;
-    max-width: 100%;
-    height: auto;
+    width: 150px;
+    height: 100%;
     > .title,
     > .content
     {
         display: none;
+    }
+    > .buttons {
+        height: auto;
+        flex-flow: column wrap;
+        > button {
+            height: 48px;
+            width: 100%;
+        }
     }
 }
 
@@ -144,5 +151,11 @@
         > .buttons {
             height: 64px;
         }
+    }
+}
+
+@media screen and (max-width:960px) and (min-height: 1080px) { 
+    .panel.popup {
+        max-height: 50%;
     }
 }

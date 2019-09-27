@@ -217,3 +217,23 @@
         max-width:100%;
     }
 }
+
+@media screen and (max-width:960px) and (min-height: 1080px) {
+    .MEQ-app {
+        .queue-recordsets {
+            top: initial;
+            height: 60%;
+        }
+        .queue-items {
+            left: initial;
+            right: 0;
+            height: 40%;
+        }
+
+        .current-record {
+            width: calc(100% - 300px);
+            left: 0;
+            right: initial;
+        }
+    }
+}

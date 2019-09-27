@@ -1,7 +1,7 @@
 import React from 'react';
 import CaptureController from 'controllers/CaptureController';
 
-import {Button} from 'components/Elements';
+import {Button, IconButton, IconMic, IconFlag, IconStreamOff, IconStopwatch, IconPlus, IconWhistle, IconTicket, IconSkate, IconSlideshow, IconMovie} from 'components/Elements';
 
 /**
  * Interface for the state of the CaptureDisplayButtons component
@@ -123,59 +123,76 @@ class CaptureDisplayButtons extends React.PureComponent<any, CaptureDisplayButto
     render() {
         return (
             <React.Fragment>
-                <Button
+                <IconButton
+                    src={IconMic}
+                    active={this.state.Announcers}
+                    onClick={CaptureController.ToggleAnnouncers}>
+                        Announcers
+                </IconButton>
+                <IconButton
+                    src={IconFlag}
                     active={this.state.NationalAnthem}
                     onClick={CaptureController.ToggleNationalAnthem}>
                         Anthem
-                </Button>
-                <Button
+                </IconButton>
+                <IconButton
+                    src={IconStreamOff}
                     active={this.state.MainCamera}
                     onClick={CaptureController.ToggleMainCamera}>
                         Camera
-                </Button>
-                <Button
+                </IconButton>
+                <IconButton
+                    src={IconStopwatch}
                     active={this.state.JamClock}
                     onClick={CaptureController.ToggleJamClock}>
                         Jam Clock
-                </Button>
-                <Button
+                </IconButton>
+                <IconButton
+                    src={IconPlus}
                     active={this.state.JamCounter}
                     onClick={CaptureController.ToggleJamCounter}>
                         Jam #
-                </Button>
-                <Button
+                </IconButton>
+                <IconButton
+                    src={IconWhistle}
                     active={this.state.PenaltyTracker}
                     onClick={CaptureController.TogglePenaltyTracker}>
                         Penalties
-                </Button>
-                <Button
+                </IconButton>
+                <IconButton
+                    src={IconTicket}
                     active={this.state.Raffle}
-                    onClick={CaptureController.ToggleRaffle}>Raffle</Button>
-                <Button
+                    onClick={CaptureController.ToggleRaffle}>Raffle</IconButton>
+                <IconButton
+                    src={IconSkate}
                     active={this.state.Scorebanner}
                     onClick={CaptureController.ToggleScorebanner}>
-                        Scorebanner
-                </Button>
-                <Button
+                        Score Banner
+                </IconButton>
+                <IconButton
+                    src={IconSkate}
                     active={this.state.Scoreboard}
                     onClick={CaptureController.ToggleScoreboard}>
                         Scoreboard
-                </Button>
-                <Button
+                </IconButton>
+                <IconButton
+                    src={IconSlideshow}
                     active={this.state.MainSlideshow}
                     onClick={CaptureController.ToggleSlideshow}>
                         Slideshow
-                </Button>
-                <Button
+                </IconButton>
+                <IconButton
+                    src={IconSlideshow}
                     active={this.state.SponsorSlideshow}
                     onClick={CaptureController.ToggleSponsors}>
                         Sponsors
-                </Button>
-                <Button
+                </IconButton>
+                <IconButton
+                    src={IconMovie}
                     active={this.state.MainVideo}
                     onClick={CaptureController.ToggleMainVideo}>
                         Video
-                </Button>
+                </IconButton>
             </React.Fragment>
         )
     }
