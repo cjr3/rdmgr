@@ -143,9 +143,6 @@ class CaptureDisplayControls extends React.PureComponent<any, SCaptureDisplayCon
                     active={(this.state.control === panel.control)}
                     controlled={(this.state.control === panel.control)}
                     onClick={() => {
-                        this.setState({panel:pkey});
-                    }}
-                    onClickControl={() => {
                         CaptureController.SetCurrentControl(panel.control);
                     }}
                     />

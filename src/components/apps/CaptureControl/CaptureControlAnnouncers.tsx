@@ -144,8 +144,6 @@ class CaptureControlAnnouncers extends React.PureComponent<PCaptureControlPanel,
                 toggle={this.props.toggle}
                 shown={this.state.Shown}
                 buttons={buttons}
-                onClickControl={this.props.onClickControl}
-                controlled={this.props.controlled}
                 onClick={this.props.onClick}>
                     <p>Announcer #1:</p>
                     <div>

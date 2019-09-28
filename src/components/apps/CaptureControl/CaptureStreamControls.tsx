@@ -63,13 +63,9 @@ class CaptureStreamControls extends React.PureComponent<any, SCaptureStreamContr
                 <CaptureControlScorebanner
                     icon={IconSkate}
                     active={true}
-                    controlled={(this.state.control === CapturePanels.SCOREBOARD)}
                     name="Scorebanner"
                     toggle={CaptureController.ToggleScorebanner}
                     onClick={() => {
-                        this.setState({panel:'scorebanner'});
-                    }}
-                    onClickControl={() => {
                         CaptureController.SetCurrentControl(CapturePanels.SCOREBOARD);
                     }}
                 />

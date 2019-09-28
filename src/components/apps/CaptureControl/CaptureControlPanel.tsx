@@ -45,15 +45,6 @@ export interface PCaptureControlPanel {
      * Child elements to put inside the panel
      */
     children?:any;
-    /**
-     * Determines if this panel is the one that receives input response from 
-     * keyboard and gamepad input
-     */
-    controlled:boolean;
-    /**
-     * Triggered when the user presses the gamepad icon
-     */
-    onClickControl:Function;
 }
 
 /**
@@ -69,10 +60,6 @@ export default function CaptureControlPanel(props:PCaptureControlPanel) {
                     active={(props.active)}
                     onClick={props.onClick}
                     >{props.name}</IconButton>
-                <Icon
-                    src={IconController}
-                    active={props.controlled}
-                    onClick={props.onClickControl}/>
                 <Icon
                     src={(props.shown) ? IconShown : IconHidden}
                     active={props.shown}

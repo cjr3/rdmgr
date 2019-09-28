@@ -46,8 +46,6 @@ class CaptureControlSlideshow extends React.PureComponent<PCaptureControlPanel, 
                 icon={this.props.icon}
                 toggle={this.props.toggle}
                 shown={this.state.Shown}
-                onClickControl={this.props.onClickControl}
-                controlled={this.props.controlled}
                 onClick={this.props.onClick}>
                     Slideshow
                 </CaptureControlPanel>

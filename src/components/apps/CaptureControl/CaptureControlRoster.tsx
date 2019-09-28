@@ -240,8 +240,6 @@ class CaptureControlRoster extends React.PureComponent<PCaptureControlPanel, SCa
                 toggle={CaptureController.ToggleRoster}
                 shown={this.state.Shown}
                 buttons={buttons}
-                onClickControl={this.props.onClickControl}
-                controlled={this.props.controlled}
                 onClick={this.props.onClick}>
                 <div className="record-list roster-skaters" ref={this.RecordsItem}>
                     {skaters}
