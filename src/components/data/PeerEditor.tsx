@@ -462,11 +462,11 @@ class PeerRecordRequest extends React.PureComponent<PPeerRecordRequest, SPeerRec
      */
     onClickConfirm() {
         let types = {
-            [vars.RecordType.Anthem]:this.state[vars.RecordType.Anthem],
-            [vars.RecordType.Penalty]:this.state[vars.RecordType.Penalty],
-            [vars.RecordType.Phase]:this.state[vars.RecordType.Phase],
-            [vars.RecordType.Team]:this.state[vars.RecordType.Team],
-            [vars.RecordType.Skater]:this.state[vars.RecordType.Skater]
+            [vars.RecordType.Anthem]:this.state.AnthemSingers,
+            [vars.RecordType.Penalty]:this.state.Penalties,
+            [vars.RecordType.Phase]:this.state.Phases,
+            [vars.RecordType.Team]:this.state.Teams,
+            [vars.RecordType.Skater]:this.state.Skaters
         };
 
         if(window && window.LocalServer) {
