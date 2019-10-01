@@ -1,43 +1,20 @@
 import React from 'react';
 import RecordEditor from './RecordEditor';
-import DataController from 'controllers/DataController';
 import vars, { TeamRecord } from 'tools/vars';
-
-interface STeamEditor {
-    records:Array<TeamRecord>;
-}
-
-interface PTeamEditor {
-    record:TeamRecord;
-    opened:boolean;
-}
 
 /**
  * Component for editing team records.
  */
-class TeamEditor extends React.PureComponent<PTeamEditor, STeamEditor> {
-    readonly state:STeamEditor = {
-        records:DataController.getTeams(true)
-    }
-    remoteData:Function
-    constructor(props) {
-        super(props);
-
-        this.updateState = this.updateState.bind(this);
-        this.remoteData = DataController.subscribe(this.updateState);
-    }
-
+export default class TeamEditor extends React.PureComponent<{
     /**
-     * Updates the state to match the 
+     * Record to edit
      */
-    updateState() {
-        if(!DataController.compare(DataController.getTeams(), this.state.records)) {
-            this.setState(() => {
-                return {records:Object.assign({}, DataController.getTeams())};
-            });
-        }
-    }
-
+    record:TeamRecord|null;
+    /**
+     * true to show, false to hide
+     */
+    opened:boolean;
+}> {
     /**
      * Renders the component.
      */
@@ -45,7 +22,6 @@ class TeamEditor extends React.PureComponent<PTeamEditor, STeamEditor> {
         return (
             <RecordEditor 
                 recordType={vars.RecordType.Team}
-                records={this.state.records}
                 opened={this.props.opened}
                 {...this.props}
                 >
@@ -53,5 +29,3 @@ class TeamEditor extends React.PureComponent<PTeamEditor, STeamEditor> {
         );
     }
 }
-
-export default TeamEditor;

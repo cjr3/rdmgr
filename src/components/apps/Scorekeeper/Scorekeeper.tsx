@@ -6,25 +6,40 @@ import ScorekeeperController, {SScorekeeperState, SScorekeeperTeam, SScorekeeper
 import CaptureController from 'controllers/CaptureController'
 import RosterController from 'controllers/RosterController';
 import {Button, IconButton, Icon, IconShown, IconHidden, IconUp} from 'components/Elements';
-
-import './css/Scorekeeper.scss';
 import { SkaterRecord } from 'tools/vars';
 import DataController from 'controllers/DataController';
-
-interface SScoreKeeper {
-    Shown:boolean,
-    TeamA:SScoreboardTeam,
-    TeamB:SScoreboardTeam,
-    State:SScorekeeperState,
-    TeamASkaters:Array<SkaterRecord>,
-    TeamBSkaters:Array<SkaterRecord>
-}
+import './css/Scorekeeper.scss';
 
 /**
  * Component for tracking skaters on the track / on-deck
  */
-class Scorekeeper extends React.PureComponent<any, SScoreKeeper> {
-    readonly state:SScoreKeeper = {
+export default class Scorekeeper extends React.PureComponent<any, {
+    /**
+     * True if scorekeeper is visible or not
+     */
+    Shown:boolean;
+    /**
+     * Left side scoreboard team
+     */
+    TeamA:SScoreboardTeam;
+    /**
+     * Right side scoreboard team
+     */
+    TeamB:SScoreboardTeam;
+    /**
+     * ScorekeeperController state
+     */
+    State:SScorekeeperState;
+    /**
+     * Skaters on the left team
+     */
+    TeamASkaters:Array<SkaterRecord>;
+    /**
+     * Skaters on the right team
+     */
+    TeamBSkaters:Array<SkaterRecord>;
+}> {
+    readonly state = {
         Shown:CaptureController.getState().Scorekeeper.Shown,
         TeamA:ScoreboardController.getState().TeamA,
         TeamB:ScoreboardController.getState().TeamB,
@@ -33,23 +48,33 @@ class Scorekeeper extends React.PureComponent<any, SScoreKeeper> {
         TeamBSkaters:RosterController.getState().TeamB.Skaters
     };
 
-    remoteState:Function
-    remoteCapture:Function
-    remoteScore:Function
-    remoteRoster:Function
+    /**
+     * ScorekeeperController listener
+     */
+    protected remoteState:Function|null = null;
+    /**
+     * CaptureController listener
+     */
+    protected remoteCapture:Function|null = null;
+    /**
+     * ScoreboardController listener
+     */
+    protected remoteScore:Function|null = null;
+    /**
+     * RosterController listener
+     */
+    protected remoteRoster:Function|null = null;
 
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super(props);
-
         this.updateState = this.updateState.bind(this);
         this.updateCapture = this.updateCapture.bind(this);
         this.updateScoreboard = this.updateScoreboard.bind(this);
         this.updateRoster = this.updateRoster.bind(this);
-
-        this.remoteState = ScorekeeperController.subscribe(this.updateState);
-        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
-        this.remoteScore = ScoreboardController.subscribe(this.updateScoreboard);
-        this.remoteRoster = RosterController.subscribe(this.updateRoster);
     }
 
     /**
@@ -87,15 +112,39 @@ class Scorekeeper extends React.PureComponent<any, SScoreKeeper> {
     }
 
     /**
+     * Starts listeners
+     */
+    componentDidMount() {
+        this.remoteState = ScorekeeperController.subscribe(this.updateState);
+        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
+        this.remoteScore = ScoreboardController.subscribe(this.updateScoreboard);
+        this.remoteRoster = RosterController.subscribe(this.updateRoster);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteState !== null)
+            this.remoteState();
+        if(this.remoteCapture !== null)
+            this.remoteCapture();
+        if(this.remoteScore !== null)
+            this.remoteScore();
+        if(this.remoteRoster !== null)
+            this.remoteRoster();
+    }
+
+    /**
      * Renders the component
      */
     render() {
-        var iconShown = IconHidden;
+        let iconShown:string = IconHidden;
         if(this.state.Shown)
             iconShown = IconShown;
 
-        let logoA = '';
-        let logoB = '';
+        let logoA:string = '';
+        let logoB:string = '';
         if(this.state.TeamA.Thumbnail !== undefined) {
             logoA = DataController.mpath(this.state.TeamA.Thumbnail);
         }
@@ -111,7 +160,7 @@ class Scorekeeper extends React.PureComponent<any, SScoreKeeper> {
         for(let key in this.state.State.TeamA.Track) {
             let skater:SkaterRecord|null = this.state.State.TeamA.Track[key];
             if(skater !== null) {
-                let src = logoA;
+                let src:string = logoA;
                 if(skater.Thumbnail !== undefined && skater.Thumbnail.length >= 1) {
                     src = DataController.mpath(skater.Thumbnail);
                 }
@@ -124,7 +173,7 @@ class Scorekeeper extends React.PureComponent<any, SScoreKeeper> {
                         </div>
                         <div className="num">{skater.Number}</div>
                     </div>
-                )
+                );
             }
             i++;
         }
@@ -132,7 +181,7 @@ class Scorekeeper extends React.PureComponent<any, SScoreKeeper> {
         for(let key in this.state.State.TeamB.Track) {
             let skater:SkaterRecord|null = this.state.State.TeamB.Track[key];
             if(skater !== null) {
-                let src = logoB;
+                let src:string = logoB;
                 if(skater.Thumbnail !== undefined && skater.Thumbnail.length >= 1) {
                     src = DataController.mpath(skater.Thumbnail);
                 }
@@ -145,12 +194,12 @@ class Scorekeeper extends React.PureComponent<any, SScoreKeeper> {
                         </div>
                         <div className="num">{skater.Number}</div>
                     </div>
-                )
+                );
             }
             i++;
         }
 
-        var buttons = [
+        let buttons:Array<React.ReactElement> = [
             <IconButton
                 key="btn-shown"
                 src={iconShown}
@@ -216,18 +265,33 @@ class ScorekeeperTeam extends React.PureComponent<PScorekeeperTeam> {
         this.onShift = this.onShift.bind(this);
     }
 
+    /**
+     * Triggered when the user selects a skater
+     * @param skater SkaterRecord
+     */
     onSelectSkater(skater) {
         ScorekeeperController.SetPosition(this.props.side, skater);
     }
 
+    /**
+     * Triggered when the user selects a position
+     * @param deck 
+     * @param position string
+     */
     onSelectPosition(deck, position) {
         ScorekeeperController.SetPosition(this.props.side, null, position, deck);
     }
 
+    /**
+     * Triggered when the user shifts the decks
+     */
     onShift() {
         ScorekeeperController.ShiftDecks(this.props.side);
     }
 
+    /**
+     * Triggered when the user presses the star pass button
+     */
     onStarPass() {
         ScorekeeperController.StarPass(this.props.side);
     }
@@ -236,7 +300,7 @@ class ScorekeeperTeam extends React.PureComponent<PScorekeeperTeam> {
      * Renders the component.
      */
     render() {
-        var skaters:Array<React.ReactElement> = [];
+        let skaters:Array<React.ReactElement> = [];
         if(this.props.skaters) {
             this.props.skaters.forEach((skater) => {
                 let active = false;
@@ -256,8 +320,8 @@ class ScorekeeperTeam extends React.PureComponent<PScorekeeperTeam> {
                 }
             });
         }
-        var className = cnames('team', 'team-' + this.props.side);
-        var style:CSSProperties = {backgroundColor:this.props.color};
+        let className:string = cnames('team', 'team-' + this.props.side);
+        let style:CSSProperties = {backgroundColor:this.props.color};
 
         return (
             <div className={className}>
@@ -350,7 +414,7 @@ interface PScorekeeperPosition {
 }
 
 function ScorekeeperTeamPosition(props:PScorekeeperPosition) {
-    var className = cnames({
+    let className:string = cnames({
         active:(props.position !== null),
         current:(props.current.Deck === props.deck && props.current.Position === props.title)
     });
@@ -364,5 +428,3 @@ function ScorekeeperTeamPosition(props:PScorekeeperPosition) {
             >{(props.position !== null) ? props.position.Number : ''}</Button>
     );
 }
-
-export default Scorekeeper;

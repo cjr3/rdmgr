@@ -15,14 +15,15 @@ import {
     IconMonitor,
     IconSettings,
     IconShown,
-    IconCapture
+    IconCapture,
+    IconController
 } from 'components/Elements';
 import ClientScorebanner from './ClientScorebanner';
 import cnames from 'classnames'
 
 //controllers
 import CameraController from 'controllers/CameraController';
-import CaptureController from 'controllers/CaptureController';
+import CaptureController, {Controllers} from 'controllers/CaptureController';
 import ChatController from 'controllers/ChatController';
 import DataController from 'controllers/DataController';
 import MediaQueueController from 'controllers/MediaQueueController';
@@ -63,18 +64,19 @@ import CaptureDisplayButtons from 'components/apps/CaptureControl/CaptureDisplay
 import keycodes from 'tools/keycodes';
 
 interface SClient {
-    currentApp:any,
-    visible:boolean,
-    ConfigShown:boolean,
-    ChatShown:boolean,
-    FileBrowserShown:boolean,
-    DisplayShown:boolean,
-    RecordUpdateShown:boolean,
-    RecordUpdatePeerID:string,
-    RecordUpdatePeerName:string,
-    RecordUpdateTypes:any,
-    UnreadMessageCount:number,
-    Peers:any
+    currentApp:any;
+    visible:boolean;
+    ConfigShown:boolean;
+    ChatShown:boolean;
+    FileBrowserShown:boolean;
+    DisplayShown:boolean;
+    ControlShown:boolean;
+    RecordUpdateShown:boolean;
+    RecordUpdatePeerID:string;
+    RecordUpdatePeerName:string;
+    RecordUpdateTypes:any;
+    UnreadMessageCount:number;
+    Peers:any;
 }
 
 /**
@@ -89,6 +91,7 @@ class Client extends React.PureComponent<any, SClient> {
         ChatShown:false,
         FileBrowserShown:false,
         DisplayShown:false,
+        ControlShown:false,
         RecordUpdateShown:false,
         RecordUpdatePeerID:'',
         RecordUpdatePeerName:'',
@@ -229,7 +232,6 @@ class Client extends React.PureComponent<any, SClient> {
           return {currentApp:app};
         }, () => {
             DataController.SaveMiscRecord('DefaultApp', this.state.currentApp.key);
-            GameController.Receiver = this.state.currentApp;
         });
     }
 
@@ -403,7 +405,6 @@ class Client extends React.PureComponent<any, SClient> {
             default : break;
         }
 
-        //send key commands to the active application
         if(this.state.currentApp.controller && this.state.currentApp.controller.onKeyUp)
             this.state.currentApp.controller.onKeyUp(ev);
     }
@@ -800,8 +801,6 @@ class Client extends React.PureComponent<any, SClient> {
         }, () => {
             CaptureController.Init();
             GameController.Init();
-            if(this.state.currentApp)
-                GameController.Receiver = this.state.currentApp;
         });
     }
 
@@ -915,7 +914,9 @@ class Client extends React.PureComponent<any, SClient> {
                     popup={true} 
                     opened={this.state.DisplayShown} 
                     title="Display Options"
-                    className="display-options">
+                    className="display-options"
+                    onClose={() => {this.setState({DisplayShown:false})}}
+                    >
                     <div className="record-list">
                         <CaptureDisplayButtons/>
                     </div>

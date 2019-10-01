@@ -1,6 +1,6 @@
 import React from 'react';
 import RecordEditor from './RecordEditor';
-import vars from 'tools/vars';
+import vars, { PeerRecord } from 'tools/vars';
 import { 
     ToggleButton, 
     IconButton,
@@ -22,17 +22,6 @@ import VideoController from 'controllers/VideoController';
 import Panel from 'components/Panel';
 import DataController from 'controllers/DataController';
 
-interface SPeerEditor {
-    Host:string,
-    PeerID:string,
-    Port:number,
-    CapturePort:number,
-    ControlledApps:Array<string>,
-    ReceiveApps:Array<string>,
-    getRecordsShown:boolean,
-    setRecordsShown:boolean
-}
-
 type PeerControlRecord = {
     name:string,
     controller:any
@@ -41,19 +30,62 @@ type PeerControlRecord = {
 /**
  * Component for editing team records.
  */
-class PeerEditor extends React.PureComponent<any, SPeerEditor> {
-    readonly state:SPeerEditor = {
+export default class PeerEditor extends React.PureComponent<{
+    /**
+     * The record to edit
+     */
+    record:PeerRecord|null;
+    /**
+     * true to show, false to hide
+     */
+    opened:boolean;
+}, {
+    /**
+     * Peer's Host, in IPV4 format
+     */
+    Host:string;
+    /**
+     * Peer's ID
+     */
+    PeerID:string;
+    /**
+     * Port number of the peer's host
+     */
+    Port:number;
+    /**
+     * Port number of the peer's capture window
+     * - Needed for video feeds, because MediaStream is not serializable between IPC
+     */
+    CapturePort:number;
+    /**
+     * Collection of controller codes that the peer sends out to other peers
+     */
+    ControlledApps:Array<string>;
+    /**
+     * Collection of controller codes that the peer receives state updates from other peers
+     */
+    ReceiveApps:Array<string>;
+    /**
+     * Determines if the 'get records' from peer panel is shown
+     */
+    getRecordsShown:boolean;
+    /**
+     * Determines if the 'send records' to peer panel is shown
+     */
+    setRecordsShown:boolean;
+}> {
+    readonly state = {
         Host:'',
         PeerID:'',
         Port:0,
         CapturePort:0,
-        ControlledApps:[],
-        ReceiveApps:[],
+        ControlledApps:new Array<string>(),
+        ReceiveApps:new Array<string>(),
         getRecordsShown:false,
         setRecordsShown:false
     }
 
-    Controllers:Array<PeerControlRecord> = [
+    protected Controllers:Array<PeerControlRecord> = [
         {name:"Capture", controller:CaptureController},
         {name:"Media Queue", controller:MediaQueueController},
         {name:"Penalty Tracker", controller:PenaltyController},
@@ -66,6 +98,10 @@ class PeerEditor extends React.PureComponent<any, SPeerEditor> {
         {name:"Video", controller:VideoController}
     ]
 
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super(props);
         this.onChangeHost = this.onChangeHost.bind(this);
@@ -84,8 +120,8 @@ class PeerEditor extends React.PureComponent<any, SPeerEditor> {
      * Triggered when the user changes the capture port value.
      * @param {Event} ev 
      */
-    onChangeCapturePort(ev) {
-        var port = parseInt(ev.target.value);
+    onChangeCapturePort(ev:React.ChangeEvent<HTMLInputElement>) {
+        let port:number = parseInt(ev.currentTarget.value);
         this.setState(() => {return {CapturePort:port};});
     }
 
@@ -93,8 +129,8 @@ class PeerEditor extends React.PureComponent<any, SPeerEditor> {
      * Triggered when the user changes the host value.
      * @param {Event} ev 
      */
-    onChangeHost(ev) {
-        var host = ev.target.value;
+    onChangeHost(ev:React.ChangeEvent<HTMLInputElement>) {
+        let host:string = ev.currentTarget.value;
         this.setState(() => {return {Host:host};});
     }
 
@@ -102,8 +138,8 @@ class PeerEditor extends React.PureComponent<any, SPeerEditor> {
      * Triggered when the user changes the peer ID value.
      * @param {Event} ev 
      */
-    onChangePeerID(ev) {
-        var id = ev.target.value;
+    onChangePeerID(ev:React.ChangeEvent<HTMLInputElement>) {
+        let id:string = ev.currentTarget.value;
         this.setState(() => {return {PeerID:id};});
     }
 
@@ -111,8 +147,8 @@ class PeerEditor extends React.PureComponent<any, SPeerEditor> {
      * Triggered when the user changes the port.
      * @param {Event} ev 
      */
-    onChangePort(ev) {
-        var port = parseInt(ev.target.value);
+    onChangePort(ev:React.ChangeEvent<HTMLInputElement>) {
+        let port:number = parseInt(ev.currentTarget.value);
         this.setState(() => {return {Port:port};});
     }
 
@@ -265,12 +301,14 @@ class PeerEditor extends React.PureComponent<any, SPeerEditor> {
      * Renders the component.
      */
     render() {
-        var port = (Number.isNaN(this.state.Port)) ? 0 : this.state.Port;
-        var cport = (Number.isNaN(this.state.CapturePort)) ? 0 : this.state.CapturePort;
-        var capps:Array<React.ReactElement> = [];
-        var rapps:Array<React.ReactElement> = [];
+        let port:number = (Number.isNaN(this.state.Port)) ? 0 : this.state.Port;
+        let cport:number = (Number.isNaN(this.state.CapturePort)) ? 0 : this.state.CapturePort;
+        let capps:Array<React.ReactElement> = [];
+        let rapps:Array<React.ReactElement> = [];
+        let name:string = (this.props.record !== null) ? this.props.record.Name : '';
+        
         this.Controllers.forEach((item) => {
-            let key = item.controller.Key;
+            let key:string = item.controller.Key;
             let controlled = (this.state.ControlledApps.indexOf(key) >= 0);
             let received = (this.state.ReceiveApps.indexOf(key) >= 0);
             capps.push(
@@ -294,7 +332,7 @@ class PeerEditor extends React.PureComponent<any, SPeerEditor> {
             );
         });
 
-        let buttons = [
+        let buttons:Array<React.ReactElement> = [
             <IconButton
                 key="btn-get-records"
                 src={IconDown}
@@ -318,8 +356,6 @@ class PeerEditor extends React.PureComponent<any, SPeerEditor> {
                 }}
                 />
         ];
-
-        let name = (this.props.record) ? this.props.record.Name : '';
 
         return (
             <React.Fragment>
@@ -423,27 +459,27 @@ class PeerEditor extends React.PureComponent<any, SPeerEditor> {
 }
 
 interface SPeerRecordRequest {
-    AnthemSingers:boolean,
-    Penalties:boolean,
-    Phases:boolean,
-    Teams:boolean,
-    Skaters:boolean
+    AnthemSingers:boolean;
+    Penalties:boolean;
+    Phases:boolean;
+    Teams:boolean;
+    Skaters:boolean;
 }
 
 interface PPeerRecordRequest {
-    opened:boolean,
-    id:string,
-    method:string,
-    types?:any,
-    message?:string,
-    onClose?:Function,
-    name:string
+    opened:boolean;
+    id:string;
+    method:string;
+    types?:any;
+    message?:string;
+    onClose?:Function;
+    name:string;
 }
 
 /**
  * Component for displaying a request to update records from this peer.
  */
-class PeerRecordRequest extends React.PureComponent<PPeerRecordRequest, SPeerRecordRequest> {
+export class PeerRecordRequest extends React.PureComponent<PPeerRecordRequest, SPeerRecordRequest> {
     readonly state:SPeerRecordRequest = {
         AnthemSingers:false,
         Penalties:false,
@@ -582,9 +618,3 @@ class PeerRecordRequest extends React.PureComponent<PPeerRecordRequest, SPeerRec
         );
     }
 }
-
-export default PeerEditor;
-
-export {
-    PeerRecordRequest
-};

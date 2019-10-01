@@ -3,50 +3,38 @@ import CameraController from 'controllers/CameraController';
 import CaptureController, {CapturePanels} from 'controllers/CaptureController';
 import ScorekeeperController from 'controllers/ScorekeeperController';
 import PenaltyController from 'controllers/PenaltyController';
-
 import CaptureControlCamera from './CaptureControlCamera';
 import CaptureControlScorekeeper from './CaptureControlScorekeeper';
 import CaptureControlAnthem from './CaptureControlAnthem';
-import CaptureControlRaffle from './CaptureControlRaffle';
 import CaptureControlAnnouncers from './CaptureControlAnnouncers';
 import CaptureControlPenaltyTracker from './CaptureControlPenaltyTracker';
-
 import {
     IconMic,
     IconFlag,
     IconStreamOff,
     IconWhistle,
     IconClipboard,
-    IconTicket,
     IconTeam
 } from 'components/Elements';
 import vars from 'tools/vars';
-import RaffleController from 'controllers/RaffleController';
 import RosterController from 'controllers/RosterController';
 import CaptureControlRoster from './CaptureControlRoster';
-
-interface SCaptureDisplayControls {
-    /**
-     * currently controlled panel
-     */
-    control:number;
-    /**
-     * Current panel to display
-     */
-    panel:string;
-}
 
 /**
  * Component for configuring the elements on the capture window.
  */
-class CaptureDisplayControls extends React.PureComponent<any, SCaptureDisplayControls> {
+export default class CaptureDisplayControls extends React.PureComponent<any, {
+    /**
+     * Current panel to display
+     */
+    panel:string;
+}> {
 
-    readonly state:SCaptureDisplayControls = {
-        control:CaptureController.getState().Control,
-        panel:vars.RecordType.Announcer
+    readonly state = {
+        panel:RosterController.Key
     }
 
-    Panels:any = {
+    protected readonly Panels:any = {
         [RosterController.Key]:{
             type:CaptureControlRoster,
             name:"Intros",
@@ -92,42 +80,6 @@ class CaptureDisplayControls extends React.PureComponent<any, SCaptureDisplayCon
     }
 
     /**
-     * Listener for changes to the remote
-     */
-    protected remoteState:Function|null = null;
-
-    constructor(props) {
-        super(props);
-        this.updateState = this.updateState.bind(this);
-    }
-
-    /**
-     * Updates the state to match the capture controller
-     */
-    protected updateState() {
-        this.setState({
-            control:CaptureController.getState().Control
-        });
-    }
-
-    /**
-     * Triggered when the component mounts to the DOM
-     * - Listen to the controller
-     */
-    componentDidMount() {
-        this.remoteState = CaptureController.subscribe(this.updateState);
-    }
-
-    /**
-     * Triggered when the component will unmount from the DOM
-     * - Stop listening to the controller
-     */
-    componentWillUnmount() {
-        if(this.remoteState)
-            this.remoteState();
-    }
-
-    /**
      * Renders the component.
      */
     render() {
@@ -140,11 +92,8 @@ class CaptureDisplayControls extends React.PureComponent<any, SCaptureDisplayCon
                     name={panel.name}
                     toggle={panel.toggle}
                     icon={panel.icon}
-                    active={(this.state.control === panel.control)}
-                    controlled={(this.state.control === panel.control)}
-                    onClick={() => {
-                        CaptureController.SetCurrentControl(panel.control);
-                    }}
+                    active={(this.state.panel === pkey)}
+                    onClick={() => {this.setState({panel:pkey});}}
                     />
             );
         }
@@ -156,5 +105,3 @@ class CaptureDisplayControls extends React.PureComponent<any, SCaptureDisplayCon
         );
     }
 }
-
-export default CaptureDisplayControls;

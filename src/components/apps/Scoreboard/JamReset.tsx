@@ -35,7 +35,7 @@ export interface PJamReset {
  * @param props PJamReset
  */
 export default function JamReset(props:PJamReset) {    
-    var startClock = `${props.hour.toString().padStart(2,'0')}:${props.minute.toString().padStart(2,'0')}:${props.second.toString().padStart(2,'0')}`;
+    let startClock:string = `${props.hour.toString().padStart(2,'0')}:${props.minute.toString().padStart(2,'0')}:${props.second.toString().padStart(2,'0')}`;
     return (
         <Panel 
             opened={props.opened}
@@ -59,7 +59,7 @@ export default function JamReset(props:PJamReset) {
             contentName="jam-reset"
             >
             <p>
-                Reset the jam to the time below?
+                Reset the game clock to the time below?
             </p>
             <h1>{startClock}</h1>
         </Panel>

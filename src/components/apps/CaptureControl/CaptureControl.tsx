@@ -7,35 +7,23 @@ import CaptureStreamControls from './CaptureStreamControls';
 import CaptureControlMonitor from './CaptureControlMonitor';
 import CaptureCameraStyleButtons from './CaptureCameraStyleButtons';
 import CaptureVideoStyleButtons from './CaptureVideoStyleButtons';
-
 import './css/CaptureControl.scss'
 
-interface SCaptureControl {
-    /**
-     * Determines if the preview of the capture window is displayed or not
-     */
-    CapturePreviewShown:boolean
-};
-
-export interface PCaptureControl {
+/**
+ * Component for determining what is displayed on the capture window.
+ */
+export default class CaptureControl extends React.PureComponent<{
     /**
      * Determines if the capture control is displayed or not
      */
-    opened:boolean
-};
-
-/**
- * Main class for determining what is displayed on the capture window.
- * - Scoreboard
- * - Scoreboard Banner (visibility, position, elements)
- * - Jammers (visibility, position)
- * - Penalties (visibility, position)
- * - Announcer Names (visibility, position)
- * - Slideshows (visibility)
- * - Videos (visibility)
- */
-export default class CaptureControl extends React.PureComponent<PCaptureControl, SCaptureControl> {
-    readonly state:SCaptureControl = {
+    opened:boolean;
+}, {
+    /**
+     * Determines if the preview of the capture window is displayed or not
+     */
+    CapturePreviewShown:boolean;
+}> {
+    readonly state = {
         CapturePreviewShown:false
     }
 
@@ -44,7 +32,7 @@ export default class CaptureControl extends React.PureComponent<PCaptureControl,
      */
     render() {
         return (
-            <Panel opened={this.props.opened} contentName="CC-app" >
+            <Panel opened={this.props.opened} contentName="CC-app">
                 <div className="capture-preview">
                     <CaptureControlMonitor/>
                     <CaptureWatcher shown={this.state.CapturePreviewShown}/>

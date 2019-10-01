@@ -2,29 +2,34 @@ import React from 'react';
 import {Icon, IconCheck, IconFastForward} from 'components/Elements'
 import ScoreboardController from 'controllers/ScoreboardController'
 
-interface SPhaseControl {
-    PhaseMinute:number,
-    PhaseSecond:number
-}
-
-class PhaseControl extends React.PureComponent<any, SPhaseControl> {
-    readonly state:SPhaseControl = {
+/**
+ * Component for setting phase / game clock time
+ */
+export default class PhaseControl extends React.PureComponent<any, {
+    PhaseMinute:number;
+    PhaseSecond:number;
+}> {
+    readonly state = {
         PhaseMinute:ScoreboardController.getState().PhaseMinute,
         PhaseSecond:ScoreboardController.getState().PhaseSecond
     }
 
-    remoteScore:Function
+    /**
+     * ScoreboardController listener
+     */
+    protected remoteScore:Function|null = null;
 
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super(props);
-
-        //bindings
         this.onChangeMinute = this.onChangeMinute.bind(this);
         this.onChangeSecond = this.onChangeSecond.bind(this);
         this.onSetGameTime = this.onSetGameTime.bind(this);
         this.onCopyGameTime = this.onCopyGameTime.bind(this);
         this.updateState = this.updateState.bind(this);
-        this.remoteScore = ScoreboardController.subscribe(this.updateState);
     }
 
     /**
@@ -78,6 +83,21 @@ class PhaseControl extends React.PureComponent<any, SPhaseControl> {
     }
 
     /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteScore = ScoreboardController.subscribe(this.updateState);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteScore !== null)
+            this.remoteScore();
+    }
+
+    /**
      * Renders the component
      */
     render() {
@@ -102,5 +122,3 @@ class PhaseControl extends React.PureComponent<any, SPhaseControl> {
         )
     }
 }
-
-export default PhaseControl;

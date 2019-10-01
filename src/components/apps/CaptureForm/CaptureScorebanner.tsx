@@ -6,17 +6,21 @@ import vars from 'tools/vars';
 import CaptureController from 'controllers/CaptureController';
 import './css/CaptureScorebanner.scss';
 
-interface SCaptureScorebanner {
-    State:SScoreboardState,
-    BackgroundImage?:string
-}
-
 /**
  * Banner to display on the capture window.
  */
-class CaptureScorebanner extends React.Component<any, SCaptureScorebanner> {
+export default class CaptureScorebanner extends React.Component<any, {
+    /**
+     * State of the scoreboard
+     */
+    State:SScoreboardState;
+    /**
+     * Background image of the banner
+     */
+    BackgroundImage?:string;
+}> {
 
-    readonly state:SCaptureScorebanner = {
+    readonly state = {
         State:ScoreboardController.getState(),
         BackgroundImage:''
     }
@@ -24,20 +28,22 @@ class CaptureScorebanner extends React.Component<any, SCaptureScorebanner> {
     /**
      * Listener for scoreboard controller
      */
-    protected remoteState:Function
+    protected remoteState:Function|null = null;
 
     /**
      * Listener for capture controller
      */
-    protected remoteCapture:Function
+    protected remoteCapture:Function|null = null;
 
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super(props);
         this.getClockText = this.getClockText.bind(this);
         this.updateState = this.updateState.bind(this);
         this.updateCapture = this.updateCapture.bind(this);
-        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
-        this.remoteState = ScoreboardController.subscribe(this.updateState);
     }
 
     /**
@@ -67,17 +73,35 @@ class CaptureScorebanner extends React.Component<any, SCaptureScorebanner> {
     }
 
     /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
+        this.remoteState = ScoreboardController.subscribe(this.updateState);
+    }
+
+    /**
+     * Close listers
+     */
+    componentWillUnmount() {
+        if(this.remoteCapture !== null)
+            this.remoteCapture();
+        if(this.remoteState !== null)
+            this.remoteState();
+    }
+
+    /**
      * Renders the component.
      */
     render() {
-        var classNames = cnames({
+        let classNames:string = cnames({
             "capture-SB-banner":true,
             shown:this.props.shown,
             noclocks:(this.props.clocks === false),
             jamming:(this.state.State.JamState === vars.Clock.Status.Running)
         }, this.props.className);
 
-        var statusNames = cnames({
+        let statusNames:string = cnames({
             "board-status":true,
             shown:(this.state.State.BoardStatus > 0),
             timeout:(this.state.State.BoardStatus === vars.Scoreboard.Status.Timeout),
@@ -87,13 +111,13 @@ class CaptureScorebanner extends React.Component<any, SCaptureScorebanner> {
             review:(this.state.State.BoardStatus === vars.Scoreboard.Status.Review)
         });
 
-        var gameNames = cnames({
+        let gameNames:string = cnames({
             gameclock:true,
             running:(this.state.State.GameState === vars.Clock.Status.Running),
             stopped:(this.state.State.GameState === vars.Clock.Status.Stopped)
         });
 
-        var jamNames = cnames({
+        let jamNames:string = cnames({
             jamclock:true,
             running:(this.state.State.JamState === vars.Clock.Status.Running),
             warning:(this.state.State.JamSecond <= 10),
@@ -101,9 +125,7 @@ class CaptureScorebanner extends React.Component<any, SCaptureScorebanner> {
             stopped:(this.state.State.JamState === vars.Clock.Status.Stopped)
         });
 
-        const style:CSSProperties = {
-            
-        };
+        let style:CSSProperties = {};
         if(this.state.BackgroundImage !== undefined && this.state.BackgroundImage.length >= 1) {
             style.backgroundImage = `url('${DataController.mpath(this.state.BackgroundImage)}')`;
         }
@@ -130,8 +152,12 @@ class CaptureScorebanner extends React.Component<any, SCaptureScorebanner> {
     }
 }
 
+/**
+ * 
+ * @param props 
+ */
 function CaptureScoreboardBannerTeam(props) {
-    var timeouts:Array<React.ReactElement> = [];
+    let timeouts:Array<React.ReactElement> = [];
 
     const {
         Score = 0, 
@@ -143,11 +169,11 @@ function CaptureScoreboardBannerTeam(props) {
         JamPoints = 0
     } = props.Team;
 
-    for(var i=0; i < Timeouts; i++) {
+    for(let i=0; i < Timeouts; i++) {
         timeouts.push(<div key={"timeout-" + i}></div>);
     }
 
-    const statusNames = cnames({
+    let statusNames:string = cnames({
         status:true,
         shown:(Status > 0),
         timeout:(Status === vars.Team.Status.Timeout),
@@ -156,13 +182,13 @@ function CaptureScoreboardBannerTeam(props) {
         leadjammer:(Status === vars.Team.Status.LeadJammer)
     });
 
-    const jamNames = cnames({
+    let jamNames:string = cnames({
         jampoints:true,
         shown:(props.ConfirmStatus)
     });
 
-    var style:any = {};
-    var sstyle:any = {};
+    let style:CSSProperties = {};
+    let sstyle:CSSProperties = {};
     if(ScoreboardThumbnail) {
         style.backgroundImage = "url('" + DataController.mpath(ScoreboardThumbnail) + "')";
     } else if(Thumbnail) {
@@ -186,5 +212,3 @@ function CaptureScoreboardBannerTeam(props) {
         </div>
     );
 }
-
-export default CaptureScorebanner;

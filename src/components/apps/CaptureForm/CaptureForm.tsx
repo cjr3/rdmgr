@@ -1,8 +1,4 @@
-/**
- * Main component for the capture window.
- */
-
-import React from 'react';
+import React, { CSSProperties } from 'react';
 import CaptureScoreboard from './CaptureScoreboard';
 import CaptureScorebanner from './CaptureScorebanner';
 import CaptureJamClock from './CaptureJamClock';
@@ -17,11 +13,10 @@ import CaptureScorekeeper from './CaptureScorekeeper'
 
 import cnames from 'classnames'
 
-import CaptureController, {CaptureControllerState} from 'controllers/CaptureController'
+import CaptureController from 'controllers/CaptureController'
 import IPCX from 'controllers/IPCX';
-import './css/CaptureForm.scss';
 import DataController from 'controllers/DataController';
-import ScoreboardController, {SScoreboardTeam} from 'controllers/ScoreboardController';
+import ScoreboardController from 'controllers/ScoreboardController';
 import CaptureSponsor from './CaptureSponsor';
 import vars from 'tools/vars';
 
@@ -34,35 +29,45 @@ import PenaltyController from 'controllers/PenaltyController';
 import ScorekeeperController from 'controllers/ScorekeeperController';
 import RaffleController from 'controllers/RaffleController';
 
-interface SCaptureForm extends CaptureControllerState {
-    JamState:number,
-    TeamA:SScoreboardTeam,
-    TeamB:SScoreboardTeam
-}
+import './css/CaptureForm.scss';
 
-class CaptureForm extends React.Component<any, SCaptureForm> {
+/**
+ * Main component for the capture window.
+ */
+export default class CaptureForm extends React.Component {
 
-    readonly state:SCaptureForm = Object.assign({}, 
+    readonly state = Object.assign({}, 
         CaptureController.getState(),
         {
             JamState:ScoreboardController.getState().JamState,
             TeamA:ScoreboardController.getState().TeamA,
             TeamB:ScoreboardController.getState().TeamB
         }
-        );
+    );
 
-    remoteCapture:Function
-    remoteScoreboard:Function
-    remoteStatus?:Function
+    /**
+     * CaptureController remote
+     */
+    protected remoteCapture:Function|null = null;
+    /**
+     * ScoreboardController remote
+     */
+    protected remoteScoreboard:Function|null = null;
+    /**
+     * CaptureStatus remote
+     */
+    protected remoteStatus:Function|null = null;
 
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super(props);
         this.onPeerData = this.onPeerData.bind(this);
         this.updateState = this.updateState.bind(this);
         this.updateScoreboard = this.updateScoreboard.bind(this);
         this.updateStatus = this.updateStatus.bind(this);
-        this.remoteCapture = CaptureController.subscribe(this.updateState);
-        this.remoteScoreboard = ScoreboardController.subscribe(this.updateScoreboard);
     }
 
     /**
@@ -94,6 +99,11 @@ class CaptureForm extends React.Component<any, SCaptureForm> {
         }
     }
 
+    /**
+     * Triggered when a peer sends data to the capture window's server
+     * @param peer 
+     * @param data 
+     */
     onPeerData(peer, data) {
         
     }
@@ -108,19 +118,10 @@ class CaptureForm extends React.Component<any, SCaptureForm> {
         if(window && window.RDMGR && window.RDMGR.captureWindow) {
             window.RDMGR.captureWindow.setTitle('RDMGR : Capture Window');
             document.body.className = 'capture';
-            const displays = window.require('electron').remote.screen.getAllDisplays();
-            if(displays.length > 1) {
-                const bounds = displays[1].bounds;
-                window.RDMGR.captureWindow.setBounds({
-                    x:bounds.x,
-                    y:bounds.y,
-                    width:1280,
-                    height:720
-                });
-                window.RDMGR.captureWindow.setFullScreen(false);
-            }
 
             this.remoteStatus = CaptureStatus.subscribe(this.updateStatus);
+            this.remoteCapture = CaptureController.subscribe(this.updateState);
+            this.remoteScoreboard = ScoreboardController.subscribe(this.updateScoreboard);
 
             //load user config file
             DataController.loadConfig().then(() => {
@@ -142,14 +143,26 @@ class CaptureForm extends React.Component<any, SCaptureForm> {
     }
 
     /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteCapture !== null)
+            this.remoteCapture();
+        if(this.remoteScoreboard !== null)
+            this.remoteScoreboard();
+        if(this.remoteStatus !== null)
+            this.remoteStatus();
+    }
+
+    /**
      * Renders the component.
      */
     render() {
-        var classScoreboard = cnames(this.state.Scoreboard.className, {
+        let classScoreboard:string = cnames(this.state.Scoreboard.className, {
             light:this.state.Scoreboard.Light
         });
 
-        var className = cnames('capture-form',
+        let className:string = cnames('capture-form',
             `camera-${this.state.MainCamera.className}`,
             `video-${this.state.MainVideo.className}`,
             `scorebanner-${this.state.Scorebanner.className}-${(this.state.Scorebanner.Shown) ? 'shown' : 'hidden'}`,
@@ -160,7 +173,7 @@ class CaptureForm extends React.Component<any, SCaptureForm> {
             }
         );
 
-        var style = {
+        let style:CSSProperties = {
             backgroundImage:`url('${DataController.mpath('/default/leaguebg.jpg')}')`
         };
 
@@ -195,5 +208,3 @@ class CaptureForm extends React.Component<any, SCaptureForm> {
         );
     }
 }
-
-export default CaptureForm

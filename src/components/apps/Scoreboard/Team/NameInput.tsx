@@ -13,16 +13,27 @@ interface PNameInput {
 /**
  * Name input handler for the a team.
  */
-class NameInput extends React.PureComponent<PNameInput, SNameInput> {
+class NameInput extends React.PureComponent<{
+    /**
+     * Team object from ScoreboardController
+     */
+    Team:SScoreboardTeam;
+}, {
+    /**
+     * User entered name
+     */
+    name:string;
+}> {
     readonly state:SNameInput = {
         name:''
     }
 
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super(props);
-        this.state.name = this.props.Team.Name;
-
-        //bindings
         this.onChange = this.onChange.bind(this);
         this.onSubmitName = this.onSubmitName.bind(this);
     }
@@ -58,11 +69,18 @@ class NameInput extends React.PureComponent<PNameInput, SNameInput> {
     }
 
     /**
+     * Set name from Team
+     */
+    componentDidMount() {
+        this.setState({name:this.props.Team.Name});
+    }
+
+    /**
      * Renders the component.
      */
     render() {
-        var name = (this.state.name) ? this.state.name : '';
-        var changed = (this.props.Team.Name !== name);
+        let name:string = (this.state.name) ? this.state.name : '';
+        let changed:boolean = (this.props.Team.Name !== name);
         return (
             <div>
                 <div>Name</div>

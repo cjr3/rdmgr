@@ -2,23 +2,37 @@ import React from 'react';
 import Panel from 'components/Panel';
 import { IconButton, IconCheck, IconNo } from 'components/Elements';
 
-interface SClientDialog {
-    shown:boolean,
-    message:string
-}
-
 /**
  * Component for showing a modal dialog to the client.
  */
-class ClientDialog extends React.PureComponent<any, SClientDialog> {
-    readonly state:SClientDialog = {
+export default class ClientDialog extends React.PureComponent<any, {
+    /**
+     * true to show, false to hide
+     */
+    shown:boolean;
+    /**
+     * Message to display to the user
+     */
+    message:string;
+}> {
+    readonly state = {
         shown:false,
         message:''
     }
 
-    confirm?:Function|null|undefined
-    cancel?:Function|null|undefined
+    /**
+     * Callback holder for when user clicks to confirm
+     */
+    protected confirm?:Function|null|undefined
+    /**
+     * Callback holder for when user clicks to cancel
+     */
+    protected cancel?:Function|null|undefined
 
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super(props);
         this.state = {
@@ -109,5 +123,3 @@ class ClientDialog extends React.PureComponent<any, SClientDialog> {
         )
     }
 }
-
-export default ClientDialog;

@@ -3,7 +3,6 @@ import ScoreboardController, {SScoreboardTeam} from 'controllers/ScoreboardContr
 import CaptureController from 'controllers/CaptureController';
 import CaptureControlPanel, {PCaptureControlPanel} from './CaptureControlPanel';
 import DataController from 'controllers/DataController';
-
 import {
     IconX,
     IconCheck,
@@ -13,47 +12,45 @@ import { PhaseRecord } from 'tools/vars';
 import Counter from 'components/tools/Counter';
 import MediaPreview from 'components/tools/MediaPreview';
 
-interface SCaptureControlScorebanner {
-    /**
-     * Left side socreboard team
-     */
-    TeamA:SScoreboardTeam,
-    /**
-     * Right side scoreboard team
-     */
-    TeamB:SScoreboardTeam,
-    /**
-     * Current phase index
-     */
-    PhaseIndex:number,
-    /**
-     * Jam #
-     */
-    JamCounter:number,
-    /**
-     * Phases / quarters to select from
-     */
-    Phases:Array<PhaseRecord>,
-    /**
-     * Determines if the scorebanner is shown or note
-     */
-    Shown:boolean,
-    /**
-     * Determines if the clocks (jam and game) are displayed on the screen
-     */
-    ClocksShown:boolean,
-    /**
-     * Background for the scorebanner
-     */
-    BackgroundImage?:string
-}
-
 /**
  * Component for configuring the score banner.
  */
-class CaptureControlScorebanner extends React.PureComponent<PCaptureControlPanel, SCaptureControlScorebanner> {
+export default class CaptureControlScorebanner extends React.PureComponent<PCaptureControlPanel, {
+    /**
+     * Left side socreboard team
+     */
+    TeamA:SScoreboardTeam;
+    /**
+     * Right side scoreboard team
+     */
+    TeamB:SScoreboardTeam;
+    /**
+     * Current phase index
+     */
+    PhaseIndex:number;
+    /**
+     * Jam #
+     */
+    JamCounter:number;
+    /**
+     * Phases / quarters to select from
+     */
+    Phases:Array<PhaseRecord>;
+    /**
+     * Determines if the scorebanner is shown or note
+     */
+    Shown:boolean;
+    /**
+     * Determines if the clocks (jam and game) are displayed on the screen
+     */
+    ClocksShown:boolean;
+    /**
+     * Background for the scorebanner
+     */
+    BackgroundImage?:string;
+}> {
 
-    readonly state:SCaptureControlScorebanner = {
+    readonly state = {
         TeamA:ScoreboardController.getState().TeamA,
         TeamB:ScoreboardController.getState().TeamB,
         JamCounter:ScoreboardController.getState().JamCounter,
@@ -72,17 +69,17 @@ class CaptureControlScorebanner extends React.PureComponent<PCaptureControlPanel
     /**
      * Listener for scoreboard controller
      */
-    protected remoteState:Function
+    protected remoteState:Function|null = null;
 
     /**
      * Listener for capture controller
      */
-    protected remoteCapture:Function
+    protected remoteCapture:Function|null = null;
 
     /**
      * Listener for data controller
      */
-    protected remoteData:Function
+    protected remoteData:Function|null = null;
 
     /**
      * 
@@ -90,11 +87,9 @@ class CaptureControlScorebanner extends React.PureComponent<PCaptureControlPanel
      */
     constructor(props:PCaptureControlPanel) {
         super(props);
-
         this.updateState = this.updateState.bind(this);
         this.updateCapture = this.updateCapture.bind(this);
         this.updateData = this.updateData.bind(this);
-
         this.onAddJam = this.onAddJam.bind(this);
         this.onSubtractJam = this.onSubtractJam.bind(this);
         this.onChangePhase = this.onChangePhase.bind(this);
@@ -103,10 +98,6 @@ class CaptureControlScorebanner extends React.PureComponent<PCaptureControlPanel
         this.onClickDecreaseTeamAScore = this.onClickDecreaseTeamAScore.bind(this);
         this.onClickIncreaseTeamBScore = this.onClickIncreaseTeamBScore.bind(this);
         this.onClickDecreaseTeamBScore = this.onClickDecreaseTeamBScore.bind(this);
-
-        this.remoteState = ScoreboardController.subscribe(this.updateState);
-        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
-        this.remoteData = DataController.subscribe(this.updateData);
     }
 
     /**
@@ -209,9 +200,9 @@ class CaptureControlScorebanner extends React.PureComponent<PCaptureControlPanel
     /**
      * Triggered when the component updates
      * @param prevProps PCaptureControlPanel
-     * @param prevState SCaptureControlScorebanner
+     * @param prevState 
      */
-    componentDidUpdate(prevProps:PCaptureControlPanel, prevState:SCaptureControlScorebanner) {
+    componentDidUpdate(prevProps:PCaptureControlPanel, prevState) {
         if(prevState.JamCounter !== this.state.JamCounter) {
             if(this.JamCounterItem !== null && this.JamCounterItem.current !== null) {
                 this.JamCounterItem.current.set(this.state.JamCounter, false);
@@ -220,10 +211,31 @@ class CaptureControlScorebanner extends React.PureComponent<PCaptureControlPanel
     }
 
     /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteState = ScoreboardController.subscribe(this.updateState);
+        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
+        this.remoteData = DataController.subscribe(this.updateData);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteState !== null)
+            this.remoteState();
+        if(this.remoteCapture !== null)
+            this.remoteCapture();
+        if(this.remoteData !== null)
+            this.remoteData();
+    }
+
+    /**
      * Renders the component.
      */
     render() {
-        var phases:Array<React.ReactElement> = [];
+        let phases:Array<React.ReactElement> = [];
         this.state.Phases.forEach((phase, index) => {
             phases.push(
                 <option
@@ -300,5 +312,3 @@ class CaptureControlScorebanner extends React.PureComponent<PCaptureControlPanel
         )
     }
 }
-
-export default CaptureControlScorebanner;

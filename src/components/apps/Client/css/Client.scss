@@ -124,7 +124,7 @@
         }
     
         > .panel.popup {
-            bottom: 48px;
+            bottom: 0px;
         }
         > .CHT-app-panel {
             bottom: 0px !important;
@@ -159,6 +159,10 @@
     }
 
     .display-options {
+        max-width: 300px;
+    }
+
+    .controller-options {
         max-width: 300px;
     }
 }

@@ -4,49 +4,64 @@ import DataController from 'controllers/DataController';
 import {ToggleButton} from 'components/Elements';
 import vars, { SkaterTeamRecord, TeamRecord, SkaterRecord } from 'tools/vars';
 
-interface SSkaterEditor {
-    SkaterTeams:Array<SkaterTeamRecord>;
-    SkaterID:number;
-    Teams:Array<TeamRecord>;
-    records:Array<SkaterRecord>;
-}
-
-interface PSkaterEditor {
-    record:SkaterRecord;
-    opened:boolean;
-}
-
 /**
  * Component to edit a skater record.
  */
-class SkaterEditor extends React.PureComponent<PSkaterEditor, SSkaterEditor> {
-    readonly state:SSkaterEditor = {
-        SkaterTeams:[],
+export default class SkaterEditor extends React.PureComponent<{
+    /**
+     * Record to edit
+     */
+    record:SkaterRecord|null;
+    /**
+     * true to show, false to hide
+     */
+    opened:boolean;
+}, {
+    /**
+     * Teams the skater is assigned to
+     */
+    SkaterTeams:Array<SkaterTeamRecord>;
+    /**
+     * Reference for assigning to skater teams
+     */
+    SkaterID:number;
+    /**
+     * Teams to select from
+     */
+    Teams:Array<TeamRecord>;
+}> {
+    readonly state = {
+        SkaterTeams:new Array<SkaterTeamRecord>(),
         SkaterID:0,
-        Teams:DataController.getTeams(true),
-        records:DataController.getSkaters(true)
+        Teams:DataController.getTeams(true)
     }
 
-    remoteData:Function
+    /**
+     * DataController listener
+     */
+    protected remoteData:Function|null = null;
 
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super(props);
         this.addTeam = this.addTeam.bind(this);
         this.removeTeam = this.removeTeam.bind(this);
         this.onSubmit = this.onSubmit.bind(this);
         this.onSelect = this.onSelect.bind(this);
-        this.updateState = this.updateState.bind(this);
+        this.updateData = this.updateData.bind(this);
         this.changePosition = this.changePosition.bind(this);
-        this.remoteData = DataController.subscribe(this.updateState);
     }
 
     /**
-     * Updates the state to match the controller
+     * Updates the state to match the data controller
+     * - Update teams
      */
-    updateState() {
+    updateData() {
         this.setState({
-            Teams:DataController.getTeams(true),
-            records:DataController.getSkaters(true)
+            Teams:DataController.getTeams(true)
         });
     }
 
@@ -54,8 +69,8 @@ class SkaterEditor extends React.PureComponent<PSkaterEditor, SSkaterEditor> {
      * Adds the skater to the given team
      * @param {Number} id 
      */
-    addTeam(id:number) {
-        let index = this.state.SkaterTeams.findIndex((team) => {
+    protected addTeam(id:number) {
+        let index:number = this.state.SkaterTeams.findIndex((team) => {
             return (team.TeamID === id);
         });
 
@@ -83,8 +98,8 @@ class SkaterEditor extends React.PureComponent<PSkaterEditor, SSkaterEditor> {
      * Removes the skater from the given team.
      * @param {Number} id 
      */
-    removeTeam(id:number) {
-        let index = this.state.SkaterTeams.findIndex((team) => {
+    protected removeTeam(id:number) {
+        let index:number = this.state.SkaterTeams.findIndex((team) => {
             return (team.TeamID === id);
         })
 
@@ -163,14 +178,29 @@ class SkaterEditor extends React.PureComponent<PSkaterEditor, SSkaterEditor> {
     }
 
     /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteData = DataController.subscribe(this.updateData);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteData !== null)
+            this.remoteData();
+    }
+
+    /**
      * Renders the component.
      */
     render() {
-        var teams:Array<React.ReactElement> = [];
+        let teams:Array<React.ReactElement> = [];
         if(this.state.Teams) {
-            var items = Object.entries(this.state.Teams);
+            let items = Object.entries(this.state.Teams);
             items.forEach((item) => {
-                let team = item[1];
+                let team:TeamRecord = item[1];
                 let captain:boolean = false;
                 let cocaptain:boolean = false;
                 let coach:boolean = false;
@@ -202,27 +232,12 @@ class SkaterEditor extends React.PureComponent<PSkaterEditor, SSkaterEditor> {
                         }}
                     />
                 );
-
-                // teams.push(
-                //     <ToggleButton 
-                //         label={team.Name} key={"team" + team.RecordID}
-                //         checked={checked}
-                //         title={team.Name}
-                //         onClick={() => {
-                //             if(checked)
-                //                 this.removeTeam(team.RecordID);
-                //             else
-                //                 this.addTeam(team.RecordID);
-                //         }}
-                //     />
-                // );
             });
         }
         
         return (
             <RecordEditor 
                 recordType={vars.RecordType.Skater}
-                records={this.state.records}
                 onSubmit={this.onSubmit}
                 opened={this.props.opened}
                 {...this.props}
@@ -286,5 +301,3 @@ function SkaterTeam(props:PSkaterTeam) {
         </div>
     );
 }
-
-export default SkaterEditor;

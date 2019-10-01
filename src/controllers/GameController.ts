@@ -2,6 +2,8 @@
  * Module used for game controllers
  */
 
+import ScoreboardController from './ScoreboardController';
+
 export interface GameButton {
     /**
      * Human-readable string of button
@@ -274,11 +276,6 @@ export const GamepadAxisMap:IGamepadAxes = {
 class GameControllerHandler {
 
     /**
-     * The controller to receive command
-     */
-    Receiver:any = null;
-
-    /**
      * 
      */
     protected Timer:number = 0;
@@ -396,7 +393,7 @@ class GameControllerHandler {
      * (I think this is a 'bug' in Chrome, or by design to poll the gamepad)
      */
     protected queryGamepad() {
-        if(this.Gamepad === null || this.Receiver === null || this.Receiver.controller === null) {
+        if(this.Gamepad === null) {
             this.LoadControllers().then((controllers) => {
                 this.Gamepads = controllers;
             });
@@ -437,23 +434,23 @@ class GameControllerHandler {
         }
 
         //Button Pressed
-        if(buttonPressed && this.Receiver.controller.onGamepadButtonPress) {
-            this.Receiver.controller.onGamepadButtonPress(GamepadButtonMap);
+        if(buttonPressed) {
+            ScoreboardController.onGamepadButtonPress(GamepadButtonMap);
         }
 
         //Button Down
-        if(buttonDown && this.Receiver.controller.onGamepadButtonDown) {
-            this.Receiver.controller.onGamepadButtonDown(GamepadButtonMap);
+        if(buttonDown) {
+            ScoreboardController.onGamepadButtonDown(GamepadButtonMap);
         }
 
         //Button Released
-        if(buttonReleased && this.Receiver.controller.onGamepadButtonUp) {
-            this.Receiver.controller.onGamepadButtonUp(GamepadButtonMap);
+        if(buttonReleased) {
+            ScoreboardController.onGamepadButtonUp(GamepadButtonMap);
         }
 
         //moved control sticks
-        if(stickMoved && this.Receiver.controller.onGamepadAxis) {
-            this.Receiver.controller.onGamepadAxis(GamepadAxisMap);
+        if(stickMoved) {
+            ScoreboardController.onGamepadAxis(GamepadAxisMap);
         }
 
         this.resetButtons();

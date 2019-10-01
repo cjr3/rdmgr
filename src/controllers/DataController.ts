@@ -1014,7 +1014,7 @@ const DataController = {
      * Gets the team records.
      * @param {Boolean} zero 
      */
-    getTeams(zero:boolean = false) {
+    getTeams(zero:boolean = false) : Array<TeamRecord> {
         var records = DataController.getRecords(vars.RecordType.Team, zero);
         if(records instanceof Array) {
             return records.sort((a, b) => {
@@ -1701,7 +1701,7 @@ const DataController = {
      * Gets the slideshows.
      * @param {Boolean} zero true to get a zero-indexed, alpha-sorted array
      */
-    getSlideshows(zero:boolean = false) {
+    getSlideshows(zero:boolean = false) : any|Array<SlideshowRecord> {
         var records = DataController.getRecords(vars.RecordType.Slideshow, zero);
         if(records instanceof Array) {
             return records.sort((a, b) => {

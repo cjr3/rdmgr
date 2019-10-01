@@ -19,91 +19,86 @@ import PhaseControl from './PhaseControl'
 import PhaseSelection from './PhaseSelection'
 import TeamPicker from './TeamPicker'
 import JamReset from './JamReset'
-import DisplayPanel from './DisplayPanel'
 import vars from 'tools/vars'
 import ScoreboardController, {SScoreboardTeam} from 'controllers/ScoreboardController'
 import './css/Scoreboard.scss'
 
-interface SScoreboard {
+/**
+ * Component for the Scoreboard control
+ */
+export default class Scoreboard extends React.Component<{
+    /**
+     * Remote peer's PeerID
+     * - If provided, clock values must be set with state updates
+     */
+    remote?:string;
+    /**
+     * true if open, false if not
+     */
+    opened:boolean
+}, {
     /**
      * Status of the scoreboard
      */
-    BoardStatus:number,
+    BoardStatus:number;
     /**
      * State of the jam clock
      */
-    JamState:number,
+    JamState:number;
     /**
      * State of the break clock
      */
-    BreakState:number,
+    BreakState:number;
     /**
      * State of the game clock
      */
-    GameState:number,
+    GameState:number;
     /**
      * Status of confirming points to in-field referees
      */
-    ConfirmStatus:number,
+    ConfirmStatus:number;
     /**
      * Name of current phase/quarter
      */
-    PhaseName:string,
+    PhaseName:string;
     /**
      * Left-side team
      */
-    TeamA:SScoreboardTeam,
+    TeamA:SScoreboardTeam;
     /**
      * Right-side team
      */
-    TeamB:SScoreboardTeam,
+    TeamB:SScoreboardTeam;
     /**
      * Show/Hide phase selection
      */
-    PhaseOpened:boolean,
+    PhaseOpened:boolean;
     /**
      * Show/Hide team selection
      */
-    TeamOpened:boolean,
+    TeamOpened:boolean;
     /**
      * Show/hide display buttons
      */
-    DisplayOpened:boolean,
+    DisplayOpened:boolean;
     /**
      * Show/Hide Jam Reset
      */
-    JamResetOpened:boolean,
+    JamResetOpened:boolean;
     /**
      * Last jam start hour
      */
-    StartGameHour:number,
+    StartGameHour:number;
     /**
      * Last jam start minute
      */
-    StartGameMinute:number,
+    StartGameMinute:number;
     /**
      * Last jam start second
      */
-    StartGameSecond:number
-}
-
-/**
- * Scoreboard properties
- */
-export interface PScoreboard {
-    /**
-     * Remote peer's PeerID
-     * - If provided, clocks values must be set with state updates
-     */
-    remote?:string,
-    opened:boolean
-}
-
-/**
- * Component for the scoreboard control
- */
-class Scoreboard extends React.Component<PScoreboard, SScoreboard> {
-    readonly state:SScoreboard = {
+    StartGameSecond:number;
+}> {
+    readonly state = {
         BoardStatus:ScoreboardController.getState().BoardStatus,
         JamState:ScoreboardController.getState().JamState,
         BreakState:ScoreboardController.getState().BreakState,
@@ -129,8 +124,12 @@ class Scoreboard extends React.Component<PScoreboard, SScoreboard> {
     /**
      * Listener for Scoreboard controller
      */
-    protected remoteScore:Function
+    protected remoteScore:Function|null = null;
 
+    /**
+     * Constroctor
+     * @param props 
+     */
     constructor(props) {
         super(props);
         this.onClickDisplay = this.onClickDisplay.bind(this);
@@ -143,7 +142,6 @@ class Scoreboard extends React.Component<PScoreboard, SScoreboard> {
         this.onClickTimeout = this.onClickTimeout.bind(this);
         this.onClickInjury = this.onClickInjury.bind(this);
         this.updateState = this.updateState.bind(this);
-        this.remoteScore = ScoreboardController.subscribe(this.updateState);
     }
 
     /**
@@ -258,17 +256,32 @@ class Scoreboard extends React.Component<PScoreboard, SScoreboard> {
     }
 
     /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteScore = ScoreboardController.subscribe(this.updateState);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteScore !== null)
+            this.remoteScore();
+    }
+
+    /**
      * Renders the component
      */
     render() {
         const jamLabel:string = this.JamLabels[this.state.JamState];
-        var clockIcon = IconPlay
+        let clockIcon:string = IconPlay
             
         if(ScoreboardController.getState().GameState === vars.Clock.Status.Running) {
             clockIcon = IconPause
         }
         
-        var buttons:Array<React.ReactElement> = [
+        let buttons:Array<React.ReactElement> = [
             <Button key="btn-oto" 
                 active={(this.state.BoardStatus === vars.Scoreboard.Status.Timeout)}
                 onClick={this.onClickTimeout}>Timeout</Button>,
@@ -367,5 +380,3 @@ class Scoreboard extends React.Component<PScoreboard, SScoreboard> {
         )
     }
 }
-
-export default Scoreboard;

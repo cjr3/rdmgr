@@ -6,9 +6,9 @@ import cnames from 'classnames';
 import './css/CaptureScorekeeper.scss';
 
 /**
- * Properties for the CaptureScorekeeper component
+ * Component for displaying Scorekeeper elements on the capture window.
  */
-export interface PCaptureScorekeeper {
+export default class CaptureScorekeeper extends React.Component<{
     /**
      * True to show/hide the component
      */
@@ -21,12 +21,7 @@ export interface PCaptureScorekeeper {
      * Right-side team
      */
     TeamB:SScoreboardTeam;
-}
-
-/**
- * Component for displaying Scorekeeper elements on the capture window.
- */
-class CaptureScorekeeper extends React.Component<PCaptureScorekeeper, SScorekeeperState> {
+}, SScorekeeperState> {
     /**
      * State
      */
@@ -34,16 +29,15 @@ class CaptureScorekeeper extends React.Component<PCaptureScorekeeper, SScorekeep
     /**
      * Listener for changes to the scorekeeper controller
      */
-    protected remoteState:Function
+    protected remoteState:Function|null = null;
 
     /**
      * 
-     * @param props PCaptureScorekeeper
+     * @param props
      */
-    constructor(props:PCaptureScorekeeper) {
+    constructor(props) {
         super(props);
         this.updateState = this.updateState.bind(this);
-        this.remoteState = ScorekeeperController.subscribe(this.updateState);
     }
 
     /**
@@ -54,27 +48,42 @@ class CaptureScorekeeper extends React.Component<PCaptureScorekeeper, SScorekeep
     }
 
     /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteState = ScorekeeperController.subscribe(this.updateState);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteState !== null)
+            this.remoteState();
+    }
+
+    /**
      * Renders the component
      */
     render() {
-        var className = cnames('capture-scorekeeper', {
+        let className:string = cnames('capture-scorekeeper', {
             shown:(this.props.shown)
         });
 
-        var classNameA = cnames('skater', {
+        let classNameA:string = cnames('skater', {
             shown:(this.state.TeamA.Track.Jammer !== null)
         });
 
-        var classNameB = cnames('skater', {
+        let classNameB:string = cnames('skater', {
             shown:(this.state.TeamB.Track.Jammer !== null)
         });
 
-        var srcA:string|undefined = '';
-        var srcB:string|undefined = '';
-        var styleA:CSSProperties = {};
-        var styleB:CSSProperties = {};
-        var nameA:string|undefined = '';
-        var nameB:string|undefined = '';
+        let srcA:string|undefined = '';
+        let srcB:string|undefined = '';
+        let styleA:CSSProperties = {};
+        let styleB:CSSProperties = {};
+        let nameA:string|undefined = '';
+        let nameB:string|undefined = '';
 
         if(this.state.TeamA.Track.Jammer !== null) {
             if(this.state.TeamA.Track.Jammer.Thumbnail)
@@ -116,5 +125,3 @@ class CaptureScorekeeper extends React.Component<PCaptureScorekeeper, SScorekeep
         )
     }
 }
-
-export default CaptureScorekeeper;

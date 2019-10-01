@@ -3,7 +3,10 @@ import cnames from 'classnames'
 import vars from 'tools/vars';
 
 interface PStatus {
-    status:number
+    /**
+     * Status code, from vars.Team.Status
+     */
+    status:number;
 }
 
 /**

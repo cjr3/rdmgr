@@ -1,29 +1,54 @@
 import React from 'react';
 import cnames from 'classnames';
 
-interface PCamera {
-    width:number,
-    height:number,
-    audio?:boolean,
-    deviceId?:string,
-    source?:MediaStream,
-    className?:string,
-    onStream?:Function,
-    onSelect?:Function
-}
-
 /**
  * Component for playing a connected web camera
  */
-class Camera extends React.PureComponent<PCamera> {
-    DeviceID:string|null = '';
-    Brush:CanvasRenderingContext2D|null = null;
-    StreamSource:MediaStream|null = null;
-    CanvasStream:MediaStream|null = null;
-    Paused:boolean = false;
-    PaintTimer:number = 0;
-    VideoElement:React.RefObject<HTMLVideoElement> = React.createRef();
+export default class Camera extends React.PureComponent<{
+    /**
+     * Width of the video element
+     * - can be changed with CSS
+     */
+    width:number;
+    /**
+     * Height of the video element
+     */
+    height:number;
+    /**
+     * true to play audio from camera
+     */
+    audio?:boolean;
+    /**
+     * Selected device ID
+     */
+    deviceId?:string;
+    /**
+     * Selected source - for peer cameras?
+     */
+    source?:MediaStream;
+    /**
+     * Additional class names
+     */
+    className?:string;
+    /**
+     * Triggered when the camera starts playing
+     */
+    onStream?:Function;
+}> {
+    /**
+     * MediaStream element retrieved from camera
+     */
+    protected StreamSource:MediaStream|null = null;
 
+    /**
+     * Reference video element
+     */
+    protected VideoElement:React.RefObject<HTMLVideoElement> = React.createRef();
+
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super(props);
         this.destroy = this.destroy.bind(this);
@@ -33,7 +58,7 @@ class Camera extends React.PureComponent<PCamera> {
      * Loads the camera to the canvas.
      * @param {String} id Camera Device ID
      */
-    async loadCamera(id) {
+    loadCamera(id) {
         try {
             if(id === '') {
                 this.destroy();
@@ -70,11 +95,13 @@ class Camera extends React.PureComponent<PCamera> {
      * Starts the camera
      */
     start() {
-        this.Paused = false;
         if(this.VideoElement !== null && this.VideoElement.current !== null)
             this.VideoElement.current.play();
     }
 
+    /**
+     * Alias of start()
+     */
     play() {
         this.start();
     }
@@ -83,15 +110,15 @@ class Camera extends React.PureComponent<PCamera> {
      * Disconnects the camera and stops all tracks.
      */
     destroy() {
-        if(this.StreamSource !== null) {
-            var tracks = this.StreamSource.getTracks();
+        if(this.StreamSource !== null && this.StreamSource !== undefined) {
+            let tracks:Array<MediaStreamTrack> = this.StreamSource.getTracks();
             if(tracks && tracks.forEach) {
                 tracks.forEach((track) => {
                     track.stop();
                 });
             }
             this.StreamSource = null;
-            if(this.VideoElement.current)
+            if(this.VideoElement !== null && this.VideoElement.current !== null)
                 this.VideoElement.current.srcObject = null;
         }
     }
@@ -129,13 +156,7 @@ class Camera extends React.PureComponent<PCamera> {
                 if(this.props.onStream)
                     this.props.onStream(this.props.source);
             } else {
-                if(this.VideoElement.current !== null && this.VideoElement.current.srcObject !== null) {
-                    //var tracks = this.VideoElement.current.srcObject.getTracks();
-                    //tracks.forEach((track) => {
-                    //    track.stop();
-                    //});
-                    this.VideoElement.current.srcObject = null;
-                }
+                this.destroy();
             }
         }
     }
@@ -149,11 +170,8 @@ class Camera extends React.PureComponent<PCamera> {
                 className={cnames('camera', this.props.className)}
                 width={this.props.width}
                 height={this.props.height}
-                //ref={this.CanvasElement}
                 ref={this.VideoElement}
             />
         )
     }
 }
-
-export default Camera;

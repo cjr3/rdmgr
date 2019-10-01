@@ -1,20 +1,31 @@
-import React from 'react'
+import React, { CSSProperties } from 'react'
 import CaptureController, {CaptureStateAnthem} from 'controllers/CaptureController';
 import cnames from 'classnames'
 import './css/CaptureAnthem.scss'
 import DataController from 'controllers/DataController';
 
-
-class CaptureAnthem extends React.PureComponent<any, CaptureStateAnthem> {
+/**
+ * Component for displaying national anthem singer info on the capture window.
+ */
+export default class CaptureAnthem extends React.PureComponent<any, CaptureStateAnthem> {
 
     readonly state:CaptureStateAnthem = CaptureController.getState().NationalAnthem
-    BackgroundImage:string = DataController.GetMiscRecord('NationalAnthemSinger').Background
-    remoteCapture:Function
+    /**
+     * Background of national anthem singer
+     */
+    protected BackgroundImage:string = DataController.GetMiscRecord('NationalAnthemSinger').Background
+    /**
+     * CaptureController remote
+     */
+    protected remoteCapture:Function|null = null;
 
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super(props);
         this.updateState = this.updateState.bind(this);
-        this.remoteCapture = CaptureController.subscribe(this.updateState);
     }
 
     /**
@@ -25,27 +36,41 @@ class CaptureAnthem extends React.PureComponent<any, CaptureStateAnthem> {
     }
 
     /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteCapture = CaptureController.subscribe(this.updateState);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteCapture !== null)
+            this.remoteCapture();
+    }
+
+    /**
      * Renders the component
      */
     render() {
-        var className = cnames('capture-anthem', this.state.className, {
+        let className:string = cnames('capture-anthem', this.state.className, {
             shown:this.state.Shown
         });
 
-        var bioClass = cnames({
+        let bioClass:string = cnames({
             bio:true,
             shown:(this.state.Record.Biography !== '')
         });
 
-        var nameClass = cnames({
+        let nameClass:string = cnames({
             name:true,
             shown:(this.state.Record.Name !== '')
         });
 
-        var background = 'none';
+        let style:CSSProperties = {backgroundImage:'none'};
         if(this.BackgroundImage)
-            background = "url('" + DataController.mpath(this.BackgroundImage) + "')";
-        var style = {backgroundImage:background};
+            style.backgroundImage = "url('" + DataController.mpath(this.BackgroundImage) + "')";
 
         return (
             <div className={className} style={style}>
@@ -55,5 +80,3 @@ class CaptureAnthem extends React.PureComponent<any, CaptureStateAnthem> {
         );
     }
 }
-
-export default CaptureAnthem;

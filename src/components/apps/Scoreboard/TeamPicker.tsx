@@ -4,55 +4,53 @@ import ScoreboardController from 'controllers/ScoreboardController';
 import DataController from 'controllers/DataController';
 import Panel from 'components/Panel';
 import { Button, ToggleButton } from 'components/Elements';
-import { TeamRecord } from 'tools/vars';
-
-interface STeamPicker {
-    resetChecked:boolean,
-    resetRosterChecked:boolean,
-    TeamAID:number,
-    TeamBID:number,
-    Teams:Array<TeamRecord>
-}
-
-interface PTeamPicker {
-    opened:boolean,
-    onSubmit:Function,
-    onClose:Function
-}
 
 /**
  * Component for the scoreboard to pick the teams.
  */
-class TeamPicker extends React.PureComponent<PTeamPicker, STeamPicker> {
-    readonly state:STeamPicker = {
+export default class TeamPicker extends React.PureComponent<{
+    /**
+     * true to show, false to hide
+     */
+    opened:boolean;
+    /**
+     * Triggered when the user clicks the submit button
+     */
+    onSubmit:Function;
+    /**
+     * 
+     */
+    onClose:Function;
+}, {
+    /**
+     * true to reset the board
+     */
+    resetChecked:boolean;
+    /**
+     * true to reset the roster
+     */
+    resetRosterChecked:boolean;
+    /**
+     * Selected team ID for the left-side
+     */
+    TeamAID:number;
+    /**
+     * Selected team ID for the right-side
+     */
+    TeamBID:number;
+}> {
+    readonly state = {
         resetChecked:false,
         resetRosterChecked:false,
         TeamAID:ScoreboardController.getState().TeamA.ID,
-        TeamBID:ScoreboardController.getState().TeamB.ID,
-        Teams:[]
+        TeamBID:ScoreboardController.getState().TeamB.ID
     }
 
-    remoteData:Function
     constructor(props) {
         super(props);
         this.onChangeA = this.onChangeA.bind(this);
         this.onChangeB = this.onChangeB.bind(this);
         this.onSubmit = this.onSubmit.bind(this);
-        this.updateData = this.updateData.bind(this);
-        this.remoteData = DataController.subscribe(this.updateData);
-    }
-
-    /**
-     * Updates the state to match the data controller.
-     * - Update teams
-     */
-    updateData() {
-        let teams = DataController.getTeams(true);
-        if(!DataController.compare(teams, this.state.Teams)) {
-            this.setState(() => {
-                return {Teams:teams.slice()}
-            });
-        }
     }
 
     /**
@@ -96,7 +94,7 @@ class TeamPicker extends React.PureComponent<PTeamPicker, STeamPicker> {
      * Renders the component.
      */
     render() {
-        var buttons = [
+        let buttons:Array<React.ReactElement> = [
             <ToggleButton 
                 key="btn-roster" 
                 label="Reset Roster"
@@ -137,5 +135,3 @@ class TeamPicker extends React.PureComponent<PTeamPicker, STeamPicker> {
         )
     }
 }
-
-export default TeamPicker;

@@ -1,9 +1,8 @@
 import React from 'react';
-import * as cnames from 'classnames';
+import cnames from 'classnames';
 import {
     IconShown,
     IconHidden,
-    IconController,
     Icon,
     IconButton
 } from 'components/Elements';
@@ -40,7 +39,7 @@ export interface PCaptureControlPanel {
     /**
      * Triggered when the user presses the accordion button
      */
-    onClick:Function;
+    onClick?:Function;
     /**
      * Child elements to put inside the panel
      */

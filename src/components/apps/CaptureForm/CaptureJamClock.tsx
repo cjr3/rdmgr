@@ -2,31 +2,65 @@ import React from 'react';
 import ScoreboardController from 'controllers/ScoreboardController';
 import cnames from 'classnames';
 
-interface SCaptureJamClock {
-    JamSecond:number
-}
-
-interface PCaptureJamClock {
-    shown?:boolean
-}
-
-class CaptureJamClock extends React.PureComponent<PCaptureJamClock, SCaptureJamClock> {
-    readonly state:SCaptureJamClock = {
+/**
+ * Component for displaying a large jam clock on the capture window
+ */
+export default class CaptureJamClock extends React.PureComponent<{
+    /**
+     * True to show, false to hide
+     */
+    shown:boolean;
+}, {
+    /**
+     * Seconds on the jam clock
+     */
+    JamSecond:number;
+}> {
+    readonly state = {
         JamSecond:ScoreboardController.getState().JamSecond
     }
-    remoteScoreboard:Function
+
+    /**
+     * ScoreboardController remote
+     */
+    protected remoteScoreboard:Function|null = null;
+
+    /**
+     * 
+     * @param props 
+     */
     constructor(props) {
         super(props);
         this.updateState = this.updateState.bind(this);
-        this.remoteScoreboard = ScoreboardController.subscribe(this.updateState);
     }
 
+    /**
+     * Updates the state to match the ScoreboardController
+     */
     updateState() {
         this.setState({JamSecond:ScoreboardController.getState().JamSecond});
     }
 
+    /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteScoreboard = ScoreboardController.subscribe(this.updateState);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteScoreboard !== null)
+            this.remoteScoreboard();
+    }
+
+    /**
+     * Renders the component
+     */
     render() {
-        var className = cnames('capture-jam-clock', {
+        let className:string = cnames('capture-jam-clock', {
             shown:this.props.shown,
             warning:(this.state.JamSecond <= 10),
             danger:(this.state.JamSecond <= 5)
@@ -38,5 +72,3 @@ class CaptureJamClock extends React.PureComponent<PCaptureJamClock, SCaptureJamC
         )
     }
 }
-
-export default CaptureJamClock;

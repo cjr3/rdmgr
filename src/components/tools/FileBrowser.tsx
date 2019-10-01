@@ -1,29 +1,44 @@
 import React from 'react';
 import DataController from 'controllers/DataController';
-import {Icon, Button, IconButton, IconCheck, IconSave, IconAttachment, ProgressBar, IconLoop} from 'components/Elements';
+import {Icon, Button, IconButton, IconCheck, IconAttachment, ProgressBar, IconLoop, IconShown} from 'components/Elements';
 import './css/FileBrowser.scss';
 import Panel from 'components/Panel';
-
-interface SFileBrowser {
-    path:string,
-    previewSrc:string
-}
-
-interface PFileBrowser {
-    opened:boolean,
-    onClose:Function,
-    onSelect?:Function,
-}
 
 /**
  * A component for browsing media files.
  */
-class FileBrowser extends React.PureComponent<PFileBrowser, SFileBrowser> {
-    readonly state:SFileBrowser = {
+export default class FileBrowser extends React.PureComponent<{
+    /**
+     * true to show, false to hide
+     */
+    opened:boolean;
+    /**
+     * Triggered when the user closes the file browser
+     */
+    onClose:Function;
+    /**
+     * Triggered when the user selects a file
+     */
+    onSelect?:Function;
+}, {
+    /**
+     * Current path of files to list
+     */
+    path:string;
+    /**
+     * Path of file to preview
+     */
+    previewSrc:string;
+}> {
+    readonly state = {
         path:DataController.MediaFolder,
         previewSrc:''
     }
 
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super(props);
         this.previewImage = this.previewImage.bind(this);
@@ -42,7 +57,7 @@ class FileBrowser extends React.PureComponent<PFileBrowser, SFileBrowser> {
      * Renders the component
      */
     render() {
-        var buttons = [
+        let buttons:Array<React.ReactElement> = [
             <Button
                 key="btn-close"
                 onClick={this.props.onClose}
@@ -61,7 +76,7 @@ class FileBrowser extends React.PureComponent<PFileBrowser, SFileBrowser> {
             );
         }
 
-        var previewButtons = [
+        let previewButtons:Array<React.ReactElement> = [
             <Button
                 key="btn-select"
                 onClick={() => {
@@ -72,7 +87,7 @@ class FileBrowser extends React.PureComponent<PFileBrowser, SFileBrowser> {
                 >Select</Button>
         ];
 
-        var previewItem:React.ReactElement|null = null;
+        let previewItem:React.ReactElement|null = null;
         if(this.state.previewSrc !== '' && DataController.PATH)  {
             switch(DataController.ext(this.state.previewSrc)) {
                 case 'jpeg': 
@@ -141,16 +156,49 @@ interface PFileBrowserFolderList {
 /**
  * Component to list folders and controls to add files.
  */
-class FileBrowserFolderList extends React.PureComponent<PFileBrowserFolderList, SFileBrowserFolderList> {
-    readonly state:SFileBrowserFolderList = {
+class FileBrowserFolderList extends React.PureComponent<{
+    /**
+     * Path of folders to list
+     */
+    path:string;
+    /**
+     * Triggered when the user clicks a folder in the list
+     */
+    onClickPath:Function;
+}, {
+    /**
+     * Collection of folders to list
+     */
+    folders:Array<any>;
+    /**
+     * Selected path
+     */
+    path:string;
+    /**
+     * Files uploaded
+     */
+    uploadedFiles:number;
+    /**
+     * Files remaining to be uploaded
+     */
+    filesToUpload:number;
+}> {
+    readonly state = {
         folders:[],
         path:'',
         uploadedFiles:0,
         filesToUpload:0
     }
 
-    UploadTimer:number = 0
+    /**
+     * Reference for upload timer
+     */
+    protected UploadTimer:number = 0
 
+    /**
+     * 
+     * @param props 
+     */
     constructor(props) {
         super( props );
         this.onClickLoad = this.onClickLoad.bind(this);
@@ -243,7 +291,7 @@ class FileBrowserFolderList extends React.PureComponent<PFileBrowserFolderList, 
             i++;
         });
 
-        let buttons = [
+        let buttons:Array<React.ReactElement> = [
             <Icon
             key="btn-reload"
             src={IconLoop}
@@ -274,20 +322,23 @@ class FileBrowserFolderList extends React.PureComponent<PFileBrowserFolderList, 
     }
 }
 
-interface SFileBrowserFolder {
-    
-}
-
-interface PFileBrowserFolder {
-    folder:any,
-    path:string
-    onClick:Function
-}
-
 /**
  * Represents a folder
  */
-class FileBrowserFolder extends React.PureComponent<PFileBrowserFolder, SFileBrowserFolder> {
+class FileBrowserFolder extends React.PureComponent<{
+    /**
+     * Folder object
+     */
+    folder:any;
+    /**
+     * Full path of folder
+     */
+    path:string;
+    /**
+     * Triggered when the user clicks the folder
+     */
+    onClick:Function;
+}> {
     /**
      * Renders the component
      */
@@ -320,22 +371,30 @@ class FileBrowserFolder extends React.PureComponent<PFileBrowserFolder, SFileBro
     }
 }
 
-interface SFileBrowserList {
-    files:Array<string>
-}
-
-interface PFileBrowserList {
-    path:string,
-    onClickPreview?:Function,
-    onSelect?:Function
-}
-
 /**
  * Component to list files for a given path.
  */
-class FileBrowserList extends React.PureComponent<PFileBrowserList, SFileBrowserList> {
-    readonly state:SFileBrowserList = {
-        files:[]
+class FileBrowserList extends React.PureComponent<{
+    /**
+     * Path of files to list
+     */
+    path:string;
+    /**
+     * Triggered when the user clicks to preview a file
+     */
+    onClickPreview?:Function;
+    /**
+     * Triggered when the user selects a file
+     */
+    onSelect?:Function;
+}, {
+    /**
+     * Collection of files in the selected folder
+     */
+    files:Array<string>
+}> {
+    readonly state = {
+        files:new Array<string>()
     }
 
     /**
@@ -374,8 +433,8 @@ class FileBrowserList extends React.PureComponent<PFileBrowserList, SFileBrowser
      * Renders the component.
      */
     render() {
-        var files:Array<React.ReactElement> = [];
-        var i = 0;
+        let files:Array<React.ReactElement> = [];
+        let i = 0;
         this.state.files.forEach((file) => {
             files.push(
                 <FileBrowserFile
@@ -403,12 +462,40 @@ interface PFileBrowserFile {
 /**
  * Represents a file
  */
-class FileBrowserFile extends React.PureComponent<PFileBrowserFile> {
+class FileBrowserFile extends React.PureComponent<{
+    /**
+     * Full path to the file
+     */
+    file:string;
+    /**
+     * Triggered when the user clicks to preview the file
+     */
+    onClickPreview?:Function;
+    /**
+     * Triggered when the user selects the file
+     */
+    onSelect?:Function;
+}> {
 
-    CanvasItem:React.RefObject<HTMLCanvasElement> = React.createRef();
-    ImageItem:any = new Image();
-    Brush:CanvasRenderingContext2D|null = null;
+    /**
+     * Reference item to draw a thumbnail of an image
+     */
+    protected CanvasItem:React.RefObject<HTMLCanvasElement> = React.createRef();
 
+    /**
+     * Used to load image item
+     */
+    protected ImageItem:any = new Image();
+
+    /**
+     * Drawing brush
+     */
+    protected Brush:CanvasRenderingContext2D|null = null;
+
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super(props);
         this.CanvasItem = React.createRef();
@@ -501,24 +588,19 @@ class FileBrowserFile extends React.PureComponent<PFileBrowserFile> {
                 ></canvas>
                 <div className="name"
                     onClick={() => {
-                        if(this.props.onClickPreview !== undefined)
-                            this.props.onClickPreview(this.props.file);
+                        if(this.props.onSelect !== undefined) {
+                            if(this.props.onClickPreview !== undefined)
+                                this.props.onClickPreview('');
+                            this.props.onSelect(this.props.file);
+                        }
                     }}
                 >{DataController.basename(this.props.file)}</div>
                 <div className="buttons">
                     <Icon
-                        src={IconSave}
-                        onClick={this.showReplaceFileDialog}
-                        title="Replace"
-                        />
-                    <Icon
-                        src={IconCheck}
+                        src={IconShown}
                         onClick={() => {
-                            if(this.props.onSelect !== undefined) {
-                                if(this.props.onClickPreview !== undefined)
-                                    this.props.onClickPreview('');
-                                this.props.onSelect(this.props.file);
-                            }
+                            if(this.props.onClickPreview !== undefined)
+                                this.props.onClickPreview(this.props.file);
                         }}
                         title="Select File"
                         />
@@ -527,5 +609,3 @@ class FileBrowserFile extends React.PureComponent<PFileBrowserFile> {
         )
     }
 }
-
-export default FileBrowser;

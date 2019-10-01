@@ -5,27 +5,22 @@ import DataController from 'controllers/DataController';
 import './css/MediaPreview.scss';
 
 /**
- * Properties for the media preview element
+ * Component for previewing and changing a media element, such as an Image or video
  */
-export interface PMediaPreview {
+export default class MediaPreview extends React.PureComponent<{
     /**
      * Source
      */
-    src:string,
+    src:string;
     /**
      * Title for the element
      */
-    title?:string,
+    title?:string;
     /**
      * Callback for when the user selects a file
      */
-    onChange?:Function
-}
-
-/**
- * Component for previewing and changing a media element, such as an Image or video
- */
-class MediaPreview extends React.PureComponent<PMediaPreview> {
+    onChange?:Function;
+}> {
     /**
      * 
      */
@@ -40,10 +35,10 @@ class MediaPreview extends React.PureComponent<PMediaPreview> {
     private Brush:CanvasRenderingContext2D|null = null;
     
     /**
-     * 
-     * @param props PMediaPreview
+     * Constructor
+     * @param props
      */
-    constructor(props:PMediaPreview) {
+    constructor(props) {
         super(props);
         this.onSelectFile = this.onSelectFile.bind(this);
         this.onClickDelete = this.onClickDelete.bind(this);
@@ -153,7 +148,7 @@ class MediaPreview extends React.PureComponent<PMediaPreview> {
      * Renders the component
      */
     render() {
-        var className = cnames('media-preview', {
+        let className:string = cnames('media-preview', {
             filled:(this.props.src !== null && this.props.src !== '')
         });
         return (
@@ -169,5 +164,3 @@ class MediaPreview extends React.PureComponent<PMediaPreview> {
         );
     }
 }
-
-export default MediaPreview;

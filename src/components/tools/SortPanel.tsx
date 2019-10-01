@@ -2,33 +2,54 @@ import React from 'react';
 import cnames from 'classnames';
 import './css/SortPanel.scss';
 
-interface SSortPanel {
-    DragIndex:number,
-    DropIndex:number,
-    DragEnterX:number,
-    DropX:number,
-    DropLeft:boolean,
-    DropRight:boolean
-}
-
-interface PSortPanel {
-    items:Array<any>,
-    index?:number,
-    className?:string,
-    onDrop?:Function,
-    onDoubleClick?:Function
-}
-
-class SortPanel extends React.PureComponent<PSortPanel, SSortPanel> {
-    readonly state:SSortPanel = {
+/**
+ * Component for sorting elements
+ */
+export default class SortPanel extends React.PureComponent<{
+    /**
+     * Items to sort
+     */
+    items:Array<any>;
+    /**
+     * Current item
+     */
+    index?:number;
+    /**
+     * additional class names
+     */
+    className?:string;
+    /**
+     * triggered when the user drops an item
+     */
+    onDrop?:Function;
+    /**
+     * Triggered when the user double-clicks an item
+     */
+    onDoubleClick?:Function;
+}, {
+    /**
+     * Index of the current drag item
+     */
+    DragIndex:number;
+    /**
+     * Index of the drop target
+     */
+    DropIndex:number;
+}> {
+    readonly state = {
         DragIndex:-1,
-        DropIndex:-1,
-        DragEnterX:-1,
-        DropX:-1,
-        DropLeft:false,
-        DropRight:false
+        DropIndex:-1
     }
 
+    /**
+     * Reference to current item
+     */
+    protected CurrentItem:React.RefObject<HTMLDivElement> = React.createRef();
+
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super(props);
         this.onDragEnd = this.onDragEnd.bind(this);
@@ -42,28 +63,32 @@ class SortPanel extends React.PureComponent<PSortPanel, SSortPanel> {
     /**
      * Triggered when the user drags an item over a droppable item
      */
-    async onDragOver(ev) {
-        var index = parseInt( ev.target.dataset.index );
+    async onDragOver(ev:React.DragEvent<HTMLDivElement>) {
         ev.preventDefault();
-        this.setState(() => {
-            return {DropIndex:index};
-        });
+        if(ev.currentTarget.dataset.index !== undefined) {
+            let value:number = parseInt( ev.currentTarget.dataset.index );
+            this.setState(() => {
+                return {DropIndex:value};
+            });
+        }
     }
 
     /**
      * Triggered when the user begins dragging a slide.
      */
-    async onDragStart(ev) {
-        var index = parseInt( ev.target.dataset.index );
-        this.setState(() => {
-            return {DragIndex:index}
-        });
+    async onDragStart(ev:React.DragEvent<HTMLDivElement>) {
+        if(ev.currentTarget.dataset.index !== undefined) {
+            let value:number = parseInt( ev.currentTarget.dataset.index );
+            this.setState(() => {
+                return {DragIndex:value}
+            });
+        }
     }
 
     /**
      * Triggered when a slide is dropped onto a droppable item.
      */
-    async onDrop(ev) {
+    async onDrop(ev:React.DragEvent<HTMLDivElement>) {
         if(this.state.DropIndex > -1 && this.state.DragIndex > -1 && this.state.DropIndex !== this.state.DragIndex) {
             if(this.props.onDrop) {
                 this.props.onDrop(this.state.DropIndex, this.state.DragIndex, ev.ctrlKey);
@@ -76,7 +101,7 @@ class SortPanel extends React.PureComponent<PSortPanel, SSortPanel> {
      */
     async onDragEnd() {
         this.setState(() => {
-            return {DragIndex:-1, DropIndex:-1, DragEnterX:-1}
+            return {DragIndex:-1, DropIndex:-1}
         });
     }
 
@@ -85,7 +110,7 @@ class SortPanel extends React.PureComponent<PSortPanel, SSortPanel> {
      */
     async onDragLeave() {
         this.setState(() => {
-            return {DropIndex:-1, DragEnterX:-1}
+            return {DropIndex:-1}
         });
     }
 
@@ -93,26 +118,36 @@ class SortPanel extends React.PureComponent<PSortPanel, SSortPanel> {
      * Triggered when an item is double-clicked.
      * @param {Event} ev 
      */
-    onDoubleClick(ev) {
-        var index = ev.target.dataset.index;
-        if(this.props.onDoubleClick)
-            this.props.onDoubleClick(index);
+    onDoubleClick(ev:React.MouseEvent<HTMLDivElement>) {
+        if(ev.currentTarget.dataset.index !== undefined) {
+            let value:number = parseInt( ev.currentTarget.dataset.index );
+            if(this.props.onDoubleClick)
+                this.props.onDoubleClick(value);
+        }
+    }
+
+    /**
+     * Triggered when the component updates
+     * - Scroll the current item into view
+     */
+    componentDidUpdate() {
+        if(this.CurrentItem !== null && this.CurrentItem.current !== null) {
+            if(this.state.DragIndex === -1)
+                this.CurrentItem.current.scrollIntoView({behavior:"smooth"});
+        }
     }
 
     /**
      * Renders the component.
      */
     render() {
-        var items:Array<React.ReactElement> = [];
-        var className = '';
+        let items:Array<React.ReactElement> = [];
         for(let i=0, len = this.props.items.length; i < len; i++) {
             let item = this.props.items[i];
-            className = cnames('sortable', {
+            let className = cnames('sortable', {
                 active:(i === this.props.index),
                 'drop-target':(i === this.state.DropIndex && i !== this.state.DragIndex),
-                'drag-target':(i === this.state.DragIndex && i !== this.state.DropIndex),
-                'drop-left':(i === this.state.DropIndex && this.state.DropLeft),
-                'drop-right':(i === this.state.DropIndex && this.state.DropRight)
+                'drag-target':(i === this.state.DragIndex && i !== this.state.DropIndex)
             }, item.className);
             items.push(<div
                 className={className}
@@ -125,15 +160,14 @@ class SortPanel extends React.PureComponent<PSortPanel, SSortPanel> {
                 onDragLeave={this.onDragLeave}
                 onDoubleClick={this.onDoubleClick}
                 data-index={i}
+                ref={(i === this.props.index) ? this.CurrentItem : null}
                 >{item.label}</div>
             );
         }
 
-        className = cnames('sortable-pane', this.props.className);
+        let className:string = cnames('sortable-pane', this.props.className);
         return (
             <div className={className}>{items}</div>
         );
     }
 }
-
-export default SortPanel;

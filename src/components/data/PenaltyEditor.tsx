@@ -1,55 +1,46 @@
 import React from 'react';
 import RecordEditor from './RecordEditor';
-import DataController from 'controllers/DataController';
 import vars, { PenaltyRecord } from 'tools/vars';
-
-interface SPenaltyEditor {
-    Description:string,
-    Records:Array<PenaltyRecord>
-}
-
-interface PPenaltyEditor {
-    record:PenaltyRecord,
-    opened:boolean
-}
 
 /**
  * Component for editing penalty records.
  */
-class PenaltyEditor extends React.PureComponent<PPenaltyEditor, SPenaltyEditor> {
-    readonly state:SPenaltyEditor = {
-        Description:'',
-        Records:DataController.getPenalties(true)
-    }
-
-    remoteData:Function
-
-    constructor(props) {
-        super(props);
-
-        this.onSubmit = this.onSubmit.bind(this);
-        this.onSelect = this.onSelect.bind(this);
-
-        this.updateState = this.updateState.bind(this);
-        this.onChangeDescription = this.onChangeDescription.bind(this);
-        this.remoteData = DataController.subscribe(this.updateState);
+export default class PenaltyEditor extends React.PureComponent<{
+    /**
+     * Record to edit
+     */
+    record:PenaltyRecord|null;
+    /**
+     * true to show, false to hide
+     */
+    opened:boolean;
+}, {
+    /**
+     * Description of the penalty record
+     */
+    Description:string;
+}> {
+    readonly state = {
+        Description:''
     }
 
     /**
-     * Updates the state to match the controller.
+     * Constructor
+     * @param props 
      */
-    updateState() {
-        this.setState({
-            Records:DataController.getPenalties(true)
-        });
+    constructor(props) {
+        super(props);
+        this.onSubmit = this.onSubmit.bind(this);
+        this.onSelect = this.onSelect.bind(this);
+        this.onChangeDescription = this.onChangeDescription.bind(this);
     }
 
     /**
      * Triggered when the description textbox value changes.
      * @param {Event} ev 
      */
-    onChangeDescription(ev) {
-        var value = ev.target.value;
+    onChangeDescription(ev:React.ChangeEvent<HTMLTextAreaElement>) {
+        var value = ev.currentTarget.value;
         this.setState(() => {return {Description:value};});
     }
 
@@ -96,7 +87,6 @@ class PenaltyEditor extends React.PureComponent<PPenaltyEditor, SPenaltyEditor> 
         return (
             <RecordEditor 
                 recordType={vars.RecordType.Penalty}
-                records={this.state.Records}
                 onSubmit={this.onSubmit}
                 opened={this.props.opened}
                 {...this.props}
@@ -114,5 +104,3 @@ class PenaltyEditor extends React.PureComponent<PPenaltyEditor, SPenaltyEditor> 
         )
     }
 }
-
-export default PenaltyEditor;

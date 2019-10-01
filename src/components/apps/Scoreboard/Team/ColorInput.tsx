@@ -3,27 +3,31 @@ import {Icon, IconCheck} from 'components/Elements'
 import ScoreboardController, {SScoreboardTeam} from 'controllers/ScoreboardController';
 import ColorPicker from 'material-ui-color-picker';
 
-interface SColorInput {
-    color:string
-}
-
-interface PColorInput {
-    Team:SScoreboardTeam
-}
-
 /**
  * Component for a team's color input on the scoreboard.
  * Does not save to original record.
  */
-class ColorInput extends React.PureComponent<PColorInput, SColorInput> {
-    readonly state:SColorInput = {
+export default class ColorInput extends React.PureComponent<{
+    /**
+     * Team from the ScoreboardController
+     */
+    Team:SScoreboardTeam
+}, {
+    /**
+     * Color for user selection
+     */
+    color:string;
+}> {
+    readonly state = {
         color:'#000000'
     }
 
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super(props);
-
-        this.state.color = this.props.Team.Color;
 
         //bindings
         this.onChange = this.onChange.bind(this);
@@ -64,6 +68,16 @@ class ColorInput extends React.PureComponent<PColorInput, SColorInput> {
     }
 
     /**
+     * Triggered when the color field changes.
+     * @param {string} value
+     */
+    onChangeColor(value) {
+        this.setState(() => {
+            return {color:value};
+        });
+    }
+
+    /**
      * Triggered when the component updates.
      * @param {Object} prevProps 
      */
@@ -76,21 +90,18 @@ class ColorInput extends React.PureComponent<PColorInput, SColorInput> {
     }
 
     /**
-     * Triggered when the color field changes.
-     * @param {string} value
+     * Set the color to the team's color
      */
-    onChangeColor(value) {
-        this.setState(() => {
-            return {color:value};
-        });
+    componentDidMount() {
+        this.setState({color:this.props.Team.Color});
     }
 
     /**
      * Renders the component.
      */
     render() {
-        var color = (this.state.color) ? this.state.color : '#000000';
-        var changed = (color !== this.props.Team.Color);
+        let color:string = (this.state.color) ? this.state.color : '#000000';
+        let changed:boolean = (color !== this.props.Team.Color);
         return (
             <div>
                 <div>Color</div>
@@ -114,5 +125,3 @@ class ColorInput extends React.PureComponent<PColorInput, SColorInput> {
         )
     }
 }
-
-export default ColorInput;

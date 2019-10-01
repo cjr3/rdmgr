@@ -1,28 +1,65 @@
-import React from 'react'
+import React, { CSSProperties } from 'react'
 import cnames from 'classnames'
 import './css/Counter.scss'
 
-interface SCounter {
-    amount:number
-}
-
-interface PCounter {
-    min:number,
-    max:number,
-    style?:any,
-    value?:number,
-    amount?:number,
-    padding?:number,
-    className?:string,
-    onAdd?:Function,
-    onSubtract?:Function
-    onChange?:Function
-}
-
-class Counter extends React.Component<PCounter, SCounter> {
-    readonly state:SCounter = {
+/**
+ * Component for counters
+ */
+export default class Counter extends React.Component<{
+    /**
+     * Minimum amount
+     */
+    min:number;
+    /**
+     * Maximum amount
+     */
+    max:number;
+    /**
+     * Style
+     */
+    style?:CSSProperties;
+    /**
+     * Current value
+     */
+    value?:number;
+    /**
+     * Initial amount
+     */
+    amount?:number;
+    /**
+     * Number of digits to pad
+     */
+    padding?:number;
+    /**
+     * Additional class names
+     */
+    className?:string;
+    /**
+     * Triggered when the counter adds an amount
+     */
+    onAdd?:Function;
+    /**
+     * Triggered when the counter subtracts an amount
+     */
+    onSubtract?:Function;
+    /**
+     * Triggered when the counter value changes
+     */
+    onChange?:Function;
+}, {
+    /**
+     * Current amount
+     */
+    amount:number;
+}> {
+    readonly state = {
         amount:0
     }
+
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super(props);
 
@@ -34,7 +71,11 @@ class Counter extends React.Component<PCounter, SCounter> {
         this.onContextMenu = this.onContextMenu.bind(this);
     }
 
-    add(amount) {
+    /**
+     * Adds an amount to the counter
+     * @param amount number
+     */
+    add(amount:number) {
         this.setState((state) => {
             return {amount:this._value(state.amount + amount)};
         }, () => {
@@ -43,7 +84,11 @@ class Counter extends React.Component<PCounter, SCounter> {
         });
     }
 
-    subtract(amount) {
+    /**
+     * Subtracts an amount
+     * @param amount number
+     */
+    subtract(amount:number) {
         this.setState((state) => {
             return {amount:this._value(state.amount - amount)};
         }, () => {
@@ -52,7 +97,12 @@ class Counter extends React.Component<PCounter, SCounter> {
         });
     }
 
-    set(amount, trigger) {
+    /**
+     * Sets the value of the counter
+     * @param amount number
+     * @param trigger boolean
+     */
+    set(amount:number, trigger:boolean = false) {
         this.setState(() => {
             return {amount:this._value(amount)};
         }, () => {
@@ -98,10 +148,15 @@ class Counter extends React.Component<PCounter, SCounter> {
         this.subtract(1);
     }
 
+    /**
+     * Triggered when the component updates
+     * @param prevProps 
+     */
     componentDidUpdate(prevProps) {
         if(typeof(prevProps.value) === "number") {
             if(prevProps.value !== this.props.value && this.props.value !== this.state.amount) {
-                this.set(this.props.value, false);
+                if(this.props.value !== undefined)
+                    this.set(this.props.value, false);
             }
         }
     }
@@ -110,8 +165,8 @@ class Counter extends React.Component<PCounter, SCounter> {
      * Renders the component.
      */
     render() {
-        const classes = cnames({counter:true}, this.props.className);
-        var value:number|string = this.state.amount;
+        let classes:string = cnames({counter:true}, this.props.className);
+        let value:number|string = this.state.amount;
         if(this.props.padding)
             value = value.toString().padStart(this.props.padding, '0');
 
@@ -125,5 +180,3 @@ class Counter extends React.Component<PCounter, SCounter> {
         )
     }
 }
-
-export default Counter;

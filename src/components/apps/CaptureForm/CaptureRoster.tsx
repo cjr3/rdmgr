@@ -3,34 +3,68 @@ import cnames from 'classnames';
 import RosterController from 'controllers/RosterController';
 import DataController from 'controllers/DataController';
 import ScoreboardController from 'controllers/ScoreboardController';
-
-import './css/CaptureRoster.scss';
 import { SkaterRecord } from 'tools/vars';
+import './css/CaptureRoster.scss';
 
-interface SCaptureRoster {
-    CurrentTeam:string,
-    SkaterIndex:number,
-    SkatersA:Array<SkaterRecord>,
-    SkatersB:Array<SkaterRecord>,
+/**
+ * Component for displaying roster on the CaptureForm
+ */
+export default class CaptureRoster extends React.PureComponent<{
+    /**
+     * true to show, false to hide
+     */
+    shown:boolean;
+}, {
+    /**
+     * Currently display team 
+     */
+    CurrentTeam:string;
+    /**
+     * Current skater
+     */
+    SkaterIndex:number;
+    /**
+     * Skaters on left side team
+     */
+    SkatersA:Array<SkaterRecord>;
+    /**
+     * Skaters on right side team
+     */
+    SkatersB:Array<SkaterRecord>;
+    /**
+     * Left side team
+     */
     TeamA:{
-        Color:string,
-        Thumbnail:string,
-        Name:string
+        /**
+         * Color
+         */
+        Color:string;
+        /**
+         * Logo
+         */
+        Thumbnail:string;
+        /**
+         * Name
+         */
+        Name:string;
     },
     TeamB:{
-        Color:string,
-        Thumbnail:string,
-        Name:string
+        /**
+         * Color
+         */
+        Color:string;
+        /**
+         * Logo
+         */
+        Thumbnail:string;
+        /**
+         * Name
+         */
+        Name:string;
     }
-}
+}> {
 
-interface PCaptureRoster {
-    shown?:boolean
-}
-
-class CaptureRoster extends React.PureComponent<PCaptureRoster, SCaptureRoster> {
-
-    readonly state:SCaptureRoster = {
+    readonly state = {
         CurrentTeam:RosterController.getState().CurrentTeam,
         SkaterIndex:RosterController.getState().SkaterIndex,
         SkatersA:RosterController.getState().TeamA.Skaters,
@@ -47,17 +81,23 @@ class CaptureRoster extends React.PureComponent<PCaptureRoster, SCaptureRoster> 
         }
     }
 
-    remoteRoster:Function
-    remoteScoreboard:Function
+    /**
+     * RosterController remote
+     */
+    protected remoteRoster:Function|null = null;
+    /**
+     * ScoreboardController remote
+     */
+    protected remoteScoreboard:Function|null = null;
 
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super(props);
-
         this.updateRoster = this.updateRoster.bind(this);
         this.updateScoreboard = this.updateScoreboard.bind(this);
-
-        this.remoteRoster = RosterController.subscribe(this.updateRoster);
-        this.remoteScoreboard = ScoreboardController.subscribe(this.updateScoreboard);
     }
 
     /**
@@ -93,13 +133,31 @@ class CaptureRoster extends React.PureComponent<PCaptureRoster, SCaptureRoster> 
     }
 
     /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteRoster = RosterController.subscribe(this.updateRoster);
+        this.remoteScoreboard = ScoreboardController.subscribe(this.updateScoreboard);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteScoreboard !== null)
+            this.remoteScoreboard();
+        if(this.remoteRoster !== null)
+            this.remoteRoster();
+    }
+
+    /**
      * Renders the component
      */
     render() {
-        var teamColor:string = this.state.TeamA.Color;
-        var teamLogo:string = this.state.TeamA.Thumbnail;
-        var teamName:string = this.state.TeamA.Name;
-        var teamSkaters:Array<SkaterRecord> = this.state.SkatersA;
+        let teamColor:string = this.state.TeamA.Color;
+        let teamLogo:string = this.state.TeamA.Thumbnail;
+        let teamName:string = this.state.TeamA.Name;
+        let teamSkaters:Array<SkaterRecord> = this.state.SkatersA;
         
         if(this.state.CurrentTeam === 'B') {
             teamLogo = this.state.TeamB.Thumbnail;
@@ -109,14 +167,14 @@ class CaptureRoster extends React.PureComponent<PCaptureRoster, SCaptureRoster> 
         }
 
         teamLogo = DataController.mpath(teamLogo);
-        var skaters:Array<React.ReactElement> = [];
+        let skaters:Array<React.ReactElement> = [];
         
         if(teamSkaters && teamSkaters.length >= 1) {
             for(let i=0; i < teamSkaters.length; i++) {
                 let skater = teamSkaters[i];
                 if(skater === null || skater === undefined)
                     break;
-                var src = DataController.mpath(skater.Thumbnail);
+                let src = DataController.mpath(skater.Thumbnail);
                 if(!src) {
                     src = teamLogo;
                 }
@@ -177,5 +235,3 @@ class CaptureRoster extends React.PureComponent<PCaptureRoster, SCaptureRoster> 
         )
     }
 }
-
-export default CaptureRoster;

@@ -1,62 +1,34 @@
 import React from 'react'
 import cnames from 'classnames'
 
-
-export interface PCaptureWorker {
-    className?:string,
-    shown:boolean
-}
-
 /**
  * Allows the user to preview the capture window in real-time.
  * A toggle property is provided to stop/start the capturing, to
  * allow for improved performance.
  */
-class CaptureWatcher extends React.PureComponent<PCaptureWorker> {
-
-    Brush:CanvasRenderingContext2D|null
-    CanvasItem:React.RefObject<HTMLCanvasElement>
-    CaptureVideo:HTMLVideoElement
-    worker:Worker
-
-    constructor(props) {
-        super(props);
-        this.Brush = null;
-        this.CanvasItem = React.createRef();
-
-        this.paint = this.paint.bind(this);
-        this.onWorkerMessage = this.onWorkerMessage.bind(this);
-
-        this.CaptureVideo = document.createElement("video");
-        
-        this.worker = new Worker('tools/Animator.js');
-        this.worker.onmessage = this.onWorkerMessage;
-    }
-
-    async paint() {
-        if(this.Brush === null)
-            return;
-        this.Brush.drawImage(this.CaptureVideo, 0, 0, 640, 360);
-    }
+export default class CaptureWatcher extends React.PureComponent<{
+    /**
+     * Class name for the viewing canvas
+     */
+    className?:string;
+    /**
+     * Determines if the watcher is running or not
+     */
+    shown:boolean;
+}> {
+    protected VideoItem:React.RefObject<HTMLVideoElement> = React.createRef();
 
     /**
-     * Triggered when the web worker for animations responds.
-     * @param {Object} response 
+     * Loads the matching capture window for the desktop capturer
      */
-    onWorkerMessage(response) {
-        if(response.data === 'render')
-            this.paint();
-    }
-
     load() {
         let DC:any = window.require("electron").desktopCapturer;
         let that = this;
         DC.getSources({
             types:['window']
-        }, async function(err, sources) {
-            if(err) { }
-            else {
-                for(var key in sources) {
+        }, async (err, sources) => {
+            if(err) {} else {
+                for(let key in sources) {
                     if(sources[key].name === 'RDMGR : Capture Window') {
                         (navigator.mediaDevices as any).getUserMedia({
                             audio:false,
@@ -70,13 +42,14 @@ class CaptureWatcher extends React.PureComponent<PCaptureWorker> {
                                     maxHeight:360
                                 }
                             }
-                        }).then(function(stream) {
-                            that.CaptureVideo.srcObject = stream;
-                            if(that.props.shown) {
-                                that.worker.postMessage('play');
-                                that.CaptureVideo.play();
+                        }).then((stream) => {
+                            if(this.VideoItem !== null && this.VideoItem.current !== null) {
+                                this.VideoItem.current.srcObject = stream;
+                                if(that.props.shown) {
+                                    this.VideoItem.current.play();
+                                }
                             }
-                        }).catch(function(er) {
+                        }).catch((er) => {
 
                         });
                         break;
@@ -86,43 +59,63 @@ class CaptureWatcher extends React.PureComponent<PCaptureWorker> {
         });
     }
 
+    /**
+     * Load available windows
+     */
     componentDidMount() {
-        if(this.CanvasItem.current !== null) {
-            this.Brush = this.CanvasItem.current.getContext('2d');
-        }
         if(window) {
             this.load();
         }
     }
 
-    componentDidUpdate(prevProps) {
-        if(prevProps.shown !== this.props.shown) {
-            if(this.props.shown) {
-                this.load();
-                this.worker.postMessage('play');
-                this.CaptureVideo.play();
-            }
-            else {
-                this.worker.postMessage('pause');
-                this.CaptureVideo.pause();
+    /**
+     * Stop playing the video
+     */
+    componentWillUnmount() {
+        if(this.VideoItem !== null && this.VideoItem.current !== null) {
+            this.VideoItem.current.pause();
+            if(this.VideoItem.current.srcObject !== null) {
+                if(this.VideoItem.current.srcObject instanceof MediaStream) {
+                    let tracks:Array<MediaStreamTrack> = this.VideoItem.current.srcObject.getTracks();
+                    for(let key in tracks) {
+                        let track:MediaStreamTrack = tracks[key];
+                        track.stop();
+                    }
+                }
             }
         }
     }
 
+    /**
+     * 
+     * @param prevProps 
+     */
+    componentDidUpdate(prevProps) {
+        if(prevProps.shown !== this.props.shown) {
+            if(this.props.shown) {
+                this.load();
+            } else {
+                if(this.VideoItem !== null && this.VideoItem.current !== null)
+                    this.VideoItem.current.pause();
+            }
+        }
+    }
+
+    /**
+     * Renders the component
+     */
     render() {
         var className = cnames({
             shown:(this.props.shown)
         }, this.props.className);
 
         return (
-            <canvas
+            <video
                 className={className}
                 width="640"
                 height="360"
-                ref={this.CanvasItem}
+                ref={this.VideoItem}
                 />
         )
     }
 }
-
-export default CaptureWatcher;

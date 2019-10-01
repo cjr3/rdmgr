@@ -1,34 +1,44 @@
 import React from 'react';
 import RecordEditor from './RecordEditor';
-import DataController from 'controllers/DataController';
 import vars, { PhaseRecord } from 'tools/vars';
-
-interface SPhaseEditor {
-    hour:number,
-    minute:number,
-    second:number,
-    quarter:number,
-    records:Array<PhaseRecord>
-}
-
-interface PPhaseEditor {
-    record:PhaseRecord,
-    opened:boolean
-}
 
 /**
  * Component for editing a Phase record.
  */
-class PhaseEditor extends React.PureComponent<PPhaseEditor, SPhaseEditor> {
-    readonly state:SPhaseEditor = {
+export default class PhaseEditor extends React.PureComponent<{
+    /**
+     * Record to edit
+     */
+    record:PhaseRecord|null;
+    /**
+     * true to show, false to hide
+     */
+    opened:boolean;
+}, {
+    /**
+     * Hours of the phase
+     */
+    hour:number;
+    /**
+     * Minutes of the phase
+     */
+    minute:number;
+    /**
+     * Seconds of the phase
+     */
+    second:number;
+    /**
+     * Quarter of the phase
+     * 1-4
+     */
+    quarter:number;
+}> {
+    readonly state = {
         hour:0,
         minute:0,
         second:0,
-        quarter:0,
-        records:DataController.getPhases()
+        quarter:0
     }
-
-    remoteData:Function
 
     constructor(props) {
         super(props);
@@ -36,34 +46,18 @@ class PhaseEditor extends React.PureComponent<PPhaseEditor, SPhaseEditor> {
         this.onChangeMinute = this.onChangeMinute.bind(this);
         this.onChangeSecond = this.onChangeSecond.bind(this);
         this.onChangeQuarter = this.onChangeQuarter.bind(this);
-
         this.onSubmit = this.onSubmit.bind(this);
         this.onSelect = this.onSelect.bind(this);
-
-        this.updateState = this.updateState.bind(this);
-        this.remoteData = DataController.subscribe(this.updateState);
-    }
-
-    /**
-     * Updates the state to match the controller.
-     * - Update changed phase records.
-     */
-    updateState() {
-        if(!DataController.compare(DataController.getPhases(), this.state.records)) {
-            this.setState(() => {
-                return {records:Object.assign({}, DataController.getPhases())}
-            });
-        }
     }
 
     /**
      * Triggered when the value for the hour textbox changes.
      * @param {Event} ev 
      */
-    onChangeHour(ev) {
-        var value = ev.target.value;
+    onChangeHour(ev:React.ChangeEvent<HTMLInputElement>) {
+        let value:number = parseInt(ev.currentTarget.value);
         this.setState(() => {
-            return {hour:Number.parseInt(value)};
+            return {hour:value};
         });
     }
 
@@ -71,20 +65,20 @@ class PhaseEditor extends React.PureComponent<PPhaseEditor, SPhaseEditor> {
      * Triggered when the value for the minute textbox changes.
      * @param {Event} ev 
      */
-    onChangeMinute(ev) {
-        var value = ev.target.value;
+    onChangeMinute(ev:React.ChangeEvent<HTMLInputElement>) {
+        let value:number = parseInt(ev.currentTarget.value);
         this.setState(() => {
-            return {minute:Number.parseInt(value)};
+            return {minute:value};
         });
     }
     /**
      * Triggered when the value for the second textbox changes.
      * @param {Event} ev 
      */
-    onChangeSecond(ev) {
-        var value = ev.target.value;
+    onChangeSecond(ev:React.ChangeEvent<HTMLInputElement>) {
+        let value:number = parseInt(ev.currentTarget.value);
         this.setState(() => {
-            return {second:Number.parseInt(value)};
+            return {second:value};
         });
     }
 
@@ -92,10 +86,10 @@ class PhaseEditor extends React.PureComponent<PPhaseEditor, SPhaseEditor> {
      * Triggered when the user changes the value of the quarter for this phase.
      * @param {Event} ev 
      */
-    onChangeQuarter(ev) {
-        var value = ev.target.value;
+    onChangeQuarter(ev:React.ChangeEvent<HTMLSelectElement>) {
+        let value:number = parseInt( ev.currentTarget.value );
         this.setState(() => {
-            return {quarter:Number.parseInt(value)};
+            return {quarter:value};
         });
     }
 
@@ -104,7 +98,7 @@ class PhaseEditor extends React.PureComponent<PPhaseEditor, SPhaseEditor> {
      * @param {Object} record 
      */
     onSelect(record) {
-        var duration = [0,0,0];
+        let duration:Array<number> = [0,0,0];
         if(record && record.Duration)
             duration = record.Duration.slice();
         this.setState({
@@ -120,7 +114,7 @@ class PhaseEditor extends React.PureComponent<PPhaseEditor, SPhaseEditor> {
      * @param {Object} record 
      */
     onSubmit(record) {
-        var duration = [this.state.hour, this.state.minute, this.state.second];
+        let duration:Array<number> = [this.state.hour, this.state.minute, this.state.second];
         return Object.assign({}, record, {
             Duration:duration,
             PhaseTime:duration.join(':'),
@@ -152,7 +146,6 @@ class PhaseEditor extends React.PureComponent<PPhaseEditor, SPhaseEditor> {
         return (
             <RecordEditor 
                 recordType={vars.RecordType.Phase}
-                records={this.state.records}
                 opened={this.props.opened}
                 {...this.props}
                 >
@@ -185,18 +178,16 @@ class PhaseEditor extends React.PureComponent<PPhaseEditor, SPhaseEditor> {
                 <tr>
                     <td>Quarter</td>
                     <td>
-                        <input type="number"
-                            min={0}
-                            max={4}
-                            value={qtr}
-                            onChange={this.onChangeQuarter}
-                            className="large"
-                            />
+                        <select size={1} onChange={this.onChangeQuarter} value={qtr}>
+                            <option value={0}>None</option>
+                            <option value={1}>1ST</option>
+                            <option value={2}>2ND</option>
+                            <option value={3}>3RD</option>
+                            <option value={4}>4TH</option>
+                        </select>
                     </td>
                 </tr>
             </RecordEditor>
         )
     }
 }
-
-export default PhaseEditor;

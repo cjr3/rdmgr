@@ -1,6 +1,6 @@
 import React from 'react';
 import cnames from 'classnames';
-import {Icon} from 'components/Elements';
+import {Icon, IconX} from 'components/Elements';
 import './css/Panel.scss';
 
 interface PPanel {
@@ -41,9 +41,7 @@ class Panel extends React.Component<PPanel> {
 
         return (
             <div className={classNames}>
-                <PanelTitle
-                    onClose={this.props.onClose}
-                    >{this.props.title}</PanelTitle>
+                <PanelTitle onClose={this.props.onClose}>{this.props.title}</PanelTitle>
                 <PanelContent 
                     className={this.props.contentName}
                     scrollTop={this.props.scrollTop}
@@ -64,13 +62,12 @@ interface PPanelTitle {
  * Titlebar for panels
  */
 function PanelTitle(props:PPanelTitle) {
-
     return (
         <div className="title">
             <div className="title-text">{props.children}</div>
             <div className="buttons">
                 <Icon
-                    src={require('images/icons/x.png')}
+                    src={IconX}
                     onClick={props.onClose}
                     title="Close"/>
             </div>

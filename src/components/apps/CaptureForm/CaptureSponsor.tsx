@@ -8,25 +8,38 @@ interface SCaptureSponsor extends SSponsorController {
     CurrentSlide?:string
 }
 
-interface PCaptureSponsor {
-    shown?:boolean
-}
-
 /**
  * Slideshow for the sponsor display.
  */
-class CaptureSponsor extends React.Component<PCaptureSponsor, SCaptureSponsor> {
+export default class CaptureSponsor extends React.Component<{
+    /**
+     * true to show, false to hide
+     */
+    shown:boolean;
+}, SCaptureSponsor> {
     readonly state:SCaptureSponsor = SponsorController.getState();
 
-    SourceA:string = ''
-    SourceB:string = ''
-    remoteState:Function
+    /**
+     * Source of Slide A
+     */
+    protected SourceA:string = ''
+    /**
+     * Source of Slide B
+     */
+    protected SourceB:string = ''
+    /**
+     * SponsorController remote
+     */
+    protected remoteState:Function|null = null;
     
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super(props);
         this.state.CurrentSlide = 'A';
         this.updateState = this.updateState.bind(this);
-        this.remoteState = SponsorController.subscribe(this.updateState);
     }
 
     /**
@@ -41,24 +54,39 @@ class CaptureSponsor extends React.Component<PCaptureSponsor, SCaptureSponsor> {
     }
 
     /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteState = SponsorController.subscribe(this.updateState);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteState !== null)
+            this.remoteState();
+    }
+
+    /**
      * Renders the component.
      */
     render() {
-        var className = cnames('capture-sponsors', {
+        let className:string = cnames('capture-sponsors', {
             shown:this.props.shown
         });
 
-        var classA = cnames({
+        let classA:string = cnames({
             slide:true,
             shown:(this.state.CurrentSlide === 'A')
         });
 
-        var classB = cnames({
+        let classB:string = cnames({
             slide:true,
             shown:(this.state.CurrentSlide === 'B')
         });
 
-        var classTemp = cnames({
+        let classTemp:string = cnames({
             slide:true,
             temp:true,
             shown:(this.state.TemporarySlide !== '')
@@ -87,5 +115,3 @@ class CaptureSponsor extends React.Component<PCaptureSponsor, SCaptureSponsor> {
         );
     }
 }
-
-export default CaptureSponsor;

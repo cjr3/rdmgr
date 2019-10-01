@@ -8,25 +8,37 @@ interface SCaptureSlideshow extends SSlideshowController {
     CurrentSlide?:string
 }
 
-interface PCaptureSlideshow {
-    shown?:boolean
-}
-
 /**
  * Component for displaying the current slideshow on the capture window
  */
-class CaptureSlideshow extends React.PureComponent<PCaptureSlideshow, SCaptureSlideshow> {
+export default class CaptureSlideshow extends React.PureComponent<{
+    /**
+     * True to show, false to hide
+     */
+    shown:boolean;
+}, SCaptureSlideshow> {
     readonly state:SCaptureSlideshow = SlideshowController.getState()
+    /**
+     * Source of Slide A
+     */
+    protected SourceA:string = ''
+    /**
+     * Source of slide B
+     */
+    protected SourceB:string = ''
+    /**
+     * SlideshowController remote
+     */
+    protected remoteState:Function|null = null;
 
-    SourceA:string = ''
-    SourceB:string = ''
-    remoteState
-
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super(props);
         this.state.CurrentSlide = 'A';
         this.updateState = this.updateState.bind(this);
-        this.remoteState = SlideshowController.subscribe(this.updateState);
     }
 
     /**
@@ -46,19 +58,34 @@ class CaptureSlideshow extends React.PureComponent<PCaptureSlideshow, SCaptureSl
     }
 
     /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteState = SlideshowController.subscribe(this.updateState);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteState !== null)
+            this.remoteState();
+    }
+
+    /**
      * Renders the component
      */
     render() {
-        var className = cnames('main-slideshow', {
+        let className:string = cnames('main-slideshow', {
             shown:this.props.shown
         });
 
-        var classA = cnames({
+        let classA:string = cnames({
             slide:true,
             shown:(this.state.CurrentSlide === 'A')
         });
 
-        var classB = cnames({
+        let classB:string = cnames({
             slide:true,
             shown:(this.state.CurrentSlide === 'B')
         });
@@ -83,5 +110,3 @@ class CaptureSlideshow extends React.PureComponent<PCaptureSlideshow, SCaptureSl
         );
     }
 }
-
-export default CaptureSlideshow;

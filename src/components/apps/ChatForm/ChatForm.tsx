@@ -13,12 +13,22 @@ interface SChatForm extends SChatController {
 /**
  * Component for displaying a chat room for peer connections.
  */
-class ChatForm extends React.PureComponent<any, SChatForm> {
+export default class ChatForm extends React.PureComponent<any, SChatForm> {
 
     readonly state:SChatForm = ChatController.getState();
-    MessageItem:React.RefObject<HTMLInputElement> = React.createRef();
-    remoteChat:Function
+    /**
+     * User text field input
+     */
+    protected MessageItem:React.RefObject<HTMLInputElement> = React.createRef();
+    /**
+     * ChatController remote
+     */
+    protected remoteChat:Function|null = null;
 
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super(props);
         this.state.MessageText = '';
@@ -29,9 +39,7 @@ class ChatForm extends React.PureComponent<any, SChatForm> {
         this.onKeyUpMessage = this.onKeyUpMessage.bind(this);
         this.onClickClear = this.onClickClear.bind(this);
         this.addMessage = this.addMessage.bind(this);
-
         this.updateChat = this.updateChat.bind(this);
-        this.remoteChat = ChatController.subscribe(this.updateChat);
     }
 
     /**
@@ -108,7 +116,7 @@ class ChatForm extends React.PureComponent<any, SChatForm> {
     /**
      * Adds a message to the chat room, sending it to all connected peers.
      */
-    async addMessage() {
+    addMessage() {
         if(this.state.MessageText === undefined)
             return;
 
@@ -133,18 +141,33 @@ class ChatForm extends React.PureComponent<any, SChatForm> {
     }
 
     /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteChat = ChatController.subscribe(this.updateChat);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteChat !== null)
+            this.remoteChat();
+    }
+
+    /**
      * Renders the component.
      */
     render() {
-        var lines:Array<React.ReactElement> = [];
-        var i = 1;
+        let lines:Array<React.ReactElement> = [];
+        let i = 1;
         this.state.Messages.forEach((message) => {
             lines.push(<ChatMessage message={message} key={`msg-${i}`}/>);
             i++;
         });
-        var messageLength:number = (this.state.MessageText !== undefined) ? this.state.MessageText.length : 0
+        let messageLength:number = (this.state.MessageText !== undefined) ? this.state.MessageText.length : 0
 
-        var buttons = [
+        let buttons = [
             <input type="text" size={20} maxLength={140}
                 value={this.state.MessageText}
                 onChange={this.onChangeMessage}
@@ -204,5 +227,3 @@ function ChatMessage(props:PChatMessage) {
         </div>
     )
 }
-
-export default ChatForm;

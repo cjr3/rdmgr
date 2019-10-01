@@ -116,7 +116,7 @@ const CameraController:CameraControllerDefinition = {
     LoadCameras() {
         try {
             navigator.mediaDevices.enumerateDevices().then((devices:Array<MediaDeviceInfo>) => {
-                var cameras:Array<MediaDeviceInfo> = [];
+                let cameras:Array<MediaDeviceInfo> = [];
                 if(devices && devices.length) {
                     for(var key in devices) {
                         if(devices[key].kind !== "videoinput")

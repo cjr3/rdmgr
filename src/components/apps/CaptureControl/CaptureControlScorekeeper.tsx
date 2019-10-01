@@ -1,37 +1,51 @@
 import React from 'react';
-import ScorekeeperController from 'controllers/ScorekeeperController';
+import ScorekeeperController, { SScorekeeperTeam } from 'controllers/ScorekeeperController';
 import CaptureController from 'controllers/CaptureController';
 import DataController from 'controllers/DataController';
 import CaptureControlPanel, {PCaptureControlPanel} from './CaptureControlPanel';
 
-interface SCaptureControlScorekeeper {
-    TeamA:any,
-    TeamB:any,
-    Shown:boolean
-}
-
 /**
  * Component for configuring the scorekeeper elements.
  */
-class CaptureControlScorekeeper extends React.PureComponent<PCaptureControlPanel, SCaptureControlScorekeeper> {
+export default class CaptureControlScorekeeper extends React.PureComponent<PCaptureControlPanel, {
+    /**
+     * Left side team
+     */
+    TeamA:SScorekeeperTeam;
+    /**
+     * Right side team
+     */
+    TeamB:SScorekeeperTeam;
+    /**
+     * Determines if the scorekeeper is displayed on the capture window
+     */
+    Shown:boolean;
+}> {
 
-    readonly state:SCaptureControlScorekeeper = {
+    readonly state = {
         TeamA:ScorekeeperController.getState().TeamA,
         TeamB:ScorekeeperController.getState().TeamB,
         Shown:CaptureController.getState().Scorekeeper.Shown
     }
 
-    remoteState:Function
-    remoteCapture:Function
+    /**
+     * Scorekeeper controller listener
+     */
+    protected remoteState:Function|null = null;
+    /**
+     * Capture controller listener
+     */
+    protected remoteCapture:Function|null = null;
 
-    constructor(props) {
+    /**
+     * Constructor
+     * @param props PCaptureControlPanel
+     */
+    constructor(props:PCaptureControlPanel) {
         super(props);
 
         this.updateState = this.updateState.bind(this);
         this.updateCapture = this.updateCapture.bind(this);
-
-        this.remoteState = ScorekeeperController.subscribe(this.updateState);
-        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
     }
 
     /**
@@ -53,6 +67,24 @@ class CaptureControlScorekeeper extends React.PureComponent<PCaptureControlPanel
         this.setState(() => {
             return {Shown:CaptureController.getState().Scorekeeper.Shown};
         });
+    }
+
+    /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteState = ScorekeeperController.subscribe(this.updateState);
+        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteState !== null)
+            this.remoteState();
+        if(this.remoteCapture !== null)
+            this.remoteCapture();
     }
 
     /**
@@ -84,5 +116,3 @@ class CaptureControlScorekeeper extends React.PureComponent<PCaptureControlPanel
         );
     }
 }
-
-export default CaptureControlScorekeeper;

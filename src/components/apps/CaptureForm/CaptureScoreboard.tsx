@@ -18,16 +18,31 @@ interface PCaptureScoreboard {
 /**
  * Component for displaying the full-size scoreboard on the capture window.
  */
-class CaptureScoreboard extends React.Component<PCaptureScoreboard, SScoreboardState> {
+export default class CaptureScoreboard extends React.Component<{
+    /**
+     * true to show, false ot hide
+     */
+    shown:boolean;
+    /**
+     * Additional class names
+     */
+    className?:string;
+}, SScoreboardState> {
 
     readonly state:SScoreboardState = ScoreboardController.getState();
-    remoteState:Function
+    /**
+     * ScoreboardController remote
+     */
+    protected remoteState:Function|null = null;
 
-    constructor(props:PCaptureScoreboard) {
+    /**
+     * Constructor
+     * @param props 
+     */
+    constructor(props) {
         super(props);
         this.getClockText = this.getClockText.bind(this);
         this.updateState = this.updateState.bind(this);
-        this.remoteState = ScoreboardController.subscribe(this.updateState);
     }
 
     /**
@@ -42,22 +57,37 @@ class CaptureScoreboard extends React.Component<PCaptureScoreboard, SScoreboardS
      * @return String
      */
     getClockText() {
-        var min = (this.state.GameMinute) ? this.state.GameMinute : 0;
-        var sec = (this.state.GameSecond) ? this.state.GameSecond : 0;
+        let min:number = (this.state.GameMinute) ? this.state.GameMinute : 0;
+        let sec:number = (this.state.GameSecond) ? this.state.GameSecond : 0;
         return min.toString().padStart(2,'0') + ":" + sec.toString().padStart(2,'0');
+    }
+
+    /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteState = ScoreboardController.subscribe(this.updateState);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteState !== null)
+            this.remoteState();
     }
 
     /**
      * Renders the component.
      */
     render() {
-        var classNames = cnames({
+        let classNames:string = cnames({
             "capture-SB":true,
             shown:this.props.shown,
             jamming:(this.state.JamState === vars.Clock.Status.Running),
         }, this.props.className);
 
-        var statusNames = cnames({
+        let statusNames:string = cnames({
             "board-status":true,
             shown:(this.state.BoardStatus > 0),
             timeout:(this.state.BoardStatus === vars.Scoreboard.Status.Timeout),
@@ -67,18 +97,18 @@ class CaptureScoreboard extends React.Component<PCaptureScoreboard, SScoreboardS
             review:(this.state.BoardStatus === vars.Scoreboard.Status.Review)
         });
 
-        var breakNames = cnames({
+        let breakNames:string = cnames({
             breakclock:true,
             shown:(this.state.BreakState === vars.Clock.Status.Running || this.state.BreakState === vars.Clock.Status.Stopped)
         });
 
-        var gameNames = cnames({
+        let gameNames:string = cnames({
             gameclock:true,
             running:(this.state.GameState === vars.Clock.Status.Running),
             stopped:(this.state.GameState === vars.Clock.Status.Stopped)
         });
 
-        var jamNames = cnames({
+        let jamNames:string = cnames({
             jamclock:true,
             running:(this.state.JamState === vars.Clock.Status.Running),
             warning:(this.state.JamSecond <= 10),
@@ -86,11 +116,11 @@ class CaptureScoreboard extends React.Component<PCaptureScoreboard, SScoreboardS
             stopped:(this.state.JamState === vars.Clock.Status.Stopped)
         });
 
-        var jamSecond = (this.state.JamSecond) ? this.state.JamSecond : 0;
-        var jamCounter = (this.state.JamCounter) ? this.state.JamCounter : 0;
-        var breakSecond = (this.state.BreakSecond) ? this.state.BreakSecond : 0;
+        let jamSecond:number = (this.state.JamSecond) ? this.state.JamSecond : 0;
+        let jamCounter:number = (this.state.JamCounter) ? this.state.JamCounter : 0;
+        let breakSecond:number = (this.state.BreakSecond) ? this.state.BreakSecond : 0;
 
-        var jamStateNames = cnames({
+        let jamStateNames:string = cnames({
             jamstate:true,
             shown:(this.state.JamState === vars.Clock.Status.Ready),
             warning:(this.state.BreakSecond <= 0 && this.state.JamState === vars.Clock.Status.Ready)
@@ -126,8 +156,8 @@ class CaptureScoreboard extends React.Component<PCaptureScoreboard, SScoreboardS
  * @param {Object} props 
  */
 function CaptureScoreboardTeam(props) {
-    var timeouts:Array<React.ReactElement> = [];
-    var challenges:Array<React.ReactElement> = [];
+    let timeouts:Array<React.ReactElement> = [];
+    let challenges:Array<React.ReactElement> = [];
 
     const {
         Score = 0, 
@@ -151,7 +181,7 @@ function CaptureScoreboardTeam(props) {
         );
     }
 
-    const statusNames = cnames({
+    let statusNames:string = cnames({
         status:true,
         shown:(Status > 0),
         timeout:(Status === vars.Team.Status.Timeout),
@@ -160,7 +190,7 @@ function CaptureScoreboardTeam(props) {
         leadjammer:(Status === vars.Team.Status.LeadJammer)
     });
 
-    const jamNames = cnames({
+    let jamNames:string = cnames({
         jampoints:true,
         shown:(props.ConfirmStatus === 1)
     });
@@ -181,5 +211,3 @@ function CaptureScoreboardTeam(props) {
         </div>
     );
 }
-
-export default CaptureScoreboard;

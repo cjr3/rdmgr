@@ -10,33 +10,33 @@ import {
     IconMovie,
 } from 'components/Elements';
 
-interface SCaptureVideoStyleButtons {
-    /**
-     * Determines if the camera is shown or not
-     */
-    Shown:boolean,
-    /**
-     * Determines how the camera is displayed
-     */
-    className:string
-}
-
 /**
  * Buttons for setting the style of the main camera
  */
-class CaptureVideoStyleButtons extends React.PureComponent<any, SCaptureVideoStyleButtons> {
+export default class CaptureVideoStyleButtons extends React.PureComponent<any, {
+    /**
+     * Determines if the camera is shown or not
+     */
+    Shown:boolean;
+    /**
+     * Determines how the camera is displayed
+     */
+    className:string;
+}> {
 
-    readonly state:SCaptureVideoStyleButtons = {
+    readonly state = {
         Shown:CaptureController.getState().MainVideo.Shown,
         className:CaptureController.getState().MainVideo.className
     }
 
-    remoteState:Function
+    /**
+     * Capture controller remote
+     */
+    protected remoteState:Function|null = null;
 
     constructor(props) {
         super(props);
         this.updateState = this.updateState.bind(this);
-        this.remoteState = CaptureController.subscribe(this.updateState);
     }
 
     /**
@@ -47,6 +47,21 @@ class CaptureVideoStyleButtons extends React.PureComponent<any, SCaptureVideoSty
             Shown:CaptureController.getState().MainVideo.Shown,
             className:CaptureController.getState().MainVideo.className
         });
+    }
+
+    /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteState = CaptureController.subscribe(this.updateState);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteState !== null)
+            this.remoteState();
     }
 
     /**
@@ -103,5 +118,3 @@ class CaptureVideoStyleButtons extends React.PureComponent<any, SCaptureVideoSty
         );
     }
 }
-
-export default CaptureVideoStyleButtons;

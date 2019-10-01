@@ -2,54 +2,58 @@ import React from 'react';
 import DataController from 'controllers/DataController';
 import CaptureController from 'controllers/CaptureController';
 import CaptureControlPanel, {PCaptureControlPanel} from './CaptureControlPanel';
-
 import  {
     IconX,
     IconCheck,
     IconButton
 } from 'components/Elements';
 
-interface SCaptureControlAnthem {
-    /**
-     * Collection of national anthem singer records
-     */
-    Records:Array<any>,
-    /**
-     * Record ID of current national anthem singer
-     */
-    RecordID:number,
-    /**
-     * Determines if the national anthem is shown or not
-     */
-    Shown:boolean,
-    /**
-     * The className that determines how the national anthem is shown
-     */
-    className:string
-}
-
 /**
  * Component for configuring the national anthem singer.
  */
-class CaptureControlAnthem extends React.PureComponent<PCaptureControlPanel, SCaptureControlAnthem> {
-
-    readonly state:SCaptureControlAnthem = {
+export default class CaptureControlAnthem extends React.PureComponent<PCaptureControlPanel, {
+    /**
+     * Collection of national anthem singer records
+     */
+    Records:Array<any>;
+    /**
+     * Record ID of current national anthem singer
+     */
+    RecordID:number;
+    /**
+     * Determines if the national anthem is shown or not
+     */
+    Shown:boolean;
+    /**
+     * The className that determines how the national anthem is shown
+     */
+    className:string;
+}> {
+    readonly state = {
         Records:DataController.getAnthemSingers(true),
         RecordID:CaptureController.getState().NationalAnthem.Record.RecordID,
         Shown:CaptureController.getState().NationalAnthem.Shown,
         className:CaptureController.getState().NationalAnthem.className
     }
 
-    remoteCapture:Function
-    remoteData:Function
+    /**
+     * Listener for capture controller
+     */
+    protected remoteCapture:Function|null = null;
+    /**
+     * Listener for Data controller
+     */
+    protected remoteData:Function|null = null;
 
-    constructor(props) {
+    /**
+     * 
+     * @param props PCaptureControlPanel
+     */
+    constructor(props:PCaptureControlPanel) {
         super(props);
         this.onChangeSinger = this.onChangeSinger.bind(this);
         this.updateData = this.updateData.bind(this);
         this.updateCapture = this.updateCapture.bind(this);
-        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
-        this.remoteData = DataController.subscribe(this.updateData);
     }
 
     /**
@@ -90,6 +94,24 @@ class CaptureControlAnthem extends React.PureComponent<PCaptureControlPanel, SCa
         }
 
         CaptureController.SetNationalAnthemSinger( singer );
+    }
+
+    /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
+        this.remoteData = DataController.subscribe(this.updateData);
+    }
+
+    /**
+     * Remove listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteCapture !== null)
+            this.remoteCapture();
+        if(this.remoteData !== null)
+            this.remoteData();
     }
 
     /**
@@ -142,5 +164,3 @@ class CaptureControlAnthem extends React.PureComponent<PCaptureControlPanel, SCa
         );
     }
 }
-
-export default CaptureControlAnthem;

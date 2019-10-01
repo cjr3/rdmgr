@@ -12,26 +12,24 @@ import {
     IconFolder
 } from 'components/Elements';
 
-interface SSlideshowEditor {
-    Slides:Array<any>;
-    records:Array<SlideshowRecord>;
-}
-
-interface PSlideshowEditor {
-    record:SlideshowRecord;
-    opened:boolean;
-}
-
 /**
  * Component for editing slideshow records.
  */
-class SlideshowEditor extends React.PureComponent<PSlideshowEditor, SSlideshowEditor> {
-    readonly state:SSlideshowEditor = {
-        Slides:[],
-        records:DataController.getSlideshows(true)
+export default class SlideshowEditor extends React.PureComponent<{
+    /**
+     * Record to edit
+     */
+    record:SlideshowRecord|null;
+    /**
+     * true to show, false to hide
+     */
+    opened:boolean;
+}, {
+    Slides:Array<any>
+}> {
+    readonly state = {
+        Slides:new Array<any>()
     }
-
-    remoteData:Function
 
     constructor(props) {
         super(props);
@@ -40,24 +38,8 @@ class SlideshowEditor extends React.PureComponent<PSlideshowEditor, SSlideshowEd
         this.onSelectFolder = this.onSelectFolder.bind(this);
         this.swapSlides = this.swapSlides.bind(this);
         this.updateSlide = this.updateSlide.bind(this);
-
         this.onSubmit = this.onSubmit.bind(this);
         this.onSelect = this.onSelect.bind(this);
-        
-        this.updateState = this.updateState.bind(this);
-        this.remoteData = DataController.subscribe(this.updateState);
-    }
-
-    /**
-     * Updates the state to match the controller
-     */
-    updateState() {
-        var records = DataController.getSlideshows();
-        if(!DataController.compare(records, this.state.records)) {
-            this.setState(() => {
-                return {records:Object.assign({}, records)};
-            });
-        }
     }
 
     /**
@@ -80,7 +62,7 @@ class SlideshowEditor extends React.PureComponent<PSlideshowEditor, SSlideshowEd
      * Removes a selected slide.
      * @param {Number} index 
      */
-    removeSlide(index) {
+    protected removeSlide(index) {
         if(this.state.Slides[index]) {
             this.setState((state) => {
                 var slides = state.Slides.slice();
@@ -253,7 +235,6 @@ class SlideshowEditor extends React.PureComponent<PSlideshowEditor, SSlideshowEd
         return (
             <RecordEditor 
                 recordType={vars.RecordType.Slideshow}
-                records={this.state.records}
                 buttons={buttons}
                 onSubmit={this.onSubmit}
                 opened={this.props.opened}
@@ -272,5 +253,3 @@ class SlideshowEditor extends React.PureComponent<PSlideshowEditor, SSlideshowEd
         )
     }
 }
-
-export default SlideshowEditor;

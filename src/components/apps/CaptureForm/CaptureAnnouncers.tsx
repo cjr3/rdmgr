@@ -5,27 +5,27 @@ import {IconMic, Icon} from 'components/Elements';
 import './css/CaptureAnnouncer.scss';
 
 /**
- * Properties for CaptureAnnouncers
- */
-interface PCaptureAnnouncers {
-    shown:boolean
-}
-
-/**
  * Component for displaying the announcer names on the capture window.
  */
-class CaptureAnnouncers extends React.PureComponent<PCaptureAnnouncers, CaptureStateAnnouncer> {
+export default class CaptureAnnouncers extends React.PureComponent<{
+    /**
+     * Show/Hide the announcers
+     */
+    shown:boolean;
+}, CaptureStateAnnouncer> {
     readonly state:CaptureStateAnnouncer = CaptureController.getState().Announcers;
-    protected remote:Function
+    /**
+     * CaptureController remote
+     */
+    protected remoteState:Function|null = null;
 
     /**
      * 
      * @param props 
      */
-    constructor(props:PCaptureAnnouncers) {
+    constructor(props) {
         super(props);
         this.updateState = this.updateState.bind(this);
-        this.remote = CaptureController.subscribe(this.updateState);
     }
 
     /**
@@ -33,6 +33,21 @@ class CaptureAnnouncers extends React.PureComponent<PCaptureAnnouncers, CaptureS
      */
     updateState() {
         this.setState(CaptureController.getState().Announcers);
+    }
+
+    /**
+     * Starts listeners
+     */
+    componentDidMount() {
+        this.remoteState = CaptureController.subscribe(this.updateState);
+    }
+
+    /**
+     * Closes listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteState !== null)
+            this.remoteState();
     }
 
     /**
@@ -57,5 +72,3 @@ class CaptureAnnouncers extends React.PureComponent<PCaptureAnnouncers, CaptureS
         )
     }
 }
-
-export default CaptureAnnouncers;

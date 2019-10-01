@@ -1,45 +1,44 @@
 import React from 'react';
 import CaptureControlPanel, {PCaptureControlPanel} from './CaptureControlPanel';
 import CaptureController from 'controllers/CaptureController';
-
 import {
     IconButton,
     IconShown,
     IconHidden
 } from 'components/Elements';
 
-interface SCaptureControlScoreboard {
-    /**
-     * Determines of the full screen scoreboard is shown
-     */
-    Shown:boolean,
-    /**
-     * Determines if the full size jam clock is shown
-     */
-    JamClockShown:boolean,
-    /**
-     * Determines if the full size jam counter is shown
-     */
-    JamCounterShown:boolean
-}
-
 /**
  * Component for configuring the main slideshow.
  */
-class CaptureControlScoreboard extends React.PureComponent<PCaptureControlPanel, SCaptureControlScoreboard> {
+export default class CaptureControlScoreboard extends React.PureComponent<PCaptureControlPanel, {
+    /**
+     * Determines of the full screen scoreboard is shown
+     */
+    Shown:boolean;
+    /**
+     * Determines if the full size jam clock is shown
+     */
+    JamClockShown:boolean;
+    /**
+     * Determines if the full size jam counter is shown
+     */
+    JamCounterShown:boolean;
+}> {
 
-    readonly state:SCaptureControlScoreboard = {
+    readonly state = {
         Shown:CaptureController.getState().Scoreboard.Shown,
         JamClockShown:CaptureController.getState().Scoreboard.JamClockShown,
         JamCounterShown:CaptureController.getState().Scoreboard.JamCounterShown
     }
 
-    remoteCapture:Function
+    /**
+     * Listener for capture controller
+     */
+    protected remoteCapture:Function|null = null;
 
     constructor(props) {
         super(props);
         this.updateCapture = this.updateCapture.bind(this);
-        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
     }
 
     /**
@@ -49,6 +48,21 @@ class CaptureControlScoreboard extends React.PureComponent<PCaptureControlPanel,
         this.setState(() => {
             return {Shown:CaptureController.getState().Scoreboard.Shown};
         });
+    }
+
+    /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteCapture !== null)
+            this.remoteCapture();
     }
 
     /**
@@ -79,5 +93,3 @@ class CaptureControlScoreboard extends React.PureComponent<PCaptureControlPanel,
         );
     }
 }
-
-export default CaptureControlScoreboard;

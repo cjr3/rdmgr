@@ -9,7 +9,6 @@ import CaptureController, {
 } from 'controllers/CaptureController';
 import SponsorController from 'controllers/SponsorController';
 import MediaQueueController, {SMediaQueueController} from 'controllers/MediaQueueController';
-import CaptureDisplayButtons from 'components/apps/CaptureControl/CaptureDisplayButtons';
 import Raffle from 'components/apps/Raffle/Raffle';
 import {
     IconButton,
@@ -26,7 +25,6 @@ import {
     IconSlideshow,
     IconTicket,
     ToggleButton,
-    IconMonitor,
     IconMuted,
     IconUnmute,
     Slider,
@@ -36,44 +34,81 @@ import {
 import Panel from 'components/Panel';
 
 import vars, { VideoRecord, AnthemRecord, SlideshowRecord } from 'tools/vars';
-import CaptureStatus, {SCaptureStatus} from 'tools/CaptureStatus';
 import RecordList from 'components/data/RecordList';
 import cnames from 'classnames';
 import SortPanel from 'components/tools/SortPanel';
 import './css/MediaQueue.scss';
 
-interface SMediaQueue {
-    recordset:string,
-    SponsorsID:number,
-    SponsorStatus:boolean,
-    DisplayShown:boolean,
-    captureClass:string,
-    State:SMediaQueueController,
-    Videos:Array<VideoRecord>,
-    AnthemSingers:Array<AnthemRecord>,
-    Slideshows:Array<SlideshowRecord>,
-    SlideIndex:number,
-    Slides:Array<any>,
-    CaptureVideo:CaptureStateBase,
-    CaptureSlideshow:CaptureStateBase,
-    CaptureSponsor:CaptureStateSponsor,
-    CaptureAnthem:CaptureStateAnthem,
-    VideoState:SVideoController,
-    Status:SCaptureStatus,
-    AnthemClass:string
-}
-
 /**
  * Component for media to be queued to the capture window,
  * allowing a user to setup all media they need to for the presentation.
  */
-class MediaQueue extends React.PureComponent<any, SMediaQueue> {
+export default class MediaQueue extends React.PureComponent<any, {
+    /**
+     * Current recordset to select from
+     */
+    recordset:string;
+    /**
+     * Selected sponsor slideshow
+     */
+    SponsorsID:number;
+    /**
+     * Class of the CaptureForm
+     */
+    captureClass:string;
+    /**
+     * State of the media controller
+     */
+    State:SMediaQueueController;
+    /**
+     * Available video records
+     */
+    Videos:Array<VideoRecord>;
+    /**
+     * Available anthem singer records
+     */
+    AnthemSingers:Array<AnthemRecord>;
+    /**
+     * Available slideshow records
+     */
+    Slideshows:Array<SlideshowRecord>;
+    /**
+     * Current index of the slideshow controller
+     */
+    SlideIndex:number;
+    /**
+     * Slides on the current slideshow
+     */
+    Slides:Array<any>;
+    /**
+     * CaptureForm details of the video
+     */
+    CaptureVideo:CaptureStateBase;
+    /**
+     * CaptureForm details of the slideshow
+     */
+    CaptureSlideshow:CaptureStateBase;
+    /**
+     * CaptureForm details of the sponsor slideshow
+     */
+    CaptureSponsor:CaptureStateSponsor;
+    /**
+     * CaptureForm details of the national anthem singer
+     */
+    CaptureAnthem:CaptureStateAnthem;
+    /**
+     * VideoController state
+     */
+    VideoState:SVideoController;
+    /**
+     * Anthem singer class name
+     */
+    AnthemClass:string;
+}> {
 
-    readonly state:SMediaQueue = {
+    readonly state = {
         recordset:'',
         SponsorsID:0,
-        SponsorStatus:false,
-        DisplayShown:false,
         captureClass:CaptureController.getState().className,
         State:MediaQueueController.getState(),
         Videos:DataController.getVideos(true),
@@ -86,21 +121,49 @@ class MediaQueue extends React.PureComponent<any, SMediaQueue> {
         CaptureSponsor:CaptureController.getState().SponsorSlideshow,
         CaptureAnthem:CaptureController.getState().NationalAnthem,
         VideoState:VideoController.getState(),
-        Status:CaptureStatus.getState(),
         AnthemClass:CaptureController.getState().NationalAnthem.className
     }
 
-    VideoItem:React.RefObject<HTMLVideoElement>
-    VideoCanPlayThrough:boolean = false
-    SponsorTimer:number = 0
+    /**
+     * Video reference for previews
+     */
+    protected VideoItem:React.RefObject<HTMLVideoElement>  = React.createRef();
 
-    remoteData:Function
-    remoteCapture:Function
-    remoteSlideshow:Function
-    remoteMedia:Function
-    remoteVideo:Function
-    remoteStatus:Function
+    /**
+     * True if video can play, false if not
+     * - Video is loaded here first before updating the capture form
+     */
+    protected VideoCanPlayThrough:boolean = false
 
+    /**
+     * Timer reference for the sponsor slideshow
+     */
+    protected SponsorTimer:number = 0
+
+    /**
+     * DataController remote
+     */
+    protected remoteData:Function|null = null;
+    /**
+     * CaptureController remote
+     */
+    protected remoteCapture:Function|null = null;
+    /**
+     * SlideshowController remote
+     */
+    protected remoteSlideshow:Function|null = null;
+    /**
+     * MediaQueueController remote
+     */
+    protected remoteMedia:Function|null = null;
+    /**
+     * VideoController remote
+     */
+    protected remoteVideo:Function|null = null;
+
+    /**
+     * Raffle reference
+     */
     protected RaffleItem:React.RefObject<Raffle> = React.createRef();
 
     /**
@@ -109,27 +172,15 @@ class MediaQueue extends React.PureComponent<any, SMediaQueue> {
      */
     constructor(props) {
         super(props);
-
-        this.VideoItem = React.createRef();
         this.setRecordset = this.setRecordset.bind(this);
         this.onDoubleClickSlide = this.onDoubleClickSlide.bind(this);
-
         this.onCanPlayThrough = this.onCanPlayThrough.bind(this);
         this.onSelectSponsor = this.onSelectSponsor.bind(this);
-
         this.updateData = this.updateData.bind(this);
         this.updateCapture = this.updateCapture.bind(this);
         this.updateSlideshow = this.updateSlideshow.bind(this);
         this.updateMedia = this.updateMedia.bind(this);
         this.updateVideo = this.updateVideo.bind(this);
-        this.updateStatus = this.updateStatus.bind(this);
-
-        this.remoteData = DataController.subscribe(this.updateData);
-        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
-        this.remoteSlideshow = SlideshowController.subscribe(this.updateSlideshow);
-        this.remoteMedia = MediaQueueController.subscribe(this.updateMedia);
-        this.remoteVideo = VideoController.subscribe(this.updateVideo);
-        this.remoteStatus = CaptureStatus.subscribe(this.updateStatus);
     }
 
     /**
@@ -240,16 +291,6 @@ class MediaQueue extends React.PureComponent<any, SMediaQueue> {
     }
 
     /**
-     * Updates the state to match the capture status.
-     */
-    updateStatus() {
-        var cstate = CaptureStatus.getState();
-        if(!DataController.compare(cstate, this.state.Status)) {
-            this.setState({Status:Object.assign({}, cstate)});
-        };
-    }
-
-    /**
      * Sets the recordset to display
      * @param {String} set 
      */
@@ -293,7 +334,7 @@ class MediaQueue extends React.PureComponent<any, SMediaQueue> {
      */
     onSelectSponsor(record) {
         this.setState(() => {
-            return {SponsorsID:record.ID}
+            return {SponsorsID:record.RecordID}
         }, () => {
             try {clearInterval(this.SponsorTimer);} catch(er) {}
             SponsorController.SetSlides(record.Records);
@@ -305,6 +346,33 @@ class MediaQueue extends React.PureComponent<any, SMediaQueue> {
     }
 
     /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteData = DataController.subscribe(this.updateData);
+        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
+        this.remoteSlideshow = SlideshowController.subscribe(this.updateSlideshow);
+        this.remoteMedia = MediaQueueController.subscribe(this.updateMedia);
+        this.remoteVideo = VideoController.subscribe(this.updateVideo);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteCapture !== null)
+            this.remoteCapture();
+        if(this.remoteData !== null)
+            this.remoteData();
+        if(this.remoteMedia !== null)
+            this.remoteMedia();
+        if(this.remoteVideo !== null)
+            this.remoteVideo();
+        if(this.remoteSlideshow !== null)
+            this.remoteSlideshow();
+    }
+
+    /**
      * Renders the component.
      * 
      * Buttons:
@@ -313,15 +381,15 @@ class MediaQueue extends React.PureComponent<any, SMediaQueue> {
      * - Next (next record / slide)
      */
     render() {
-        var items:Array<any> = [];
-        var slides:Array<any> = [];
-        var sponsors:Array<SlideshowRecord> = [];
-        var slideshows:Array<SlideshowRecord> = [];
-        var videoSrc = '';
-        var index = -1;
-        var shown = false;
-        var records = this.state.State.Records;
-        var recordIndex = this.state.State.Index;
+        let items:Array<any> = [];
+        let slides:Array<any> = [];
+        let sponsors:Array<SlideshowRecord> = [];
+        let slideshows:Array<SlideshowRecord> = [];
+        let videoSrc:string = '';
+        let index:number = -1;
+        let shown:boolean = false;
+        let records:Array<any> = this.state.State.Records;
+        let recordIndex:number = this.state.State.Index;
 
         if(records && records.length >= 1) {
             for(let i=0, len = records.length; i < len; i++) {
@@ -406,7 +474,7 @@ class MediaQueue extends React.PureComponent<any, SMediaQueue> {
         }
 
         for(let key in this.state.Slideshows) {
-            let show = this.state.Slideshows[key];
+            let show:SlideshowRecord = this.state.Slideshows[key];
             if(show.SlideshowType === 'SPONSOR') {
                 sponsors.push(show);
             } else {
@@ -414,7 +482,7 @@ class MediaQueue extends React.PureComponent<any, SMediaQueue> {
             }
         }
 
-        var buttons = [
+        let buttons:Array<React.ReactElement> = [
             <IconButton
                 key="btn-loop"
                 src={IconLoop}
@@ -571,6 +639,7 @@ class MediaQueue extends React.PureComponent<any, SMediaQueue> {
                         >Sponsors</IconButton>
                         <RecordList
                             records={sponsors}
+                            recordid={this.state.SponsorsID}
                             onSelect={this.onSelectSponsor}
                         />
                         <div className="buttons">
@@ -617,5 +686,3 @@ class MediaQueue extends React.PureComponent<any, SMediaQueue> {
         )
     }
 }
-
-export default MediaQueue;

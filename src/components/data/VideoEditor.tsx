@@ -17,34 +17,30 @@ interface PVideoEditor {
 /**
  * Component for editing a video record.
  */
-class VideoEditor extends React.PureComponent<PVideoEditor, SVideoEditor> {
-    readonly state:SVideoEditor = {
-        source:'',
-        records:DataController.getVideos(true)
+class VideoEditor extends React.PureComponent<{
+    /**
+     * Record ti edot
+     */
+    record:VideoRecord|null|undefined;
+    /**
+     * true to show, false to hide
+     */
+    opened:boolean;
+}, {
+    /**
+     * Selected video source (url/file location)
+     */
+    source:string;
+}> {
+    readonly state = {
+        source:''
     }
-    remoteData:Function
+    
     constructor(props) {
         super(props);
-        
-        this.updateState = this.updateState.bind(this);
-
         this.onSelect =this.onSelect.bind(this);
         this.onSubmit = this.onSubmit.bind(this);
-
         this.onSelectFile = this.onSelectFile.bind(this);
-        this.remoteData = DataController.subscribe(this.updateState);
-    }
-
-    /**
-     * Updates the state to match the controller.
-     * - Video records.
-     */
-    updateState() {
-        if(!DataController.compare(DataController.getVideos(), this.state.records)) {
-            this.setState(() => {
-                return {records:Object.assign({}, DataController.getVideos())}
-            });
-        }
     }
 
     /**
@@ -86,8 +82,8 @@ class VideoEditor extends React.PureComponent<PVideoEditor, SVideoEditor> {
      * @param {Object} prevProps 
      */
     componentDidUpdate(prevProps) {
-        if(this.props.record) {
-            if(prevProps.record) {
+        if(this.props.record !== null && this.props.record !== undefined) {
+            if(prevProps.record !== null && prevProps.record !== null) {
                 if(prevProps.record.RecordID !== this.props.record.RecordID) {
                     this.onSelect(this.props.record);
                 }
@@ -101,12 +97,12 @@ class VideoEditor extends React.PureComponent<PVideoEditor, SVideoEditor> {
      * Renders the component.
      */
     render() {
-        var src = this.state.source;
+        let src:string = this.state.source;
         if(src && src.length) {
             src = DataController.mpath("videos/" + src);
         }
         
-        var buttons = [
+        let buttons:Array<React.ReactElement> = [
             <IconButton
                 key="btn-select"
                 src={IconFolder}
@@ -120,7 +116,6 @@ class VideoEditor extends React.PureComponent<PVideoEditor, SVideoEditor> {
         return (
             <RecordEditor 
                 recordType={vars.RecordType.Video}
-                records={this.state.records}
                 buttons={buttons}
                 onSubmit={this.onSubmit}
                 opened={this.props.opened}
@@ -132,7 +127,6 @@ class VideoEditor extends React.PureComponent<PVideoEditor, SVideoEditor> {
                         <video 
                             src={src}
                             controls={true}
-                            //volume="0"
                             muted
                             width="640"
                             height="360"

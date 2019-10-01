@@ -53,17 +53,11 @@ export enum CapturePanels {
     SCOREKEEPER,
 }
 
-export enum StreamControls {
-    SCOREBOARD = 'scorebanner',
-    ROSTER = 'roster'
-}
-
-export enum DisplayControls {
-    ANNOUNCERS = 'annoucners',
-    ANTHEM = 'anthem',
-    CAMERA = 'camera',
-    PENALTY = 'penalty',
-    SCOREKEEPER = 'scorekeeper'
+export enum Controllers {
+    APPLICATION,
+    SCOREBOARD,
+    ROSTER,
+    MEDIA
 }
 
 export interface CaptureStateBase {
@@ -111,8 +105,6 @@ export interface CaptureStateAnthem extends CaptureStateBase {
 
 export interface CaptureControllerState {
     className:string;
-    StreamControl:string;
-    DisplayControl:string;
     Control:number;
     Announcers:CaptureStateAnnouncer;
     Monitor:CaptureStateMonitor;
@@ -133,8 +125,6 @@ export interface CaptureControllerState {
 export const InitState:CaptureControllerState = {
     className:'',
     Control:0,
-    StreamControl:StreamControls.SCOREBOARD,
-    DisplayControl:DisplayControls.ANTHEM,
     Monitor:{
         Shown:true,
         className:'',
@@ -280,18 +270,6 @@ function CaptureReducer(state:CaptureControllerState = InitState, action) {
             return Object.assign({}, state, {
                 Roster:Object.assign({}, state.Roster, action.values)
             });
-
-        case Actions.SET_STREAM_CONTROL : {
-            return Object.assign({}, state, {
-                StreamControl:action.value
-            });
-        }
-
-        case Actions.SET_DISPLAY_CONTROL : {
-            return Object.assign({}, state, {
-                DisplayControl:action.value
-            });
-        }
 
         case Actions.SET_CONTROL : {
             return Object.assign({}, state, {

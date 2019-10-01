@@ -3,34 +3,44 @@ import Counter from 'components/tools/Counter'
 import {Icon, IconPlus} from 'components/Elements'
 import ScoreboardController, {SScoreboardTeam} from 'controllers/ScoreboardController'
 
-interface SJamPoints {
-    amount:number
-}
-
-interface PJamPoints {
-    Team:SScoreboardTeam
-}
-
 /**
  * Component for team jam points entry.
  */
-class JamPoints extends React.PureComponent<PJamPoints, SJamPoints> {
-    readonly state:SJamPoints = {
+export default class JamPoints extends React.PureComponent<{
+    /**
+     * Team from the ScoreboardController
+     */
+    Team:SScoreboardTeam;
+}, {
+    /**
+     * Number of jam points
+     */
+    amount:number;
+}> {
+    readonly state = {
         amount:0
     }
 
-    CounterItem:React.RefObject<Counter> = React.createRef()
-    remoteScoreboard:Function
+    /**
+     * Reference to Counter item
+     */
+    protected CounterItem:React.RefObject<Counter> = React.createRef()
 
+    /**
+     * ScoreboardController listener
+     */
+    protected remoteScoreboard:Function|null = null;
+
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super(props);
-
-        //bindings
         this.onChange = this.onChange.bind(this);
         this.onAdd = this.onAdd.bind(this);
         this.onSubtract = this.onSubtract.bind(this);
         this.updateState = this.updateState.bind(this);
-        this.remoteScoreboard = ScoreboardController.subscribe(this.updateState);
     }
 
     /**
@@ -79,9 +89,18 @@ class JamPoints extends React.PureComponent<PJamPoints, SJamPoints> {
      * Triggered when the component mounts to the DOM.
      */
     componentDidMount() {
+        this.remoteScoreboard = ScoreboardController.subscribe(this.updateState);
         if(this.CounterItem !== null && this.CounterItem.current !== null) {
             this.CounterItem.current.set(this.state.amount, false);
         }
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteScoreboard !== null)
+            this.remoteScoreboard();
     }
 
     /**
@@ -96,7 +115,6 @@ class JamPoints extends React.PureComponent<PJamPoints, SJamPoints> {
                         min={-99}
                         max={99}
                         padding={2}
-                        //onChange={this.onChange}
                         onAdd={this.onAdd}
                         onSubtract={this.onSubtract}
                         ref={this.CounterItem}
@@ -117,5 +135,3 @@ class JamPoints extends React.PureComponent<PJamPoints, SJamPoints> {
         )
     }
 }
-
-export default JamPoints;

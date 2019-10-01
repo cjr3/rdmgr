@@ -30,17 +30,46 @@ export interface PPhaseSelection {
 /**
  * Component for displaying the phase/quarter selection on the scoreboard
  */
-class PhaseSelection extends React.PureComponent<PPhaseSelection, SPhaseSelection> {
-    readonly state:SPhaseSelection = {
-        Phases:DataController.getState().Phases
+export default class PhaseSelection extends React.PureComponent<{
+    /**
+     * True to show, false to hide
+     */
+    opened:boolean;
+    /**
+     * Triggered when the user selects a phase
+     */
+    onSelect:Function;
+    /**
+     * Triggered when the panel closes
+     */
+    onClose:Function;
+    /**
+     * Class name of panel content
+     */
+    className?:string
+}, {
+    /**
+     * Record of phases to select from
+     */
+    Phases:Array<PhaseRecord>
+}> {
+    readonly state = {
+        Phases:DataController.getPhases()
     }
 
-    remoteData:Function
+    /**
+     * DataController listener
+     */
+    protected remoteData:Function|null = null;
+
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props:PPhaseSelection) {
         super(props);
         this.onSelect = this.onSelect.bind(this);
         this.updateState = this.updateState.bind(this);
-        this.remoteData = DataController.subscribe(this.updateState);
     }
 
     /**
@@ -72,6 +101,21 @@ class PhaseSelection extends React.PureComponent<PPhaseSelection, SPhaseSelectio
     }
 
     /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteData = DataController.subscribe(this.updateState);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteData !== null)
+            this.remoteData();
+    }
+
+    /**
      * Renders the component.
      */
     render() {
@@ -100,5 +144,3 @@ class PhaseSelection extends React.PureComponent<PPhaseSelection, SPhaseSelectio
         )
     }
 }
-
-export default PhaseSelection;

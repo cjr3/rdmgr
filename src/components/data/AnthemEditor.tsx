@@ -3,50 +3,50 @@ import RecordEditor from './RecordEditor';
 import DataController from 'controllers/DataController';
 import vars, { AnthemRecord } from 'tools/vars';
 
-interface SAnthemEditor {
-    Biography:string,
-    Records:Array<AnthemRecord>
-}
-
-interface PAnthemEditor {
-    record:AnthemRecord,
-    opened:boolean
-}
-
 /**
  * Component for editing National Anthem records.
  */
-class AnthemEditor extends React.PureComponent<PAnthemEditor, SAnthemEditor> {
-    readonly state:SAnthemEditor ={
-        Biography:'',
-        Records:DataController.getAnthemSingers(true)
+export default class AnthemEditor extends React.PureComponent<{
+    /**
+     * The record to edit
+     */
+    record:AnthemRecord|null;
+    /**
+     * true to show, false to hide
+     */
+    opened:boolean;
+}, {
+    /**
+     * Biography of current record
+     */
+    Biography:string;
+}> {
+    readonly state ={
+        Biography:''
     }
 
-    remoteData:Function
+    /**
+     * DataController listener
+     */
+    protected remoteData:Function|null = null;
 
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super(props);
         this.onChangeBio = this.onChangeBio.bind(this);
         this.onSubmit = this.onSubmit.bind(this);
         this.onSelect = this.onSelect.bind(this);
-        this.updateState = this.updateState.bind(this);
-        this.remoteData = DataController.subscribe(this.updateState);
-    }
-
-    /**
-     * Updates the state to match the controller.
-     * - Update changed phase records.
-     */
-    updateState() {
-        this.setState({Records:DataController.getAnthemSingers(true)});
     }
 
     /**
      * Triggered when the user changes the value of the quarter for this phase.
      * @param {Event} ev 
      */
-    onChangeBio(ev) {
-        var value = ev.target.value;
+    onChangeBio(ev: React.ChangeEvent<HTMLTextAreaElement>) {
+        let value:string = ev.currentTarget.value;
         this.setState(() => {
             return {Biography:value};
         });
@@ -67,7 +67,7 @@ class AnthemEditor extends React.PureComponent<PAnthemEditor, SAnthemEditor> {
      * @param {Object} record 
      */
     onSelect(record) {
-        var bio = record.Biography || '';
+        let bio:string = record.Biography || '';
         this.setState({Biography:bio});
     }
 
@@ -91,12 +91,9 @@ class AnthemEditor extends React.PureComponent<PAnthemEditor, SAnthemEditor> {
      * Renders the component.
      */
     render() {
-        var bio = this.state.Biography || '';
-
         return (
             <RecordEditor 
                 recordType={vars.RecordType.Anthem}
-                records={this.state.Records}
                 onSubmit={this.onSubmit}
                 opened={this.props.opened}
                 {...this.props}
@@ -105,7 +102,7 @@ class AnthemEditor extends React.PureComponent<PAnthemEditor, SAnthemEditor> {
                     <td>Biography</td>
                     <td colSpan={3}>
                         <textarea rows={5} cols={50} maxLength={300}
-                            value={bio}
+                            value={this.state.Biography}
                             onChange={this.onChangeBio}
                             />
                     </td>
@@ -114,5 +111,3 @@ class AnthemEditor extends React.PureComponent<PAnthemEditor, SAnthemEditor> {
         )
     }
 }
-
-export default AnthemEditor;

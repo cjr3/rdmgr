@@ -16,24 +16,47 @@ interface PBreakClock {
 /**
  * Scoreboard Break Clock control
  */
-class BreakClock extends React.PureComponent<PBreakClock, SBreakClock> {
+export default class BreakClock extends React.PureComponent<{
+    /**
+     * Remote Peer ID. If provided, the clock does not tick,
+     * and the peer must update its value
+     */
+    remote?:string;
+}, {
+    /**
+     * Status of the clock (playing, stopped, ready)
+     */
+    status:number;
+    /**
+     * Seconds on the clock
+     */
+    second:number;
+}> {
     readonly state:SBreakClock = {
         status:vars.Clock.Status.Ready,
         second:30
     }
 
-    ClockItem:React.RefObject<Clock> = React.createRef();
-    remoteScore:Function
+    /**
+     * Clock reference item
+     */
+    protected ClockItem:React.RefObject<Clock> = React.createRef();
 
+    /**
+     * ScoreboardController listener
+     */
+    protected remoteScore:Function|null = null;
+
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super(props);
-
-        //bindings
         this.onClick = this.onClick.bind(this);
         this.onDone = this.onDone.bind(this);
         this.onTick = this.onTick.bind(this);
         this.updateState = this.updateState.bind(this);
-        this.remoteScore = ScoreboardController.subscribe(this.updateState);
     }
 
     /**
@@ -86,6 +109,21 @@ class BreakClock extends React.PureComponent<PBreakClock, SBreakClock> {
     }
 
     /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteScore = ScoreboardController.subscribe(this.updateState);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteScore !== null)
+            this.remoteScore();
+    }
+
+    /**
      * Renders the component.
      */
     render() {
@@ -116,5 +154,3 @@ class BreakClock extends React.PureComponent<PBreakClock, SBreakClock> {
         )
     }
 }
-
-export default BreakClock;

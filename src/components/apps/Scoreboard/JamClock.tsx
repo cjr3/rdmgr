@@ -3,23 +3,38 @@ import Clock from 'components/tools/Clock'
 import vars from 'tools/vars'
 import ScoreboardController from 'controllers/ScoreboardController'
 
-interface SJamClock {
-    showTenths:boolean,
-    hour:number,
-    minute:number,
-    second:number,
-    status:number
-}
-
-interface PJamClock {
-    remote?:string
-}
-
 /**
  * Jam clock component for the scoreboard.
  */
-class JamClock extends React.PureComponent<PJamClock, SJamClock> {
-    readonly state:SJamClock = {
+export default class JamClock extends React.PureComponent<{
+    /**
+     * Remote Peer ID. If provided, the peer (connected or not) must provide
+     * values to change the clock
+     */
+    remote?:string;
+}, {
+    /**
+     * Show tenths on the clock or not
+     */
+    showTenths:boolean;
+    /**
+     * Default hour
+     */
+    hour:number;
+    /**
+     * Default minute
+     */
+    minute:number;
+    /**
+     * Default second
+     */
+    second:number;
+    /**
+     * Status (playing, stopped, ready)
+     */
+    status:number;
+}> {
+    readonly state = {
         status:vars.Clock.Status.Ready,
         showTenths:false,
         hour:0,
@@ -27,9 +42,19 @@ class JamClock extends React.PureComponent<PJamClock, SJamClock> {
         second:60
     }
 
-    ClockItem:React.RefObject<Clock> = React.createRef();
-    remoteScore:Function
+    /**
+     * Clock component reference
+     */
+    protected ClockItem:React.RefObject<Clock> = React.createRef();
+    /**
+     * ScoreboardController listener
+     */
+    protected remoteScore:Function|null = null;
 
+    /**
+     * 
+     * @param props 
+     */
     constructor(props) {
         super(props);
         this.onContextMenu = this.onContextMenu.bind(this);
@@ -37,7 +62,6 @@ class JamClock extends React.PureComponent<PJamClock, SJamClock> {
         this.onDone = this.onDone.bind(this);
         this.onTick = this.onTick.bind(this);
         this.updateState = this.updateState.bind(this);
-        this.remoteScore = ScoreboardController.subscribe(this.updateState);
     }
 
     /**
@@ -92,6 +116,24 @@ class JamClock extends React.PureComponent<PJamClock, SJamClock> {
             ScoreboardController.SetJamTime(second);
     }
 
+    /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteScore = ScoreboardController.subscribe(this.updateState);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteScore !== null)
+            this.remoteScore();
+    }
+
+    /**
+     * Renders the component
+     */
     render() {
         return (
             <Clock 
@@ -112,5 +154,3 @@ class JamClock extends React.PureComponent<PJamClock, SJamClock> {
         )
     }
 }
-
-export default JamClock;

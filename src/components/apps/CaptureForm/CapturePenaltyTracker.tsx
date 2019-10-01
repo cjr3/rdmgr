@@ -1,42 +1,70 @@
-import React from 'react'
+import React, { CSSProperties } from 'react'
 import cnames from 'classnames'
 import PenaltyController, {SPenaltyController} from 'controllers/PenaltyController';
 import './css/CapturePenaltyTracker.scss';
 import {SkaterRecord} from 'tools/vars';
 
-interface PCapturePenaltyTracker {
-    shown?:boolean,
-    className?:string
-}
-
-class CapturePenaltyTracker extends React.PureComponent<PCapturePenaltyTracker, SPenaltyController> {
-
+export default class CapturePenaltyTracker extends React.PureComponent<{
+    /**
+     * true to show, false to hide
+     */
+    shown:boolean;
+    /**
+     * Additional class name
+     */
+    className?:string;
+}, SPenaltyController> {
     readonly state:SPenaltyController = PenaltyController.getState();
-    remotePenalty:Function
+    /**
+     * PenaltyController remote
+     */
+    protected remotePenalty:Function|null = null;
 
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super(props);
         this.updateState = this.updateState.bind(this);
+    }
+
+    /**
+     * Updates the state to match the Penalty Controller
+     */
+    updateState() {
+        this.setState(PenaltyController.getState());
+    }
+
+    /**
+     * Start listeners
+     */
+    componentDidMount() {
         this.remotePenalty = PenaltyController.subscribe(this.updateState);
     }
 
-    updateState() {
-        this.setState(() => {
-            return Object.assign({}, PenaltyController.getState());
-        });
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remotePenalty !== null)
+            this.remotePenalty();
     }
 
+    /**
+     * Renders the component
+     */
     render() {
-        var className = cnames('capture-PT', this.props.className, {
+        let className:string = cnames('capture-PT', this.props.className, {
             shown:(this.props.shown && this.state.Skaters.length)
         });
-        var penalties:Array<React.ReactElement> = [];
+        let penalties:Array<React.ReactElement> = [];
         this.state.Skaters.forEach((skater:SkaterRecord) => {
-            let style = {
+            let style:CSSProperties = {
                 backgroundColor:skater.Color
             }
 
-            var codes:Array<string> = [];
+            let codes:Array<string> = [];
             if(skater.Penalties !== undefined) {
                 skater.Penalties.forEach((pen) => {
                     if(pen.Acronym)
@@ -64,5 +92,3 @@ class CapturePenaltyTracker extends React.PureComponent<PCapturePenaltyTracker, 
         );
     }
 }
-
-export default CapturePenaltyTracker;

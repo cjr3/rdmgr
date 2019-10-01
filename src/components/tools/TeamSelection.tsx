@@ -3,49 +3,58 @@ import cnames from 'classnames'
 import DataController from 'controllers/DataController';
 import {TeamRecord} from 'tools/vars';
 
-interface STeamSelection {
-    teams:Array<TeamRecord>,
-    index:number
-}
-
-interface PTeamSelection {
-    teamid?:number,
-    onChange?:Function,
-    className?:string
-}
-
-class TeamSelection extends React.PureComponent<PTeamSelection, STeamSelection> {
-    readonly state:STeamSelection = {
+/**
+ * Component for selecting a single team
+ */
+export default class TeamSelection extends React.PureComponent<{
+    /**
+     * Current team ID
+     */
+    teamid?:number;
+    /**
+     * Triggered when the user changes the team
+     */
+    onChange?:Function;
+    /**
+     * Additional class names
+     */
+    className?:string;
+}, {
+    /**
+     * Collection of teams to choose from
+     */
+    teams:Array<TeamRecord>;
+    /**
+     * Selected team
+     */
+    index:number;
+}> {
+    readonly state = {
         teams:DataController.getTeams(true),
         index:0
     }
 
-    remoteData:Function
+    /**
+     * DataController listener
+     */
+    protected remoteData:Function|null = null;
 
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super(props);
-
-        if(this.props.teamid) {
-            for(let i=0; i < this.state.teams.length; i++) {
-                if(this.state.teams[i].RecordID === this.props.teamid) {
-                    this.state.index = i;
-                    break;
-                }
-            }
-        }
-
-        //bindings
         this.onChangeSelect = this.onChangeSelect.bind(this);
         this.next = this.next.bind(this);
         this.prev = this.prev.bind(this);
-        this.updateState = this.updateState.bind(this);
-        this.remoteData = DataController.subscribe(this.updateState);
+        this.updateData = this.updateData.bind(this);
     }
 
     /**
      * Updates the state to match the controller.
      */
-    updateState() {
+    updateData() {
         var teams = DataController.getTeams(true);
         if(!DataController.compare(teams, this.state.teams)) {
             this.setState((state) => {
@@ -104,31 +113,56 @@ class TeamSelection extends React.PureComponent<PTeamSelection, STeamSelection> 
         });
     }
 
-    componentDidUpdate(prevProps) {
-        if(prevProps.teamid !== this.props.teamid) {
-            var index = 0;
-            if(this.state.teams) {
-                for(var key in this.state.teams) {
-                    if(this.state.teams[key].RecordID === this.props.teamid) {
-                        index = parseInt(key);
-                        break;
-                    }
-                }
-            }
-
-            if(index !== this.state.index && index >= 0) {
-                this.setState({index:index});
+    /**
+     * Updates the team selection from props
+     */
+    protected updateTeam() {
+        let index:number = -1;
+        for(let i=0; i < this.state.teams.length; i++) {
+            if(this.state.teams[i].RecordID === this.props.teamid) {
+                index = i;
+                break;
             }
         }
+        if(index != this.state.index && index >= 0) {
+            this.setState({index:index});
+        }
+    }
+
+    /**
+     * Triggered when the component updates
+     * @param prevProps 
+     */
+    componentDidUpdate(prevProps) {
+        if(prevProps.teamid !== this.props.teamid) {
+            this.updateTeam();
+        }
+    }
+
+    /**
+     * Triggered when the component mounts to the DOM
+     */
+    componentDidMount() {
+        if(this.props.teamid)
+            this.updateTeam();
+        this.remoteData = DataController.subscribe(this.updateData);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteData !== null)
+            this.remoteData();
     }
 
     /**
      * Renders the component.
      */
     render() {
-        var options:Array<React.ReactElement> = [];
-        var src:string = '';
-        var i = 0;
+        let options:Array<React.ReactElement> = [];
+        let src:string = '';
+        let i = 0;
         this.state.teams.forEach((team) => {
             options.push(
                 <option value={i} key={`${team.RecordType}-${team.RecordID}`}>{team.Name.replace('|', ' ')}</option>
@@ -148,5 +182,3 @@ class TeamSelection extends React.PureComponent<PTeamSelection, STeamSelection> 
         )
     }
 }
-
-export default TeamSelection;

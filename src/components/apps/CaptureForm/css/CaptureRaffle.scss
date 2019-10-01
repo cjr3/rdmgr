@@ -13,6 +13,8 @@
     z-index: 130;
     opacity: 0;
     transition: all 150ms linear;
+    background-size: cover;
+    background-repeat: no-repeat;
 
     > .ticket {
         width: 720px;
@@ -42,4 +44,15 @@
 
 .capture-raffle.shown {
     opacity: 1;
+}
+
+@media screen and (max-height: 576px) {
+    .capture-raffle {
+        .ticket {
+            width: 800px;
+            height: 150px;
+            font-size: 116px;
+            line-height: 108px;
+        }
+    }
 }

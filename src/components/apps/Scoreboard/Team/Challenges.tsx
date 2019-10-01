@@ -3,22 +3,21 @@ import Counter from 'components/tools/Counter'
 import {Icon, IconSubtract} from 'components/Elements'
 import ScoreboardController, {SScoreboardTeam} from 'controllers/ScoreboardController'
 
-interface SChallenge {
-    amount:number
-}
-
-export interface PChallenge {
-    /**
-     * The team the challenges belong to
-     */
-    Team:SScoreboardTeam
-}
-
 /**
  * Component for team challenges.
  */
-class Challenges extends React.PureComponent<PChallenge, SChallenge> {
-    readonly state:SChallenge = {
+export default class Challenges extends React.PureComponent<{
+    /**
+     * Team, from the scoreboard controller
+     */
+    Team:SScoreboardTeam;
+}, {
+    /**
+     * Amount of challenges
+     */
+    amount:number;
+}> {
+    readonly state = {
         amount:3
     }
 
@@ -30,7 +29,7 @@ class Challenges extends React.PureComponent<PChallenge, SChallenge> {
     /**
      * Listener for scoreboard controller
      */
-    protected remoteScoreboard:Function
+    protected remoteScoreboard:Function|null = null;
 
     constructor(props) {
         super(props);
@@ -41,7 +40,7 @@ class Challenges extends React.PureComponent<PChallenge, SChallenge> {
         this.onAdd = this.onAdd.bind(this);
         this.onSubtract = this.onSubtract.bind(this);
         this.updateState = this.updateState.bind(this);
-        this.remoteScoreboard = ScoreboardController.subscribe(this.updateState);
+        //this.remoteScoreboard = ScoreboardController.subscribe(this.updateState);
     }
 
     /**
@@ -90,11 +89,23 @@ class Challenges extends React.PureComponent<PChallenge, SChallenge> {
 
     /**
      * Triggered when the component mounts to the DOM.
+     * - Start listeners
+     * - Set value on counter
      */
     componentDidMount() {
+        this.remoteScoreboard = ScoreboardController.subscribe(this.updateState);
+
         if(this.CounterItem !== null && this.CounterItem.current !== null) {
             this.CounterItem.current.set(this.state.amount, false);
         }
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteScoreboard !== null)
+            this.remoteScoreboard();
     }
 
     /**
@@ -110,7 +121,6 @@ class Challenges extends React.PureComponent<PChallenge, SChallenge> {
                         max={3}
                         amount={3}
                         padding={2}
-                        //onChange={this.onChange}
                         onAdd={this.onAdd}
                         onSubtract={this.onSubtract}
                         ref={this.CounterItem}
@@ -131,5 +141,3 @@ class Challenges extends React.PureComponent<PChallenge, SChallenge> {
         )
     }
 }
-
-export default Challenges;

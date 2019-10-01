@@ -10,26 +10,24 @@ import {
     IconCameraRightThird
 } from 'components/Elements';
 
-interface SCaptureCameraStyleButtons {
-    /**
-     * Determines if the camera is shown or not
-     */
-    Shown:boolean,
-    /**
-     * Determines how the camera is displayed
-     */
-    className:string
-}
-
 /**
  * Buttons for setting the style of the main camera
  */
-export default class CaptureCameraStyleButtons extends React.PureComponent<any, SCaptureCameraStyleButtons> {
+export default class CaptureCameraStyleButtons extends React.PureComponent<any, {
+    /**
+     * Determines if the camera is shown or not
+     */
+    Shown:boolean;
+    /**
+     * Determines how the camera is displayed
+     */
+    className:string;
+}> {
 
     /**
      * State
      */
-    readonly state:SCaptureCameraStyleButtons = {
+    readonly state = {
         Shown:CaptureController.getState().MainCamera.Shown,
         className:CaptureController.getState().MainCamera.className
     }
@@ -37,16 +35,15 @@ export default class CaptureCameraStyleButtons extends React.PureComponent<any, 
     /**
      * Listener for controller changes
      */
-    protected remoteState:Function
+    protected remoteState:Function|null = null;
 
     /**
-     * 
-     * @param props Constructor
+     * Constructor
+     * @param props any
      */
     constructor(props:any) {
         super(props);
         this.updateState = this.updateState.bind(this);
-        this.remoteState = CaptureController.subscribe(this.updateState);
     }
 
     /**
@@ -57,6 +54,22 @@ export default class CaptureCameraStyleButtons extends React.PureComponent<any, 
             Shown:CaptureController.getState().MainCamera.Shown,
             className:CaptureController.getState().MainCamera.className
         });
+    }
+
+    /**
+     * Triggered when the component mounts to the DOM
+     */
+    componentDidMount() {
+        this.remoteState = CaptureController.subscribe(this.updateState);
+    }
+
+    /**
+     * Triggered when the component will unmount from the DOM
+     * - Remove listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteState)
+            this.remoteState();
     }
 
     /**

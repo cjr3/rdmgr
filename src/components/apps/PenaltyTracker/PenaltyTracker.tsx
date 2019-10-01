@@ -5,31 +5,10 @@ import CaptureController, {CaptureStatePenalty} from 'controllers/CaptureControl
 import ScoreboardController from 'controllers/ScoreboardController';
 import RosterController from 'controllers/RosterController';
 import Panel from 'components/Panel';
-import {Button, IconButton, Icon, IconDelete, IconSave, IconX} from 'components/Elements'
+import {Button, IconButton, Icon, IconDelete, IconSave, IconX, IconHidden, IconShown} from 'components/Elements'
 import DataController from 'controllers/DataController';
 import './css/PenaltyTracker.scss';
-import { SkaterRecord } from 'tools/vars';
-
-interface SPenaltyTracker {
-    Penalties:any,
-    Skaters:any,
-    Capture:CaptureStatePenalty,
-    State:SPenaltyController,
-    Penalized:Array<SkaterRecord>,
-    TeamA:{
-        ID:number,
-        Name:string,
-        Color:string
-    },
-    TeamASkaters:Array<SkaterRecord>,
-    TeamB:{
-        ID:number,
-        Name:string,
-        Color:string
-    },
-    TeamBSkaters:Array<SkaterRecord>,
-    Skater:SkaterRecord|null
-}
+import vars, { SkaterRecord, PenaltyRecord } from 'tools/vars';
 
 /**
  * Component for the penalty tracker
@@ -41,13 +20,43 @@ interface SPenaltyTracker {
  * Right Side: Penalty Assignment
  * 
  */
-class PenaltyTracker extends React.PureComponent<any, SPenaltyTracker> {
-    readonly state:SPenaltyTracker = {
-        Penalties:Object.assign({}, DataController.getPenalties()),
-        Skaters:Object.assign({}, DataController.getSkaters()),
-        Capture:Object.assign({}, CaptureController.getState().PenaltyTracker),
-        State:Object.assign({}, PenaltyController.getState()),
-        Penalized:[],
+export default class PenaltyTracker extends React.PureComponent<any, {
+    /**
+     * Penalties the user can select from
+     */
+    Penalties:Array<PenaltyRecord>;
+    /**
+     * Details of the penalty tracker on the capture form
+     */
+    Capture:CaptureStatePenalty;
+    /**
+     * State of the penalty controller
+     */
+    State:SPenaltyController;
+    /**
+     * Internal penalized skaters
+     * - Separate from the controller so user can prepare, and then submit a batch of skaters
+     */
+    Penalized:Array<SkaterRecord>;
+    TeamA:{
+        ID:number;
+        Name:string;
+        Color:string;
+    },
+    TeamASkaters:Array<SkaterRecord>;
+    TeamB:{
+        ID:number;
+        Name:string;
+        Color:string;
+    },
+    TeamBSkaters:Array<SkaterRecord>;
+    Skater:SkaterRecord;
+}> {
+    readonly state = {
+        Penalties:DataController.getPenalties(true),
+        Capture:CaptureController.getState().PenaltyTracker,
+        State:PenaltyController.getState(),
+        Penalized:new Array<SkaterRecord>(),
         TeamA:{
             ID:ScoreboardController.getState().TeamA.ID,
             Name:ScoreboardController.getState().TeamA.Name,
@@ -60,38 +69,52 @@ class PenaltyTracker extends React.PureComponent<any, SPenaltyTracker> {
             Color:ScoreboardController.getState().TeamB.Color
         },
         TeamBSkaters:RosterController.getState().TeamB.Skaters.slice(),
-        Skater:null
+        Skater:DataController.getNewRecord(vars.RecordType.Skater)
     }
 
-    ShowTimer:number = 0
-    TeamA:React.RefObject<React.ReactElement> = React.createRef()
-    TeamB:React.RefObject<React.ReactElement> = React.createRef()
+    /**
+     * PenaltyController listener
+     */
+    protected remoteState:Function|null = null;
+    /**
+     * CaptureController listener
+     */
+    protected remoteCapture:Function|null = null;
+    /**
+     * ScoreboardController listener
+     */
+    protected remoteScoreboard:Function|null = null;
+    /**
+     * DataController listener
+     */
+    protected remoteData:Function|null = null;
+    /**
+     * RosterController listener
+     */
+    protected remoteRoster:Function|null = null;
 
-    remoteState:Function
-    remoteCapture:Function
-    remoteScoreboard:Function
-    remoteData:Function
-    remoteRoster:Function
+    /**
+     * For some reason, even with null type checking, TypeScript
+     * still throws an error if the 'Skater' object of the state is set to null,
+     * so let's use a fake one
+     */
+    protected FakeSkater:SkaterRecord = DataController.getNewRecord(vars.RecordType.Skater);
 
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super(props);
-
         this.onClickSubmit = this.onClickSubmit.bind(this);
         this.togglePenalty = this.togglePenalty.bind(this);
         this.onSelectSkater = this.onSelectSkater.bind(this);
         this.removeSkater = this.removeSkater.bind(this);
-
         this.updateCapture = this.updateCapture.bind(this);
         this.updateState = this.updateState.bind(this);
         this.updateScoreboard = this.updateScoreboard.bind(this);
         this.updateData = this.updateData.bind(this);
         this.updateRoster = this.updateRoster.bind(this);
-
-        this.remoteState = PenaltyController.subscribe(this.updateState);
-        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
-        this.remoteScoreboard = ScoreboardController.subscribe(this.updateScoreboard);
-        this.remoteData = DataController.subscribe(this.updateData);
-        this.remoteRoster = RosterController.subscribe(this.updateRoster);
     }
 
     /**
@@ -134,8 +157,7 @@ class PenaltyTracker extends React.PureComponent<any, SPenaltyTracker> {
      */
     updateData() {
         this.setState({
-            Penalties:DataController.getPenalties(),
-            Skaters:DataController.getSkaters()
+            Penalties:DataController.getPenalties(true)
         });
     }
 
@@ -155,7 +177,7 @@ class PenaltyTracker extends React.PureComponent<any, SPenaltyTracker> {
      * @param {Object} penalty 
      */
     togglePenalty(penalty) {
-        if(this.state.Skater === null)
+        if(this.state.Skater.RecordID <= 0)
             return;
 
         this.setState((state) => {
@@ -204,7 +226,7 @@ class PenaltyTracker extends React.PureComponent<any, SPenaltyTracker> {
      *   and then hides them after 10 seconds.
      */
     onClickSubmit() {
-        this.setState({Skater:null});
+        this.setState({Skater:this.FakeSkater});
         PenaltyController.SetSkaters(this.state.Penalized);
         CaptureController.SetPenaltyTrackerVisibility(true);
     }
@@ -216,7 +238,7 @@ class PenaltyTracker extends React.PureComponent<any, SPenaltyTracker> {
     onSelectSkater(skater) {
         this.setState((state) => {
             if(state.Skater && state.Skater.RecordID === skater.RecordID) {
-                return {Skater:null};
+                return {Skater:this.FakeSkater};
             }
             return {Skater:skater};
         });
@@ -252,9 +274,36 @@ class PenaltyTracker extends React.PureComponent<any, SPenaltyTracker> {
                 var cstate = Object.assign({}, state);
                 cstate.Penalized[index].Penalties = [];
                 cstate.Penalized.splice(index, 1);
-                return {Penalized:[...cstate.Penalized], Skater:null};
+                return {Penalized:[...cstate.Penalized], Skater:this.FakeSkater};
             });
         }
+    }
+
+    /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteState = PenaltyController.subscribe(this.updateState);
+        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
+        this.remoteScoreboard = ScoreboardController.subscribe(this.updateScoreboard);
+        this.remoteData = DataController.subscribe(this.updateData);
+        this.remoteRoster = RosterController.subscribe(this.updateRoster);
+    }
+
+    /**
+     * Close listener
+     */
+    componentWillUnmount() {
+        if(this.remoteCapture !== null)
+            this.remoteCapture();
+        if(this.remoteState !== null)
+            this.remoteState();
+        if(this.remoteScoreboard !== null)
+            this.remoteScoreboard();
+        if(this.remoteData !== null)
+            this.remoteData();
+        if(this.remoteRoster !== null)
+            this.remoteRoster();
     }
 
     /**
@@ -263,10 +312,9 @@ class PenaltyTracker extends React.PureComponent<any, SPenaltyTracker> {
     render() {
         var penalties:Array<React.ReactElement> = [];
         var penalized:Array<React.ReactElement> = [];
-        var skater = this.state.Skater;
-        var viewIcon = require('images/icons/eye-closed.png');
+        var viewIcon = IconHidden;
         if(this.state.Capture.Shown)
-            viewIcon = require('images/icons/eye-open.png');
+            viewIcon = IconShown;
 
         var buttons = [
             <IconButton
@@ -286,7 +334,7 @@ class PenaltyTracker extends React.PureComponent<any, SPenaltyTracker> {
                             s.Penalties = [];
                         });
                         cstate.Penalized.length = 0;
-                        return {Penalized:[...cstate.Penalized], Skater:null}
+                        return {Penalized:[...cstate.Penalized], Skater:this.FakeSkater}
                     },PenaltyController.Clear);
                 }}>Clear</IconButton>,
             <IconButton
@@ -298,8 +346,8 @@ class PenaltyTracker extends React.PureComponent<any, SPenaltyTracker> {
         for(var key in this.state.Penalties) {
             let penalty = this.state.Penalties[key];
             let active = false;
-            if(skater !== null && skater.Penalties !== undefined) {
-                let pindex = skater.Penalties.findIndex((p) => {
+            if(this.state.Skater.Penalties !== undefined) {
+                let pindex = this.state.Skater.Penalties.findIndex((p) => {
                     return (p.RecordID === penalty.RecordID);
                 });
                 if(pindex >= 0)
@@ -327,7 +375,7 @@ class PenaltyTracker extends React.PureComponent<any, SPenaltyTracker> {
                     className="skater-penalized"
                     key={`${pskater.RecordType}-${pskater.RecordID}`}>
                     <Button
-                        active={(skater && skater.RecordID === pskater.RecordID)}
+                        active={(this.state.Skater.RecordID === pskater.RecordID)}
                         onClick={() => {
                             this.onSelectSkater(pskater);
                         }}
@@ -424,5 +472,3 @@ function PenaltyTrackerTeam(props:PPenaltyTrackerTeam) : React.ReactElement {
         </div>
     );
 }
-
-export default PenaltyTracker;

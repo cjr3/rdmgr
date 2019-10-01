@@ -342,6 +342,7 @@
     transition: transform 150ms, opacity 500ms ease-in-out 150ms;
     transform: translateY(0px);
     opacity: 1;
+    overflow: visible;
 
     .phase, .jam-counter, .jamclock {
         display: none;
@@ -493,10 +494,11 @@
 
         .gameclock {
             width: 450px;
+            top: initial;
             left: 0;
             right: 0;
-            bottom: 15px;
-            height: 35px;
+            bottom: 0px;
+            height: 81px;
             font-size: 72px;
             line-height: 72px;
             padding-right: 16px;

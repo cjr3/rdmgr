@@ -3,7 +3,10 @@ import CaptureController from 'controllers/CaptureController';
 import CaptureControlPanel, {PCaptureControlPanel} from './CaptureControlPanel';
 import {IconX, IconCheck, IconButton} from 'components/Elements';
 
-interface SCaptureControlAnnouncers {
+/**
+ * Component for configuring announcers.
+ */
+export default class CaptureControlAnnouncers extends React.PureComponent<PCaptureControlPanel, {
     /**
      * Name of the first announcer
      */
@@ -20,17 +23,12 @@ interface SCaptureControlAnnouncers {
      * Determines if the announcer names are shown or not
      */
     Shown:boolean;
-}
-
-/**
- * Component for configuring announcers.
- */
-class CaptureControlAnnouncers extends React.PureComponent<PCaptureControlPanel, SCaptureControlAnnouncers> {
+}> {
 
     /**
      * State
      */
-    readonly state:SCaptureControlAnnouncers = {
+    readonly state = {
         Announcer1:CaptureController.getState().Announcers.Announcer1,
         Announcer2:CaptureController.getState().Announcers.Announcer2,
         Duration:CaptureController.getState().Announcers.Duration/1000,
@@ -40,7 +38,7 @@ class CaptureControlAnnouncers extends React.PureComponent<PCaptureControlPanel,
     /**
      * Listener for capture controller
      */
-    protected remoteCapture:Function
+    protected remoteCapture:Function|null = null;
 
     constructor(props) {
         super(props);
@@ -49,9 +47,7 @@ class CaptureControlAnnouncers extends React.PureComponent<PCaptureControlPanel,
         this.onChangeDuration = this.onChangeDuration.bind(this);
         this.onClickSubmit = this.onClickSubmit.bind(this);
         this.onClickCancel = this.onClickCancel.bind(this);
-
         this.updateCapture = this.updateCapture.bind(this);
-        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
     }
 
     /**
@@ -109,6 +105,22 @@ class CaptureControlAnnouncers extends React.PureComponent<PCaptureControlPanel,
         this.setState(() => {
             return {Duration:duration}
         });
+    }
+
+    /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
+    }
+
+    /**
+     * Triggered when the component will unmount from the DOM
+     * - Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteCapture !== null)
+            this.remoteCapture();
     }
 
     /**
@@ -178,5 +190,3 @@ class CaptureControlAnnouncers extends React.PureComponent<PCaptureControlPanel,
         );
     }
 }
-
-export default CaptureControlAnnouncers;

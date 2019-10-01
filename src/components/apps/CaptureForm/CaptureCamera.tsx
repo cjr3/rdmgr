@@ -1,36 +1,42 @@
-import React from 'react'
-import Camera from 'components/tools/Camera'
-import CameraController, {CameraControllerState} from 'controllers/CameraController'
-import cnames from 'classnames'
-import './css/CaptureCamera.scss'
-
-export interface PCaptureCamera {
-    /**
-     * Determines if the camera is shown or not
-     */
-    shown:boolean,
-    /**
-     * Determines how the camera is shown
-     */
-    className:string
-}
+import React from 'react';
+import Camera from 'components/tools/Camera';
+import CameraController, {CameraControllerState} from 'controllers/CameraController';
+import cnames from 'classnames';
+import './css/CaptureCamera.scss';
 
 /**
  * Component for displaying the camera on the capture window.
  */
-class CaptureCamera extends React.PureComponent<PCaptureCamera, CameraControllerState> {
-
+export default class CaptureCamera extends React.PureComponent<{
+    /**
+     * Determines if the camera is shown or not
+     */
+    shown:boolean;
+    /**
+     * Determines how the camera is shown
+     */
+    className:string;
+}, CameraControllerState> {
     readonly state:CameraControllerState = CameraController.getState()
 
-    CameraItem:React.RefObject<Camera>
-    remoteState:Function
+    /**
+     * Camera reference
+     */
+    protected CameraItem:React.RefObject<Camera> = React.createRef();
+    /**
+     * CameraController remote
+     */
+    protected remoteState:Function|null = null;
 
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super(props);
         this.CameraItem = React.createRef();
         this.onStream = this.onStream.bind(this);
         this.updateState = this.updateState.bind(this);
-        this.remoteState = CameraController.subscribe(this.updateState);
     }
 
     /**
@@ -52,6 +58,21 @@ class CaptureCamera extends React.PureComponent<PCaptureCamera, CameraController
     }
 
     /**
+     * Start listeners
+     */
+    componentWillMount() {
+        this.remoteState = CameraController.subscribe(this.updateState);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteState !== null)
+            this.remoteState();
+    }
+
+    /**
      * Renders the component.
      */
     render() {
@@ -68,5 +89,3 @@ class CaptureCamera extends React.PureComponent<PCaptureCamera, CameraController
         )
     }
 }
-
-export default CaptureCamera;

@@ -7,7 +7,7 @@ import DataController from 'controllers/DataController'
 import vars from 'tools/vars'
 import keycodes from 'tools/keycodes'
 import RosterController from './RosterController';
-import { GameButton, IGamepadButtonMap } from './GameController';
+import { GameButton, IGamepadButtonMap, IGamepadAxes } from './GameController';
 
 export enum Actions {
     SET_STATE,
@@ -1704,6 +1704,22 @@ const ScoreboardController = {
             }
             return;
         }
+    },
+
+    /**
+     * Triggered when the user releases a button on the gamepad
+     * @param buttons IGamepadButtonMap
+     */
+    onGamepadButtonUp(buttons:IGamepadButtonMap) {
+
+    },
+
+    /**
+     * Triggered when the connected game controller's axes have moved
+     * @param axes IGamepadAxes
+     */
+    onGamepadAxis(axes:IGamepadAxes) {
+
     },
 
     /**

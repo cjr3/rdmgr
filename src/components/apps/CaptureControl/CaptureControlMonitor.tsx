@@ -1,47 +1,45 @@
 import React from 'react';
 import {Button} from 'components/Elements';
 
-interface SCaptureControlMonitor {
-    /**
-     * ID of monitor the capture window is displayed on
-     */
-    MonitorID:string,
-    /**
-     * Width of the capture window
-     */
-    Width:1280,
-    /**
-     * Height of the capture window
-     */
-    Height:720,
-    /**
-     * Collection of Monitors (Display objects)
-     */
-    Monitors:Array<any>
-}
-
 type DimensionRecord = {
-    width:number,
-    height:number
+    width:number;
+    height:number;
 }
 
 /**
  * Component for controlling the monitor, dimensions, and position,
  * of the capture window.
  */
-class CaptureControlMonitor extends React.PureComponent<any, SCaptureControlMonitor> {
+export default class CaptureControlMonitor extends React.PureComponent<any, {
+    /**
+     * ID of monitor the capture window is displayed on
+     */
+    MonitorID:string;
+    /**
+     * Width of the capture window
+     */
+    Width:number;
+    /**
+     * Height of the capture window
+     */
+    Height:number;
+    /**
+     * Collection of Monitors (Display objects)
+     */
+    Monitors:Array<any>;
+}> {
 
-    readonly state:SCaptureControlMonitor = {
+    readonly state = {
         MonitorID:'',
         Width:1280,
         Height:720,
-        Monitors:new Array<any>()
+        Monitors:[]
     }
 
     /**
      * Screen sizes allowed
      */
-    Dimensions:Array<DimensionRecord> = [
+    protected Dimensions:Array<DimensionRecord> = [
         {width:1280,height:720},
         {width:1024,height:576}
     ];
@@ -52,7 +50,6 @@ class CaptureControlMonitor extends React.PureComponent<any, SCaptureControlMoni
      */
     constructor(props) {
         super(props);
-
         this.onClickSubmit = this.onClickSubmit.bind(this);
         this.onChangeMonitor = this.onChangeMonitor.bind(this);
         this.onChangeSize = this.onChangeSize.bind(this);
@@ -62,7 +59,7 @@ class CaptureControlMonitor extends React.PureComponent<any, SCaptureControlMoni
      * Triggered when the user clicks the button to set the monitor.
      */
     onClickSubmit() {
-        this.state.Monitors.forEach((monitor) => {
+        this.state.Monitors.forEach((monitor:any) => {
             if(monitor.id === this.state.MonitorID) {
                 if(window && window.RDMGR && window.RDMGR.captureWindow) {
                     var bounds = monitor.bounds;
@@ -168,12 +165,9 @@ class CaptureControlMonitor extends React.PureComponent<any, SCaptureControlMoni
         var monitors:Array<React.ReactElement> = [];
         var sizes:Array<React.ReactElement> = [];
         let i = 1;
-        this.state.Monitors.forEach((monitor) => {
+        this.state.Monitors.forEach((monitor:any) => {
             monitors.push(
-                <option 
-                    value={monitor.id}
-                    key={`mon-${i}`}
-                    >{`Monitor #${i}`}</option>
+                <option value={monitor.id} key={`mon-${i}`}>{`Monitor #${i}`}</option>
             );
             i++;
         });
@@ -181,10 +175,7 @@ class CaptureControlMonitor extends React.PureComponent<any, SCaptureControlMoni
         i = 0;
         this.Dimensions.forEach((dim) => {
             sizes.push(
-                <option 
-                    value={dim.width}
-                    key={`dim-${i}`}
-                    >{`${dim.width}x${dim.height}`}</option>
+                <option value={dim.width} key={`dim-${i}`}>{`${dim.width}x${dim.height}`}</option>
             );
             i++;
         });
@@ -192,23 +183,13 @@ class CaptureControlMonitor extends React.PureComponent<any, SCaptureControlMoni
         return (
             <div className="monitor-control">
                 <div>
-                    <select 
-                        value={this.state.MonitorID}
-                        onChange={this.onChangeMonitor}
-                        >{monitors}</select>
+                    <select value={this.state.MonitorID} onChange={this.onChangeMonitor}>{monitors}</select>
                 </div>
                 <div>
-                    <select 
-                        value={this.state.Width}
-                        onChange={this.onChangeSize}
-                        >{sizes}</select>
+                    <select value={this.state.Width} onChange={this.onChangeSize}>{sizes}</select>
                 </div>
-                <Button
-                    onClick={this.onClickSubmit}
-                >Update</Button>
+                <Button onClick={this.onClickSubmit}>Update</Button>
             </div>
         );
     }
 }
-
-export default CaptureControlMonitor;

@@ -2,15 +2,13 @@ import React from 'react';
 import CaptureController from 'controllers/CaptureController';
 import PenaltyController from 'controllers/PenaltyController';
 import CaptureControlPanel, {PCaptureControlPanel} from './CaptureControlPanel';
-
-import {
-    IconButton,
-    IconCheck
-} from 'components/Elements';
 import { SkaterRecord, PenaltyRecord } from 'tools/vars';
 import DataController from 'controllers/DataController';
 
-interface SCaptureControlPenaltyTracker {
+/**
+ * Component for configuring penalty tracker elements.
+ */
+export default class CaptureControlPenaltyTracker extends React.PureComponent<PCaptureControlPanel, {
     /**
      * Duration, in seconds, to display penalties
      */
@@ -26,15 +24,10 @@ interface SCaptureControlPenaltyTracker {
     /**
      * Collection of penalty records
      */
-    Penalties:Array<PenaltyRecord>
-}
+    Penalties:Array<PenaltyRecord>;
+}> {
 
-/**
- * Component for configuring penalty tracker elements.
- */
-class CaptureControlPenaltyTracker extends React.PureComponent<PCaptureControlPanel, SCaptureControlPenaltyTracker> {
-
-    readonly state:SCaptureControlPenaltyTracker = {
+    readonly state = {
         Duration:CaptureController.getState().PenaltyTracker.Duration/1000,
         Shown:CaptureController.getState().PenaltyTracker.Shown,
         Skaters:PenaltyController.getState().Skaters,
@@ -132,13 +125,13 @@ class CaptureControlPenaltyTracker extends React.PureComponent<PCaptureControlPa
      * - Remove controller listeners
      */
     componentWillUnmount() {
-        if(this.remoteCapture)
+        if(this.remoteCapture !== null)
             this.remoteCapture();
 
-        if(this.remoteState)
+        if(this.remoteState !== null)
             this.remoteState();
 
-        if(this.remoteData)
+        if(this.remoteData !== null)
             this.remoteData();
     }
 
@@ -160,9 +153,9 @@ class CaptureControlPenaltyTracker extends React.PureComponent<PCaptureControlPa
                 />
         ];
 
-        var skaters:Array<React.ReactElement> = [];
+        let skaters:Array<React.ReactElement> = [];
         this.state.Skaters.forEach((skater) => {
-            var codes:Array<string> = [];
+            let codes:Array<string> = [];
             if(skater.Penalties !== undefined && skater.Penalties.length >= 1) {
                 skater.Penalties.forEach((pen:any) => {
                     if(pen.Acronym)
@@ -193,5 +186,3 @@ class CaptureControlPenaltyTracker extends React.PureComponent<PCaptureControlPa
         );
     }
 }
-
-export default CaptureControlPenaltyTracker;

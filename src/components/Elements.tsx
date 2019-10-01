@@ -94,15 +94,33 @@ function ButtonElement(props) {
  * General interface for elements
  */
 interface PElement {
+    /**
+     * Additional class names
+     */
     className?:string;
+    /**
+     * true if active, false if not
+     */
     active?:boolean;
+    /**
+     * HTML title attribute
+     */
     title?:string;
 }
 
 interface PMediaElement extends PElement {
-    src:string,
-    children?:any,
-    onClick?:Function
+    /**
+     * Source URL/string
+     */
+    src:string;
+    /**
+     * Child elements
+     */
+    children?:any;
+    /**
+     * Triggered when the user clicks/touches the element
+     */
+    onClick?:Function;
 }
 
 /**
@@ -129,22 +147,33 @@ class ButtonIconElement extends React.PureComponent<PMediaElement> {
  * A checkbox with toggle capabilities.
  */
 class ToggleButtonElement extends React.PureComponent<{
-    checked:boolean,
-    onClick:Function,
-    className?:string,
-    label?:string,
-    title?:string
+    /**
+     * true to show a checkmark
+     */
+    checked:boolean;
+    /**
+     * Triggered when the user clicks the toggle button
+     * - Implementations should toggle the checked value between true/false
+     */
+    onClick:Function;
+    /**
+     * Additional class names
+     */
+    className?:string;
+    /**
+     * label to display
+     */
+    label?:string;
+    /**
+     * HTML title attribute
+     */
+    title?:string;
 }> {
-
-    constructor(props) {
-        super(props);
-    }
-
     /**
      * Renders the component
      */
     render() {
-        const className = cnames('toggle-button', {
+        let className:string = cnames('toggle-button', {
             checked:this.props.checked
         }, this.props.className);
         return (
@@ -164,12 +193,30 @@ class ToggleButtonElement extends React.PureComponent<{
  * Element for handling single-line text input.
  */
 class TextboxElement extends React.PureComponent<{
+    /**
+     * HTML size attribute
+     */
     size:number;
+    /**
+     * Maximum number of characters
+     */
     maxLength:number;
+    /**
+     * Type of input
+     */
     type:string;
+    /**
+     * Triggered when the value changes
+     */
     onChange:Function;
+    /**
+     * Current value
+     */
     value:string;
 }, {
+    /**
+     * Internal value
+     */
     value:string
 }> {
     readonly state = {
@@ -294,9 +341,9 @@ function IconElement(props) {
 }
 
 interface PProgressBarElement {
-    value:number,
-    max:number,
-    className?:string
+    value:number;
+    max:number;
+    className?:string;
 }
 
 function ProgressBarElement(props:PProgressBarElement) {
@@ -317,9 +364,9 @@ function ProgressBarElement(props:PProgressBarElement) {
 }
 
 interface PMediaThumbnailElement {
-    width?:number,
-    height?:number,
-    src:string
+    width?:number;
+    height?:number;
+    src:string;
 }
 
 /**
@@ -328,13 +375,34 @@ interface PMediaThumbnailElement {
  * and videos for slideshows.
  */
 class MediaThumbnailElement extends React.PureComponent<PMediaThumbnailElement> {
+    /**
+     * HTML width attribute, used for scaling the preview
+     */
+    protected Width:number = 256;
+    /**
+     * HTML height attribute, used for scaling the preview
+     */
+    protected Height:number = 144;
 
-    Width:number = 256;
-    Height:number = 144;
-    Brush:CanvasRenderingContext2D|null = null;
-    ImageItem:HTMLImageElement = new Image();
-    CanvasItem:React.RefObject<HTMLCanvasElement> = React.createRef();
+    /**
+     * Brush for drawing image preview
+     */
+    protected Brush:CanvasRenderingContext2D|null = null;
 
+    /**
+     * Image item for loading media to generate preview
+     */
+    protected ImageItem:HTMLImageElement = new Image();
+
+    /**
+     * Reference canvas for previewing media 
+     */
+    protected CanvasItem:React.RefObject<HTMLCanvasElement> = React.createRef();
+
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super(props);
         if(this.props.width !== undefined)
@@ -353,12 +421,9 @@ class MediaThumbnailElement extends React.PureComponent<PMediaThumbnailElement> 
     async paint() {
         if(this.Brush == null)
             return;
-
         this.clear();
-
         var size = DataController.aspectSize(this.Width, this.Height, this.ImageItem.width, this.ImageItem.height);
         this.Brush.drawImage(this.ImageItem, size.x, size.y, size.width, size.height);
-        //this.ImageItem.src = '';
     }
 
     /**
@@ -437,7 +502,7 @@ class SliderElement extends React.PureComponent<PSliderElement, {
         value:0
     }
 
-    ChangingValue:boolean = false;
+    protected ChangingValue:boolean = false;
 
     /**
      * Triggered when the component updates
@@ -467,15 +532,12 @@ class SliderElement extends React.PureComponent<PSliderElement, {
                 marks={this.props.marks}
                 valueLabelFormat={this.props.valueLabelFormat}
                 valueLabelDisplay={this.props.valueLabelDisplay}
-
                 value={value}
-
                 onChangeCommitted={(o, value) => {
                     this.setState({value:value});
                     if(this.props.onChangeCommitted)
                         this.props.onChangeCommitted(o, value);
                 }}
-
                 onChange={(o, value) => {
                     if(this.ChangingValue) {
                         this.setState(() => {
@@ -485,22 +547,14 @@ class SliderElement extends React.PureComponent<PSliderElement, {
                         this.props.onChange(o, value); 
                     }
                 }}
-
                 onMouseDown={() => {
                     this.ChangingValue = true;
                 }}
                 onMouseUp={() => {
                     this.ChangingValue = false;
                 }}
-                onMouseOut={(ev) => {
-                    //if(ev.target === ev.target.parentNode)
-                        //this.ChangingValue = false;
-                }}
-                onMouseEnter={() => {
-                    //this.ChangingValue = false;
-                }}
-                onFocus={(ev) => {
-                    ev.target.blur();
+                onFocus={(ev:React.FocusEvent<HTMLSpanElement>) => {
+                    ev.currentTarget.blur();
                 }}
             />
         )

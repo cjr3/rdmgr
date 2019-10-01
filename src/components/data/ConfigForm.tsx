@@ -40,41 +40,33 @@ import {
     PeerEditor
 } from './RecordEditor';
 import DataController from 'controllers/DataController';
-
-import './css/ConfigForm.scss';
 import RecordList from './RecordList';
 
-interface SConfigForm {
-    currentApp:string,
-    AnthemRecords:Array<AnthemRecord>,
-    PenaltyRecords:Array<PenaltyRecord>,
-    PhaseRecords:Array<PhaseRecord>,
-    SkaterRecords:Array<SkaterRecord>,
-    TeamRecords:Array<TeamRecord>,
-    SlideshowRecords:Array<SlideshowRecord>,
-    VideoRecords:Array<VideoRecord>,
-    PeerRecords:Array<PeerRecord>
-}
+import './css/ConfigForm.scss';
 
 /**
  * Component for configuring network, accessing records,
  * and user settings.
  */
-class ConfigForm extends React.PureComponent<any, SConfigForm> {
-    readonly state:SConfigForm = {
-        currentApp:'',
-        AnthemRecords:DataController.getAnthemSingers(true),
-        PenaltyRecords:DataController.getPenalties(true),
-        PhaseRecords:DataController.getPhases(),
-        SkaterRecords:DataController.getSkaters(true),
-        TeamRecords:DataController.getTeams(true),
-        SlideshowRecords:DataController.getSlideshows(true),
-        VideoRecords:DataController.getVideos(true),
-        PeerRecords:DataController.getPeers(true)
+export default class ConfigForm extends React.PureComponent<any, {
+    /**
+     * Selected configuration app / recordset
+     */
+    currentApp:string;
+}> {
+    readonly state = {
+        currentApp:''
     }
 
-    private Applications:any = {}
+    /**
+     * Applications / Record sets
+     */
+    protected Applications:any = {}
 
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super(props);
         this.onCancelRecord = this.onCancelRecord.bind(this);
@@ -154,8 +146,8 @@ class ConfigForm extends React.PureComponent<any, SConfigForm> {
      * - Right side: list of sections, accordion
      */
     render() {
-        var sections:Array<React.ReactElement> = [];
-        var forms:Array<React.ReactElement> = [];
+        let sections:Array<React.ReactElement> = [];
+        let forms:Array<React.ReactElement> = [];
         for(let key in this.Applications) {
             let app = this.Applications[key];
             let current = (this.state.currentApp === key);
@@ -196,7 +188,7 @@ class ConfigForm extends React.PureComponent<any, SConfigForm> {
             sections.push( section );
         }
 
-        let className = cnames('CFG-app', {
+        let className:string = cnames('CFG-app', {
             record:(this.Applications[this.state.currentApp] !== undefined && this.Applications[this.state.currentApp].record !== null)
         });
 
@@ -243,24 +235,27 @@ function ConfigFormSection(props:PConfigFormSection) {
     );
 }
 
-interface SConfigRecordPanel {
-    Records:Array<AnthemRecord>
-}
-
 /**
  * Component for listing national anthem singer records.
  */
-class ConfigPanelAnthem extends React.PureComponent<any, SConfigRecordPanel> {
-    readonly state:SConfigRecordPanel = {
+class ConfigPanelAnthem extends React.PureComponent<any, {
+    /**
+     * Records to select from
+     */
+    Records:Array<AnthemRecord>
+}> {
+    readonly state = {
         Records:DataController.getAnthemSingers(true)
     }
 
-    remoteData:Function
+    /**
+     * DataController listener
+     */
+    protected remoteData:Function|null = null;
+
     constructor(props) {
         super( props );
-
         this.updateData = this.updateData.bind(this);
-        this.remoteData = DataController.subscribe(this.updateData);
     }
 
     /**
@@ -272,10 +267,25 @@ class ConfigPanelAnthem extends React.PureComponent<any, SConfigRecordPanel> {
     }
 
     /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteData = DataController.subscribe(this.updateData);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteData !== null)
+            this.remoteData();
+    }
+
+    /**
      * Renders the component.
      */
     render() {
-        var icons = [
+        let icons:Array<React.ReactElement> = [
             <Icon
                 key="btn-new"
                 src={IconPlus}
@@ -307,15 +317,21 @@ class ConfigPanelAnthem extends React.PureComponent<any, SConfigRecordPanel> {
 /**
  * Component for selecting penalty records
  */
-class ConfigPanelPenalty extends React.PureComponent<any, SConfigRecordPanel> {
-    readonly state:SConfigRecordPanel = {
+class ConfigPanelPenalty extends React.PureComponent<any, {
+    Records:Array<PenaltyRecord>
+}> {
+    readonly state = {
         Records:DataController.getPenalties(true)
     }
-    remoteData:Function
+    protected remoteData:Function|null = null;
+
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super( props );
         this.updateData = this.updateData.bind(this);
-        this.remoteData = DataController.subscribe(this.updateData);
     }
 
     /**
@@ -327,10 +343,25 @@ class ConfigPanelPenalty extends React.PureComponent<any, SConfigRecordPanel> {
     }
 
     /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteData = DataController.subscribe(this.updateData);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteData !== null)
+            this.remoteData();
+    }
+
+    /**
      * Renders the component.
      */
     render() {
-        var icons = [
+        let icons:Array<React.ReactElement> = [
             <Icon
                 key="btn-new"
                 src={IconPlus}
@@ -362,15 +393,25 @@ class ConfigPanelPenalty extends React.PureComponent<any, SConfigRecordPanel> {
 /**
  * Component for listing phases to create and edit.
  */
-class ConfigPanelPhase extends React.PureComponent<any, SConfigRecordPanel> {
-    readonly state:SConfigRecordPanel = {
+class ConfigPanelPhase extends React.PureComponent<any, {
+    Records:Array<PhaseRecord>
+}> {
+    readonly state = {
         Records:DataController.getPhases()
     }
-    remoteData:Function
+
+    /**
+     * DataController listener
+     */
+    protected remoteData:Function|null = null;
+
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super( props );
         this.updateData = this.updateData.bind(this);
-        this.remoteData = DataController.subscribe(this.updateData);
     }
 
     /**
@@ -382,10 +423,25 @@ class ConfigPanelPhase extends React.PureComponent<any, SConfigRecordPanel> {
     }
 
     /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteData = DataController.subscribe(this.updateData);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteData !== null)
+            this.remoteData();
+    }
+
+    /**
      * Renders the component.
      */
     render() {
-        var icons = [
+        let icons:Array<React.ReactElement> = [
             <Icon
                 key="btn-new"
                 src={IconPlus}
@@ -417,15 +473,25 @@ class ConfigPanelPhase extends React.PureComponent<any, SConfigRecordPanel> {
 /**
  * Component to select and create/edit skaters.
  */
-class ConfigPanelSkaters extends React.PureComponent<any, SConfigRecordPanel> {
-    readonly state:SConfigRecordPanel = {
+class ConfigPanelSkaters extends React.PureComponent<any, {
+    Records:Array<SkaterRecord>
+}> {
+    readonly state = {
         Records:DataController.getSkaters(true)
     }
-    remoteData:Function
+
+    /**
+     * DataController listener
+     */
+    protected remoteData:Function|null = null;
+
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super( props );
         this.updateData = this.updateData.bind(this);
-        this.remoteData = DataController.subscribe(this.updateData);
     }
 
     /**
@@ -437,10 +503,25 @@ class ConfigPanelSkaters extends React.PureComponent<any, SConfigRecordPanel> {
     }
 
     /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteData = DataController.subscribe(this.updateData);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteData !== null)
+            this.remoteData();
+    }
+
+    /**
      * Renders the component.
      */
     render() {
-        var icons = [
+        let icons:Array<React.ReactElement> = [
             <Icon
                 key="btn-new"
                 src={IconPlus}
@@ -469,15 +550,25 @@ class ConfigPanelSkaters extends React.PureComponent<any, SConfigRecordPanel> {
     }
 }
 
-class ConfigPanelTeams extends React.PureComponent<any, SConfigRecordPanel> {
-    readonly state:SConfigRecordPanel = {
+class ConfigPanelTeams extends React.PureComponent<any, {
+    Records:Array<TeamRecord>
+}> {
+    readonly state = {
         Records:DataController.getTeams(true)
     }
-    remoteData:Function
+
+    /**
+     * DataController listener
+     */
+    protected remoteData:Function|null = null;
+
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super( props );
         this.updateData = this.updateData.bind(this);
-        this.remoteData = DataController.subscribe(this.updateData);
     }
 
     /**
@@ -489,10 +580,25 @@ class ConfigPanelTeams extends React.PureComponent<any, SConfigRecordPanel> {
     }
 
     /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteData = DataController.subscribe(this.updateData);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteData !== null)
+            this.remoteData();
+    }
+
+    /**
      * Renders the component.
      */
     render() {
-        var icons = [
+        let icons:Array<React.ReactElement> = [
             <Icon
                 key="btn-new"
                 src={IconPlus}
@@ -524,17 +630,25 @@ class ConfigPanelTeams extends React.PureComponent<any, SConfigRecordPanel> {
 /**
  * 
  */
-class ConfigPanelSlideshows extends React.PureComponent<any, SConfigRecordPanel> {
-    readonly state:SConfigRecordPanel = {
+class ConfigPanelSlideshows extends React.PureComponent<any, {
+    Records:Array<SlideshowRecord>
+}> {
+    readonly state = {
         Records:DataController.getSlideshows(true)
     }
 
-    remoteData:Function
+    /**
+     * DataController listener
+     */
+    protected remoteData:Function|null = null;
 
+    /**
+     * 
+     * @param props 
+     */
     constructor(props) {
         super( props );
         this.updateData = this.updateData.bind(this);
-        this.remoteData = DataController.subscribe(this.updateData);
     }
 
     /**
@@ -546,10 +660,25 @@ class ConfigPanelSlideshows extends React.PureComponent<any, SConfigRecordPanel>
     }
 
     /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteData = DataController.subscribe(this.updateData);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteData !== null)
+            this.remoteData();
+    }
+
+    /**
      * Renders the component.
      */
     render() {
-        var icons = [
+        let icons:Array<React.ReactElement> = [
             <Icon
                 key="btn-new"
                 src={IconPlus}
@@ -581,15 +710,25 @@ class ConfigPanelSlideshows extends React.PureComponent<any, SConfigRecordPanel>
 /**
  * Component to add/edit video records.
  */
-class ConfigPanelVideos extends React.PureComponent<any, SConfigRecordPanel> {
-    readonly state:SConfigRecordPanel = {
+class ConfigPanelVideos extends React.PureComponent<any, {
+    Records:Array<VideoRecord>
+}> {
+    readonly state = {
         Records:DataController.getVideos(true)
     }
-    remoteData:Function
+
+    /**
+     * DataController listener
+     */
+    protected remoteData:Function|null = null;
+
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super( props );
         this.updateData = this.updateData.bind(this);
-        this.remoteData = DataController.subscribe(this.updateData);
     }
 
     /**
@@ -601,10 +740,25 @@ class ConfigPanelVideos extends React.PureComponent<any, SConfigRecordPanel> {
     }
 
     /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteData = DataController.subscribe(this.updateData);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteData !== null)
+            this.remoteData();
+    }
+
+    /**
      * Renders the component.
      */
     render() {
-        var icons = [
+        let icons:Array<React.ReactElement> = [
             <Icon
                 key="btn-new"
                 src={IconPlus}
@@ -633,26 +787,36 @@ class ConfigPanelVideos extends React.PureComponent<any, SConfigRecordPanel> {
     }
 }
 
-interface SConfigPanelPeers extends SConfigRecordPanel {
-    Records:Array<PeerRecord>,
-    Peers:any
-}
-
 /**
  * Component to add/edit peer records.
  */
-class ConfigPanelPeers extends React.PureComponent<any, SConfigPanelPeers> {
-    readonly state:SConfigPanelPeers = {
+class ConfigPanelPeers extends React.PureComponent<any, {
+    Records:Array<PeerRecord>,
+    Peers:any
+}> {
+    readonly state = {
         Records:DataController.getPeers(true),
         Peers:{}
     }
 
-    remoteData:Function
+    /**
+     * DataController listener
+     */
+    protected remoteData:Function|null = null;
 
+    /**
+     * Listener for peer server
+     * - Helps with displaying connection status
+     */
+    protected remoteServer:Function|null = null;
+
+    /**
+     * 
+     * @param props 
+     */
     constructor(props) {
         super( props );
         this.updateData = this.updateData.bind(this);
-        this.remoteData = DataController.subscribe(this.updateData);
         this.updateLocalServer = this.updateLocalServer.bind(this);
     }
 
@@ -678,6 +842,7 @@ class ConfigPanelPeers extends React.PureComponent<any, SConfigPanelPeers> {
      * - Wait for the local server to be ready, and then update the peer records.
      */
     componentDidMount() {
+        this.remoteData = DataController.subscribe(this.updateData);
         let timer = window.setInterval(() => {
             if(window && window.LocalServer) {
                 window.LocalServer.subscribe(this.updateLocalServer);
@@ -688,10 +853,20 @@ class ConfigPanelPeers extends React.PureComponent<any, SConfigPanelPeers> {
     }
 
     /**
+     * Stop listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteData !== null)
+            this.remoteData();
+        if(this.remoteServer !== null)
+            this.remoteServer();
+    }
+
+    /**
      * Renders the component.
      */
     render() {
-        var icons = [
+        let icons:Array<React.ReactElement> = [
             <Icon
                 key="btn-new"
                 src={IconPlus}
@@ -702,7 +877,7 @@ class ConfigPanelPeers extends React.PureComponent<any, SConfigPanelPeers> {
                 />
         ];
 
-        var peers:Array<React.ReactElement> = [];
+        let peers:Array<React.ReactElement> = [];
         this.state.Records.forEach((record) => {
             let iconConnection = IconOffline;
             let iconStream = IconStreamOff;
@@ -763,5 +938,3 @@ class ConfigPanelPeers extends React.PureComponent<any, SConfigPanelPeers> {
         )
     }
 }
-
-export default ConfigForm;

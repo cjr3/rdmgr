@@ -1,25 +1,28 @@
-import React from 'react';
+import React, { CSSProperties } from 'react';
 import Counter from 'components/tools/Counter';
 import ScoreboardController, {SScoreboardTeam} from 'controllers/ScoreboardController';
-
-interface SScore {
-    amount:number
-}
-
-interface PScore {
-    Team:SScoreboardTeam
-}
 
 /**
  * Score component for team score on the scoreboard control.
  */
-class Score extends React.PureComponent<PScore, SScore> {
-    readonly state:SScore = {
+export default class Score extends React.PureComponent<{
+    Team:SScoreboardTeam
+}, {
+    amount:number
+}> {
+    readonly state = {
         amount:0
     }
 
-    CounterItem:React.RefObject<Counter> = React.createRef();
-    remoteScore:Function
+    /**
+     * Counter reference item
+     */
+    protected CounterItem:React.RefObject<Counter> = React.createRef();
+
+    /**
+     * ScoreboardController listener
+     */
+    protected remoteScore:Function|null = null;
 
     constructor(props) {
         super(props);
@@ -30,7 +33,7 @@ class Score extends React.PureComponent<PScore, SScore> {
         this.onAdd = this.onAdd.bind(this);
         this.onSubtract = this.onSubtract.bind(this);
         this.updateState = this.updateState.bind(this);
-        this.remoteScore = ScoreboardController.subscribe(this.updateState);
+        //this.remoteScore = ScoreboardController.subscribe(this.updateState);
     }
 
     /**
@@ -78,16 +81,25 @@ class Score extends React.PureComponent<PScore, SScore> {
      * Triggered when the component mounts to the DOM.
      */
     componentDidMount() {
+        this.remoteScore = ScoreboardController.subscribe(this.updateState);
         if(this.CounterItem !== null && this.CounterItem.current !== null) {
             this.CounterItem.current.set(this.state.amount, false);
         }
     }
 
     /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteScore !== null)
+            this.remoteScore();
+    }
+
+    /**
      * Renders the component.
      */
     render() {
-        var style = {
+        var style:CSSProperties = {
             backgroundColor:this.props.Team.Color
         }
 
@@ -106,5 +118,3 @@ class Score extends React.PureComponent<PScore, SScore> {
         )
     }
 }
-
-export default Score;

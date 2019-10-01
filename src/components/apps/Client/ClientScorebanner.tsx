@@ -7,11 +7,14 @@ import cnames from 'classnames';
  * Component for a banner on the top of the client panel
  * to display the current scoreboard summary.
  */
-class ClientScorebanner extends React.PureComponent<any, SScoreboardState> {
+export default class ClientScorebanner extends React.PureComponent<any, SScoreboardState> {
 
     readonly state:SScoreboardState = ScoreboardController.getState()
 
-    remoteState:Function
+    /**
+     * ScoreboardController listener
+     */
+    protected remoteState:Function|null = null;
 
     /**
      * 
@@ -20,7 +23,6 @@ class ClientScorebanner extends React.PureComponent<any, SScoreboardState> {
     constructor(props) {
         super(props);
         this.updateState = this.updateState.bind(this);
-        this.remoteState = ScoreboardController.subscribe(this.updateState);
     }
 
     /**
@@ -28,6 +30,21 @@ class ClientScorebanner extends React.PureComponent<any, SScoreboardState> {
      */
     updateState() {
         this.setState(ScoreboardController.getState());
+    }
+
+    /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteState = ScoreboardController.subscribe(this.updateState);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteState !== null)
+            this.remoteState();
     }
 
     /**
@@ -73,5 +90,3 @@ class ClientScorebanner extends React.PureComponent<any, SScoreboardState> {
         )
     }
 }
-
-export default ClientScorebanner;

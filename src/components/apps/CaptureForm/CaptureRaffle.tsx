@@ -4,17 +4,15 @@ import RaffleController, {SRaffleController} from 'controllers/RaffleController'
 import './css/CaptureRaffle.scss';
 import DataController from 'controllers/DataController';
 
-interface PCaptureRaffle {
-    /**
-     * True to show the raffle tickets, false to hide
-     */
-    shown:boolean
-}
-
 /**
  * Component for displaying raffle tickets on the capture window.
  */
-class CaptureRaffle extends React.PureComponent<PCaptureRaffle, SRaffleController> {
+export default class CaptureRaffle extends React.PureComponent<{
+    /**
+     * True to show, false to hide
+     */
+    shown:boolean;
+}, SRaffleController> {
 
     /**
      * State
@@ -24,7 +22,7 @@ class CaptureRaffle extends React.PureComponent<PCaptureRaffle, SRaffleControlle
     /**
      * Listenre for changes to the raffle controller
      */
-    protected remoteRaffle:Function
+    protected remoteRaffle:Function|null = null;
 
     /**
      * CSS Styles for individual tickets
@@ -40,10 +38,9 @@ class CaptureRaffle extends React.PureComponent<PCaptureRaffle, SRaffleControlle
      * Constructor
      * @param props PCaptureRaffle
      */
-    constructor(props:PCaptureRaffle) {
+    constructor(props) {
         super(props);
         this.updateState = this.updateState.bind(this);
-        this.remoteRaffle = RaffleController.subscribe(this.updateState);
         this.TicketStyle = {
             backgroundImage:`url('${DataController.mpath('/default/TicketBackground.png')}')`
         }
@@ -61,10 +58,25 @@ class CaptureRaffle extends React.PureComponent<PCaptureRaffle, SRaffleControlle
     }
 
     /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteRaffle = RaffleController.subscribe(this.updateState);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteRaffle !== null)
+            this.remoteRaffle();
+    }
+
+    /**
      * Renders the component
      */
     render() {
-        const tickets:Array<React.ReactElement<HTMLDivElement>> = [
+        let tickets:Array<React.ReactElement<HTMLDivElement>> = [
             <div className={cnames('ticket', {shown:(this.state.Tickets.length >= 2)})}
                 style={this.TicketStyle}
                 key="ticket-2">{(this.state.Tickets[1]) ? this.state.Tickets[1] : ''}</div>,
@@ -76,13 +88,10 @@ class CaptureRaffle extends React.PureComponent<PCaptureRaffle, SRaffleControlle
                 key="ticket-3">{(this.state.Tickets[2]) ? this.state.Tickets[2] : ''}</div>
         ];
         
-        var className = cnames('capture-raffle', {
-            shown:this.props.shown
-        });
+        let className:string = cnames('capture-raffle', {shown:this.props.shown});
+        
         return (
             <div className={className} style={this.BackgroundStyle}>{tickets}</div>
         );
     }
 }
-
-export default CaptureRaffle;

@@ -29,11 +29,111 @@ interface PVideo {
 /**
  * Component for displaying and controlling a video
  */
-class Video extends React.PureComponent<PVideo> {
-    Brush:CanvasRenderingContext2D|null = null;
-    VideoItem:React.RefObject<HTMLVideoElement> = React.createRef();
-    TimeChanging:boolean = false;
+export default class Video extends React.PureComponent<{
+    /**
+     * Current source URL
+     */
+    source:string;
+    /**
+     * width of the video element
+     */
+    width:number;
+    /**
+     * height of the video element
+     */
+    height:number;
+    /**
+     * current playback time
+     */
+    currentTime?:number;
+    /**
+     * true to mute, false to not mute
+     */
+    muted?:boolean;
+    /**
+     * Playback rate, between 0.5 and 16
+     */
+    rate?:number;
+    /**
+     * Volume, between 0.0 and 1.0
+     */
+    volume?:number;
+    /**
+     * Current status (paused, stopped, playing)
+     */
+    status?:number;
+    /**
+     * true to auto-play when ready, false to not
+     */
+    autoplay?:boolean;
+    /**
+     * Additional class names
+     */
+    className?:string;
+    /**
+     * True to loop playback when video ends
+     */
+    loop?:boolean;
+    /**
+     * Triggered when the video can play through completely without buffering
+     */
+    onCanPlayThrough?:Function;
+    /**
+     * Triggered when the duration of the video changes
+     */
+    onDurationChange?:Function;
+    /**
+     * Triggered when the video ends
+     */
+    onEnded?:Function;
+    /**
+     * Triggered when the video encounters an error
+     */
+    onError?:Function;
+    /**
+     * Triggered when the video is paused
+     */
+    onPause?:Function;
+    /**
+     * Triggered when the video begins playing
+     */
+    onPlay?:Function;
+    /**
+     * Triggered when the video is playing
+     */
+    onPlaying?:Function;
+    /**
+     * Triggered when the playback rate changes
+     */
+    onRateChange?:Function;
+    /**
+     * Triggered when the video forwards / reverses normally (ie, playing)
+     */
+    onTimeUpdate?:Function;
+    /**
+     * Triggered when the volume changes
+     */
+    onVolumeChange?:Function;
+}> {
+    /**
+     * Reference to video element
+     */
+    protected VideoItem:React.RefObject<HTMLVideoElement> = React.createRef();
+    /**
+     * Flag to prevent certain changes from being made when the video's currentTime is changing
+     */
+    protected TimeChanging:boolean = false;
+
+    /**
+     * Timer for fading volume
+     * - We don't immediately change volume; we fade it up/down for quality fan experience
+     */
     protected FadeTimer:number = 0;
+
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super(props);
         this.onCanPlayThrough = this.onCanPlayThrough.bind(this);
@@ -349,5 +449,3 @@ class Video extends React.PureComponent<PVideo> {
         )
     }
 }
-
-export default Video;

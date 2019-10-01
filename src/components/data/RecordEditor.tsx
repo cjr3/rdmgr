@@ -321,7 +321,6 @@ class RecordEditor extends React.PureComponent<PRecordEditor, SRecordEditor> {
 
         }
 
-        //console.log(this.props.records)
         return (
             <Panel
                 opened={this.props.opened}

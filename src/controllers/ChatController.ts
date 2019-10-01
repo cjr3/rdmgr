@@ -38,6 +38,11 @@ function ChatReducer(state = InitState, action) {
                 read:action.message.read,
                 self:action.message.self
             });
+
+            //maximum number of messages
+            if(messages.length > 50)
+                messages.shift();
+                
             return Object.assign({}, state, {Messages:messages});
 
         //mark all chat messages as read

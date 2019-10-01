@@ -2,28 +2,40 @@ import React from 'react'
 import Video from 'components/tools/Video'
 import cnames from 'classnames'
 import VideoController, {SVideoController} from 'controllers/VideoController';
-import './css/CaptureVideo.scss'
 import vars from 'tools/vars';
 import CaptureStatus from 'tools/CaptureStatus';
+import './css/CaptureVideo.scss'
 
-interface PCaptureVideo {
-    shown?:boolean,
-    className?:string
-}
-
-class CaptureVideo extends React.PureComponent<PCaptureVideo, SVideoController> {
+export default class CaptureVideo extends React.PureComponent<{
+    /**
+     * true to show, false to hide
+     */
+    shown:boolean;
+    /**
+     * Additional class names
+     */
+    className?:string;
+}, SVideoController> {
     readonly state:SVideoController = VideoController.getState();
-    VideoItem:React.RefObject<Video>
-    remoteState:Function
+    /**
+     * Video reference
+     */
+    protected VideoItem:React.RefObject<Video> = React.createRef();
+    /**
+     * VideoController remote
+     */
+    protected remoteState:Function|null = null;
 
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super(props);
-        this.VideoItem = React.createRef();
         this.onEnded = this.onEnded.bind(this);
         this.onTimeUpdate = this.onTimeUpdate.bind(this);
         this.onPlay = this.onPlay.bind(this);
         this.updateState = this.updateState.bind(this);
-        this.remoteState = VideoController.subscribe(this.updateState);
     }
 
     /**
@@ -66,10 +78,25 @@ class CaptureVideo extends React.PureComponent<PCaptureVideo, SVideoController> 
     }
 
     /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteState = VideoController.subscribe(this.updateState);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteState !== null)
+            this.remoteState();
+    }
+
+    /**
      * Renders the component.
      */
     render() {
-        var classNames = cnames('main-video', {shown:(this.props.shown)}, this.props.className);
+        let classNames:string = cnames('main-video', {shown:(this.props.shown)}, this.props.className);
         return (
             <Video
                 className={classNames}
@@ -91,5 +118,3 @@ class CaptureVideo extends React.PureComponent<PCaptureVideo, SVideoController> 
         )
     }
 }
-
-export default CaptureVideo;

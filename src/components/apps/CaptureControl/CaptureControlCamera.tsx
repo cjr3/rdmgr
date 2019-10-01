@@ -9,27 +9,24 @@ import {
     IconLoop
 } from 'components/Elements';
 
-interface ICaptureControlCameraState {
-    /**
-     * Local device ID of selected camera.
-     */
-    DeviceID:string,
-    /**
-     * Collection of cameras attached to the system
-     */
-    Cameras:Array<MediaDeviceInfo>,
-    /**
-     * Determines if the camera is visible or not.
-     */
-    Shown:boolean
-}
-
 /**
  * Component for configuring the main camera.
  */
-class CaptureControlCamera extends React.PureComponent<PCaptureControlPanel,ICaptureControlCameraState> {
-
-    readonly state:ICaptureControlCameraState = {
+export default class CaptureControlCamera extends React.PureComponent<PCaptureControlPanel,{
+    /**
+     * Local device ID of selected camera.
+     */
+    DeviceID:string;
+    /**
+     * Collection of cameras attached to the system
+     */
+    Cameras:Array<MediaDeviceInfo>;
+    /**
+     * Determines if the camera is visible or not.
+     */
+    Shown:boolean;
+}> {
+    readonly state = {
         Cameras:CameraController.getState().Cameras,
         DeviceID:CameraController.getState().DeviceID,
         Shown:CaptureController.getState().MainCamera.Shown
@@ -38,26 +35,21 @@ class CaptureControlCamera extends React.PureComponent<PCaptureControlPanel,ICap
     /**
      * Listener for camera controller
      */
-    remoteState:Function
+    protected remoteState:Function|null = null;
     /**
      * Listener for capture controller
      */
-    remoteCapture:Function
+    protected remoteCapture:Function|null = null;
 
     /**
      * Constructor
      */
     constructor(props) {
         super(props);
-        
         this.onClickSubmit = this.onClickSubmit.bind(this);
         this.onClickNoCamera = this.onClickNoCamera.bind(this);
-
         this.updateState = this.updateState.bind(this);
         this.updateCapture = this.updateCapture.bind(this);
-
-        this.remoteState = CameraController.subscribe(this.updateState);
-        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
     }
 
     /**
@@ -97,9 +89,23 @@ class CaptureControlCamera extends React.PureComponent<PCaptureControlPanel,ICap
 
     /**
      * Triggered when the component mounts to the DOM.
+     * - Load cameras
+     * - Start listeners
      */
     componentDidMount() {
+        this.remoteState = CameraController.subscribe(this.updateState);
+        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
         CameraController.LoadCameras();
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteState !== null)
+            this.remoteState();
+        if(this.remoteCapture !== null)
+            this.remoteCapture();
     }
 
     /**
@@ -111,7 +117,7 @@ class CaptureControlCamera extends React.PureComponent<PCaptureControlPanel,ICap
         if(prevState.Cameras.length !== cameras.length) {
             if(cameras.length >= 1) {
                 if(deviceId === '' && cameras[0].deviceId !== deviceId && this.state.DeviceID !== cameras[0].deviceId) {
-                    this.setState((state:ICaptureControlCameraState) => {
+                    this.setState((state) => {
                         if(state.Cameras.length)
                             return {DeviceID:state.Cameras[0].deviceId}
                         return null;
@@ -178,5 +184,3 @@ class CaptureControlCamera extends React.PureComponent<PCaptureControlPanel,ICap
         );
     }
 }
-
-export default CaptureControlCamera;

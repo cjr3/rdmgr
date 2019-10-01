@@ -3,23 +3,38 @@ import Clock from 'components/tools/Clock'
 import vars from 'tools/vars'
 import ScoreboardController from 'controllers/ScoreboardController'
 
-interface SGameClock {
-    showTenths:boolean,
-    hour:number,
-    minute:number,
-    second:number,
-    status:number
-}
-
-interface PGameClock {
-    remote?:string
-}
-
 /**
  * Game Clock component for the Scoreboard.
  */
-class GameClock extends React.PureComponent<PGameClock, SGameClock> {
-    readonly state:SGameClock = {
+export default class GameClock extends React.PureComponent<{
+    /**
+     * Remote Peer ID. If provided, the remote peer (connected or not)
+     * must provide changes for the clock
+     */
+    remote?:string;
+}, {
+    /**
+     * Show tenths on the clock or not
+     */
+    showTenths:boolean;
+    /**
+     * Default hour
+     */
+    hour:number;
+    /**
+     * Default minute
+     */
+    minute:number;
+    /**
+     * Default second
+     */
+    second:number;
+    /**
+     * Status (playing, stopped, ready)
+     */
+    status:number;
+}> {
+    readonly state = {
         status:vars.Clock.Status.Ready,
         showTenths:false,
         hour:0,
@@ -27,17 +42,26 @@ class GameClock extends React.PureComponent<PGameClock, SGameClock> {
         second:0
     }
 
-    ClockItem:React.RefObject<Clock> = React.createRef();
+    /**
+     * Reference for clock component
+     */
+    protected ClockItem:React.RefObject<Clock> = React.createRef();
 
-    remoteScore:Function
+    /**
+     * ScoreboardController listener
+     */
+    protected remoteScore:Function|null = null;
 
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super(props);
         this.onClick = this.onClick.bind(this);
         this.onTick = this.onTick.bind(this);
         this.onContextMenu = this.onContextMenu.bind(this);
         this.updateState = this.updateState.bind(this);
-        this.remoteScore = ScoreboardController.subscribe(this.updateState);
     }
 
     /**
@@ -94,6 +118,21 @@ class GameClock extends React.PureComponent<PGameClock, SGameClock> {
     }
 
     /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteScore = ScoreboardController.subscribe(this.updateState);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteScore !== null)
+            this.remoteScore();
+    }
+
+    /**
      * Renders the component
      */
     render() {
@@ -116,5 +155,3 @@ class GameClock extends React.PureComponent<PGameClock, SGameClock> {
         )
     }
 }
-
-export default GameClock;

@@ -6,40 +6,51 @@ import { IconButton, Button, IconDelete, IconCheck, IconShown, IconHidden } from
 import keycodes from 'tools/keycodes'
 import './css/Raffle.scss'
 
-interface SRaffle {
-    Raffle:SRaffleController,
-    Shown:boolean,
-    TicketNumber:string
-}
-
 /**
  * Component for managing the raffle tickets
  */
-class Raffle extends React.PureComponent<any, SRaffle> {
-    readonly state:SRaffle = {
+export default class Raffle extends React.PureComponent<any, {
+    /**
+     * State of the raffle cotnroller
+     */
+    Raffle:SRaffleController;
+    /**
+     * True if visible, false if not
+     */
+    Shown:boolean;
+    /**
+     * Ticket number entry field value
+     */
+    TicketNumber:string;
+}> {
+    readonly state = {
         Raffle:RaffleController.getState(),
         Shown:CaptureController.getState().Raffle.Shown,
         TicketNumber:''
     }
 
-    TicketItem:React.RefObject<HTMLInputElement> = React.createRef()
+    /**
+     * Ticket number entry reference
+     */
+    protected TicketItem:React.RefObject<HTMLInputElement> = React.createRef()
 
-    remoteState:Function
-    remoteCapture:Function
+    /**
+     * RaffleController remote
+     */
+    protected remoteState:Function|null = null;
+    /**
+     * CaptureController remote
+     */
+    protected remoteCapture:Function|null = null;
 
     constructor(props) {
         super(props);
-
-        //bindings
         this.onChangeTicket = this.onChangeTicket.bind(this);
         this.sendTicket = this.sendTicket.bind(this);
         this.onTicketKeyUp = this.onTicketKeyUp.bind(this);
         this.addDigit = this.addDigit.bind(this);
-
         this.updateState = this.updateState.bind(this);
         this.updateCapture = this.updateCapture.bind(this);
-        this.remoteState = RaffleController.subscribe(this.updateState);
-        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
     }
 
     /**
@@ -148,13 +159,31 @@ class Raffle extends React.PureComponent<any, SRaffle> {
     }
 
     /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteState = RaffleController.subscribe(this.updateState);
+        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteState !== null)
+            this.remoteState();
+        if(this.remoteCapture !== null)
+            this.remoteCapture();
+    }
+
+    /**
      * Renders the component
      */
     render() {
-        var icon = IconHidden;
+        let icon:string = IconHidden;
         if(this.state.Shown)
             icon = IconShown;
-        var buttons = [
+        let buttons:Array<React.ReactElement> = [
             <IconButton
                 src={icon}
                 active={this.state.Shown}
@@ -177,8 +206,8 @@ class Raffle extends React.PureComponent<any, SRaffle> {
         ];
 
         //list of tickets
-        var tickets:Array<React.ReactElement> = [];
-        var i = 0;
+        let tickets:Array<React.ReactElement> = [];
+        let i = 0;
         this.state.Raffle.Tickets.forEach((ticket) => {
             let index = i;
             tickets.push(
@@ -193,7 +222,7 @@ class Raffle extends React.PureComponent<any, SRaffle> {
         });
 
         //digits to push
-        var digits = [
+        let digits:Array<React.ReactElement> = [
             <Button onClick={() => {this.addDigit('0');}} key="btn-0">0</Button>,
             <Button onClick={() => {this.addDigit('1');}} key="btn-1">1</Button>,
             <Button onClick={() => {this.addDigit('2');}} key="btn-2">2</Button>,
@@ -235,5 +264,3 @@ class Raffle extends React.PureComponent<any, SRaffle> {
         )
     }
 }
-
-export default Raffle;

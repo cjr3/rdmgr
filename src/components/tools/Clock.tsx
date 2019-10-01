@@ -10,26 +10,81 @@ interface SClock {
     tenths:number
 }
 
-interface PClock {
-    hour:number,
-    minute:number,
-    second:number,
-    status:number,
-    remote?:string,
-    type?:string,
-    className?:string,
-    showTenths?:boolean,
-    onClick?:any,
-    onContextMenu?:any,
-    onTick?:Function,
-    onTenths?:Function,
-    onDone?:Function
-}
-
 /**
  * Base clock component.
  */
-class Clock extends React.Component<PClock, SClock> {
+export default class Clock extends React.Component<{
+    /**
+     * Starting hour
+     */
+    hour:number;
+    /**
+     * Starting minute
+     */
+    minute:number;
+    /**
+     * Starting second
+     */
+    second:number;
+    /**
+     * Current status
+     */
+    status:number;
+    /**
+     * Remote control peer ID
+     * - When provided, then clocks don't tick, and must be updated by the remote peer
+     */
+    remote?:string;
+    /**
+     * Type of clock
+     */
+    type?:string;
+    /**
+     * Additional class names
+     */
+    className?:string;
+    /**
+     * true to show tenths, false to hide (default is false)
+     */
+    showTenths?:boolean;
+    /**
+     * Triggered when the user clicks the clock
+     */
+    onClick?:any;
+    /**
+     * Triggered when the user right-clicks the clock
+     */
+    onContextMenu?:any;
+    /**
+     * Triggered with each 1 second tick
+     */
+    onTick?:Function;
+    /**
+     * Triggered with each 1/100 second tick
+     */
+    onTenths?:Function;
+    /**
+     * Triggered when the clock reaches 00:00:00.0
+     */
+    onDone?:Function;
+}, {
+    /**
+     * Hour of the clock
+     */
+    hour:number;
+    /**
+     * Minute of the clock
+     */
+    minute:number;
+    /**
+     * Second of the clock
+     */
+    second:number;
+    /**
+     * Tenths of the clock
+     */
+    tenths:number;
+}> {
     readonly state:SClock = {
         hour:0,
         minute:0,
@@ -37,8 +92,15 @@ class Clock extends React.Component<PClock, SClock> {
         tenths:0
     }
 
-    Timer:number = 0
+    /**
+     * Reference for setTimeout
+     */
+    protected Timer:number = 0
 
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super(props);
 
@@ -106,7 +168,7 @@ class Clock extends React.Component<PClock, SClock> {
     /**
      * Tick of the clock
      */
-    async _tick() {
+    protected async _tick() {
         this._clear();
         var hours = this.state.hour;
         var minutes = this.state.minute;
@@ -254,5 +316,3 @@ class Clock extends React.Component<PClock, SClock> {
         )
     }
 }
-
-export default Clock;

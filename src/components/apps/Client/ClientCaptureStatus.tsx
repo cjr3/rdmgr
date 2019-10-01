@@ -2,28 +2,46 @@ import React from 'react';
 import vars from 'tools/vars';
 import CaptureStatus, {SCaptureStatus} from 'tools/CaptureStatus';
 import { ProgressBar } from 'components/Elements';
-
 import CaptureController, {CaptureStateBase, CaptureStateSponsor} from 'controllers/CaptureController';
 import DataController from 'controllers/DataController';
 import SlideshowController, {SSlideshowController} from 'controllers/SlideshowController';
 import SponsorController, {SSponsorController} from 'controllers/SponsorController';
 import VideoController, {SVideoController} from 'controllers/VideoController';
 
-interface SClientCaptureStatus {
-    State:SCaptureStatus,
-    Video:SVideoController,
-    Slideshow:SSlideshowController,
-    Sponsors:SSponsorController,
-    CaptureVideo:CaptureStateBase,
-    CaptureSponsor:CaptureStateSponsor,
-    CaptureSlideshow:CaptureStateBase
-}
-
 /**
  * Component for displaying the status of the capture window.
  */
-class ClientCaptureStatus extends React.PureComponent<any, SClientCaptureStatus> {
-    readonly state:SClientCaptureStatus = {
+export default class ClientCaptureStatus extends React.PureComponent<any, {
+    /**
+     * CaptureStatus state
+     */
+    State:SCaptureStatus;
+    /**
+     * VideoController State
+     */
+    Video:SVideoController;
+    /**
+     * SlideshowController state
+     */
+    Slideshow:SSlideshowController;
+    /**
+     * SponsorController state
+     */
+    Sponsors:SSponsorController;
+    /**
+     * CaptureController's Video State
+     */
+    CaptureVideo:CaptureStateBase;
+    /**
+     * CaptureController's Sponsor State
+     */
+    CaptureSponsor:CaptureStateSponsor;
+    /**
+     * CaptureController's slideshow state
+     */
+    CaptureSlideshow:CaptureStateBase;
+}> {
+    readonly state = {
         State:CaptureStatus.getState(),
         Video:VideoController.getState(),
         Slideshow:SlideshowController.getState(),
@@ -33,25 +51,29 @@ class ClientCaptureStatus extends React.PureComponent<any, SClientCaptureStatus>
         CaptureSlideshow:CaptureController.getState().MainSlideshow
     }
 
-    remoteStatus:Function
-    remoteCapture:Function
-    remoteSlideshow:Function
-    remoteSponsor:Function
-    remoteVideo:Function
+    /**
+     * CaptureStatus listener
+     */
+    protected remoteStatus:Function|null = null;
+    /**
+     * CaptureController listener
+     */
+    protected remoteCapture:Function|null = null;
+    /**
+     * SlideshowController listener
+     */
+    protected remoteSlideshow:Function|null = null;
+    /**
+     * SponsorController listener
+     */
+    protected remoteSponsor:Function|null = null;
+    /**
+     * VideoController listener
+     */
+    protected remoteVideo:Function|null = null;
 
     constructor(props) {
         super(props);
-        var cstate = CaptureController.getState();
-        this.state = {
-            State:Object.assign({}, CaptureStatus.getState()),
-            Video:Object.assign({}, VideoController.getState()),
-            Slideshow:Object.assign({}, SlideshowController.getState()),
-            Sponsors:Object.assign({}, SponsorController.getState()),
-            CaptureVideo:Object.assign({}, cstate.MainVideo),
-            CaptureSponsor:Object.assign({}, cstate.SponsorSlideshow),
-            CaptureSlideshow:Object.assign({}, cstate.MainSlideshow)
-        };
-        
         this.updateStatus = this.updateStatus.bind(this);
         this.updateCapture = this.updateCapture.bind(this);
         this.updateSlideshow = this.updateSlideshow.bind(this);
@@ -105,13 +127,40 @@ class ClientCaptureStatus extends React.PureComponent<any, SClientCaptureStatus>
     }
 
     /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteStatus = CaptureStatus.subscribe(this.updateStatus);
+        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
+        this.remoteSlideshow = SlideshowController.subscribe(this.updateSlideshow);
+        this.remoteSponsor = SponsorController.subscribe(this.updateSponsor);
+        this.remoteVideo = VideoController.subscribe(this.updateVideo);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteStatus !== null)
+            this.remoteStatus();
+        if(this.remoteCapture !== null)
+            this.remoteCapture();
+        if(this.remoteSlideshow !== null)
+            this.remoteSlideshow();
+        if(this.remoteSponsor !== null)
+            this.remoteSponsor();
+        if(this.remoteVideo !== null)
+            this.remoteVideo();
+    }
+
+    /**
      * Renders the component
      * - Displays different text and progress based on 
      */
     render() {
-        var children:React.ReactElement|null = null;
-        var max = 100;
-        var progress = 0;
+        let children:React.ReactElement|null = null;
+        let max:number = 100;
+        let progress:number = 0;
 
         //Video
         if(this.state.CaptureVideo.Shown && this.state.Video.Status === vars.Video.Status.Playing) {
@@ -157,5 +206,3 @@ class ClientCaptureStatus extends React.PureComponent<any, SClientCaptureStatus>
         );
     }
 }
-
-export default ClientCaptureStatus;

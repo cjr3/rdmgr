@@ -49,7 +49,6 @@ class CaptureControlRoster extends React.PureComponent<PCaptureControlPanel, SCa
     remoteScoreboard:Function
 
     protected RecordsItem:React.RefObject<HTMLDivElement> = React.createRef();
-    protected CurrentRecord:React.ReactElement|null = null;
     protected RecordItem:React.RefObject<HTMLDivElement> = React.createRef();
 
     constructor(props) {
@@ -127,13 +126,13 @@ class CaptureControlRoster extends React.PureComponent<PCaptureControlPanel, SCa
         let skaters:Array<React.ReactElement> = [
             <Button
                 key="team-a"
-                active={(this.state.CurrentTeam === 'A' && this.state.SkaterIndex < 0 && this.state.Shown)}
+                active={(this.state.CurrentTeam === 'A' && this.state.SkaterIndex < 0)}
                 className="skater"
                 onDoubleClick={() => {
                     RosterController.SetSkater('A', -1)
                 }}
                 >
-                    <div ref={(this.state.CurrentTeam === 'A' && this.state.SkaterIndex < 0 && this.state.Shown) ? this.RecordItem : null}>
+                    <div ref={(this.state.CurrentTeam === 'A' && this.state.SkaterIndex < 0) ? this.RecordItem : null}>
                         <div className="num">
                             <img src={DataController.mpath(this.state.TeamA.Thumbnail, false)} alt=""/>
                         </div>
@@ -141,7 +140,6 @@ class CaptureControlRoster extends React.PureComponent<PCaptureControlPanel, SCa
                     </div>
                 </Button>
         ];
-        this.CurrentRecord = skaters[0];
 
         this.state.SkatersA.forEach((skater, index) => {
             skaters.push(
@@ -153,26 +151,24 @@ class CaptureControlRoster extends React.PureComponent<PCaptureControlPanel, SCa
                         RosterController.SetSkater('A', index)
                     }}
                     >
-                        <div ref={(this.state.CurrentTeam === 'A' && this.state.SkaterIndex === index && this.state.Shown) ? this.RecordItem : null}>
+                        <div ref={(this.state.CurrentTeam === 'A' && this.state.SkaterIndex === index) ? this.RecordItem : null}>
                             <div className="num">{skater.Number}</div>
                             <div className="name">{skater.Name}</div>
                         </div>
                     </Button>
             );
-            if(this.state.CurrentTeam === 'A' && this.state.SkaterIndex === index)
-                this.CurrentRecord = skaters[skaters.length - 1];
         });
 
         skaters.push(
             <Button
                 key="team-b"
-                active={(this.state.CurrentTeam === 'B' && this.state.SkaterIndex < 0 && this.state.Shown)}
+                active={(this.state.CurrentTeam === 'B' && this.state.SkaterIndex < 0)}
                 className="skater"
                 onDoubleClick={() => {
                     RosterController.SetSkater('B', -1)
                 }}
                 >
-                    <div ref={(this.state.CurrentTeam === 'B' && this.state.SkaterIndex < 0 && this.state.Shown) ? this.RecordItem : null}>
+                    <div ref={(this.state.CurrentTeam === 'B' && this.state.SkaterIndex < 0) ? this.RecordItem : null}>
                         <div className="num">
                             <img src={DataController.mpath(this.state.TeamB.Thumbnail, false)} alt=""/>
                         </div>
@@ -180,9 +176,6 @@ class CaptureControlRoster extends React.PureComponent<PCaptureControlPanel, SCa
                     </div>
                 </Button>
         );
-
-        if(this.state.CurrentTeam === 'B' && this.state.SkaterIndex < 0 && this.state.Shown)
-            this.CurrentRecord = skaters[skaters.length - 1];
 
         this.state.SkatersB.forEach((skater, index) => {
             skaters.push(
@@ -194,14 +187,12 @@ class CaptureControlRoster extends React.PureComponent<PCaptureControlPanel, SCa
                         RosterController.SetSkater('B', index)
                     }}
                     >
-                        <div ref={(this.state.CurrentTeam === 'B' && this.state.SkaterIndex === index && this.state.Shown) ? this.RecordItem : null}>
+                        <div ref={(this.state.CurrentTeam === 'B' && this.state.SkaterIndex === index) ? this.RecordItem : null}>
                             <div className="num">{skater.Number}</div>
                             <div className="name">{skater.Name}</div>
                         </div>
                     </Button>
             );
-            if(this.state.CurrentTeam === 'B' && this.state.SkaterIndex === index)
-                this.CurrentRecord = skaters[skaters.length - 1];
         });
 
         let buttons:Array<React.ReactElement> = [

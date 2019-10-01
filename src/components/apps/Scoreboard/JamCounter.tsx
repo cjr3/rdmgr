@@ -3,26 +3,38 @@ import Counter from 'components/tools/Counter'
 import {Icon, IconSubtract} from 'components/Elements'
 import ScoreboardController from 'controllers/ScoreboardController'
 
-interface SJamCounter {
-    amount:number
-}
-
 /**
  * Component for displaying the jam number on the scoreboard control
  */
-class JamCounter extends React.PureComponent<any, SJamCounter> {
-    readonly state:SJamCounter = {
+export default class JamCounter extends React.PureComponent<any, {
+    /**
+     * Current Jam #
+     */
+    amount:number;
+}> {
+    readonly state = {
         amount:ScoreboardController.getState().JamCounter
     }
-    CounterItem:React.RefObject<Counter> = React.createRef();
-    remoteScore:Function
+
+    /**
+     * Counter reference
+     */
+    protected CounterItem:React.RefObject<Counter> = React.createRef();
+    /**
+     * ScoreboardContorller listener
+     */
+    protected remoteScore:Function|null = null;
+
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super(props);
         this.onChange = this.onChange.bind(this);
         this.onAdd = this.onAdd.bind(this);
         this.onSubtract = this.onSubtract.bind(this);
         this.updateState = this.updateState.bind(this);
-        this.remoteScore = ScoreboardController.subscribe(this.updateState);
     }
 
     /**
@@ -67,6 +79,21 @@ class JamCounter extends React.PureComponent<any, SJamCounter> {
     }
 
     /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteScore = ScoreboardController.subscribe(this.updateState);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteScore !== null)
+            this.remoteScore();
+    }
+
+    /**
      * Renders the component
      */
     render() {
@@ -78,7 +105,6 @@ class JamCounter extends React.PureComponent<any, SJamCounter> {
                         min={0}
                         max={99}
                         padding={2}
-                        //onChange={this.onChange}
                         onAdd={this.onAdd}
                         onSubtract={this.onSubtract}
                         ref={this.CounterItem}
@@ -101,5 +127,3 @@ class JamCounter extends React.PureComponent<any, SJamCounter> {
         )
     }
 }
-
-export default JamCounter;

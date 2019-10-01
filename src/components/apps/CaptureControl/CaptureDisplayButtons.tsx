@@ -1,70 +1,74 @@
 import React from 'react';
 import CaptureController from 'controllers/CaptureController';
+import {
+    IconButton, 
+    IconMic, 
+    IconFlag, 
+    IconStreamOff, 
+    IconStopwatch, 
+    IconPlus, 
+    IconWhistle, 
+    IconTicket, 
+    IconSkate, 
+    IconSlideshow, 
+    IconMovie
+} from 'components/Elements';
 
-import {Button, IconButton, IconMic, IconFlag, IconStreamOff, IconStopwatch, IconPlus, IconWhistle, IconTicket, IconSkate, IconSlideshow, IconMovie} from 'components/Elements';
-
-/**
- * Interface for the state of the CaptureDisplayButtons component
- */
-interface CaptureDisplayButtonState {
-    /**
-     * Determines if the scoreboard is visible or not
-     */
-    Scoreboard:boolean,
-    /**
-     * Determines if the main camera is visible or not.
-     */
-    MainCamera:boolean,
-    /**
-     * Determines if the main video is displayed or not.
-     */
-    MainVideo:boolean,
-    /**
-     * Determines if the scorebanner is displayed or not
-     */
-    Scorebanner:boolean,
-    /**
-     * Determines if the national anthem singer is displayed or not
-     */
-    NationalAnthem:boolean,
-    /**
-     * Determines if the sponsor slideshow is displayed or not
-     */
-    SponsorSlideshow:boolean,
-    /**
-     * Determines if the main slideshow is visible or not
-     */
-    MainSlideshow:boolean,
-    /**
-     * Determines if the announcer is visible or not
-     */
-    Announcers:boolean,
-    /**
-     * Determines if the penalty tracker is shown or not
-     */
-    PenaltyTracker:boolean,
-    /**
-     * Determines if the full-screen jam clock is shown
-     */
-    JamClock:boolean,
-    /**
-     * Determines if the full-screen jam counter is shown
-     */
-    JamCounter:boolean
-    /**
-     * Determines if the raffle screen is shown
-     */
-    Raffle:boolean
-};
 
 /**
  * A component for buttons that control what is visible on the capture window.
  */
-class CaptureDisplayButtons extends React.PureComponent<any, CaptureDisplayButtonState> {
+export default class CaptureDisplayButtons extends React.PureComponent<any, {
     /**
-     * State object
+     * Determines if the scoreboard is visible or not
      */
-    readonly state:CaptureDisplayButtonState = {
+    Scoreboard:boolean;
+    /**
+     * Determines if the main camera is visible or not.
+     */
+    MainCamera:boolean;
+    /**
+     * Determines if the main video is displayed or not.
+     */
+    MainVideo:boolean;
+    /**
+     * Determines if the scorebanner is displayed or not
+     */
+    Scorebanner:boolean;
+    /**
+     * Determines if the national anthem singer is displayed or not
+     */
+    NationalAnthem:boolean;
+    /**
+     * Determines if the sponsor slideshow is displayed or not
+     */
+    SponsorSlideshow:boolean;
+    /**
+     * Determines if the main slideshow is visible or not
+     */
+    MainSlideshow:boolean;
+    /**
+     * Determines if the announcer is visible or not
+     */
+    Announcers:boolean;
+    /**
+     * Determines if the penalty tracker is shown or not
+     */
+    PenaltyTracker:boolean;
+    /**
+     * Determines if the full-screen jam clock is shown
+     */
+    JamClock:boolean;
+    /**
+     * Determines if the full-screen jam counter is shown
+     */
+    JamCounter:boolean;
+    /**
+     * Determines if the raffle screen is shown
+     */
+    Raffle:boolean;
+}> {
+    readonly state = {
         Announcers:CaptureController.getState().Announcers.Shown,
         MainCamera:CaptureController.getState().MainCamera.Shown,
         MainSlideshow:CaptureController.getState().MainSlideshow.Shown,
@@ -82,7 +86,7 @@ class CaptureDisplayButtons extends React.PureComponent<any, CaptureDisplayButto
     /**
      * Listener for capture controller
      */
-    protected remote:Function
+    protected remoteCapture:Function|null = null;
 
     /**
      * 
@@ -91,7 +95,6 @@ class CaptureDisplayButtons extends React.PureComponent<any, CaptureDisplayButto
     constructor(props) {
         super(props);
         this.updateState = this.updateState.bind(this);
-        this.remote = CaptureController.subscribe(this.updateState);
     }
 
     /**
@@ -115,6 +118,21 @@ class CaptureDisplayButtons extends React.PureComponent<any, CaptureDisplayButto
                 Raffle:cstate.Raffle.Shown
             };
         });
+    }
+
+    /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteCapture = CaptureController.subscribe(this.updateState);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteCapture !== null)
+            this.remoteCapture();
     }
 
     /**
@@ -197,5 +215,3 @@ class CaptureDisplayButtons extends React.PureComponent<any, CaptureDisplayButto
         )
     }
 }
-
-export default CaptureDisplayButtons;

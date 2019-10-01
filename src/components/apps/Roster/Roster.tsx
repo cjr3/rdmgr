@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { CSSProperties } from 'react';
 import RosterController, {SRosterController} from 'controllers/RosterController';
 import DataController from 'controllers/DataController';
 import ScoreboardController from 'controllers/ScoreboardController';
@@ -7,32 +7,48 @@ import Panel from 'components/Panel';
 import SortPanel from 'components/tools/SortPanel';
 import cnames from 'classnames';
 import keycodes from 'tools/keycodes';
-
-import './css/Roster.scss';
 import { SkaterRecord } from 'tools/vars';
-
-interface SRoster {
-    State:SRosterController,
-    Skaters:Array<SkaterRecord>,
-    TeamA:{
-        ID:number,
-        Color:string,
-        Name:string
-    },
-    TeamB:{
-        ID:number,
-        Color:string,
-        Name:string
-    },
-    Keywords:string,
-    VisibleSkaters:Array<SkaterRecord>
-}
+import './css/Roster.scss';
 
 /**
  * Component for building the roster of skaters and coaches on the track
  */
-class Roster extends React.PureComponent<any, SRoster> {
-    readonly state:SRoster = {
+export default class Roster extends React.PureComponent<any, {
+    /**
+     * RosterController state
+     */
+    State:SRosterController;
+    /**
+     * Skaters available to add to either team
+     */
+    Skaters:Array<SkaterRecord>;
+    /**
+     * Left side team
+     */
+    TeamA:{
+        ID:number;
+        Color:string;
+        Name:string;
+    },
+    /**
+     * Right side team
+     */
+    TeamB:{
+        ID:number;
+        Color:string;
+        Name:string;
+    },
+    /**
+     * Keywords to search skaters
+     */
+    Keywords:string;
+    /**
+     * Skaters visible on the form
+     * So the user can press 'enter' to add the one skater available
+     */
+    VisibleSkaters:Array<SkaterRecord>
+}> {
+    readonly state = {
         State:Object.assign({}, RosterController.getState()),
         Skaters:DataController.getSkaters(true),
         TeamA:{
@@ -49,24 +65,32 @@ class Roster extends React.PureComponent<any, SRoster> {
         VisibleSkaters:[]
     }
 
-    remoteState:Function
-    remoteData:Function
-    remoteScore:Function
+    /**
+     * RosterController listener
+     */
+    protected remoteState:Function|null = null;
+    /**
+     * DataController listener
+     */
+    protected remoteData:Function|null = null;
+    /**
+     * ScoreboardController listener
+     */
+    protected remoteScore:Function|null = null;
 
+    /**
+     * Constructor
+     * @param props 
+     */
     constructor(props) {
         super(props);
         this.clearSkaters = this.clearSkaters.bind(this);
         this.loadSkaters = this.loadSkaters.bind(this);
         this.onChangeKeywords = this.onChangeKeywords.bind(this);
         this.onKeyUpKeywords = this.onKeyUpKeywords.bind(this);
-
         this.updateState = this.updateState.bind(this);
         this.updateData = this.updateData.bind(this);
         this.updateScore = this.updateScore.bind(this);
-
-        this.remoteState = RosterController.subscribe(this.updateState);
-        this.remoteData = DataController.subscribe(this.updateData);
-        this.remoteScore = ScoreboardController.subscribe(this.updateScore);
     }
 
     /**
@@ -163,6 +187,27 @@ class Roster extends React.PureComponent<any, SRoster> {
     }
 
     /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteState = RosterController.subscribe(this.updateState);
+        this.remoteData = DataController.subscribe(this.updateData);
+        this.remoteScore = ScoreboardController.subscribe(this.updateScore);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteState !== null)
+            this.remoteState();
+        if(this.remoteData !== null)
+            this.remoteData();
+        if(this.remoteScore !== null)
+            this.remoteScore();
+    }
+
+    /**
      * Renders the component.
      * - Left: Left side team, with name, color, and list of skaters.
      * - Center: Right side team, with name, color, and list of skaters.
@@ -190,10 +235,10 @@ class Roster extends React.PureComponent<any, SRoster> {
                     continue;
             }
             
-            let aindex = this.state.State.TeamA.Skaters.findIndex((s) => {
+            let aindex:number = this.state.State.TeamA.Skaters.findIndex((s) => {
                 return (s.RecordID === skater.RecordID);
             });
-            let bindex = this.state.State.TeamB.Skaters.findIndex((s) => {
+            let bindex:number = this.state.State.TeamB.Skaters.findIndex((s) => {
                 return (s.RecordID === skater.RecordID);
             });
             
@@ -230,7 +275,7 @@ class Roster extends React.PureComponent<any, SRoster> {
         }
         
 
-        var buttons = [
+        let buttons:Array<React.ReactElement> = [
             <input type="text" key="txt-keywords"
                 value={this.state.Keywords}
                 onChange={this.onChangeKeywords}
@@ -278,20 +323,29 @@ class Roster extends React.PureComponent<any, SRoster> {
 }
 
 interface SRosterTeam {
-    team:any,
-    color:string,
-    name:string
+    /**
+     * Team
+     */
+    team:any;
+    /**
+     * Color of team
+     */
+    color:string;
+    /**
+     * Team name
+     */
+    name:string;
 }
 
 function RosterTeam(props:SRosterTeam) {
     let skaters:Array<any> = []
-    let style = {
+    let style:CSSProperties = {
         backgroundColor:props.color
     }
 
     if(props.team.Skaters) {
         props.team.Skaters.forEach((skater) => {
-            var src = skater.Thumbnail;
+            let src:string|null|undefined = skater.Thumbnail;
             if(src === null || src === '')
                 src = skater.Slide;
             if(src === null || src === '')
@@ -314,7 +368,7 @@ function RosterTeam(props:SRosterTeam) {
         })
     }
 
-    var className = cnames('team', 'team-' + props.team.Side);
+    let className:string = cnames('team', 'team-' + props.team.Side);
 
     return (
         <div className={className}>
@@ -331,5 +385,3 @@ function RosterTeam(props:SRosterTeam) {
         </div>
     );
 }
-
-export default Roster;
