@@ -4,11 +4,15 @@ export interface CameraControllerState {
     /**
      * Currently selected local camera device ID to send to the capture window.
      */
-    DeviceID:string,
+    DeviceID:string;
     /**
      * Available, connected video input devices
      */
-    Cameras:Array<MediaDeviceInfo>
+    Cameras:Array<MediaDeviceInfo>;
+    /**
+     * ID of the peer to load the stream of
+     */
+    PeerID:string;
 }
 
 export enum Actions {
@@ -28,7 +32,8 @@ export enum Actions {
 
 export const InitState:CameraControllerState = {
     DeviceID:'',
-    Cameras:new Array<MediaDeviceInfo>()
+    Cameras:new Array<MediaDeviceInfo>(),
+    PeerID:''
 };
 
 function CameraReducer(state = InitState, action) {

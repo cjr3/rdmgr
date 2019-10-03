@@ -9,23 +9,34 @@
 import {createStore} from 'redux';
 import vars from './vars';
 
-const SET_STATE = 'SET_STATE';
-const SET_VIDEO = 'SET_VIDEO';
+export enum Actions {
+    SET_STATE,
+    SET_VIDEO,
+    SET_PEER
+};
 
 export interface SCaptureStatus {
     Video:{
-        CurrentTime:number,
-        Duration:number,
-        Status:number
+        CurrentTime:number;
+        Duration:number;
+        Status:number;
+    },
+    PeerCamera:{
+        PeerID:string;
+        Connected:boolean;
     }
 }
 
 //Initial state
-const InitState:SCaptureStatus = {
+export const InitState:SCaptureStatus = {
     Video:{
         CurrentTime:0,
         Duration:0,
         Status:vars.Video.Status.Stopped
+    },
+    PeerCamera:{
+        PeerID:'',
+        Connected:false
     }
 };
 
@@ -37,13 +48,18 @@ const InitState:SCaptureStatus = {
 function CaptureStatusReducer(state:SCaptureStatus = InitState, action) {
     switch( action.type ) {
         //Set the state
-        case SET_STATE :
+        case Actions.SET_STATE :
             return Object.assign({}, state, action.values);
 
         //sets the video state
-        case SET_VIDEO :
+        case Actions.SET_VIDEO :
             return Object.assign({}, state, {
                 Video:Object.assign({}, state.Video, action.values)
+            });
+
+        case Actions.SET_PEER :
+            return Object.assign({}, state, {
+                PeerCamera:Object.assign({}, state.PeerCamera, action.values)
             });
 
         default :
@@ -65,7 +81,7 @@ const CaptureStatus = {
      */
     SetState(state) {
         CaptureStatus.getStore().dispatch({
-            type:SET_STATE,
+            type:Actions.SET_STATE,
             values:state
         });
     },
@@ -77,7 +93,7 @@ const CaptureStatus = {
      */
     UpdateVideo(currentTime, duration) {
         CaptureStatus.getStore().dispatch({
-            type:SET_VIDEO,
+            type:Actions.SET_VIDEO,
             values:{
                 CurrentTime:currentTime,
                 Duration:duration
@@ -91,9 +107,24 @@ const CaptureStatus = {
      */
     UpdateVideoStatus(status) {
         CaptureStatus.getStore().dispatch({
-            type:SET_VIDEO,
+            type:Actions.SET_VIDEO,
             values:{
                 Status:status
+            }
+        });
+    },
+
+    /**
+     * Updates the remote streaming peer's status
+     * @param id The peer's ID
+     * @param status true if connected, false if not
+     */
+    UpdatePeer(id:string, status:boolean) {
+        CaptureStatus.getStore().dispatch({
+            type:Actions.SET_PEER,
+            values:{
+                PeerID:id,
+                Connected:status
             }
         });
     },

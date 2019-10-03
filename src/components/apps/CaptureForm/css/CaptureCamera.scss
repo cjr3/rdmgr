@@ -26,11 +26,12 @@
 }
 
 .main-camera.video-2080 {
-    transform: scale(0.33) translateX(-100%);
+    transform: scale(0.33) translateX(-101%);
+    border: solid 4px #CCCCCC;
 }
 
 .main-camera.video-8020 {
-    transform: scale(0.66) translateX(22.3%);
+    transform: scale(0.66) translateX(25.3%);
 }
 
 .main-camera.video-lt,

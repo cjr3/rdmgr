@@ -8,6 +8,7 @@ import CaptureControlMonitor from './CaptureControlMonitor';
 import CaptureCameraStyleButtons from './CaptureCameraStyleButtons';
 import CaptureVideoStyleButtons from './CaptureVideoStyleButtons';
 import './css/CaptureControl.scss'
+import CaptureCameraPeerButtons from './CaptureCameraPeerButtons copy';
 
 /**
  * Component for determining what is displayed on the capture window.
@@ -50,6 +51,7 @@ export default class CaptureControl extends React.PureComponent<{
                     <div className="camera-styles">
                         <CaptureCameraStyleButtons/>
                         <CaptureVideoStyleButtons/>
+                        <CaptureCameraPeerButtons/>
                     </div>
                 </div>
                 <CaptureDisplayControls/>

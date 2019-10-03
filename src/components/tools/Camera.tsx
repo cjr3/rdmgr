@@ -143,6 +143,7 @@ export default class Camera extends React.PureComponent<{
      */
     componentDidUpdate(prevProps) {
         if(prevProps.deviceId !== this.props.deviceId) {
+            this.destroy();
             this.loadCamera(this.props.deviceId);
         }
 

@@ -1,0 +1,52 @@
+.peer-camera {
+    position: absolute;
+    margin: auto;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    transition: transform 150ms;
+    z-index: 1;
+}
+
+.capture-form.pcamera-video-5050 .peer-camera,
+.capture-form.pcamera-video-8020 .peer-camera,
+.capture-form.pcamera-video-2080 .peer-camera,
+.capture-form.pcamera-video-lt .peer-camera,
+.capture-form.pcamera-video-lr .peer-camera
+{
+    z-index: 99;
+}
+
+.capture-form.pcamera-video-2080 .peer-camera {
+    z-index: 2;
+}
+
+.peer-camera.shown {
+    opacity: 1;
+}
+
+.peer-camera.video-5050 {
+    transform: scale(0.5) translateX(50%);
+}
+
+.peer-camera.video-2080 {
+    transform: scale(0.33) translateX(-101%);
+    z-index: 0;
+}
+
+.peer-camera.video-8020 {
+    transform: scale(0.66) translateX(25.3%);
+}
+
+.peer-camera.video-lt,
+.peer-camera.video-lr {
+    box-shadow: 5px 5px 5px 5px rgba(0,0,0,0.5);
+}
+
+.peer-camera.video-lt {
+    transform: scale(0.3) translateX(-105%) translateY(95%);
+}
+
+.peer-camera.video-lr {
+    transform: scale(0.3) translateX(105%) translateY(95%);
+}

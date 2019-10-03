@@ -48,11 +48,11 @@ export default class CaptureCamera extends React.PureComponent<{
 
     /**
      * Triggered when the camera starts streaming to a peer.
-     * @param {HTML5CanvasElement} canvas 
+     * @param {MediaStream} stream
      */
-    onStream(canvas) {
+    onStream(stream:MediaStream) {
         if(window && window.LocalServer) {
-            window.LocalServer.LocalPeer.setStreamCanvas(canvas);
+            window.LocalServer.LocalPeer.setStream(stream);
             window.LocalServer.LocalPeer.play();
         }
     }

@@ -14,11 +14,13 @@ import {
     IconStreamOff,
     IconWhistle,
     IconClipboard,
-    IconTeam
+    IconTeam,
+    IconOffline
 } from 'components/Elements';
 import vars from 'tools/vars';
 import RosterController from 'controllers/RosterController';
 import CaptureControlRoster from './CaptureControlRoster';
+import CaptureControlCameraPeer from './CaptureControlCameraPeer';
 
 /**
  * Component for configuring the elements on the capture window.
@@ -58,10 +60,17 @@ export default class CaptureDisplayControls extends React.PureComponent<any, {
         },
         [CameraController.Key]:{
             type:CaptureControlCamera,
-            name:"Camera",
+            name:"Camera #1",
             icon:IconStreamOff,
             toggle:CaptureController.ToggleMainCamera,
             control:CapturePanels.CAMERA
+        },
+        ['PCAM']:{
+            type:CaptureControlCameraPeer,
+            name:"Camera #2",
+            icon:IconOffline,
+            toggle:CaptureController.TogglePeerCamera,
+            control:CapturePanels.PEERCAMERA
         },
         [PenaltyController.Key]:{
             type:CaptureControlPenaltyTracker,

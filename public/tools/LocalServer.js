@@ -43,6 +43,8 @@ class P2PServer {
                     if(capture)
                         this.Port = record.CapturePort;
                     this.PeerID = record.PeerID;
+                    if(capture)
+                        this.PeerID = record.PeerID + "-CAP";
                     this.LocalPeer = new LocalPeer(this.PeerID, "localhost", this.Port, this.Path);
                 } else if(record.PeerID !== this.PeerID) {
                     //known peer record
@@ -51,6 +53,8 @@ class P2PServer {
 
                     if(capture) {
                         id += "-CAP";
+                        if(id === this.PeerID)
+                            return;
                         port = record.CapturePort;
                     }
 

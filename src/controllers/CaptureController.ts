@@ -12,6 +12,7 @@ export enum Actions {
     SET_SCOREBOARD,
     SET_SCOREBANNER,
     SET_CAMERA,
+    SET_PEER_CAMERA,
     SET_VIDEO,
     SET_SLIDESHOW,
     SET_SPONSORS,
@@ -31,6 +32,7 @@ export enum Actions {
     TOGGLE_SCOREBANNER,
     TOGGLE_SCOREBANNER_CLOCKS,
     TOGGLE_MAIN_CAMERA,
+    TOGGLE_PEER_CAMERA,
     TOGGLE_MAIN_VIDEO,
     TOGGLE_SPONSORS,
     TOGGLE_PENALTY_TRACKER,
@@ -49,6 +51,7 @@ export enum CapturePanels {
     ANNOUNCER,
     ANTHEM,
     CAMERA,
+    PEERCAMERA,
     PENALTY,
     SCOREKEEPER,
 }
@@ -68,7 +71,7 @@ export interface CaptureStateBase {
 export interface CaptureStateAnnouncer extends CaptureStateBase {
     Announcer1:string;
     Announcer2:string;
-    Duration:number
+    Duration:number;
 }
 
 export interface CaptureStateMonitor extends CaptureStateBase {
@@ -221,6 +224,11 @@ function CaptureReducer(state:CaptureControllerState = InitState, action) {
                 MainCamera:Object.assign({}, state.MainCamera, action.values)
             });
 
+        case Actions.SET_PEER_CAMERA :
+            return Object.assign({}, state, {
+                PeerCamera:Object.assign({}, state.PeerCamera, action.values)
+            });
+
         case Actions.SET_VIDEO :
             return Object.assign({}, state, {
                 MainVideo:Object.assign({}, state.MainVideo, action.values)
@@ -322,6 +330,13 @@ function CaptureReducer(state:CaptureControllerState = InitState, action) {
             return Object.assign({}, state, {
                 MainCamera:Object.assign({}, state.MainCamera, {
                     Shown:!state.MainCamera.Shown
+                })
+            });
+
+        case Actions.TOGGLE_PEER_CAMERA :
+            return Object.assign({}, state, {
+                PeerCamera:Object.assign({}, state.PeerCamera, {
+                    Shown:!state.PeerCamera.Shown
                 })
             });
 
@@ -647,6 +662,19 @@ const CaptureController = {
     },
 
     /**
+     * Set the main camera class.
+     * @param {String} name 
+     */
+    SetPeerCameraClass(name:string) {
+        CaptureController.getStore().dispatch({
+            type:Actions.SET_PEER_CAMERA,
+            values:{
+                className:name
+            }
+        });
+    },
+
+    /**
      * Sets the duration of the penalty tracker.
      * @param {Number} duration 
      */
@@ -807,6 +835,15 @@ const CaptureController = {
     ToggleMainCamera() {
         CaptureController.getStore().dispatch({
             type:Actions.TOGGLE_MAIN_CAMERA
+        });
+    },
+
+    /**
+     * Toggles the Peer Camera visibility.
+     */
+    TogglePeerCamera() {
+        CaptureController.getStore().dispatch({
+            type:Actions.TOGGLE_PEER_CAMERA
         });
     },
 

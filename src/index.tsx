@@ -7,15 +7,18 @@ import DataController from './controllers/DataController';
 
 declare global {
     interface Window{
-        ReactEntryPoint?:any,
-        RDMGR?:any,
-        LocalServer?:any,
-        IPC?:any,
-        initControlServer?:any,
-        initCaptureServer?:any,
-        onSelectFile?:Function|null,
-        onSelectFolder?:Function|null,
-        client?:any
+        ReactEntryPoint?:any;
+        RDMGR?:any;
+        LocalServer?:any;
+        IPC?:any;
+        initControlServer?:any;
+        initCaptureServer?:any;
+        onSelectFile?:Function|null;
+        onSelectFolder?:Function|null;
+        onPeerStream:Function|null;
+        onPeerStreamClose:Function|null;
+        onPeerStreamError:Function|null;
+        client?:any;
     }
 }
 
