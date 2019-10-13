@@ -125,8 +125,8 @@ export default class CaptureForm extends React.Component {
 
             //load user config file
             DataController.loadConfig().then(() => {
-                window.initCaptureServer(DataController);
-                window.LocalServer.onDataReceived = this.onPeerData;
+                //window.initCaptureServer(DataController);
+                //window.LocalServer.onDataReceived = this.onPeerData;
                 
                 window.IPC = new IPCX('captureMessage', 'controlMessage', window.RDMGR.mainWindow);
                 //request states
