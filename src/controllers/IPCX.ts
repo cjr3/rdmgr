@@ -191,7 +191,7 @@ class IPCX {
 
             //update peer media connection status
             case 'peer-media-status' :
-                window.LocalServer.LocalPeer.setPeerMediaStatus(data.connected);
+                //window.LocalServer.LocalServer.UpdatePeerMediaStatus(data.connected);
             break;
 
             //media data from current video

@@ -4,6 +4,7 @@ import CaptureScorebanner from './CaptureScorebanner';
 import CaptureJamClock from './CaptureJamClock';
 import CaptureJamCounter from './CaptureJamCounter';
 import CaptureCamera from './CaptureCamera';
+import CaptureCameraPeer from './CaptureCameraPeer';
 import CaptureVideo from './CaptureVideo';
 import CaptureSlideshow from './CaptureSlideshow'
 import CapturePenaltyTracker from './CapturePenaltyTracker'
@@ -138,6 +139,8 @@ export default class CaptureForm extends React.Component {
                 window.IPC.requestState(PenaltyController.Key);
                 window.IPC.requestState(ScorekeeperController.Key);
                 window.RDMGR.mainWindow.focus();
+
+                //window.onPeerStream = this.onPeerStream;
             });
         }
     }
@@ -164,6 +167,7 @@ export default class CaptureForm extends React.Component {
 
         let className:string = cnames('capture-form',
             `camera-${this.state.MainCamera.className}`,
+            `pcamera-${this.state.PeerCamera.className}`,
             `video-${this.state.MainVideo.className}`,
             `scorebanner-${this.state.Scorebanner.className}-${(this.state.Scorebanner.Shown) ? 'shown' : 'hidden'}`,
             `roster-${(this.state.Roster.Shown) ? 'shown' : 'hidden'}`,
@@ -180,6 +184,7 @@ export default class CaptureForm extends React.Component {
         return (
             <div className={className} style={style}>
                 <CaptureCamera shown={this.state.MainCamera.Shown} className={this.state.MainCamera.className}/>
+                <CaptureCameraPeer shown={this.state.PeerCamera.Shown} className={this.state.PeerCamera.className}/>
                 <CaptureVideo shown={this.state.MainVideo.Shown} className={this.state.MainVideo.className}/>
                 <CaptureScoreboard shown={this.state.Scoreboard.Shown} className={classScoreboard}/>
                 <CaptureSlideshow shown={this.state.MainSlideshow.Shown}/>
