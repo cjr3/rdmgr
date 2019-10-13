@@ -53,7 +53,7 @@ export default class CaptureCamera extends React.PureComponent<{
     onStream(stream:MediaStream) {
         if(window && window.LocalServer) {
             window.LocalServer.LocalPeer.setStream(stream);
-            window.LocalServer.LocalPeer.play();
+            //window.LocalServer.LocalPeer.play();
         }
     }
 

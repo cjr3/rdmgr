@@ -65,13 +65,6 @@ export default class CaptureDisplayControls extends React.PureComponent<any, {
             toggle:CaptureController.ToggleMainCamera,
             control:CapturePanels.CAMERA
         },
-        ['PCAM']:{
-            type:CaptureControlCameraPeer,
-            name:"Camera #2",
-            icon:IconOffline,
-            toggle:CaptureController.TogglePeerCamera,
-            control:CapturePanels.PEERCAMERA
-        },
         [PenaltyController.Key]:{
             type:CaptureControlPenaltyTracker,
             name:"Penalty Tracker",

@@ -51,7 +51,6 @@ export default class CaptureControl extends React.PureComponent<{
                     <div className="camera-styles">
                         <CaptureCameraStyleButtons/>
                         <CaptureVideoStyleButtons/>
-                        <CaptureCameraPeerButtons/>
                     </div>
                 </div>
                 <CaptureDisplayControls/>

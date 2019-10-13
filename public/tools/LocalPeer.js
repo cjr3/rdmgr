@@ -26,16 +26,32 @@ class LocalPeer {
         this.closeMediaConnection = this.closeMediaConnection.bind(this);
         this.ping = this.ping.bind(this);
 
+        //data bindings
+        //this.onDataClose = this.onDataClose.bind(this);
+        //this.onDataError = this.onDataError.bind(this);
+        //this.onDataOpen = this.onDataOpen.bind(this);
+        //this.onDataReceived = this.onDataReceived.bind(this);
+
         //media bindings
         this.onMediaClose = this.onMediaClose.bind(this);
         this.onMediaError = this.onMediaError.bind(this);
         this.onMediaStream = this.onMediaStream.bind(this);
         this.setStream = this.setStream.bind(this);
-        this.paint = this.paint.bind(this);
-        this.onLocalVideoWorkerMessage = this.onLocalVideoWorkerMessage.bind(this);
-        this.play = this.play.bind(this);
-        this.pause = this.pause.bind(this);
-        this.StreamSource = null;
+        this.LocalStream = null;
+        //this.paint = this.paint.bind(this);
+        //this.onLocalVideoWorkerMessage = this.onLocalVideoWorkerMessage.bind(this);
+        //this.play = this.play.bind(this);
+        //this.pause = this.pause.bind(this);
+        
+        //streaming elements
+        //this.LocalVideoCanvas = null;
+        //this.LocalStreamCanvas = document.createElement('canvas');
+        //this.LocalStreamCanvas.setAttribute('width', 1280);
+        //this.LocalStreamCanvas.setAttribute('height', 720);
+        //this.LocalCanvasBrush = this.LocalStreamCanvas.getContext('2d');
+        //this.LocalCanvasStream = this.LocalStreamCanvas.captureStream(30);
+        //this.LocalVideoWorker = new Worker('tools/Animator.js');
+        //this.LocalVideoWorker.onmessage = this.onLocalVideoWorkerMessage;
     }
 
     /**
@@ -99,7 +115,7 @@ class LocalPeer {
             return;
 
         if(peer.PeerItem === null && !local) {
-            //console.log(`connecting to ${id}`);
+            console.log(`connecting to ${id}`);
             peer.PeerItem = new window.LocalServer.Peer(this.ID, {
                 host:peer.Host,
                 port:peer.Port,
@@ -110,11 +126,11 @@ class LocalPeer {
             });
 
             peer.PeerItem.on('open', (id) => {
-                //console.log(`${id} connected to remote peer ${peer.ID}`);
+                console.log(`${id} connected to remote peer ${peer.ID}`);
                 //this.connectToPeer(id, local);
             });
             peer.PeerItem.on('connection', (dcnx) => {
-                //console.log(`${dcnx.peer} created a data connection`);
+                console.log(`${dcnx.peer} created a data connection`);
                 peer.DataConnection = dcnx;
                 peer.DataConnection.on('data', this.onDataReceived.bind(this, peer));
                 peer.DataConnection.on('open', this.onDataOpen.bind(this, peer));
@@ -122,20 +138,21 @@ class LocalPeer {
                 peer.DataConnection.on('error', this.onDataError.bind(this, peer));
             });
             peer.PeerItem.on('call', (mcnx) => {
+                console.log(`${mcnx.peer} called`);
+                
                 peer.MediaConnection = mcnx;
                 peer.MediaConnection.on('close', this.onMediaClose.bind(this, peer));
                 peer.MediaConnection.on('stream', this.onMediaStream.bind(this, peer));
                 peer.MediaConnection.on('error', this.onMediaError.bind(this, peer));
-                mcnx.answer(this.StreamSource);
             });
             peer.PeerItem.on('close', () => {
-                //console.log(`${peer.ID} closed`)
+                console.log(`${peer.ID} closed`)
             });
             peer.PeerItem.on('close', () => {
-                //console.log(`${peer.ID} closed`)
+                console.log(`${peer.ID} closed`)
             });
             peer.PeerItem.on('disconnected', () => {
-                //console.log(`${peer.ID} disconnected`)
+                console.log(`${peer.ID} disconnected`)
             });
             peer.PeerItem.on('error', (err) => {
                 switch(err.type) {
@@ -143,12 +160,20 @@ class LocalPeer {
                         
                     break;
                     default :
-                        //console.log(`${peer.ID} error: ${err.type}`);
+                        console.log(`${peer.ID} error: ${err.type}`);
                     break;
                 }
             });
 
             return;
+        }
+
+        if(peer.DataConnection !== null && typeof(peer.DataConnection) === "object" && peer.DataConnection.connected) {
+            //peer.DataConnection.close();
+        }
+
+        if(peer.MediaConnection !== null && typeof(peer.MediaCOnnection) === "object" && peer.MediaConnection.connected) {
+            //peer.MediaCOnnection.close();
         }
 
         if(peer.PeerItem)
@@ -165,35 +190,14 @@ class LocalPeer {
     }
 
     callPeer(id) {
-        //alert(id);
         let peer = this.Peers[id];
         if(peer === null || peer === undefined)
             return;
-        //alert(peer);
-        if(peer.MediaConnection && peer.MediaConnection.open)
-            peer.MediaConnection.close();
         
-        peer.MediaConnection = this.PeerItem.call(id, this.StreamSource);
-        //alert(peer.MediaConnection)
-        if(peer.MediaConnection) {
-            peer.MediaConnection.on('close', this.onMediaClose.bind(this, peer));
-            peer.MediaConnection.on('stream', this.onMediaStream.bind(this, peer));
-            peer.MediaConnection.on('error', this.onMediaError.bind(this, peer));
-        }
-    }
-
-    requestCall(id) {
-        let peer = this.Peers[id];
-        if(peer === null || peer === undefined)
-            return;
-
-        
-        //console.log(peer);
-        if(peer.DataConnection && peer.DataConnection.open) {
-            if(peer.MediaConnection && peer.MediaConnection.open)
-            peer.MediaConnection.close();
-            this.send(id, {type:'request-call'});
-        }
+        peer.MediaConnection = this.PeerItem.call(id, this.LocalCanvasStream);
+        peer.MediaConnection.on('close', this.onMediaClose.bind(this, peer));
+        peer.MediaConnection.on('stream', this.onMediaStream.bind(this, peer));
+        peer.MediaConnection.on('error', this.onMediaError.bind(this, peer));
     }
 
     disconnectPeer(id) {
@@ -250,10 +254,10 @@ class LocalPeer {
 
     /**
      * Sets the canvas element that is streamed to listening peers.
-     * @param {MediaStream} canvas 
+     * @param {HTML5CanvasElement} canvas 
      */
-    setStream(stream) {
-        this.StreamSource = stream;
+    setStream(canvas) {
+        this.LocalStream = canvas;
     }
 
     /**
@@ -272,14 +276,14 @@ class LocalPeer {
      * Pauses the media stream worker.
      */
     pause() {
-        //this.LocalVideoWorker.postMessage('pause');
+        this.LocalVideoWorker.postMessage('pause');
     }
 
     /**
      * Plays the media stream worker.
      */
     play() {
-        //this.LocalVideoWorker.postMessage('play');
+        this.LocalVideoWorker.postMessage('play');
     }
 
     /**
@@ -331,12 +335,12 @@ class LocalPeer {
      * @param {Object} dcnx The data connection
      */
     onConnection(dcnx) {
-        //console.log(`${dcnx.peer} : onConnection`);
+        console.log(`${dcnx.peer} : onConnection`);
         let peer = this.Peers[dcnx.peer];
 
         //ignore and close data connections from unknown peers
         if(peer === null || peer === undefined) {
-            //console.log('peer is not found');
+            console.log('peer is not found');
             //dcnx.close();
             return;
         }
@@ -354,11 +358,10 @@ class LocalPeer {
      * @param {Object} media Peer.MediaConnection object
      */
     onCall(media) {
-        //console.log("peer called: " + media.peer);
         let peer = this.Peers[media.peer];
         //ignore media calls from unknown peers
         if(peer === undefined || peer == null) {
-            //media.close();
+            media.close();
             return;
         }
 
@@ -366,7 +369,7 @@ class LocalPeer {
         peer.MediaConnection.on('stream', this.onMediaStream.bind(this, peer));
         peer.MediaConnection.on('close', this.onMediaClose.bind(this, peer));
         peer.MediaConnection.on('error', this.onMediaError.bind(this, peer));
-        peer.MediaConnection.answer(this.StreamSource);
+        peer.MediaConnection.answer(this.LocalCanvasStream);
     }
 
     /**
@@ -378,7 +381,7 @@ class LocalPeer {
      * the server can no longer find the peer.
      */
     onDisconnected() {
-        //console.log(`${this.ID} : onDisconnected`);
+        console.log(`${this.ID} : onDisconnected`);
     }
 
     /**
@@ -413,11 +416,11 @@ class LocalPeer {
                 }
             break;
             case 'unavailable-id' :
-                //console.log(`${this.ID} onError: ${err.type}`);
+                console.log(`${this.ID} onError: ${err.type}`);
                 //this.disconnect();
             break;
             default :
-                //console.log(`${this.ID} onError: ${err.type}`);
+                console.log(`${this.ID} onError: ${err.type}`);
             break;
         }
     }
@@ -445,7 +448,7 @@ class LocalPeer {
     onDataOpen(peer) {
         //this.DataConnected = true;
         peer.DataConnected = true;
-        console.log(`${peer.ID} opened data connection`)
+        console.log(`${this.ID} opened data connection`)
         window.LocalServer.UpdatePeerDataStatus(peer);
     }
 
@@ -453,7 +456,7 @@ class LocalPeer {
      * Triggered when a peer closes their data connection
      */
     onDataClose(peer) {
-        //console.log(`${peer.ID} onDataClose`);
+        console.log(`${peer.ID} onDataClose`);
         //this.disconnect();
         peer.DataConnected = false;
         peer.Connecting = false;
@@ -465,7 +468,7 @@ class LocalPeer {
      * @param {Object} error 
      */
     onDataError(peer, error) {
-        //console.log(`${peer.ID} onDataError: ${error}`);
+        console.log(`${peer.ID} onDataError: ${error}`);
         //console.log(peer.ID + " encountered an error in their data connection: ");
         //console.log(error);
     }
@@ -477,10 +480,6 @@ class LocalPeer {
     onMediaStream(peer, stream) {
         peer.MediaConnected = true;
         window.LocalServer.UpdatePeerMediaStatus(peer);
-        console.log("Streeaming....!?");
-        if(window.onPeerStream) {
-            window.onPeerStream(peer, stream);
-        }
     }
 
     /**
@@ -489,8 +488,6 @@ class LocalPeer {
     onMediaClose(peer) {
         peer.MediaConnected = false;
         window.LocalServer.UpdatePeerMediaStatus(peer);
-        if(window.onPeerStreamClose)
-            window.onPeerStreamClose(peer);
     }
 
     /**
@@ -499,8 +496,6 @@ class LocalPeer {
      */
     onMediaError(peer, err) {
         //console.log(peer.ID + " encounteed an error on the media stream.");
-        if(window.onPeerStreamError)
-            window.onPeerStreamError(peer, err);
     }
 
     /**
