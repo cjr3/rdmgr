@@ -1,5 +1,5 @@
 import React from 'react';
-import {Icon, IconCheck, IconFastForward} from 'components/Elements'
+import {Icon, IconCheck, IconFastForward, IconStopwatch} from 'components/Elements'
 import ScoreboardController from 'controllers/ScoreboardController'
 
 /**
@@ -8,8 +8,10 @@ import ScoreboardController from 'controllers/ScoreboardController'
 export default class PhaseControl extends React.PureComponent<any, {
     PhaseMinute:number;
     PhaseSecond:number;
+    PhaseHour:number;
 }> {
     readonly state = {
+        PhaseHour:ScoreboardController.getState().PhaseHour,
         PhaseMinute:ScoreboardController.getState().PhaseMinute,
         PhaseSecond:ScoreboardController.getState().PhaseSecond
     }
@@ -27,6 +29,7 @@ export default class PhaseControl extends React.PureComponent<any, {
         super(props);
         this.onChangeMinute = this.onChangeMinute.bind(this);
         this.onChangeSecond = this.onChangeSecond.bind(this);
+        this.onChangeHour = this.onChangeHour.bind(this);
         this.onSetGameTime = this.onSetGameTime.bind(this);
         this.onCopyGameTime = this.onCopyGameTime.bind(this);
         this.updateState = this.updateState.bind(this);
@@ -38,6 +41,7 @@ export default class PhaseControl extends React.PureComponent<any, {
     updateState() {
         this.setState(() => {
             return {
+                PhaseHour:ScoreboardController.getState().PhaseHour,
                 PhaseMinute:ScoreboardController.getState().PhaseMinute,
                 PhaseSecond:ScoreboardController.getState().PhaseSecond
             };
@@ -50,7 +54,7 @@ export default class PhaseControl extends React.PureComponent<any, {
      */
     onChangeMinute(ev) {
         var value = ev.target.value;
-        ScoreboardController.SetPhaseTime(0, value, this.state.PhaseSecond);
+        ScoreboardController.SetPhaseTime(this.state.PhaseHour, value, this.state.PhaseSecond);
     }
 
     /**
@@ -59,14 +63,23 @@ export default class PhaseControl extends React.PureComponent<any, {
      */
     onChangeSecond(ev) {
         var value = ev.target.value;
-        ScoreboardController.SetPhaseTime(0, this.state.PhaseMinute, value);
+        ScoreboardController.SetPhaseTime(this.state.PhaseHour, this.state.PhaseMinute, value);
+    }
+
+    /**
+     * Triggered when the user changes the phase hour.
+     * @param {KeyEvent} ev 
+     */
+    onChangeHour(ev) {
+        var value = ev.target.value;
+        ScoreboardController.SetPhaseTime(value, this.state.PhaseMinute, this.state.PhaseSecond);
     }
 
     /**
      * Triggered when the user sets the game clock time.
      */
     onSetGameTime() {
-        ScoreboardController.SetGameTime(0, this.state.PhaseMinute, this.state.PhaseSecond);
+        ScoreboardController.SetGameTime(this.state.PhaseHour, this.state.PhaseMinute, this.state.PhaseSecond);
     }
 
     /**
@@ -76,9 +89,12 @@ export default class PhaseControl extends React.PureComponent<any, {
     onCopyGameTime(ev) {
         this.setState(() => {
             return {
+                PhaseHour:ScoreboardController.getState().GameHour,
                 PhaseMinute:ScoreboardController.getState().GameMinute,
                 PhaseSecond:ScoreboardController.getState().GameSecond
             }
+        }, () => {
+            ScoreboardController.SetPhaseTime(this.state.PhaseHour, this.state.PhaseMinute, this.state.PhaseSecond);
         });
     }
 
@@ -105,15 +121,17 @@ export default class PhaseControl extends React.PureComponent<any, {
             <div className="phase-control">
                 <Icon
                     src={IconFastForward}
-                    title="Change Phase"
+                    title="Change Phase ( P )"
                     onClick={ScoreboardController.IncreasePhase}
                     onContextMenu={ScoreboardController.DecreasePhase}
                     />
+                <input type="number" onChange={this.onChangeHour} value={this.state.PhaseHour} max={23} min={0}/>
+                {":"}
                 <input type="number" onChange={this.onChangeMinute} value={this.state.PhaseMinute} max={59} min={0}/>
-                {":"},
+                {":"}
                 <input type="number" onChange={this.onChangeSecond} value={this.state.PhaseSecond} max={59} min={0}/>
                 <Icon
-                    src={IconCheck}
+                    src={IconStopwatch}
                     title="Set Game Time"
                     onClick={this.onSetGameTime}
                     onContextMenu={this.onCopyGameTime}

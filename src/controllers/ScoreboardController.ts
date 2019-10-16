@@ -41,160 +41,178 @@ export interface SScoreboardTeam {
     /**
      * A = Left, B = Right
      */
-    Side:string,
+    Side:string;
     /**
      * RecordID of assigned team
      */
-    ID:number,
+    ID:number;
     /**
      * Current score
      */
-    Score:number,
+    Score:number;
     /**
      * Remaining timeouts
      */
-    Timeouts:number,
+    Timeouts:number;
     /**
      * Remaining challenges
      */
-    Challenges:number,
+    Challenges:number;
     /**
      * Jam points
      */
-    JamPoints:number,
+    JamPoints:number;
     /**
      * Status value (timeout, challenge, lead jammer, power jam, injury)
      */
-    Status:number,
+    Status:number;
     /**
      * Color of score background
      */
-    Color:string,
+    Color:string;
     /**
      * Team name
      */
-    Name:string,
+    Name:string;
     /**
      * Logo for main scoreboard
      */
-    Thumbnail:string,
+    Thumbnail:string;
     /**
      * Logo for score banner
      */
-    ScoreboardThumbnail:string
+    ScoreboardThumbnail:string;
 }
 
 export interface SScoreboardState {
     /**
      * State's record ID (to be implemented at a later date)
      */
-    ID:number,
+    ID:number;
     /**
      * Current jam #
      */
-    JamCounter:number,
+    JamCounter:number;
     /**
      * Hours of the jam clock
      */
-    JamHour:number,
+    JamHour:number;
     /**
      * Minutes on the jam clock
      */
-    JamMinute:number,
+    JamMinute:number;
     /**
      * Seconds on the jam clock
      */
-    JamSecond:number,
+    JamSecond:number;
     /**
      * Status of the jam clock
      */
-    JamState:number,
+    JamState:number;
     /**
      * Hours on the game clock
      */
-    GameHour:number,
+    GameHour:number;
     /**
      * Minutes on the game clock
      */
-    GameMinute:number,
+    GameMinute:number;
     /**
      * Seconds on the game clock
      */
-    GameSecond:number,
+    GameSecond:number;
     /**
      * Status of the game clock
      */
-    GameState:number,
+    GameState:number;
     /**
      * Hours on the break clock
      */
-    BreakHour:number,
+    BreakHour:number;
     /**
      * Minutes on the break clock
      */
-    BreakMinute:number,
+    BreakMinute:number;
     /**
      * Seconds on the break clock
      */
-    BreakSecond:number,
+    BreakSecond:number;
     /**
      * Status of the break clock
      */
-    BreakState:number,
+    BreakState:number;
     /**
      * Current phase/quarter
      */
-    PhaseID:number
+    PhaseID:number;
     /**
      * Name of quarter
      */
-    PhaseName:string,
+    PhaseName:string;
     /**
      * Index of quarter (for cycling through quarters)
      */
-    PhaseIndex:number,
+    PhaseIndex:number;
     /**
      * Hours of the selected phase
      * (does not reflect game clock)
      */
-    PhaseHour:number,
+    PhaseHour:number;
     /**
      * Minutes of the selected phase
      */
-    PhaseMinute:number,
+    PhaseMinute:number;
     /**
      * Seconds of the selected phase
      */
-    PhaseSecond:number,
+    PhaseSecond:number;
     /**
      * Board status (official timeouts, injury, upheld, under review, etc)
      */
-    BoardStatus:number,
+    BoardStatus:number;
     /**
      * Determines if elements for confirming changes to the scoreboard
      * are displayed to the referees
      */
-    ConfirmStatus:number,
+    ConfirmStatus:number;
     /**
      * Left side team
      */
-    TeamA:SScoreboardTeam,
+    TeamA:SScoreboardTeam;
     /**
      * Right side team
      */
-    TeamB:SScoreboardTeam,
+    TeamB:SScoreboardTeam;
     /**
      * Hour of the game clock when the last jam started
      */
-    StartGameHour:number,
+    StartGameHour:number;
     /**
      * Minute of the game clock when the last jam started
      */
-    StartGameMinute:number,
+    StartGameMinute:number;
     /**
      * Second of the game clock when the last jam started
      */
-    StartGameSecond:number
+    StartGameSecond:number;
+    /**
+     * Maximum number of challenges per team
+     */
+    MaxChallenges:number;
+    /**
+     * Maximum number of timeouts per team
+     */
+    MaxTimeouts:number;
+    /**
+     * Maximum seconds on the break clock
+     */
+    MaxBreakSeconds:number;
+    /**
+     * Determines how the jam clock changes between steps:
+     * true (default) = Ready > Jam > Stopped > Ready > Jam ...
+     * false = Ready > Jam > Ready > Jam ...
+     */
+    JamChangeMode:boolean;
 }
 
 export const InitState:SScoreboardState = {
@@ -224,8 +242,8 @@ export const InitState:SScoreboardState = {
         Side:'A',
         ID:1,
         Score:0,
-        Timeouts:3,
-        Challenges:3,
+        Timeouts:2,
+        Challenges:1,
         JamPoints:0,
         Status:vars.Team.Status.Normal,
         Color:"#990000",
@@ -237,8 +255,8 @@ export const InitState:SScoreboardState = {
         Side:'B',
         ID:2,
         Score:0,
-        Timeouts:3,
-        Challenges:3,
+        Timeouts:2,
+        Challenges:1,
         JamPoints:0,
         Status:vars.Team.Status.Normal,
         Color:"#000099",
@@ -248,7 +266,11 @@ export const InitState:SScoreboardState = {
     },
     StartGameHour:0,
     StartGameMinute:0,
-    StartGameSecond:0
+    StartGameSecond:0,
+    MaxChallenges:1,
+    MaxTimeouts:2,
+    MaxBreakSeconds:30,
+    JamChangeMode:false
 }
 
 const MidiControllers = {
@@ -328,15 +350,15 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
                 PhaseSecond:phase.PhaseSecond,
                 TeamA:Object.assign({}, state.TeamA, {
                     Score:0,
-                    Timeouts:3,
-                    Challenges:3,
+                    Timeouts:InitState.MaxTimeouts,
+                    Challenges:InitState.MaxChallenges,
                     JamPoints:0,
                     Status:0
                 }),
                 TeamB:Object.assign({}, state.TeamB, {
                     Score:0,
-                    Timeouts:3,
-                    Challenges:3,
+                    Timeouts:InitState.MaxTimeouts,
+                    Challenges:InitState.MaxChallenges,
                     JamPoints:0,
                     Status:0
                 })
@@ -385,65 +407,125 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
             }
 
         //toggle the jam clock
-        case Actions.TOGGLE_JAM_CLOCK :
-            switch(state.JamState) {
-                case vars.Clock.Status.Ready :
-                    var teamAStatus = state.TeamA.Status;
-                    var teamBStatus = state.TeamB.Status;
+        case Actions.TOGGLE_JAM_CLOCK : {
+            if(state.JamChangeMode) {
 
-                    if(teamAStatus !== vars.Team.Status.PowerJam)
-                        teamAStatus = vars.Team.Status.Normal;
+                switch(state.JamState) {
+                    case vars.Clock.Status.Ready :
+                        var teamAStatus = state.TeamA.Status;
+                        var teamBStatus = state.TeamB.Status;
+    
+                        if(teamAStatus !== vars.Team.Status.PowerJam)
+                            teamAStatus = vars.Team.Status.Normal;
+    
+                        if(teamBStatus !== vars.Team.Status.PowerJam)
+                            teamBStatus = vars.Team.Status.Normal;
+    
+                        return Object.assign({}, state, {
+                            JamCounter:state.JamCounter+1,
+                            JamState:vars.Clock.Status.Running,
+                            GameState:vars.Clock.Status.Running,
+                            BreakState:vars.Clock.Status.Ready,
+                            BoardStatus:vars.Scoreboard.Status.Normal,
+                            BreakSecond:30,
+                            //Record game time for jam reset
+                            StartGameHour:state.GameHour,
+                            StartGameMinute:state.GameMinute,
+                            StartGameSecond:state.GameSecond,
+                            ConfirmStatus:0,
+                            TeamA:Object.assign({}, state.TeamA, {
+                                Status:teamAStatus,
+                                JamPoints:0
+                            }),
+                            TeamB:Object.assign({}, state.TeamB, {
+                                Status:teamBStatus,
+                                JamPoints:0
+                            })
+                        });
+    
+                    //stop jam clock, start break clock
+                    case vars.Clock.Status.Running :
+                        return Object.assign({}, state, {
+                            JamState:vars.Clock.Status.Stopped,
+                            BreakState:vars.Clock.Status.Running,
+                            BreakSecond:30
+                        });
+    
+                    //reset jam clock, board status, and team status
+                    case vars.Clock.Status.Stopped :
+                        return Object.assign({}, state, {
+                            JamState:vars.Clock.Status.Ready,
+                            JamSecond:vars.Scoreboard.JamSeconds,
+                            BoardStatus:vars.Scoreboard.Status.Normal,
+                            TeamA:Object.assign({}, state.TeamA,{
+                                Status:vars.Team.Status.Normal
+                            }),
+                            TeamB:Object.assign({}, state.TeamB, {
+                                Status:vars.Team.Status.Normal
+                            })
+                        });
+    
+                    default :
+                        return state;
+                }
+            } else {
 
-                    if(teamBStatus !== vars.Team.Status.PowerJam)
-                        teamBStatus = vars.Team.Status.Normal;
-
-                    return Object.assign({}, state, {
-                        JamCounter:state.JamCounter+1,
-                        JamState:vars.Clock.Status.Running,
-                        GameState:vars.Clock.Status.Running,
-                        BreakState:vars.Clock.Status.Ready,
-                        BoardStatus:vars.Scoreboard.Status.Normal,
-                        BreakSecond:30,
-                        //Record game time for jam reset
-                        StartGameHour:state.GameHour,
-                        StartGameMinute:state.GameMinute,
-                        StartGameSecond:state.GameSecond,
-                        ConfirmStatus:0,
-                        TeamA:Object.assign({}, state.TeamA, {
-                            Status:teamAStatus,
-                            JamPoints:0
-                        }),
-                        TeamB:Object.assign({}, state.TeamB, {
-                            Status:teamBStatus,
-                            JamPoints:0
-                        })
-                    });
-
-                //stop jam clock, start break clock
-                case vars.Clock.Status.Running :
-                    return Object.assign({}, state, {
-                        JamState:vars.Clock.Status.Stopped,
-                        BreakState:vars.Clock.Status.Running,
-                        BreakSecond:30
-                    });
-
-                //reset jam clock, board status, and team status
-                case vars.Clock.Status.Stopped :
-                    return Object.assign({}, state, {
-                        JamState:vars.Clock.Status.Ready,
-                        JamSecond:vars.Scoreboard.JamSeconds,
-                        BoardStatus:vars.Scoreboard.Status.Normal,
-                        TeamA:Object.assign({}, state.TeamA,{
-                            Status:vars.Team.Status.Normal
-                        }),
-                        TeamB:Object.assign({}, state.TeamB, {
-                            Status:vars.Team.Status.Normal
-                        })
-                    });
-
-                default :
-                    return state;
+                switch(state.JamState) {
+                    case vars.Clock.Status.Ready :
+                        var teamAStatus = state.TeamA.Status;
+                        var teamBStatus = state.TeamB.Status;
+    
+                        if(teamAStatus !== vars.Team.Status.PowerJam)
+                            teamAStatus = vars.Team.Status.Normal;
+    
+                        if(teamBStatus !== vars.Team.Status.PowerJam)
+                            teamBStatus = vars.Team.Status.Normal;
+    
+                        return Object.assign({}, state, {
+                            JamCounter:state.JamCounter+1,
+                            JamState:vars.Clock.Status.Running,
+                            GameState:vars.Clock.Status.Running,
+                            BreakState:vars.Clock.Status.Ready,
+                            BoardStatus:vars.Scoreboard.Status.Normal,
+                            BreakSecond:30,
+                            //Record game time for jam reset
+                            StartGameHour:state.GameHour,
+                            StartGameMinute:state.GameMinute,
+                            StartGameSecond:state.GameSecond,
+                            ConfirmStatus:0,
+                            TeamA:Object.assign({}, state.TeamA, {
+                                Status:teamAStatus,
+                                JamPoints:0
+                            }),
+                            TeamB:Object.assign({}, state.TeamB, {
+                                Status:teamBStatus,
+                                JamPoints:0
+                            })
+                        });
+    
+                    //stop jam clock, start break clock
+                    case vars.Clock.Status.Running :
+                    case vars.Clock.Status.Stopped :
+                        return Object.assign({}, state, {
+                            JamState:vars.Clock.Status.Ready,
+                            JamSecond:vars.Scoreboard.JamSeconds,
+                            BreakState:vars.Clock.Status.Running,
+                            BreakSecond:30,
+                            MaxBreakSeconds:30,
+                            BoardStatus:vars.Scoreboard.Status.Normal,
+                            TeamA:Object.assign({}, state.TeamA,{
+                                Status:vars.Team.Status.Normal
+                            }),
+                            TeamB:Object.assign({}, state.TeamB, {
+                                Status:vars.Team.Status.Normal
+                            })
+                        });
+    
+                    default :
+                        return state;
+                }
             }
+        } //end toggle_jam_clock
 
         //toggles the game clock
         case Actions.TOGGLE_GAME_CLOCK :
@@ -694,45 +776,57 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
                 });
             }
 
-        case Actions.SET_TEAM_TIMEOUTS :
+        case Actions.SET_TEAM_TIMEOUTS : {
+            let amount = action.amount;
+            if(amount > state.MaxTimeouts)
+                amount = state.MaxTimeouts;
+            else if(amount < 0)
+                amount = 0;
             if(Object.is(action.Team, state.TeamA)) {
                 let team = Object.assign({}, state.TeamA, {
-                    Timeouts:action.amount
+                    Timeouts:amount
                 });
                 return Object.assign({}, state, {
                     TeamA:team
                 });
             } else {
                 let team = Object.assign({}, state.TeamB, {
-                    Timeouts:action.amount
+                    Timeouts:amount
                 });
                 return Object.assign({}, state, {
                     TeamB:team
                 });
             }
+        }
 
-        case Actions.SET_TEAM_CHALLENGES :
+        case Actions.SET_TEAM_CHALLENGES : {
+            let amount = action.amount;
+            if(amount > state.MaxChallenges)
+                amount = state.MaxChallenges;
+            else if(amount < 0)
+                amount = 0;
             if(Object.is(action.Team, state.TeamA)) {
                 let team = Object.assign({}, state.TeamA, {
-                    Challenges:action.amount
+                    Challenges:amount
                 });
                 return Object.assign({}, state, {
                     TeamA:team
                 });
             } else {
                 let team = Object.assign({}, state.TeamB, {
-                    Challenges:action.amount
+                    Challenges:amount
                 });
                 return Object.assign({}, state, {
                     TeamB:team
                 });
             }
+        }
 
         //Sets the team status
         //The status is toggled between teams, as no two teams
         //can have the same status
-        case Actions.SET_TEAM_STATUS :
-            var status = action.value;
+        case Actions.SET_TEAM_STATUS : {
+            let status = action.value;
             if(state.JamState === vars.Clock.Status.Running) {
                 if(status !== vars.Team.Status.PowerJam && status !== vars.Team.Status.LeadJammer) {
                     return state;
@@ -743,7 +837,11 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
                 let team = Object.assign({}, state.TeamA, {
                     Status:(action.value === state.TeamA.Status) ? vars.Team.Status.Normal : status
                 });
+                let bseconds = 30;
+                if(team.Status == vars.Team.Status.Timeout)
+                    bseconds = 60;
                 return Object.assign({}, state, {
+                    BreakSecond:bseconds,
                     TeamA:team,
                     TeamB:Object.assign({}, state.TeamB, {
                         Status:vars.Team.Status.Normal
@@ -753,13 +851,18 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
                 let team = Object.assign({}, state.TeamB, {
                     Status:(action.value === state.TeamB.Status) ? vars.Team.Status.Normal : status
                 });
+                let bseconds = 30;
+                if(team.Status == vars.Team.Status.Timeout)
+                    bseconds = 60;
                 return Object.assign({}, state, {
+                    BreakSecond:bseconds,
                     TeamB:team,
                     TeamA:Object.assign({}, state.TeamA, {
                         Status:vars.Team.Status.Normal
                     })
                 });
             }
+        }
 
         case Actions.RESET_JAM :
             return Object.assign({}, state, {
@@ -781,8 +884,29 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
 
 const ScoreboardStore = createStore(ControllerReducer);
 
+const updateData = function() {
+    let data:any = DataController.GetMiscRecord('ScoreboardConfig');
+    if(data !== null && data !== undefined) {
+        ScoreboardController.SetState({
+            //MaxChallenges:data.MaxChallenges,
+            //MaxTimeouts:data.MaxTimeouts,
+            JamChangeMode:data.JamChangeMode
+        });
+    }
+};
+
+let remoteData:Function|null = null;
+
 const ScoreboardController = {
     Key:'SB',
+    /**
+     * Initialize the scoreboard controller
+     * - Start listeners
+     */
+    Init() {
+        remoteData = DataController.subscribe(updateData);
+    },
+
     /**
      * Sets the state of the scoreboard.
      * @param {Object} state 
@@ -1147,10 +1271,6 @@ const ScoreboardController = {
      * @param {Number} amount 
      */
     SetTeamTimeouts(team, amount) {
-        if(amount < 0)
-            amount = 0;
-        else if(amount > 3)
-            amount = 3;
         ScoreboardController.getStore().dispatch({
             type:Actions.SET_TEAM_TIMEOUTS,
             Team:team,
@@ -1164,11 +1284,6 @@ const ScoreboardController = {
      * @param {Number} amount 
      */
     SetTeamChallenges(team, amount) {
-        if(amount < 0)
-            amount = 0;
-        else if(amount > 3)
-            amount = 3;
-
         ScoreboardController.getStore().dispatch({
             type:Actions.SET_TEAM_CHALLENGES,
             Team:team,
@@ -1720,6 +1835,34 @@ const ScoreboardController = {
      */
     onGamepadAxis(axes:IGamepadAxes) {
 
+    },
+
+    /**
+     * Gets the configuration for this controller
+     * - MaxBreakSeconds = Maximum # of seconds on the break clock
+     * - MaxJamSeconds = Maximum # of seconds on the jam clock
+     * - MaxChallenges = Max # of challenges per team (per half)
+     * - MaxTimeouts = Max # of timeouts per team (per half)
+     * - JamChangeMode = true/false
+     */
+    getConfig() {
+        let config:any = DataController.GetMiscRecord('ScoreboardConfig');
+        return Object.assign({
+            MaxBreakSeconds:30,
+            MaxJamSeconds:60,
+            MaxChallenges:1,
+            MaxTimeouts:2,
+            JamChangeMode:false
+        }, config);
+    },
+
+    /**
+     * 
+     * @param settings 
+     */
+    async saveConfig(settings:any) : Promise<boolean> {
+        let config:any = Object.assign(ScoreboardController.getConfig(), settings);
+        return DataController.SaveMiscRecord('ScoreboardConfig', config);
     },
 
     /**

@@ -129,3 +129,9 @@
         }
     }
 }
+
+.capture-form.scoreboard-shown {
+    .capture-scorekeeper.shown {
+        display: none;
+    }
+}

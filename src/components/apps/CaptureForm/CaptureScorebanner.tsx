@@ -66,9 +66,13 @@ export default class CaptureScorebanner extends React.Component<any, {
      * Gets a string representation of the game clock.
      */
     getClockText() {
-        var str = this.state.State.GameMinute.toString().padStart(2,'0') + ":" +
-            this.state.State.GameSecond.toString().padStart(2,'0');
-
+        let hour:number = (this.state.State.GameHour) ? this.state.State.GameHour : 0;
+        let min:number = (this.state.State.GameMinute) ? this.state.State.GameMinute : 0;
+        let sec:number = (this.state.State.GameSecond) ? this.state.State.GameSecond : 0;
+        let str:string = min.toString().padStart(2,'0') + ":" + sec.toString().padStart(2,'0');
+        if(hour > 0) {
+            str = hour.toString().padStart(2,'0') + ":" + str;
+        }
         return str;
     }
 

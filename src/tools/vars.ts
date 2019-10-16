@@ -223,59 +223,59 @@ export interface TeamRecord extends Record {
 };
 
 export interface SkaterRecord extends Record {
-    Teams?:Array<SkaterTeamRecord>,
-    Penalties?:Array<PenaltyRecord>,
-    BirthDate?:string,
-    RetireDate?:string,
-    Position?:string
+    Teams?:Array<SkaterTeamRecord>;
+    Penalties?:Array<PenaltyRecord>;
+    BirthDate?:string;
+    RetireDate?:string;
+    Position?:string;
 };
 
 export interface SkaterTeamRecord {
-    SkaterID:number,
-    TeamID:number,
-    Jammer?:boolean,
-    Blocker?:boolean,
-    Pivot?:boolean,
-    Captain?:boolean,
-    CoCaptain?:boolean,
-    Coach?:boolean,
-    Manager?:boolean,
-    PenaltyTracker?:boolean,
-    Regulator?:boolean,
-    Trainer?:boolean
+    SkaterID:number;
+    TeamID:number;
+    Jammer?:boolean;
+    Blocker?:boolean;
+    Pivot?:boolean;
+    Captain?:boolean;
+    CoCaptain?:boolean;
+    Coach?:boolean;
+    Manager?:boolean;
+    PenaltyTracker?:boolean;
+    Regulator?:boolean;
+    Trainer?:boolean;
 };
 
 export interface SlideshowRecord extends Record {
-    SlideshowType?:string,
-    SlideshowOverlay?:string
+    SlideshowType?:string;
+    SlideshowOverlay?:string;
 };
 
 export interface PenaltyRecord extends Record {
-    PenaltyType?:string
+    PenaltyType?:string;
 };
 
 export interface PhaseRecord extends Record {
-    PhaseTime?:string,
-    Duration:Array<number>,
-    PhaseQtr:number
+    PhaseTime?:string;
+    Duration:Array<number>;
+    PhaseQtr:number;
 }
 
 export interface AnthemRecord extends Record {
-    Biography?:string
+    Biography?:string;
 }
 
 export interface VideoRecord extends Record {
 }
 
 export interface SponsorRecord extends Record {
-    Website?:string
+    Website?:string;
 }
 
 export interface PeerRecord extends Record {
-    PeerID?:string,
-    Port?:number,
-    CapturePort?:number,
-    Host?:string
+    PeerID?:string;
+    Port?:number;
+    CapturePort?:number;
+    Host?:string;
 }
 
 export enum Controllers {

@@ -16,9 +16,14 @@ export default class Challenges extends React.PureComponent<{
      * Amount of challenges
      */
     amount:number;
+    /**
+     * Maximum number of challenges
+     */
+    max:number;
 }> {
     readonly state = {
-        amount:3
+        amount:ScoreboardController.getState().MaxChallenges,
+        max:ScoreboardController.getState().MaxChallenges
     }
 
     /**
@@ -33,14 +38,10 @@ export default class Challenges extends React.PureComponent<{
 
     constructor(props) {
         super(props);
-        this.state.amount = this.props.Team.Challenges;
-
-        //bindings
         this.onChange = this.onChange.bind(this);
         this.onAdd = this.onAdd.bind(this);
         this.onSubtract = this.onSubtract.bind(this);
         this.updateState = this.updateState.bind(this);
-        //this.remoteScoreboard = ScoreboardController.subscribe(this.updateState);
     }
 
     /**
@@ -55,7 +56,10 @@ export default class Challenges extends React.PureComponent<{
             
             if(this.CounterItem !== null && this.CounterItem.current !== null)
                 this.CounterItem.current.set(amount, false);
-            return {amount:amount};
+            return {
+                amount:amount,
+                max:cstate.MaxChallenges
+            };
         });
     }
     
@@ -118,8 +122,8 @@ export default class Challenges extends React.PureComponent<{
                 <div>
                     <Counter
                         min={0}
-                        max={3}
-                        amount={3}
+                        max={this.state.max}
+                        amount={this.state.max}
                         padding={2}
                         onAdd={this.onAdd}
                         onSubtract={this.onSubtract}

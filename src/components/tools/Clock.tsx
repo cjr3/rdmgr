@@ -95,7 +95,12 @@ export default class Clock extends React.Component<{
     /**
      * Reference for setTimeout
      */
-    protected Timer:number = 0
+    protected Timer:number = 0;
+
+    /**
+     * Clock Worker
+     */
+    protected ClockWorker:Worker|null = null;
 
     /**
      * Constructor
@@ -115,6 +120,44 @@ export default class Clock extends React.Component<{
         this._tick = this._tick.bind(this);
         this._clear = this._clear.bind(this);
         this._done = this._done.bind(this);
+
+        //this.onWorkerMessage = this.onWorkerMessage.bind(this);
+        //this.ClockWorker = new Worker('tools/ClockWorker.js');
+        //this.ClockWorker.onmessage = this.onWorkerMessage;
+    }
+
+    onWorkerMessage(response:any) {
+        switch(response.data.type) {
+            case 'tick' :
+                if(this.props.onTick) {
+                    setTimeout(this.props.onTick, 10, response.data.hours, response.data.minutes, response.data.seconds, response.data.tenths);
+                }
+                this.setState({
+                    hour:response.data.hours,
+                    minute:response.data.minutes,
+                    second:response.data.seconds,
+                    tenths:response.data.tenths
+                });
+            break;
+
+            case 'tenths' :
+                this.setState({
+                    hour:response.data.hours,
+                    minute:response.data.minutes,
+                    second:response.data.seconds,
+                    tenths:response.data.tenths
+                }, () => {
+                    if(this.props.onTenths) {
+                        //setTimeout(this.props.onTenths, 10, response.data.hours, response.data.minutes, response.data.seconds, response.data.tenths);
+                    }
+                });
+            break;
+
+            case 'done' :
+                if(this.props.onDone)
+                    this.props.onDone();
+            break;
+        }
     }
 
     /**
@@ -129,13 +172,23 @@ export default class Clock extends React.Component<{
      * Resets the clock to the values provided in its properties, or zero if none provided.
      */
     _reset() {
-        this.setState((state) => {
+        this.setState(() => {
             return {
                 hour:(this.props.hour) ? this.props.hour : 0,
                 minute:(this.props.minute) ? this.props.minute : 0,
                 second:(this.props.second) ? this.props.second : 0,
                 tenths:0
             };
+        }, () => {
+            if(this.ClockWorker !== null) {
+                this.ClockWorker.postMessage({
+                    type:'set',
+                    hours:this.state.hour,
+                    minutes:this.state.minute,
+                    seconds:this.state.second,
+                    tenths:this.state.tenths
+                });
+            }
         });
     }
 
@@ -161,6 +214,16 @@ export default class Clock extends React.Component<{
                     second:second,
                     tenths:stenths
                 };
+            }, () => {
+                if(this.ClockWorker !== null) {
+                    this.ClockWorker.postMessage({
+                        type:'set',
+                        hours:this.state.hour,
+                        minutes:this.state.minute,
+                        seconds:this.state.second,
+                        tenths:this.state.tenths
+                    });
+                }
             });
         }
     }
@@ -268,10 +331,28 @@ export default class Clock extends React.Component<{
                     hour:this.props.hour,
                     minute:this.props.minute,
                     second:this.props.second
+                }, () => {
+                    if(this.ClockWorker !== null) {
+                        this.ClockWorker.postMessage({
+                            type:'set',
+                            hours:this.state.hour,
+                            minutes:this.state.minute,
+                            seconds:this.state.second,
+                            tenths:this.state.tenths
+                        });
+                    }
                 });
             }
         } else {
             if(prevProps.status !== this.props.status) {
+                
+                if(this.ClockWorker !== null) {
+                    this.ClockWorker.postMessage({
+                        type:'status',
+                        status:this.props.status
+                    });
+                }
+                
                 switch(this.props.status) {
                     case vars.Clock.Status.Ready :
                         this._clear();
@@ -291,6 +372,18 @@ export default class Clock extends React.Component<{
                     break;
                 }
             }
+        }
+    }
+
+    componentDidMount() {
+        if(this.ClockWorker !== null) {
+            this.ClockWorker.postMessage({
+                type:'init',
+                hours:this.state.hour,
+                minutes:this.state.minute,
+                seconds:this.state.second,
+                tenths:0
+            });
         }
     }
 

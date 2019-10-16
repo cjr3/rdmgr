@@ -138,3 +138,11 @@
         }
     }
 }
+
+.capture-form.scoreboard-shown {
+    .capture-roster,
+    .capture-roster.shown
+    {
+        opacity: 0;
+    }
+}

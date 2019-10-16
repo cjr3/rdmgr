@@ -17,9 +17,14 @@ class Timeouts extends React.PureComponent<{
      * Amount of timeouts
      */
     amount:number;
+    /**
+     * Maximum number of timeouts
+     */
+    max:number;
 }> {
     readonly state = {
-        amount:3
+        amount:ScoreboardController.getState().MaxTimeouts,
+        max:ScoreboardController.getState().MaxTimeouts
     }
 
     /**
@@ -56,7 +61,7 @@ class Timeouts extends React.PureComponent<{
             if(this.CounterItem !== null && this.CounterItem.current !== null) {
                 this.CounterItem.current.set(amount, false);
             }
-            return {amount:amount};
+            return {amount:amount, max:cstate.MaxTimeouts};
         });
     }
     
@@ -120,10 +125,9 @@ class Timeouts extends React.PureComponent<{
                 <div>
                     <Counter
                         min={0}
-                        max={3}
-                        amount={3}
+                        max={this.state.max}
+                        amount={this.state.max}
                         padding={2}
-                        //onChange={this.onChange}
                         onAdd={this.onAdd}
                         onSubtract={this.onSubtract}
                         ref={this.CounterItem}

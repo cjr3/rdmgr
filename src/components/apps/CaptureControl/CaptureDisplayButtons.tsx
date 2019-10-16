@@ -11,7 +11,8 @@ import {
     IconTicket, 
     IconSkate, 
     IconSlideshow, 
-    IconMovie
+    IconMovie,
+    IconTeam
 } from 'components/Elements';
 
 
@@ -67,6 +68,10 @@ export default class CaptureDisplayButtons extends React.PureComponent<any, {
      * Determines if the raffle screen is shown
      */
     Raffle:boolean;
+    /**
+     * Determines if the roster is displayed
+     */
+    Roster:boolean;
 }> {
     readonly state = {
         Announcers:CaptureController.getState().Announcers.Shown,
@@ -80,7 +85,8 @@ export default class CaptureDisplayButtons extends React.PureComponent<any, {
         SponsorSlideshow:CaptureController.getState().SponsorSlideshow.Shown,
         JamClock:CaptureController.getState().Scoreboard.JamClockShown,
         JamCounter:CaptureController.getState().Scoreboard.JamCounterShown,
-        Raffle:CaptureController.getState().Raffle.Shown
+        Raffle:CaptureController.getState().Raffle.Shown,
+        Roster:CaptureController.getState().Roster.Shown
     };
 
     /**
@@ -115,7 +121,8 @@ export default class CaptureDisplayButtons extends React.PureComponent<any, {
                 SponsorSlideshow:cstate.SponsorSlideshow.Shown,
                 JamClock:cstate.Scoreboard.JamClockShown,
                 JamCounter:cstate.Scoreboard.JamCounterShown,
-                Raffle:cstate.Raffle.Shown
+                Raffle:cstate.Raffle.Shown,
+                Roster:cstate.Roster.Shown
             };
         });
     }
@@ -204,6 +211,12 @@ export default class CaptureDisplayButtons extends React.PureComponent<any, {
                     active={this.state.SponsorSlideshow}
                     onClick={CaptureController.ToggleSponsors}>
                         Sponsors
+                </IconButton>
+                <IconButton
+                    src={IconTeam}
+                    active={this.state.Roster}
+                    onClick={CaptureController.ToggleRoster}>
+                        Roster
                 </IconButton>
                 <IconButton
                     src={IconMovie}

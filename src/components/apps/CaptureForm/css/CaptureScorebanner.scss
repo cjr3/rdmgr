@@ -139,6 +139,7 @@
         .jampoints {
             position: absolute;
             margin: auto;
+            overflow: hidden;
             right: 0;
             bottom: -40px;
             height: 40px;
@@ -525,6 +526,10 @@
     padding-left: 64px;
     opacity: 0;
     transition: opacity 150ms, font-size 150ms, line-height 150ms;
+
+    @media (max-height:576px) {
+        font-size: 480px;
+    }
 }
 
 .capture-jam-counter.shown,
@@ -561,7 +566,7 @@
         z-index: 99;
     }
 
-    @media screen and (max-width: 1024px) {
+    @media (max-height: 576px) {
         .capture-jam-clock {
             font-size: 480px;
             line-height: 480px;
@@ -571,5 +576,12 @@
 
     .capture-jam-clock.shown {
         opacity: 1;
+    }
+}
+
+.capture-form.scoreboard-shown {
+    .capture-jam-clock.shown,
+    .capture-jam-counter.shown {
+        opacity: 0;
     }
 }

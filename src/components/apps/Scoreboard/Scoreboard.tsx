@@ -13,7 +13,8 @@ import {
     IconPause,
     IconCheck,
     IconInjury,
-    IconOfficialTimeout
+    IconOfficialTimeout,
+    ToggleButton
 } from 'components/Elements'
 import PhaseControl from './PhaseControl'
 import PhaseSelection from './PhaseSelection'
@@ -22,6 +23,7 @@ import JamReset from './JamReset'
 import vars from 'tools/vars'
 import ScoreboardController, {SScoreboardTeam} from 'controllers/ScoreboardController'
 import './css/Scoreboard.scss'
+import DataController from 'controllers/DataController'
 
 /**
  * Component for the Scoreboard control
@@ -97,6 +99,10 @@ export default class Scoreboard extends React.Component<{
      * Last jam start second
      */
     StartGameSecond:number;
+    /**
+     * Jam Change Mode
+     */
+    JamChangeMode:boolean;
 }> {
     readonly state = {
         BoardStatus:ScoreboardController.getState().BoardStatus,
@@ -113,7 +119,8 @@ export default class Scoreboard extends React.Component<{
         JamResetOpened:false,
         StartGameHour:ScoreboardController.getState().StartGameHour,
         StartGameMinute:ScoreboardController.getState().StartGameMinute,
-        StartGameSecond:ScoreboardController.getState().StartGameSecond
+        StartGameSecond:ScoreboardController.getState().StartGameSecond,
+        JamChangeMode:ScoreboardController.getState().JamChangeMode
     }
 
     /**
@@ -141,6 +148,7 @@ export default class Scoreboard extends React.Component<{
         this.onClickReview = this.onClickReview.bind(this);
         this.onClickTimeout = this.onClickTimeout.bind(this);
         this.onClickInjury = this.onClickInjury.bind(this);
+        this.onClickJamMode = this.onClickJamMode.bind(this);
         this.updateState = this.updateState.bind(this);
     }
 
@@ -160,7 +168,8 @@ export default class Scoreboard extends React.Component<{
             TeamB:cstate.TeamB,
             StartGameHour:cstate.StartGameHour,
             StartGameMinute:cstate.StartGameMinute,
-            StartGameSecond:cstate.StartGameSecond
+            StartGameSecond:cstate.StartGameSecond,
+            JamChangeMode:cstate.JamChangeMode
         });
     }
 
@@ -256,6 +265,19 @@ export default class Scoreboard extends React.Component<{
     }
 
     /**
+     * Triggered when the user clicks to change the jam control mode
+     */
+    onClickJamMode() {
+        let settings:any = ScoreboardController.getConfig();
+        settings.JamChangeMode = !this.state.JamChangeMode;
+        ScoreboardController.saveConfig(settings).then(() => {
+            ScoreboardController.SetState({
+                JamChangeMode:settings.JamChangeMode
+            });
+        });
+    }
+
+    /**
      * Start listeners
      */
     componentDidMount() {
@@ -282,12 +304,18 @@ export default class Scoreboard extends React.Component<{
         }
         
         let buttons:Array<React.ReactElement> = [
+            <ToggleButton
+                key="btn-jammode"
+                checked={this.state.JamChangeMode}
+                onClick={this.onClickJamMode}
+                title={`When checked, jam clock has three steps: Ready, Jam, Stopped`}
+            />,
             <Button key="btn-oto" 
                 active={(this.state.BoardStatus === vars.Scoreboard.Status.Timeout)}
-                onClick={this.onClickTimeout}>Timeout</Button>,
+                onClick={ScoreboardController.OfficialTimeout}>Timeout</Button>,
             <Button key="btn-injury" 
                 active={(this.state.BoardStatus === vars.Scoreboard.Status.Injury)}
-                onClick={this.onClickInjury}>Injury</Button>,
+                onClick={ScoreboardController.InjuryTimeout}>Injury</Button>,
             <Button key="btn-review" 
                 active={(this.state.BoardStatus === vars.Scoreboard.Status.Review)}
                 onClick={this.onClickReview}>Review</Button>,
@@ -327,12 +355,18 @@ export default class Scoreboard extends React.Component<{
                     <div className="phase">{this.state.PhaseName}</div>
                     <BoardStatus status={this.state.BoardStatus}/>
                     <GameClock remote={this.props.remote}/>
+                    <PhaseControl/>
                     <div className="jam-controls">
-                        <Button onClick={ScoreboardController.ToggleJamClock} className="jam-button">{jamLabel}</Button>
+                        <Button 
+                            onClick={ScoreboardController.ToggleJamClock} 
+                            className="jam-button"
+                            title="Toggle Jam Clock ( SPACEBAR, ENTER )"
+                            >{jamLabel}</Button>
                         <Icon 
                             src={clockIcon}
                             onClick={ScoreboardController.ToggleGameClock}
                             className="clock-button"
+                            title="Toggle Game Clock ( UP )"
                         />
                     </div>
                 </div>
@@ -341,21 +375,21 @@ export default class Scoreboard extends React.Component<{
                         src={IconOfficialTimeout}
                         active={this.state.BoardStatus === vars.Scoreboard.Status.Timeout}
                         onClick={ScoreboardController.OfficialTimeout}
-                        title="Official Timeout"
+                        title="Official Timeout ( CTRL+UP )"
                         />
                     <Icon 
                         src={IconInjury}
                         active={this.state.BoardStatus === vars.Scoreboard.Status.Injury}
                         onClick={ScoreboardController.InjuryTimeout}
-                        title="Injury Timeout"
+                        title="Injury Timeout ( CTRL+DOWN )"
                         />
                     <Icon 
                         src={IconCheck}
                         active={this.state.ConfirmStatus === 1}
                         onClick={ScoreboardController.ToggleConfirm}
+                        title="Confirm Jam Points ( A )"
                         />
                 </div>
-                <PhaseControl/>
                 <PhaseSelection opened={this.state.PhaseOpened}
                     onClose={this.onClickPhase}
                     onSelect={() => {

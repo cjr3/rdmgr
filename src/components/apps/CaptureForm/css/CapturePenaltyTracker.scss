@@ -85,3 +85,7 @@
         transform: scale(1.35) translateX(0px);
     }
 }
+
+.capture-form.scoreboard-shown .capture-PT.shown {
+    display: none;
+}

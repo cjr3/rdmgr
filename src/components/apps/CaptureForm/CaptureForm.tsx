@@ -170,6 +170,7 @@ export default class CaptureForm extends React.Component {
             `pcamera-${this.state.PeerCamera.className}`,
             `video-${this.state.MainVideo.className}`,
             `scorebanner-${this.state.Scorebanner.className}-${(this.state.Scorebanner.Shown) ? 'shown' : 'hidden'}`,
+            `scoreboard-${(this.state.Scoreboard.Shown) ? 'shown' : 'hidden'}`,
             `roster-${(this.state.Roster.Shown) ? 'shown' : 'hidden'}`,
             this.state.className,
             {

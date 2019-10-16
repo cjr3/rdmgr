@@ -3,10 +3,7 @@ import Panel from 'components/Panel'
 import vars, { PhaseRecord } from 'tools/vars';
 import ScoreboardController from 'controllers/ScoreboardController'
 import DataController from 'controllers/DataController'
-
-interface SPhaseSelection {
-    Phases:Array<PhaseRecord>
-}
+import { Button } from 'components/Elements';
 
 export interface PPhaseSelection {
     /**
@@ -51,16 +48,26 @@ export default class PhaseSelection extends React.PureComponent<{
     /**
      * Record of phases to select from
      */
-    Phases:Array<PhaseRecord>
+    Phases:Array<PhaseRecord>;
+    /**
+     * Selected phase record
+     */
+    PhaseID:number;
 }> {
     readonly state = {
-        Phases:DataController.getPhases()
+        Phases:DataController.getPhases(),
+        PhaseID:ScoreboardController.getState().PhaseID
     }
 
     /**
      * DataController listener
      */
     protected remoteData:Function|null = null;
+
+    /**
+     * ScoreboardController listener
+     */
+    protected remoteScore:Function|null = null;
 
     /**
      * Constructor
@@ -70,6 +77,7 @@ export default class PhaseSelection extends React.PureComponent<{
         super(props);
         this.onSelect = this.onSelect.bind(this);
         this.updateState = this.updateState.bind(this);
+        this.updateScore = this.updateScore.bind(this);
     }
 
     /**
@@ -77,6 +85,13 @@ export default class PhaseSelection extends React.PureComponent<{
      */
     updateState() {
         this.setState({Phases:DataController.getPhases()});
+    }
+
+    /**
+     * Updates the state to match the controller.
+     */
+    updateScore() {
+        this.setState({PhaseID:ScoreboardController.getState().PhaseID});
     }
 
     /**
@@ -105,6 +120,7 @@ export default class PhaseSelection extends React.PureComponent<{
      */
     componentDidMount() {
         this.remoteData = DataController.subscribe(this.updateState);
+        this.remoteScore = ScoreboardController.subscribe(this.updateScore);
     }
 
     /**
@@ -113,6 +129,9 @@ export default class PhaseSelection extends React.PureComponent<{
     componentWillUnmount() {
         if(this.remoteData !== null)
             this.remoteData();
+
+        if(this.remoteScore !== null)
+            this.remoteScore();
     }
 
     /**
@@ -121,21 +140,22 @@ export default class PhaseSelection extends React.PureComponent<{
     render() {
         const phases:Array<React.ReactElement> = [];
 
-        for(let i=0; i < this.state.Phases.length; i++) {
-            let phase = this.state.Phases[i];
+        this.state.Phases.forEach((phase, i) => {
             phases.push(
-                <button
-                key={"phase-" + i}
+                <Button
+                key={`${phase.RecordType}-${phase.RecordID}`}
                 onClick={() => {this.onSelect(i)}}
+                active={(this.state.PhaseID == phase.RecordID)}
                 >
                     <div>{phase.Name}</div>
                     <div>{
+                        phase.Duration[0].toString().padStart(2,'0') + ":" +
                         phase.Duration[1].toString().padStart(2,'0') + ":" +
                         phase.Duration[2].toString().padStart(2,'0')
                         }</div>
-                </button>
+                </Button>
             );
-        }
+        });
 
         return (
             <Panel popup={true} opened={this.props.opened} {...this.props}>

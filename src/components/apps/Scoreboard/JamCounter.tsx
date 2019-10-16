@@ -121,6 +121,7 @@ export default class JamCounter extends React.PureComponent<any, {
                             if(this.CounterItem !== null && this.CounterItem.current !== null)
                                 this.CounterItem.current.add(1);
                         }}
+                        title="Add ( + ) or Subtract ( - ) Jam #"
                         />
                 </td>
             </tr>

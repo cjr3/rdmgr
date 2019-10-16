@@ -66,6 +66,7 @@ export const IconFastForward = require('images/icons/fastforward.png');
 export const IconPlay = require('images/icons/play.png');
 export const IconPause = require('images/icons/pause.png');
 export const IconController = require('images/icons/gamepad.png');
+export const Icon2x = require('images/icons/2x.png');
 
 /**
  * Creates a <button> element

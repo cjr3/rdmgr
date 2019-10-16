@@ -10,11 +10,6 @@ import {
     IconFlag
 } from 'components/Elements';
 
-interface PCaptureScoreboard {
-    shown?:boolean,
-    className?:string
-}
-
 /**
  * Component for displaying the full-size scoreboard on the capture window.
  */
@@ -57,9 +52,14 @@ export default class CaptureScoreboard extends React.Component<{
      * @return String
      */
     getClockText() {
+        let hour:number = (this.state.GameHour) ? this.state.GameHour : 0;
         let min:number = (this.state.GameMinute) ? this.state.GameMinute : 0;
         let sec:number = (this.state.GameSecond) ? this.state.GameSecond : 0;
-        return min.toString().padStart(2,'0') + ":" + sec.toString().padStart(2,'0');
+        let str:string = min.toString().padStart(2,'0') + ":" + sec.toString().padStart(2,'0');
+        if(hour > 0) {
+            str = hour.toString().padStart(2,'0') + ":" + str;
+        }
+        return str;
     }
 
     /**
@@ -105,7 +105,8 @@ export default class CaptureScoreboard extends React.Component<{
         let gameNames:string = cnames({
             gameclock:true,
             running:(this.state.GameState === vars.Clock.Status.Running),
-            stopped:(this.state.GameState === vars.Clock.Status.Stopped)
+            stopped:(this.state.GameState === vars.Clock.Status.Stopped),
+            hours:(this.state.GameHour > 0)
         });
 
         let jamNames:string = cnames({
@@ -163,8 +164,8 @@ function CaptureScoreboardTeam(props) {
         Score = 0, 
         Status = vars.Team.Status.Normal,
         Color = "#191919",
-        Timeouts = 3,
-        Challenges = 3,
+        Timeouts = ScoreboardController.getState().MaxTimeouts,
+        Challenges = ScoreboardController.getState().MaxChallenges,
         Thumbnail = null,
         JamPoints = 0
     } = props.Team;

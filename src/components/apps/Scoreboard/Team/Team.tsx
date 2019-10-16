@@ -23,6 +23,12 @@ interface PTeam {
  * @param props PTeam
  */
 export default function Team(props:PTeam) {
+
+    let scoreTitle:string = `Score ( ${(props.Team.Side === 'A') ? 'LEFT' : 'RIGHT'} )`;
+    let jamTitle:string = `Lead Jammer ( ${(props.Team.Side === 'A') ? 'Q' : 'W'} )`;
+    let timeTitle:string = `Lead Jammer ( ${(props.Team.Side === 'A') ? '[' : ']'} )`;
+    let chalTitle:string = `Challenge ( CTRL + ${(props.Team.Side === 'A') ? '[' : ']'} )`;
+
     return (
         <div className={cnames('team', 'side-' + props.Team.Side.toLowerCase())}>
             <Score Team={props.Team}/>
@@ -45,7 +51,7 @@ export default function Team(props:PTeam) {
                         ev.preventDefault();
                         ScoreboardController.DecreaseTeamScore(props.Team, 1);
                     }}
-                    title="Score"
+                    title={scoreTitle}
                 />
                 <Icon
                     src={IconBolt}
@@ -58,7 +64,7 @@ export default function Team(props:PTeam) {
                         ev.stopPropagation();
                         ScoreboardController.SetTeamStatus(props.Team, vars.Team.Status.PowerJam)}
                     }
-                    title="Lead jammer"
+                    title={jamTitle}
                 />
                 <Icon
                     src={IconNo}
@@ -66,7 +72,7 @@ export default function Team(props:PTeam) {
                     onClick={() => {
                         ScoreboardController.SetTeamStatus(props.Team, vars.Team.Status.Timeout)
                     }}
-                    title="Timeout"
+                    title={timeTitle}
                 />
                 <Icon
                     src={IconFlag}
@@ -74,7 +80,7 @@ export default function Team(props:PTeam) {
                     onClick={() => {
                         ScoreboardController.SetTeamStatus(props.Team, vars.Team.Status.Challenge)
                     }}
-                    title="Challenge"
+                    title={chalTitle}
                 />
             </div>
         </div>

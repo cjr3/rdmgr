@@ -1,6 +1,6 @@
 import React from 'react'
 import Clock from 'components/tools/Clock'
-import {Icon} from 'components/Elements'
+import {Icon, IconStopwatch, Icon2x} from 'components/Elements'
 import ScoreboardController from 'controllers/ScoreboardController';
 import vars from 'tools/vars';
 
@@ -54,6 +54,7 @@ export default class BreakClock extends React.PureComponent<{
     constructor(props) {
         super(props);
         this.onClick = this.onClick.bind(this);
+        this.onClickSixty = this.onClickSixty.bind(this);
         this.onDone = this.onDone.bind(this);
         this.onTick = this.onTick.bind(this);
         this.updateState = this.updateState.bind(this);
@@ -88,6 +89,23 @@ export default class BreakClock extends React.PureComponent<{
         ev.stopPropagation();
         ev.preventDefault();
         ScoreboardController.ToggleBreakClock();
+    }
+
+    /**
+     * Sets the break clock time to 60 seconds
+     */
+    onClickSixty() {
+        if(ScoreboardController.getState().JamState !== vars.Clock.Status.Running) {
+            if(this.state.status !== vars.Clock.Status.Running && this.state.second === 60) {
+                ScoreboardController.SetState({
+                    BreakState:vars.Clock.Status.Running
+                });
+            } else {
+                ScoreboardController.SetState({
+                    BreakSecond:60
+                });
+            }
+        }
     }
 
     /**
@@ -143,11 +161,18 @@ export default class BreakClock extends React.PureComponent<{
                         ref={this.ClockItem}
                     />
                 </td>
-                <td colSpan={2}>
+                <td>
                     <Icon 
-                        src={require('images/icons/stopwatch.png')}
+                        src={IconStopwatch}
                         onClick={this.onClick}
-                        title="Stop/Start"
+                        title="Toggle Break Clock ( DOWN )"
+                    />
+                </td>
+                <td>
+                    <Icon 
+                        src={Icon2x}
+                        onClick={this.onClickSixty}
+                        title="Double-click for a 60-second break"
                     />
                 </td>
             </tr>

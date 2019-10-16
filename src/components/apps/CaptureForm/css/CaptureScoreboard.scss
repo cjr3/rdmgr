@@ -128,6 +128,9 @@
         bottom: 76px;
         font-size: 128px;
         line-height: 112px;
+        &.hours {
+            font-size: 96px;
+        }
     }
 
     .jamstate {
