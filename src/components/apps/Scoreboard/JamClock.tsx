@@ -135,6 +135,9 @@ export default class JamClock extends React.PureComponent<{
      * Renders the component
      */
     render() {
+        let status:number = this.state.status;
+        if(this.props.remote && status === vars.Clock.Status.Running)
+            status = vars.Clock.Status.Ready;
         return (
             <Clock 
                 className="jam-clock"
@@ -144,7 +147,7 @@ export default class JamClock extends React.PureComponent<{
                 second={this.state.second}
                 type={vars.Clock.Types.Stopwatch}
                 showTenths={this.state.showTenths}
-                status={this.state.status}
+                status={status}
                 onContextMenu={this.onContextMenu}
                 onTick={this.onTick}
                 onDone={this.onDone}

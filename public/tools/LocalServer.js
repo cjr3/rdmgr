@@ -10,10 +10,10 @@ class P2PServer {
     constructor(peers, capture) {
         const express = window.require('express');
         const cors = require('cors');
-        const ExpressPeerServer = require('peer').ExpressPeerServer;
         const {createStore} = require('redux');
         const bodyParser = require('body-parser');
-        this.Peer = require('peerjs').peerjs.Peer
+        //this.Peer = require('peerjs').peerjs.Peer;
+        this.Peer = Peer;
         this.Networker = require('net');
         const os = require('os');
 
@@ -113,21 +113,13 @@ class P2PServer {
             }, 500);
         });
 
-        //attach the peer server
-        this.Server = ExpressPeerServer(this.LocalExpressServer, {
-            debug:0
-        });
-
-        //connect peerjs to the express server path
-        this.ExpressApp.use(this.LocalPeer.Path, this.Server);
-
         //enable parsing of JSON, URL encoded, cross-site, and static resources
         this.ExpressApp.use(bodyParser.json());
-        this.ExpressApp.use(bodyParser.urlencoded({
-            extended:true
-        }));
+        this.ExpressApp.use(bodyParser.urlencoded({extended:true}));
         this.ExpressApp.use(express.static('public'));
         this.ExpressApp.use(cors({credentials:true, origin:true}));
+
+        //this.ExpressApp = global.RDMGR.expressApp;
 
         //bindings
         this.Init = this.Init.bind(this);
@@ -135,41 +127,105 @@ class P2PServer {
         this.onDisconnect = this.onDisconnect.bind(this);
         this.updateData = this.updateData.bind(this);
         this.reducer = this.reducer.bind(this);
-        this.Server.on('connection', this.onConnect);
-        this.Server.on('disconnect', this.onDisconnect);
         this.LocalStore = createStore(this.reducer);
+    }
+
+    async _setupPeerServer() {
+        return new Promise((res, rej) => {
+            const ExpressPeerServer = require('peer').ExpressPeerServer;
+            //attach the peer server
+            this.Server = ExpressPeerServer(this.LocalExpressServer, {
+                debug:4
+            });
+    
+            //connect peerjs to the express server path
+            this.ExpressApp.use(this.LocalPeer.Path, this.Server);
+            this.Server.on('connection', this.onConnect);
+            this.Server.on('disconnect', this.onDisconnect);
+            res(true);
+        });
+    }
+
+    async _setupSocketServer() {
+        return new Promise((res, rej) => {
+            let webs = window.require('ws');
+            this.Server = new webs.Server({
+                server:this.LocalExpressServer
+            });
+            this.Server.on('connection', (ws) => {
+                ws.on('pong', () => {
+                    console.log(`ws pong!`);
+                });
+
+                ws.on('message', (msg) => {
+                    let j;
+                    try {
+                        j = JSON.parse(msg);
+                    } catch(er) {
+
+                    } finally {
+                        console.log(j);
+                    }
+                });
+
+                ws.on('error', () => {
+                    console.log('socketed error!');
+                })
+            });
+            this.ExpressApp.use(this.LocalPeer.Path, this.Server);
+
+            res(true);
+        });
     }
 
     /**
      * Triggered when a peer connects to the local server
      * @param {String} id 
      */
-    onConnect(id) {
-        this.LocalPeer.connectToPeer(id, true);
+    async onConnect(id) {
+        console.log(`${id} connected to server`);
+        this.LocalPeer.receivePeer(id, true);
     }
 
     /**
      * Triggered when a peer disconnects from the local server
      * @param {String} id 
      */
-    onDisconnect(id) {
-        this.LocalPeer.disconnectPeer(id);
+    async onDisconnect(id) {
+        console.log(`${id} disconnected from server.`)
+        //this.LocalPeer.disconnectPeer(id);
+        //this.LocalPeer.receivePeer(id);
     }
 
     /**
-     * Initializes the server, and creates the local peer.
+     * Initializes the server, and connects the local peer.
      */
     Init(controller) {
         this.controller = controller;
         if(this.controller) {
             this.remoteController = this.controller.subscribe(this.updateData);
         }
-        let timer = setInterval(() => {
-            if(this.LocalPeer.Port > 0) {
-                this.LocalPeer.connect();
-                clearInterval(timer);
-            }
-        }, 500);
+
+        const ExpressPeerServer = require('peer').ExpressPeerServer;
+        //attach the peer server
+        this.PeerServer = ExpressPeerServer(this.LocalExpressServer, {
+            debug:0
+        });
+
+        //connect peerjs to the express server path
+        this.ExpressApp.use(this.LocalPeer.Path, this.PeerServer);
+        this.PeerServer.on('connection', this.onConnect);
+        this.PeerServer.on('disconnect', this.onDisconnect);
+        this.LocalPeer.connect();
+    }
+
+    /**
+     * Attempts to connect to peers
+     */
+    connectPeers() {
+        if(this.LocalPeer && this.LocalPeer.Port > 0) {
+            this.LocalPeer.connectToPeers();
+        }
     }
 
     updateData() {
@@ -184,6 +240,7 @@ class P2PServer {
      * @param {Object} action 
      */
     reducer(state, action) {
+        console.log(`Updating server store`);
         if(typeof(state) !== "object")
             return Object.assign({}, this.InitState);
 
@@ -600,6 +657,11 @@ class P2PServer {
         });
 
         sock.connect(port, host);
+    }
+
+    onExit() {
+        //this.LocalPeer.disconnect();
+        this.LocalExpressServer.close();
     }
 
     /**

@@ -6,6 +6,10 @@ const {app, BrowserWindow} = require('electron');
 const path = require('path');
 const url = require('url');
 const fs = require('fs');
+const express = require('express');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const os = require('os');
 
 /**
  * Class for starting up electron.
@@ -21,6 +25,21 @@ class ElectronStartup {
         this.DevMode = (typeof(process.defaultApp) == "boolean") ? process.defaultApp : false;
         this.ShowCaptureWindow = true;
         this.FullScreen = false;
+        this.initServer = this.initServer.bind(this);
+
+        /*
+        //create express server
+        this.ExpressApp = express();
+        this.ExpressApp.get('/', function(req, res) {
+            res.send('Hi!');
+            res.end();
+        });
+        this.ExpressApp.use(bodyParser.json());
+        this.ExpressApp.use(bodyParser.urlencoded({extended:true}));
+        this.ExpressApp.use(express.static('public'));
+        this.ExpressApp.use(cors({credentials:true, origin:true}));
+        */
+
         let path = 'c:/ProgramData/RDMGR/files/rdmgr.config.json';
         if(fs.existsSync(path)) {
             let data = fs.readFileSync(path);
@@ -45,7 +64,9 @@ class ElectronStartup {
             //set globals
             global.RDMGR = {
                 mainWindow:this.MainWindow,
-                captureWindow:this.CaptureWindow
+                captureWindow:this.CaptureWindow,
+                initServer:this.initServer
+                //expressApp:this.ExpressApp
             }
 
         });
@@ -79,6 +100,40 @@ class ElectronStartup {
                     console.log(er)
                     break;
             }
+        });
+    }
+
+    async initServer(port, path) {
+        return new Promise((res, rej) => {
+            this.LocalExpressServer = this.ExpressApp.listen(port, () => {
+                //get the network IP address
+                // let timer = setInterval(() => {
+                //     var interfaces = os.networkInterfaces();
+                //     for (var k in interfaces) {
+                //         for (var k2 in interfaces[k]) {
+                //             var address = interfaces[k][k2];
+                //             if (address.family === 'IPv4' && !address.internal) {
+                //                 this.IPAddress = address.address;
+                //                 clearInterval(timer);
+                //                 return;
+                //             }
+                //         }
+                //     }
+                // }, 500);
+
+                const ExpressPeerServer = require('peer').ExpressPeerServer;
+                //attach the peer server
+                this.PeerServer = ExpressPeerServer(this.LocalExpressServer, {
+                    debug:4
+                });
+        
+                //connect peerjs to the express server path
+                this.ExpressApp.use(path, this.PeerServer);
+                //this.Server.on('connection', this.onConnect);
+                //this.Server.on('disconnect', this.onDisconnect);
+
+                res([true, this.PeerServer]);
+            });
         });
     }
 

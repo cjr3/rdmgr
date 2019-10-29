@@ -124,76 +124,76 @@ export interface Record {
     /**
      * Record's internal ID (used for databases)
      */
-    ID?:number,
+    ID?:number;
     /**
      * Record's ID relative to its RecordType
      * (ie, a Skater and a Team record can have the same RecordID)
      */
-    RecordID:number,
+    RecordID:number;
     /**
      * RecordType code (see vars.RecordType)
      */
-    RecordType:string,
+    RecordType:string;
     /**
      * Name of the record
      */
-    Name:string,
+    Name:string;
     /**
      * Acronym
      */
-    Acronym?:string,
+    Acronym?:string;
     /**
      * Alias for Acronym
      */
-    Code?:string,
+    Code?:string;
     /**
      * Represents the record's color, such as a team's primary color
      */
-    Color?:string,
+    Color?:string;
     /**
      * Short name
      */
-    ShortName?:string,
+    ShortName?:string;
     /**
      * Photo path, relative to the media directory
      */
-    Photo?:string,
+    Photo?:string;
     /**
      * Background path, relative the media directory
      */
-    Background?:string,
+    Background?:string;
     /**
      * Thumbnail/logo path, relative to the media directory
      */
-    Thumbnail?:string,
+    Thumbnail?:string;
     /**
      * Thumbnail for the scorebanner, relative to the media directory
      */
-    ScoreboardThumbnail?:string,
+    ScoreboardThumbnail?:string;
     /**
      * Record's description, as as skater's bio
      */
-    Description?:string,
+    Description?:string;
     /**
      * Associated file path, relative to media directory (video, slide, etc.)
      */
-    Filename?:string,
+    Filename?:string;
     /**
      * Alias for Filename
      */
-    FileName?:string,
+    FileName?:string;
     /**
      * Record's assigned number (jersey #, usually)
      */
-    Number?:string,
+    Number?:string;
     /**
      * Path to slide image, relative to media directory
      */
-    Slide?:string,
+    Slide?:string;
     /**
      * Collection of associated records
      */
-    Records?:Array<any>
+    Records?:Array<any>;
 };
 
 /**
@@ -203,64 +203,137 @@ export interface TeamRecord extends Record {
     /**
      * Team's tagline
      */
-    Tagline?:string,
+    Tagline?:string;
     /**
      * Collection of skaters assigned to the team
      */
-    Skaters?:Array<SkaterRecord>,
+    Skaters?:Array<SkaterRecord>;
     /**
      * Determines the team type
      */
-    TeamType?:string,
+    TeamType?:string;
     /**
      * League's ID number (for future use)
      */
-    LeagueID?:number,
+    LeagueID?:number;
     /**
      * Determines if team is a Youth team or not
      */
-    YouthTeam?:string
+    YouthTeam?:string;
 };
 
 export interface SkaterRecord extends Record {
+    /**
+     * Collection of teams the skater is assigned to.
+     */
     Teams?:Array<SkaterTeamRecord>;
+    /**
+     * Collection of penalties the skater has received
+     */
     Penalties?:Array<PenaltyRecord>;
+    /**
+     * Derby Birth Date
+     */
     BirthDate?:string;
+    /**
+     * Derby Retire Date
+     */
     RetireDate?:string;
+    /**
+     * Positiion code, such as 'Jammer'
+     */
     Position?:string;
 };
 
 export interface SkaterTeamRecord {
+    /**
+     * Skater's Record ID
+     */
     SkaterID:number;
+    /**
+     * Skater's Team ID
+     */
     TeamID:number;
+    /**
+     * Skater is a jammer
+     */
     Jammer?:boolean;
+    /**
+     * Skater is a blocker
+     */
     Blocker?:boolean;
+    /**
+     * Skater is a pivot
+     */
     Pivot?:boolean;
+    /**
+     * Skater is captain of the team
+     */
     Captain?:boolean;
+    /**
+     * Skater is cocaptain of the team
+     */
     CoCaptain?:boolean;
+    /**
+     * Skater is coach of the team
+     */
     Coach?:boolean;
+    /**
+     * Skater is manager of the team
+     */
     Manager?:boolean;
+    /**
+     * Skater is penalty tracker of the team
+     */
     PenaltyTracker?:boolean;
+    /**
+     * Skater is regulator of the team
+     */
     Regulator?:boolean;
+    /**
+     * Skater is trainer of the team
+     */
     Trainer?:boolean;
 };
 
 export interface SlideshowRecord extends Record {
+    /**
+     * Type of slideshow
+     */
     SlideshowType?:string;
+    /**
+     * An overlay for the slideshow?
+     */
     SlideshowOverlay?:string;
 };
 
 export interface PenaltyRecord extends Record {
+    /**
+     * Type of penalty: X = Ejection, P = Normal Penalty
+     */
     PenaltyType?:string;
 };
 
 export interface PhaseRecord extends Record {
+    /**
+     * Time-formatted string HH:MM:SS
+     */
     PhaseTime?:string;
+    /**
+     * An array of numbers for hours, minutes, and seconds
+     * [0] = hours, [1] = minutes, [2] = seconds
+     */
     Duration:Array<number>;
+    /**
+     * Quarter the phase is assigned (1, 2, 3, 4)
+     */
     PhaseQtr:number;
 }
 
 export interface AnthemRecord extends Record {
+    /**
+     * Anthem singer's biography
+     */
     Biography?:string;
 }
 
@@ -268,14 +341,37 @@ export interface VideoRecord extends Record {
 }
 
 export interface SponsorRecord extends Record {
+    /**
+     * Sponsor's website
+     */
     Website?:string;
 }
 
 export interface PeerRecord extends Record {
+    /**
+     * Peer's ID
+     */
     PeerID?:string;
+    /**
+     * Port to connect to
+     */
     Port?:number;
+    /**
+     * Port to connect to peer's capture window
+     */
     CapturePort?:number;
+    /**
+     * Host name / IP to connect to
+     */
     Host?:string;
+    /**
+     * Collection of controller codes that the peer sends out to other peers
+     */
+    ControlledApps?:Array<string>;
+    /**
+     * Collection of controller codes that the peer receives state updates from other peers
+     */
+    ReceiveApps:Array<string>;
 }
 
 export enum Controllers {
@@ -294,4 +390,27 @@ export enum Controllers {
     VIDEO,
     ANNOUNCER,
     ANTHEM
+};
+
+export interface IController {
+    /**
+     * Unique key for the controller
+     */
+    Key:string;
+    /**
+     * Initializes the controller
+     */
+    Init?:Function;
+    /**
+     * Gets the store object of the controller
+     */
+    getStore:Function;
+    /**
+     * Gets the current state of the controller
+     */
+    getState:Function;
+    /**
+     * Subscribes to the store for the controller
+     */
+    subscribe:Function;
 };

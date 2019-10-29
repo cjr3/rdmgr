@@ -36,25 +36,56 @@ const TOGGLE_LOOP = 'TOGGLE_LOOP';
 const TOGGLE_AUTO = 'TOGGLE_AUTO';
 
 export interface SVideoController {
-    Status:number,
-    Loop:boolean,
-    AutoPlay:boolean,
-    Source:string,
-    Volume:number,
-    Rate:number,
-    Duration:number,
-    CurrentTime:number,
-    Muted:boolean,
-    Start:number,
-    End:number,
-    FrameSpeed:number,
-    Brightness:number,
-    Contrast:number,
-    Grayscale:number,
-    Inversion:number,
-    Saturation:number,
-    Sepia:number,
-    Blur:number
+    /**
+     * Status of the video, from vars.Video.Status
+     */
+    Status:number;
+    /**
+     * True to loop the video, false to not
+     * - This may be deprecated with the introduction of MediaQueue
+     */
+    Loop:boolean;
+    /**
+     * True to auot-play when loaded
+     */
+    AutoPlay:boolean;
+    /**
+     * Filename / URL of the video to play
+     */
+    Source:string;
+    /**
+     * Volume of the video.
+     * A value between 0.0 and 1.0
+     */
+    Volume:number;
+    /**
+     * Playback rate, a value between 0.15 to 4
+     */
+    Rate:number;
+    /**
+     * Length of the video, in milliseconds
+     */
+    Duration:number;
+    /**
+     * Current position of the video, in milliseconds
+     */
+    CurrentTime:number;
+    /**
+     * Determines if the video is muted or not
+     */
+    Muted:boolean;
+    /**
+     * Starting position of the video
+     */
+    Start:number;
+    /**
+     * Ending position of the video
+     */
+    End:number;
+    /**
+     * The number of frames to skip ahead when paused and forward / rewinding the video
+     */
+    FrameSpeed:number;
 }
 
 export const InitState:SVideoController = {
@@ -69,14 +100,7 @@ export const InitState:SVideoController = {
     Muted:true,
     Start:0,
     End:0,
-    FrameSpeed:0.05,
-    Brightness:100,
-    Contrast:100,
-    Grayscale:0,
-    Inversion:0,
-    Saturation:100,
-    Sepia:0,
-    Blur:0
+    FrameSpeed:0.05
 };
 
 function VideoReducer(state:SVideoController = InitState, action) : SVideoController {

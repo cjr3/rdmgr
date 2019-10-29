@@ -145,6 +145,9 @@ export default class BreakClock extends React.PureComponent<{
      * Renders the component.
      */
     render() {
+        let status:number = this.state.status;
+        if(this.props.remote && status === vars.Clock.Status.Running)
+            status = vars.Clock.Status.Ready;
         return (
             <tr>
                 <td>Break</td>
@@ -153,7 +156,7 @@ export default class BreakClock extends React.PureComponent<{
                         hour={0}
                         minute={0}
                         second={this.state.second}
-                        status={this.state.status}
+                        status={status}
                         remote={this.props.remote}
                         onClick={this.onClick}
                         onTick={this.onTick}

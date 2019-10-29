@@ -26,32 +26,12 @@ class LocalPeer {
         this.closeMediaConnection = this.closeMediaConnection.bind(this);
         this.ping = this.ping.bind(this);
 
-        //data bindings
-        //this.onDataClose = this.onDataClose.bind(this);
-        //this.onDataError = this.onDataError.bind(this);
-        //this.onDataOpen = this.onDataOpen.bind(this);
-        //this.onDataReceived = this.onDataReceived.bind(this);
-
         //media bindings
         this.onMediaClose = this.onMediaClose.bind(this);
         this.onMediaError = this.onMediaError.bind(this);
         this.onMediaStream = this.onMediaStream.bind(this);
         this.setStream = this.setStream.bind(this);
         this.LocalStream = null;
-        //this.paint = this.paint.bind(this);
-        //this.onLocalVideoWorkerMessage = this.onLocalVideoWorkerMessage.bind(this);
-        //this.play = this.play.bind(this);
-        //this.pause = this.pause.bind(this);
-        
-        //streaming elements
-        //this.LocalVideoCanvas = null;
-        //this.LocalStreamCanvas = document.createElement('canvas');
-        //this.LocalStreamCanvas.setAttribute('width', 1280);
-        //this.LocalStreamCanvas.setAttribute('height', 720);
-        //this.LocalCanvasBrush = this.LocalStreamCanvas.getContext('2d');
-        //this.LocalCanvasStream = this.LocalStreamCanvas.captureStream(30);
-        //this.LocalVideoWorker = new Worker('tools/Animator.js');
-        //this.LocalVideoWorker.onmessage = this.onLocalVideoWorkerMessage;
     }
 
     /**
@@ -86,7 +66,8 @@ class LocalPeer {
             ID:id,
             Host:host,
             Port:port,
-            PeerItem:null,
+            LocalItem:null,
+            RemoteItem:null,
             MediaConnection:null,
             DataConnection:null,
             DataConnected:false,
@@ -95,92 +76,21 @@ class LocalPeer {
         };
     }
 
-    /**
-     * Establishes a data connection with the provided peer.
-     * @param {String} id
-     * @param {Boolean} local 
-     */
-    connectToPeer(id, local) {
+    receivePeer(id) {
         if(id === this.ID)
             return;
 
-        if(this.PeerItem === null)
+        if(!this.PeerItem)
             this.connect();
 
-        if(typeof(local) !== "boolean")
-            local = false;
-
         let peer = this.Peers[id];
-        if(peer === undefined || peer == null)
+        if(!peer)
             return;
 
-        if(peer.PeerItem === null && !local) {
-            console.log(`connecting to ${id}`);
-            peer.PeerItem = new window.LocalServer.Peer(this.ID, {
-                host:peer.Host,
-                port:peer.Port,
-                path:this.Path,
-                config:{
-                    iceServers:[]
-                }
-            });
+        if(peer.DataConnection && peer.DataConnection.open)
+            peer.DataConnection.close();
 
-            peer.PeerItem.on('open', (id) => {
-                console.log(`${id} connected to remote peer ${peer.ID}`);
-                //this.connectToPeer(id, local);
-            });
-            peer.PeerItem.on('connection', (dcnx) => {
-                console.log(`${dcnx.peer} created a data connection`);
-                peer.DataConnection = dcnx;
-                peer.DataConnection.on('data', this.onDataReceived.bind(this, peer));
-                peer.DataConnection.on('open', this.onDataOpen.bind(this, peer));
-                peer.DataConnection.on('close', this.onDataClose.bind(this, peer));
-                peer.DataConnection.on('error', this.onDataError.bind(this, peer));
-            });
-            peer.PeerItem.on('call', (mcnx) => {
-                console.log(`${mcnx.peer} called`);
-                
-                peer.MediaConnection = mcnx;
-                peer.MediaConnection.on('close', this.onMediaClose.bind(this, peer));
-                peer.MediaConnection.on('stream', this.onMediaStream.bind(this, peer));
-                peer.MediaConnection.on('error', this.onMediaError.bind(this, peer));
-            });
-            peer.PeerItem.on('close', () => {
-                console.log(`${peer.ID} closed`)
-            });
-            peer.PeerItem.on('close', () => {
-                console.log(`${peer.ID} closed`)
-            });
-            peer.PeerItem.on('disconnected', () => {
-                console.log(`${peer.ID} disconnected`)
-            });
-            peer.PeerItem.on('error', (err) => {
-                switch(err.type) {
-                    case 'peer-unavailable' :
-                        
-                    break;
-                    default :
-                        console.log(`${peer.ID} error: ${err.type}`);
-                    break;
-                }
-            });
-
-            return;
-        }
-
-        if(peer.DataConnection !== null && typeof(peer.DataConnection) === "object" && peer.DataConnection.connected) {
-            //peer.DataConnection.close();
-        }
-
-        if(peer.MediaConnection !== null && typeof(peer.MediaCOnnection) === "object" && peer.MediaConnection.connected) {
-            //peer.MediaCOnnection.close();
-        }
-
-        if(peer.PeerItem)
-            peer.DataConnection = peer.PeerItem.connect(peer.ID);
-        else
-            peer.DataConnection = this.PeerItem.connect(peer.ID);
-
+        peer.DataConnection = this.PeerItem.connect(peer.ID);
         if(peer.DataConnection) {
             peer.DataConnection.on('data', this.onDataReceived.bind(this, peer));
             peer.DataConnection.on('open', this.onDataOpen.bind(this, peer));
@@ -189,6 +99,101 @@ class LocalPeer {
         }
     }
 
+    /**
+     * Establishes a data connection with the provided peer.
+     * @param {String} id
+     */
+    connectToPeer(id) {
+        if(id === this.ID)
+            return;
+
+        if(this.PeerItem === null)
+            this.connect();
+
+        let peer = this.Peers[id];
+        if(!peer)
+            return;
+            
+        if(!peer.RemoteItem) {
+            peer.RemoteItem = new window.LocalServer.Peer(this.ID, {
+                host:peer.Host,
+                port:peer.Port,
+                path:this.Path,
+                config:{
+                    iceServers:[]
+                }
+            });
+
+            //Connected to server - data connection does not have to be open
+            peer.RemoteItem.on('open', (id) => {
+                console.log(`${id} connected to peer ${peer.ID} (remote)`);
+            });
+
+            //When the peer calls US
+            peer.RemoteItem.on('call', (mcnx) => {
+                console.log(`${mcnx.peer} called (remote)`);
+                peer.MediaConnection = mcnx;
+                peer.MediaConnection.on('close', this.onMediaClose.bind(this, peer));
+                peer.MediaConnection.on('stream', this.onMediaStream.bind(this, peer));
+                peer.MediaConnection.on('error', this.onMediaError.bind(this, peer));
+            });
+
+            //when the remote peer closes THEIR connection to US
+            peer.RemoteItem.on('close', () => {
+                console.log(`${peer.ID} closed (remote)`);
+                //if(peer.RemoteItem)
+                    //peer.RemoteItem.disconnect();
+            });
+
+            //when the remote peer is disconnected from the server
+            //no further connections can be made to the peer
+            peer.RemoteItem.on('disconnected', () => {
+                console.log(`${peer.ID} disconnected (remote)`);
+                if(peer.DataConnection && peer.DataConnection.open)
+                    peer.DataConnection.close();
+                if(peer.RemoteItem)
+                    peer.RemoteItem.destroy();
+            });
+
+            //when the remote peer creates the data connection
+            peer.RemoteItem.on('connection', (dcnx) => {
+                console.log(`${peer.ID} created a data connection (remote)`);
+                peer.DataConnection = dcnx;
+                peer.DataConnection.on('data', this.onDataReceived.bind(this, peer));
+                peer.DataConnection.on('open', this.onDataOpen.bind(this, peer));
+                peer.DataConnection.on('close', this.onDataClose.bind(this, peer));
+                peer.DataConnection.on('error', this.onDataError.bind(this, peer));
+                peer.DataConnected = true;
+                window.LocalServer.UpdatePeerDataStatus(peer);
+            });
+
+            peer.RemoteItem.on('error', (err) => {
+                console.trace(err);
+                console.log(`${peer.ID} error: ${err.type} (remote)`);
+                //if(peer.RemoteItem && !peer.RemoteItem.destroyed)
+                    //peer.RemoteItem.destroy();
+                //if(peer.DataConnection && peer.DataConnection.open)
+                    //peer.DataConnection.close();
+            });
+        } else if(peer.RemoteItem.disconnected) {
+            if(peer.RemoteItem.destroyed) {
+                peer.RemoteItem = null;
+                this.connectToPeer(peer.ID);
+            } else {
+                peer.RemoteItem.reconnect();
+            }
+        } else {
+            if(!peer.DataConnection) {
+                peer.RemoteItem = null;
+                this.connectToPeer(peer.ID);
+            }
+        }
+    }
+
+    /**
+     * Calls the provided peer
+     * @param {string} id 
+     */
     callPeer(id) {
         let peer = this.Peers[id];
         if(peer === null || peer === undefined)
@@ -200,24 +205,38 @@ class LocalPeer {
         peer.MediaConnection.on('error', this.onMediaError.bind(this, peer));
     }
 
+    /**
+     * Disconnects the provided peer from the local server
+     * @param {string} id 
+     */
     disconnectPeer(id) {
         let peer = this.Peers[id];
         if(peer !== null && peer !== undefined) {
-            if(peer.DataConnection)
-                peer.DataConnection.close();
-            if(peer.MediaConnection)
-                peer.MediaConnection.close();
-            if(peer.PeerItem)
-                peer.PeerItem.destroy();
-            peer.PeerItem = null;
+            if(peer.RemoteItem) {
+                if(!peer.RemoteItem.disconnected) {
+                    //peer.RemoteItem.disconnect();
+                }
+
+                if(peer.DataConnection && peer.DataConnection.open) {
+                    //peer.DataConnection.close();
+                }
+            }
         }
     }
 
+    /**
+     * Disconnects the local peer from the server
+     */
     disconnect() {
         this.DataConnected = false;
         this.MediaCOnnected = false;
         this.Connecting = false;
         this.closeConnections();
+        for(let key in this.Peers) {
+            if(this.Peers[key].RemoteItem && !this.Peers[key].RemoteItem.disconnected) {
+                this.Peers[key].RemoteItem.disconnect();
+            }
+        }
         if(this.PeerItem) {
             this.PeerItem.destroy();
         }
@@ -318,7 +337,7 @@ class LocalPeer {
      * Triggered when this peer connects to the local server.
      */
     onOpen() {
-        this.connectToPeers();
+        //this.connectToPeers();
     }
 
     /**
@@ -340,7 +359,7 @@ class LocalPeer {
 
         //ignore and close data connections from unknown peers
         if(peer === null || peer === undefined) {
-            console.log('peer is not found');
+            //console.log('peer is not found');
             //dcnx.close();
             return;
         }
@@ -350,6 +369,8 @@ class LocalPeer {
         peer.DataConnection.on('open', this.onDataOpen.bind(this, peer));
         peer.DataConnection.on('close', this.onDataClose.bind(this, peer));
         peer.DataConnection.on('error', this.onDataError.bind(this, peer));
+        peer.DataConnected = true;
+        window.LocalServer.UpdatePeerDataStatus(peer);
     }
 
     /**
@@ -446,9 +467,8 @@ class LocalPeer {
      * Triggered when the data connection opens.
      */
     onDataOpen(peer) {
-        //this.DataConnected = true;
+        console.log(`${peer.ID} opened data connection`)
         peer.DataConnected = true;
-        console.log(`${this.ID} opened data connection`)
         window.LocalServer.UpdatePeerDataStatus(peer);
     }
 
@@ -457,9 +477,7 @@ class LocalPeer {
      */
     onDataClose(peer) {
         console.log(`${peer.ID} onDataClose`);
-        //this.disconnect();
         peer.DataConnected = false;
-        peer.Connecting = false;
         window.LocalServer.UpdatePeerDataStatus(peer);
     }
 
@@ -468,9 +486,13 @@ class LocalPeer {
      * @param {Object} error 
      */
     onDataError(peer, error) {
-        console.log(`${peer.ID} onDataError: ${error}`);
-        //console.log(peer.ID + " encountered an error in their data connection: ");
-        //console.log(error);
+        console.trace(`${peer.ID} onDataError: ${error}`);
+        //if(peer.DataConnection && peer.DataConnection.open) {
+            //peer.DataConnection.close();
+        //}
+        peer.DataConnected = false;
+        peer.DataConnection = null;
+        window.LocalServer.UpdatePeerDataStatus(peer);
     }
 
     /**
@@ -504,7 +526,7 @@ class LocalPeer {
      */
     send(id, data) {
         let peer = this.Peers[id];
-        if(peer !== undefined && peer !== null && peer.DataConnection !== null) {
+        if(peer && peer.DataConnection && peer.DataConnection.open) {
             //console.log("Sending data to peer")
             switch(data.type) {
                 case 'state' :
@@ -534,7 +556,26 @@ class LocalPeer {
      */
     connectToPeers() {
         for(var key in this.Peers) {
-            this.ping(this.Peers[key].ID);
+            //this.ping(this.Peers[key].ID);
+            this.pingPeer(this.Peers[key]);
+        }
+    }
+
+    /**
+     * Pings the given peer, and then attemps to connect through
+     * WebRTC if the peer's machine is available.
+     * @param {object} peer 
+     */
+    pingPeer(peer) {
+        if(!peer.DataConnected && !peer.Connecting) {
+            peer.Connecting = true;
+            window.LocalServer.ping(peer.Host, peer.Port, () => {
+                peer.Connecting = false;
+                if(!peer.DataConnected)
+                    this.connectToPeer(peer.ID);
+            }, () => {
+                peer.Connecting = false;
+            });
         }
     }
 

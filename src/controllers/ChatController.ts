@@ -63,6 +63,7 @@ function ChatReducer(state = InitState, action) {
 const ChatStore = createStore( ChatReducer );
 
 const ChatController = {
+    Key:'CHT',
     /**
      * Sets the state of the chat controller.
      * @param {Object} state An object with key/value pairs

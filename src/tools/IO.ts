@@ -290,7 +290,10 @@ class IOFileQueue
      */
     Save(content:any) {
         if(!this.Paused) {
-            this.Records.push(content);
+            if(this.Records.length === 0)
+                this.Records.push(content);
+            else
+                this.Records[1] = content;
         }
     }
 

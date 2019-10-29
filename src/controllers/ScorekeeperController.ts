@@ -8,27 +8,27 @@ const SHIFT_DECKS = 'SHIFT_DECKS';
 const SET_CURRENT_POSITION = 'SET_CURRENT_POSITION';
 
 export interface SScorekeeperTeamDeckStatus {
-    Deck:string,
-    Position:string
+    Deck:string;
+    Position:string;
 }
 
 export interface SScorekeeperTeamDeck {
-    Jammer:SkaterRecord|null,
-    Pivot:SkaterRecord|null,
-    Blocker1:SkaterRecord|null,
-    Blocker2:SkaterRecord|null,
-    Blocker3:SkaterRecord|null,
+    Jammer:SkaterRecord|null;
+    Pivot:SkaterRecord|null;
+    Blocker1:SkaterRecord|null;
+    Blocker2:SkaterRecord|null;
+    Blocker3:SkaterRecord|null;
 }
 
 export interface SScorekeeperTeam {
-    Track:SScorekeeperTeamDeck,
-    Deck:SScorekeeperTeamDeck,
-    Current:SScorekeeperTeamDeckStatus
+    Track:SScorekeeperTeamDeck;
+    Deck:SScorekeeperTeamDeck;
+    Current:SScorekeeperTeamDeckStatus;
 }
 
 export interface SScorekeeperState {
-    TeamA:SScorekeeperTeam,
-    TeamB:SScorekeeperTeam
+    TeamA:SScorekeeperTeam;
+    TeamB:SScorekeeperTeam;
 }
 
 export const InitState:SScorekeeperState = {

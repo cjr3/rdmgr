@@ -394,10 +394,11 @@ class GameControllerHandler {
      */
     protected queryGamepad() {
         if(this.Gamepad === null) {
+            return;
             this.LoadControllers().then((controllers) => {
                 this.Gamepads = controllers;
             });
-            this.Timer = window.requestAnimationFrame(this.queryGamepad);
+            //this.Timer = window.requestAnimationFrame(this.queryGamepad);
             return;
         }
 

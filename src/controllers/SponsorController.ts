@@ -7,11 +7,26 @@ const SET_SLIDES = 'SET_SLIDES';
 const NEXT_SLIDE = 'NEXT_SLIDE';
 
 export interface SSponsorController {
-    Slides:Array<any>,
-    Index:number,
-    SlideDuration:number,
-    Transition:string,
-    TemporarySlide:string
+    /**
+     * Collection of slides
+     */
+    Slides:Array<any>;
+    /**
+     * Current slide to show
+     */
+    Index:number;
+    /**
+     * How long to show the current slide
+     */
+    SlideDuration:number;
+    /**
+     * Type of transition
+     */
+    Transition:string;
+    /**
+     * Filename of temporary slide.
+     */
+    TemporarySlide:string;
 }
 
 export const InitState:SSponsorController = {

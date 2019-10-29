@@ -569,12 +569,13 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
             }
 
         //sets the game clock time
-        case Actions.SET_GAME_TIME :
+        case Actions.SET_GAME_TIME : {
             return Object.assign({}, state, {
                 GameHour:action.hour,
                 GameMinute:action.minute,
                 GameSecond:action.second
             });
+        }
 
         //sets the game clock time to match the phase time
         case Actions.COPY_PHASE_TIME :

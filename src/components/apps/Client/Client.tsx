@@ -16,14 +16,17 @@ import {
     IconSettings,
     IconShown,
     IconCapture,
-    IconController
+    IconController,
+    IconOffline,
+    IconOnline
 } from 'components/Elements';
 import ClientScorebanner from './ClientScorebanner';
 import cnames from 'classnames'
 
 //controllers
+import ClientController from 'controllers/ClientController';
 import CameraController from 'controllers/CameraController';
-import CaptureController, {Controllers} from 'controllers/CaptureController';
+import CaptureController from 'controllers/CaptureController';
 import ChatController from 'controllers/ChatController';
 import DataController from 'controllers/DataController';
 import MediaQueueController from 'controllers/MediaQueueController';
@@ -41,7 +44,7 @@ import GameController from 'controllers/GameController';
 //inter-process communication
 import IPCX from 'controllers/IPCX';
 
-//applications
+//components
 import CaptureControl from 'components/apps/CaptureControl/CaptureControl';
 import ChatForm from 'components/apps/ChatForm/ChatForm';
 import ConfigForm from 'components/data/ConfigForm';
@@ -51,21 +54,37 @@ import Roster from 'components/apps/Roster/Roster';
 import Scoreboard from 'components/apps/Scoreboard/Scoreboard';
 import Scorekeeper from 'components/apps/Scorekeeper/Scorekeeper';
 import ClientCaptureStatus from './ClientCaptureStatus';
+import ClientDialog from './ClientDialog';
+import CaptureDisplayButtons from 'components/apps/CaptureControl/CaptureDisplayButtons';
 
 //style
 import './css/Client.scss';
 
 //utilities
 import FileBrowser from 'components/tools/FileBrowser';
-import ClientDialog from './ClientDialog';
 import {PeerRecordRequest} from 'components/data/PeerEditor';
 import vars from 'tools/vars';
-import CaptureDisplayButtons from 'components/apps/CaptureControl/CaptureDisplayButtons';
 import keycodes from 'tools/keycodes';
 
-interface SClient {
+
+/**
+ * Component for the client control form.
+ */
+class Client extends React.PureComponent<any, {
+    /**
+     * Key code for current application
+     */
+    CurrentApplication:string;
+    /**
+     * Collection of applications controlled by peers
+     */
+    PeerApplications:any;
+    ConnectedPeers:number;
     currentApp:any;
-    visible:boolean;
+    /**
+     * Determines if the client's panel is visible or not
+     */
+    shown:boolean;
     ConfigShown:boolean;
     ChatShown:boolean;
     FileBrowserShown:boolean;
@@ -77,16 +96,14 @@ interface SClient {
     RecordUpdateTypes:any;
     UnreadMessageCount:number;
     Peers:any;
-}
+}> {
 
-/**
- * Component for the client control form.
- */
-class Client extends React.PureComponent<any, SClient> {
-
-    readonly state:SClient = {
+    readonly state = {
+        CurrentApplication:ClientController.getState().CurrentApplication,
+        PeerApplications:{},
+        ConnectedPeers:0,
         currentApp:{},
-        visible:false,
+        shown:false,
         ConfigShown:false,
         ChatShown:false,
         FileBrowserShown:false,
@@ -96,21 +113,22 @@ class Client extends React.PureComponent<any, SClient> {
         RecordUpdatePeerID:'',
         RecordUpdatePeerName:'',
         RecordUpdateTypes:{},
-        UnreadMessageCount:0,
+        UnreadMessageCount:ClientController.getState().UnreadMessageCount,
         Peers:DataController.getPeers()
     }
 
-    Controllers:any
+    //Controllers:any
     Applications:any
-    FileBrowserItem:React.RefObject<FileBrowser>
-    DialogItem:React.RefObject<ClientDialog>
+    protected FileBrowserItem:React.RefObject<FileBrowser> = React.createRef();
 
-    remoteData:Function
-    remoteChat?:Function
+    //remoteData:Function
+    //remoteChat?:Function
+    protected remoteClient:Function|null = null;
 
     constructor(props) {
         super(props);
 
+        /*
         this.Controllers = {
             [CaptureController.Key]:CaptureController,
             [MediaQueueController.Key]:MediaQueueController,
@@ -123,6 +141,7 @@ class Client extends React.PureComponent<any, SClient> {
             [SponsorController.Key]:SponsorController,
             [VideoController.Key]:VideoController
         }
+        */
 
         this.Applications = {
             [ScoreboardController.Key]:{
@@ -181,232 +200,26 @@ class Client extends React.PureComponent<any, SClient> {
             }
         };
 
-        this.state.currentApp = this.Applications[ScoreboardController.Key];
+        //this.state.currentApp = this.Applications[ScoreboardController.Key];
 
-        let defaultApp = DataController.GetMiscRecord('DefaultApp');
-        if(defaultApp !== null && this.Applications[defaultApp]) {
-            this.state.currentApp = this.Applications[defaultApp];
-        }
+        // let defaultApp = DataController.GetMiscRecord('DefaultApp');
+        // if(defaultApp !== null && this.Applications[defaultApp]) {
+        //     this.state.currentApp = this.Applications[defaultApp];
+        // }
 
-        this.FileBrowserItem = React.createRef();
-        this.DialogItem = React.createRef();
+        //this.FileBrowserItem = React.createRef();
+        //this.DialogItem = React.createRef();
 
         //bindings
-        this.setApplication = this.setApplication.bind(this);
+        //this.setApplication = this.setApplication.bind(this);
         this.showFileBrowser = this.showFileBrowser.bind(this);
         this.hideFileBrowser = this.hideFileBrowser.bind(this);
-        this.exit = this.exit.bind(this);
-        this.showDialog = this.showDialog.bind(this);
+        //this.exit = this.exit.bind(this);
+        //this.showDialog = this.showDialog.bind(this);
         
         //events
-        this.onKeyUp = this.onKeyUp.bind(this);
-        this.onPeerData = this.onPeerData.bind(this);
         this.onSelectFile = this.onSelectFile.bind(this);
-
-        //subscribers
-        this.updateData = this.updateData.bind(this);
-        this.updateChat = this.updateChat.bind(this);
-
-        this.remoteData = DataController.subscribe(this.updateData);
-
-        for(let akey in this.Applications) {
-            let app = this.Applications[akey];
-            app.remote = '';
-            for(let pkey in this.state.Peers) {
-                let peer = this.state.Peers[pkey];
-                if(peer.Host === '127.0.0.1')
-                    continue;
-                if(app.remote === '' && peer.ControlledApps && peer.ControlledApps.indexOf(akey) >= 0) {
-                    app.remote = peer.PeerID;
-                }
-            }
-        }
-    }
-
-    /**
-     * Sets the current application.
-     * @param {Object} app 
-     */
-    setApplication(app) {
-        this.setState(() => {
-          return {currentApp:app};
-        }, () => {
-            DataController.SaveMiscRecord('DefaultApp', this.state.currentApp.key);
-        });
-    }
-
-    /**
-     * Handles keyboard events for the client / control window.
-     * 
-     * Input is passed to the current app's controller, unless
-     * the cursor is focused on a text entry field.
-     * @param {KeyEvent} ev 
-     */
-    onKeyUp(ev) {
-        var name = ev.target.tagName.toLowerCase();
-        switch(name) {
-            case 'input' :
-                if(ev.target.type === 'text' || ev.target.type === 'password' || ev.target.type === 'number') {
-
-                    return;
-                }
-                break;
-
-            case 'textarea' :
-            case 'select' :
-                return true;
-
-            default :
-
-            break;
-        }
-        
-        //global keyup options - do not map these to controllers
-        switch(ev.keyCode) {
-            //ignore when windows/super/meta key is held down
-            case keycodes.RWINDOW :
-            case keycodes.LWINDOW : {
-                return;
-            }
-            break;
-
-            //toggle current applications display
-            case keycodes.ESCAPE : {
-                switch(this.state.currentApp.key) {
-                    //Main Scoreboard
-                    case ScoreboardController.Key : {
-                        CaptureController.ToggleScoreboard();
-                    }
-                    break;
-
-                    //Scorebanner
-                    case CaptureController.Key : {
-                        if(ev.ctrlKey)
-                            CaptureController.ToggleScoreboard();
-                        else
-                            CaptureController.ToggleScorebanner();
-                    }
-                    break;
-
-                    //Penalty Tracker
-                    case PenaltyController.Key : {
-                        CaptureController.TogglePenaltyTracker();
-                    }
-                    break;
-
-                    //Scorekeeper
-                    case ScorekeeperController.Key : {
-                        CaptureController.ToggleScorekeeper();
-                    }
-                    break;
-
-                    //Roster
-                    case RosterController.Key : {
-                        CaptureController.ToggleRoster();
-                    }
-                    break;
-
-                    default : break;
-                }
-                return;
-            }
-            break;
-
-            //Main Scoreboard
-            case keycodes.F1 : {
-                this.setState({
-                    currentApp:this.Applications[ScoreboardController.Key]
-                });
-                return;
-            }
-            break;
-
-            //Capture Controller
-            case keycodes.F2 : {
-                this.setState({
-                    currentApp:this.Applications[CaptureController.Key]
-                });
-                return;
-            }
-            break;
-
-            //Penalty Tracker 
-            case keycodes.F3 : {
-                this.setState({
-                    currentApp:this.Applications[PenaltyController.Key]
-                });
-                return;
-            }
-            break;
-
-            //Scorekeeper 
-            case keycodes.F4 : {
-                this.setState({
-                    currentApp:this.Applications[ScorekeeperController.Key]
-                });
-                return;
-            }
-            break;
-
-            //Roster
-            case keycodes.F5 : {
-                this.setState({
-                    currentApp:this.Applications[RosterController.Key]
-                });
-                return;
-            }
-            break;
-
-            //Media Queue
-            case keycodes.F6 : {
-                this.setState({
-                    currentApp:this.Applications[MediaQueueController.Key]
-                });
-                return;
-            }
-            break;
-
-            case keycodes.F12 : {
-                let state = CaptureController.getState();
-                if(state.Raffle.Shown) {
-                    CaptureController.ToggleRaffle();
-                } else {
-                    this.setState({
-                        currentApp:this.Applications[MediaQueueController.Key]
-                    }, () => {
-                        CaptureController.ToggleRaffle();
-                        if(this.Applications[MediaQueueController.Key].ref !== null 
-                            && this.Applications[MediaQueueController.Key].ref.current !== null ) {
-                            this.Applications[MediaQueueController.Key].ref.current.setState({
-                                recordset:''
-                            }, () => {
-                                this.Applications[MediaQueueController.Key].ref.current.RaffleItem.current.TicketItem.current.focus();
-                            });
-                        }
-                    });
-                }
-                return;
-            }
-            break;
-
-            //fullscreen - ignore
-            case keycodes.F11 : {
-                return;
-            }
-            break;
-
-            //Open Chat
-            case keycodes.F9 : {
-                this.setState({ChatShown:true});
-                return;
-            }
-            break;
-
-            default : break;
-        }
-
-        if(this.state.currentApp.controller && this.state.currentApp.controller.onKeyUp)
-            this.state.currentApp.controller.onKeyUp(ev);
+        this.updateClient = this.updateClient.bind(this);
     }
 
     /**
@@ -423,9 +236,9 @@ class Client extends React.PureComponent<any, SClient> {
      * @param {Function} cancel 
      */
     showDialog(message, confirm, cancel) {
-        if(this.DialogItem && this.DialogItem.current) {
-            this.DialogItem.current.show(message, confirm, cancel);
-        }
+        //if(this.DialogItem && this.DialogItem.current) {
+        //    this.DialogItem.current.show(message, confirm, cancel);
+        //}
     }
 
     /**
@@ -434,6 +247,7 @@ class Client extends React.PureComponent<any, SClient> {
      * @param {Object} data 
      */
     onPeerData(peer, data) {
+        /*
         switch(data.type) {
             //update the state of a controller
             case 'state' :
@@ -540,21 +354,23 @@ class Client extends React.PureComponent<any, SClient> {
             default :
             break;
         }
+        */
     }
 
     /**
      * Updates the state to match the chat controller.
      */
     updateChat() {
-        this.setState(() => {
-            return {UnreadMessageCount:ChatController.GetUnreadMessageCount()};
-        });
+        // this.setState(() => {
+        //     return {UnreadMessageCount:ChatController.GetUnreadMessageCount()};
+        // });
     }
 
     /**
      * Updates the
      */
     updateData() {
+        /*
         let peers = DataController.getPeers();
         if(!DataController.compare(peers, this.state.Peers)) {
             for(let akey in this.Applications) {
@@ -575,6 +391,24 @@ class Client extends React.PureComponent<any, SClient> {
                 return {Peers:Object.assign({}, peers)};
             });
         }
+        */
+    }
+
+    /**
+     * Triggered when the ClientController updates
+     * - 
+     */
+    updateClient() {
+        let state = ClientController.getState();
+        //return;
+        this.setState(() => {
+            return {
+                CurrentApplication:state.CurrentApplication,
+                UnreadMessageCount:state.UnreadMessageCount,
+                PeerApplications:state.PeerApplications,
+                //ConnectedPeers:state.ConnectedPeers
+            }
+        });
     }
 
     /**
@@ -592,14 +426,14 @@ class Client extends React.PureComponent<any, SClient> {
      * Shows the file browser.
      */
     showFileBrowser() {
-        this.setState(() => {return {FileBrowserShown:true}});
+        //this.setState(() => {return {FileBrowserShown:true}});
     }
 
     /**
      * Hides the file browser.
      */
     hideFileBrowser() {
-        this.setState(() => {return {FileBrowserShown:false}});
+        //this.setState(() => {return {FileBrowserShown:false}});
     }
 
     /**
@@ -608,200 +442,30 @@ class Client extends React.PureComponent<any, SClient> {
      * - Add global event listeners for keyup, gamepad
      */
     componentDidMount() {
-        if(window) {
-            window.client = this;
-        }
-
-        if(window && window.RDMGR && window.RDMGR.mainWindow) {
-            window.RDMGR.mainWindow.setTitle('RDMGR : Control Window');
-            document.body.className = 'client';
-
-            //setup IPC renderer if there is a capture window.
-            if(window.RDMGR.captureWindow) {
-                window.IPC = new IPCX('controlMessage', 'captureMessage', window.RDMGR.captureWindow);
-            }
-        }
-
-        ScoreboardController.subscribe(() => {
-            var cstate = Object.assign({}, ScoreboardController.getState());
-            if(window && window.IPC) {
-                window.IPC.send({
-                    type:'state',
-                    app:ScoreboardController.Key,
-                    state:cstate
-                });
-            }
-
-            if(window && window.LocalServer) {
-                window.LocalServer.SendState(ScoreboardController.Key, cstate);
-            }
-        });
-        
-        //Capture Controller
-        CaptureController.subscribe(() => {
-            var state = Object.assign({}, CaptureController.getState());
-            if(window && window.IPC) {
-                window.IPC.send({
-                    type:'state',
-                    app:CaptureController.Key,
-                    state:state
-                });
-            }
-
-            if(window && window.LocalServer) {
-                window.LocalServer.SendState(CaptureController.Key, state);
-            }
-        });
-
-        //Slideshow Controller
-        SlideshowController.subscribe(() => {
-            var cstate = Object.assign({}, SlideshowController.getState());
-            if(window && window.IPC) {
-                window.IPC.send({
-                    type:'state',
-                    app:SlideshowController.Key,
-                    state:cstate
-                });
-            }
-
-            if(window && window.LocalServer) {
-                window.LocalServer.SendState(SlideshowController.Key, cstate);
-            }
-        });
-
-        //Video Controller
-        VideoController.subscribe(() => {
-            var state = Object.assign({}, VideoController.getState());
-            if(window && window.IPC) {
-                window.IPC.send({
-                    type:'state',
-                    app:VideoController.Key,
-                    state:state
-                });
-            }
-
-            if(window && window.LocalServer) {
-                window.LocalServer.SendState(VideoController.Key, state);
-            }
-        });
-
-        //Raffle
-        RaffleController.subscribe(() => {
-            var cstate = Object.assign({}, RaffleController.getState());
-            if(window && window.IPC) {
-                window.IPC.send({
-                    type:'state',
-                    app:RaffleController.Key,
-                    state:cstate
-                });
-            }
-
-            if(window && window.LocalServer) {
-                window.LocalServer.SendState(RaffleController.Key, cstate);
-            }
-        });
-
-        //Sponsor Controller
-        SponsorController.subscribe(() => {
-            var cstate = Object.assign({}, SponsorController.getState());
-            if(window && window.IPC) {
-                window.IPC.send({
-                    type:'state',
-                    app:SponsorController.Key,
-                    state:cstate
-                });
-            }
-
-            if(window && window.LocalServer) {
-                window.LocalServer.SendState(SponsorController.Key, cstate);
-            }
-        });
-        
-        //Penalty Tracker
-        PenaltyController.subscribe(() => {
-            var cstate = Object.assign({}, PenaltyController.getState());
-            if(window && window.IPC) {
-                window.IPC.send({
-                    type:'state',
-                    app:PenaltyController.Key,
-                    state:cstate
-                });
-            }
-
-            if(window && window.LocalServer) {
-                window.LocalServer.SendState(PenaltyController.Key, cstate);
-            }
-        });
-        
-        //Scorekeeper
-        ScorekeeperController.subscribe(() => {
-            var cstate = Object.assign({}, ScorekeeperController.getState());
-            if(window && window.IPC) {
-                window.IPC.send({
-                    type:'state',
-                    app:ScorekeeperController.Key,
-                    state:cstate
-                });
-            }
-
-            if(window && window.LocalServer) {
-                window.LocalServer.SendState(ScorekeeperController.Key, cstate);
-            }
-        });
-
-        //Roster Controller
-        RosterController.subscribe(() => {
-            var cstate = Object.assign({}, RosterController.getState());
-            if(window && window.IPC) {
-                window.IPC.send({
-                    type:'state',
-                    app:RosterController.Key,
-                    state:cstate
-                });
-            }
-
-            if(window && window.LocalServer) {
-                window.LocalServer.SendState(RosterController.Key, cstate);
-            }
-        });
-
-        //Camera Controller
-        if(window && window.IPC) {
-            CameraController.subscribe(() => {
-                window.IPC.send({
-                    type:'state',
-                    app:CameraController.Key,
-                    state:CameraController.getState()
-                });
-            });
-        }
-
-        //subscribe to chat
-        this.remoteChat = ChatController.subscribe(this.updateChat);
-
-        window.addEventListener('keyup', this.onKeyUp);
-        window.initControlServer(DataController);
-        if(window.LocalServer) {
-            window.LocalServer.onDataReceived = this.onPeerData;
-
-            //attach APIs from other controllers
-            SlideshowController.buildAPI();
-            CaptureController.buildAPI();
-            RaffleController.buildAPI();
-            RosterController.buildAPI();
-            ScoreboardController.buildAPI();
-            VideoController.buildAPI();
-            DataController.buildAPI();
-            MediaQueueController.buildAPI();
+        if(ClientController.Init !== undefined) {
+            ClientController.Init();
+            this.remoteClient = ClientController.subscribe(this.updateClient);
         }
 
         //Show the component
         this.setState(() => {
-            return {visible:true};
+            return {
+                shown:true,
+                CurrentApplication:ClientController.getState().CurrentApplication
+            };
         }, () => {
             CaptureController.Init();
             GameController.Init();
         });
+    }
+
+    /**
+     * Triggered when the component will unmount from the DOM
+     */
+    componentWillUnmount() {
+        if(this.remoteClient !== null) {
+            this.remoteClient();
+        }
     }
 
     /**
@@ -812,12 +476,17 @@ class Client extends React.PureComponent<any, SClient> {
         const apps:Array<React.ReactElement> = [];
         for(let key in this.Applications) {
             let app = this.Applications[key];
-            const opened = (this.state.currentApp === app) ? true : false;
+            let remote = '';
+            let title:string = app.name;
+            if(this.state.PeerApplications && this.state.PeerApplications[key]) {
+                remote = this.state.PeerApplications[key];
+                title = `${app.name} (${remote})`;
+            }
             let panel = <app.type 
                 key={key} 
-                opened={opened}
+                opened={(this.state.CurrentApplication === key)}
                 ref={app.ref}
-                remote={app.remote}
+                remote={remote}
                 apps={(app === this.Applications.NET) ? this.Applications : []}
                 />
             apps.push(panel);
@@ -825,17 +494,26 @@ class Client extends React.PureComponent<any, SClient> {
                 <Icon
                     src={app.icon}
                     key={`${key}-app`}
-                    className={cnames({active:(app === this.state.currentApp)})}
-                    title={app.name}
+                    className={cnames({active:(key === this.state.CurrentApplication)})}
+                    title={title}
                     onClick={() => {
-                        this.setApplication(app);
+                        ClientController.SetApplication(key);
                         this.setState({ConfigShown:false});
                     }}
                     />
             );
         }
 
+        let iconConnection = IconOffline;
+        if(this.state.ConnectedPeers > 0)
+            iconConnection = IconOnline;
+
         const recordicons = [
+            <Icon
+                src={iconConnection}
+                key="btn-network"
+                title="Connect"
+                onClick={ClientController.ConnectPeers}/>,
             <Icon
                 src={IconCapture}
                 key="btn-display"
@@ -877,8 +555,8 @@ class Client extends React.PureComponent<any, SClient> {
             className="client"
             contentName="control-app"
             title={<ClientScorebanner/>}
-            opened={this.state.visible}
-            onClose={this.exit}
+            opened={this.state.shown}
+            onClose={ClientController.Exit}
             >
                 {apps}
                 <ChatForm
@@ -897,13 +575,12 @@ class Client extends React.PureComponent<any, SClient> {
                     opened={this.state.ConfigShown}
                     onClose={() => {this.setState({ConfigShown:false});}}
                     />
-                <ClientDialog ref={this.DialogItem}/>
                 <PeerRecordRequest
                     name={this.state.RecordUpdatePeerName}
                     opened={this.state.RecordUpdateShown}
                     id={this.state.RecordUpdatePeerID}
-                    message={`${this.state.RecordUpdatePeerName} wishes to update the following records. 
-                        Choose which records to update, or click cancel to ignore the request.`}
+                    message={`${this.state.RecordUpdatePeerID} wants to update your records. 
+                        Choose which records to update, or click Cancel to ignore the request.`}
                     types={this.state.RecordUpdateTypes}
                     method='get-records'
                     onClose={() => {

@@ -136,13 +136,17 @@ export default class GameClock extends React.PureComponent<{
      * Renders the component
      */
     render() {
+        let status:number = this.state.status;
+        if(this.props.remote && status === vars.Clock.Status.Running)
+            status = vars.Clock.Status.Ready;
+            
         return (
             <Clock
                 className="game-clock"
                 hour={this.state.hour}
                 minute={this.state.minute}
                 second={this.state.second}
-                status={this.state.status}
+                status={status}
                 showTenths={this.state.showTenths}
                 type={vars.Clock.Types.Clock}
                 onClick={this.onClick}

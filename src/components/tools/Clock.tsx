@@ -267,15 +267,15 @@ export default class Clock extends React.Component<{
             });
 
             if(this.props.onTick)
-                setTimeout(this.props.onTick, 10, hours, minutes, seconds, tenths);
+                window.setTimeout(this.props.onTick, 1, hours, minutes, seconds, tenths);
 
         } else {
             this.setState(() => {
                 return {tenths:tenths};
             });
             
-            if(this.props.onTenths)
-                setTimeout(this.props.onTenths, 10, hours, minutes, seconds, tenths);
+            //if(this.props.onTenths)
+                //setTimeout(this.props.onTenths, 10, hours, minutes, seconds, tenths);
         }
 
         //continue ticking

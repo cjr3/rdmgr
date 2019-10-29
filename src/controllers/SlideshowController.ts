@@ -18,14 +18,40 @@ const SET_INDEX = 'SET_INDEX';
 const SWAP_SLIDES = 'SWAP_SLIDES';
 
 export interface SSlideshowController {
-    Index:number,
-    Loop:boolean,
-    Auto:boolean,
-    Slides:Array<any>,
-    Slideshow:SlideshowRecord|null,
-    SlideshowID:number,
-    Name:string,
-    Delay:number
+    /**
+     * Index # of the current slide
+     */
+    Index:number;
+    /**
+     * True to loop; false to not loop
+     * - May be obsolete with introduction of MediaQueue
+     */
+    Loop:boolean;
+    /**
+     * True to auto-play; false ot not (default)
+     * - May be obsolete with introduction of MediaQueue
+     */
+    Auto:boolean;
+    /**
+     * Collection of slide records
+     */
+    Slides:Array<any>;
+    /**
+     * The current slideshow record
+     */
+    Slideshow:SlideshowRecord|null;
+    /**
+     * The ID of the current slideshow
+     */
+    SlideshowID:number;
+    /**
+     * Name of the current slideshow
+     */
+    Name:string;
+    /**
+     * How long to display a slide
+     */
+    Delay:number;
 }
 
 export const InitState:SSlideshowController = {
@@ -65,48 +91,59 @@ function getCorrectIndex(index, len, loop) {
  */
 function SlideshowReducer(state = InitState, action)
 {
-    switch(action.type) {
-        case SET_STATE :
-            return Object.assign({}, state, action.state);
+    try {
+        switch(action.type) {
+            case SET_STATE : {
+                return Object.assign({}, state, action.state);
+            }
 
-        case NEXT_SLIDE :
-            return Object.assign({}, state, {
-                Index:getCorrectIndex(state.Index + 1, state.Slides.length, state.Loop)
-            });
+            case NEXT_SLIDE : {
+                return Object.assign({}, state, {
+                    Index:getCorrectIndex(state.Index + 1, state.Slides.length, state.Loop)
+                });
+            }
 
-        //shows the previous slide
-        case PREV_SLIDE :
-            return Object.assign({}, state, {
-                Index:getCorrectIndex(state.Index - 1, state.Slides.length, state.Loop)
-            });
+            //shows the previous slide
+            case PREV_SLIDE : {
+                return Object.assign({}, state, {
+                    Index:getCorrectIndex(state.Index - 1, state.Slides.length, state.Loop)
+                });
+            }
 
-        //set slides and reset
-        case SET_SLIDES :
-            return Object.assign({}, state, {
-                Index:0,
-                SlideshowID:action.id,
-                Slides:action.records,
-                Name:action.name
-            });
+            //set slides and reset
+            case SET_SLIDES : {
+                return Object.assign({}, state, {
+                    Index:0,
+                    SlideshowID:action.id,
+                    Slides:action.records,
+                    Name:action.name
+                });
+            }
 
-        //update loop status
-        case SET_LOOP :
-            return Object.assign({}, state, {Loop:action.value});
+            //update loop status
+            case SET_LOOP : {
+                return Object.assign({}, state, {Loop:action.value});
+            }
 
-        //sets the slide to show - within the bounds of # of slides
-        case SET_INDEX :
-            return Object.assign({}, state, {
-                Index:getCorrectIndex(action.index, state.Slides.length, state.Loop)
-            });
+            //sets the slide to show - within the bounds of # of slides
+            case SET_INDEX : {
+                return Object.assign({}, state, {
+                    Index:getCorrectIndex(action.index, state.Slides.length, state.Loop)
+                });
+            }
 
-        //Swaps the slides
-        case SWAP_SLIDES :
-            var slides = state.Slides.slice();
-            DataController.MoveElement(slides, action.indexA, action.indexB, action.right);
-            return Object.assign({}, state, {Slides:slides});
+            //Swaps the slides
+            case SWAP_SLIDES : {
+                var slides = state.Slides.slice();
+                DataController.MoveElement(slides, action.indexA, action.indexB, action.right);
+                return Object.assign({}, state, {Slides:slides});
+            }
 
-        default :
-            return state;
+            default :
+                return state;
+        }
+    } catch(er) {
+        return state;
     }
 }
 
@@ -118,7 +155,7 @@ const SlideshowStore = createStore(SlideshowReducer);
 const SlideshowController = {
     Key:'SS',
     /**
-     * Sets the state of the cotnroller
+     * Sets the state of the controller
      * @param {Object} state 
      */
     SetState(state) {

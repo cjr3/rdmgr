@@ -23,8 +23,8 @@ import Panel from 'components/Panel';
 import DataController from 'controllers/DataController';
 
 type PeerControlRecord = {
-    name:string,
-    controller:any
+    name:string;
+    controller:any;
 }
 
 /**

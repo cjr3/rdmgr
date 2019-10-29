@@ -847,6 +847,7 @@ class ConfigPanelPeers extends React.PureComponent<any, {
             if(window && window.LocalServer) {
                 window.LocalServer.subscribe(this.updateLocalServer);
                 this.updateData();
+                this.updateLocalServer();
                 clearInterval(timer);
             }
         }, 1000);

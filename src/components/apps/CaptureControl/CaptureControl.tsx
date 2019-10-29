@@ -26,7 +26,7 @@ export default class CaptureControl extends React.PureComponent<{
 }> {
     readonly state = {
         CapturePreviewShown:false
-    }
+    };
 
     /**
      * Renders the component.
@@ -56,6 +56,6 @@ export default class CaptureControl extends React.PureComponent<{
                 <CaptureDisplayControls/>
                 <CaptureStreamControls/>
             </Panel>
-        )
+        );
     }
 }
