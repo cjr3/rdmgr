@@ -1,23 +1,50 @@
 import React from 'react';
 import cnames from 'classnames';
 import vars from 'tools/vars';
+import ScoreboardController from 'controllers/ScoreboardController';
 
-interface PBoardStatus {
-    status:number,
-    className?:string
-}
+export default class BoardStatus extends React.PureComponent<any, {
+    status:number;
+}> {
+    readonly state = {
+        status:ScoreboardController.getState().BoardStatus
+    }
 
-export default function BoardStatus(props:PBoardStatus) {
-    var classNames = cnames({
-        boardstatus:true,
-        timeout:(props.status === vars.Scoreboard.Status.Timeout),
-        injury:(props.status === vars.Scoreboard.Status.Injury),
-        upheld:(props.status === vars.Scoreboard.Status.Upheld),
-        overturned:(props.status === vars.Scoreboard.Status.Overturned),
-        review:(props.status === vars.Scoreboard.Status.Review)
-    }, props.className);
+    protected remoteScoreboard:Function|null = null;
 
-    return (
-        <div className={classNames}>{vars.Scoreboard.StatusText[props.status]}</div>
-    );
+    constructor(props) {
+        super(props);
+        this.updateScoreboard = this.updateScoreboard.bind(this);
+    }
+
+    protected updateScoreboard() {
+        let state = ScoreboardController.getState();
+        if(state.BoardStatus !== this.state.status) {
+            this.setState({status:state.BoardStatus});
+        }
+    }
+
+    componentDidMount() {
+        this.remoteScoreboard = ScoreboardController.subscribe(this.updateScoreboard);
+    }
+    
+    componentWillUnmount() {
+        if(this.remoteScoreboard !== null) {
+            this.remoteScoreboard();
+        }
+    }
+    
+    render() {
+        var classNames = cnames({
+            boardstatus:true,
+            timeout:(this.state.status === vars.Scoreboard.Status.Timeout),
+            injury:(this.state.status === vars.Scoreboard.Status.Injury),
+            upheld:(this.state.status === vars.Scoreboard.Status.Upheld),
+            overturned:(this.state.status === vars.Scoreboard.Status.Overturned),
+            review:(this.state.status === vars.Scoreboard.Status.Review)
+        });
+        return (
+            <div className={classNames}>{vars.Scoreboard.StatusText[this.state.status]}</div>
+        );
+    }
 }

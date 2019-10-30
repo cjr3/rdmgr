@@ -6,20 +6,12 @@ import keycodes from 'tools/keycodes';
 import cnames from 'classnames';
 import './css/ChatForm.scss';
 
-interface SChatForm extends SChatController {
-    MessageText?:string
-}
-
 /**
  * Component for displaying a chat room for peer connections.
  */
-export default class ChatForm extends React.PureComponent<any, SChatForm> {
+export default class ChatForm extends React.PureComponent<any, SChatController> {
 
-    readonly state:SChatForm = ChatController.getState();
-    /**
-     * User text field input
-     */
-    protected MessageItem:React.RefObject<HTMLInputElement> = React.createRef();
+    readonly state:SChatController = ChatController.getState();
     /**
      * ChatController remote
      */
@@ -31,14 +23,9 @@ export default class ChatForm extends React.PureComponent<any, SChatForm> {
      */
     constructor(props) {
         super(props);
-        this.state.MessageText = '';
 
         //bindings
         this.onChatOpen = this.onChatOpen.bind(this);
-        this.onChangeMessage = this.onChangeMessage.bind(this);
-        this.onKeyUpMessage = this.onKeyUpMessage.bind(this);
-        this.onClickClear = this.onClickClear.bind(this);
-        this.addMessage = this.addMessage.bind(this);
         this.updateChat = this.updateChat.bind(this);
     }
 
@@ -49,16 +36,102 @@ export default class ChatForm extends React.PureComponent<any, SChatForm> {
         this.setState(ChatController.getState());
     }
 
-    /**
-     * Triggered when the chat panel is opened.
-     * - Marks all messages as read.
-     */
     onChatOpen() {
         ChatController.ReadMesssages();
-        if(this.MessageItem !== null && this.MessageItem.current !== null) {
-            this.MessageItem.current.focus();
-            this.MessageItem.current.select();
-        }
+    }
+
+    /**
+     * Start listeners
+     */
+    componentDidMount() {
+        this.remoteChat = ChatController.subscribe(this.updateChat);
+    }
+
+    /**
+     * Close listeners
+     */
+    componentWillUnmount() {
+        if(this.remoteChat !== null)
+            this.remoteChat();
+    }
+
+    /**
+     * Renders the component.
+     */
+    render() {
+        let lines:Array<React.ReactElement> = [];
+        let i:number = 1;
+        this.state.Messages.forEach((message) => {
+            lines.push(<ChatMessage message={message} key={`msg-${i}`}/>);
+            i++;
+        });
+
+        return (
+            <Panel
+                popup={true}
+                opened={this.props.opened}
+                className="CHT-app-panel"
+                contentName="CHT-app"
+                onClose={this.props.onClose}
+                onOpen={this.onChatOpen}
+                buttons={[<ChatMessageEntry key="chat-entry" opened={this.props.opened}/>]}
+                scrollBottom={true}
+                title="Chat - (All Users)"
+                >
+                {lines}
+            </Panel>
+        )
+    }
+}
+
+interface PChatMessage {
+    message:MessageRecord
+}
+
+/**
+ * 
+ * @param props PChatMessage
+ */
+function ChatMessage(props:PChatMessage) {
+    var className = cnames('chat-line', {self:props.message.self});
+    return (
+        <div className={className} title={props.message.time}>
+            <div className="message-text">{props.message.line}</div>
+            <div className="name">
+                <span className="qm"></span>
+                <span className="nd">{props.message.name}</span>
+            </div>
+        </div>
+    )
+}
+
+/**
+ * Component for entering a chat message
+ */
+class ChatMessageEntry extends React.PureComponent<{
+    opened?:boolean;
+}, {
+    MessageText:string;
+}>{
+    readonly state = {
+        MessageText:''
+    };
+
+    /**
+     * Reference element for text entry
+     */
+    protected MessageItem:React.RefObject<HTMLInputElement> = React.createRef();
+
+    /**
+     * Constructor
+     * @param props 
+     */
+    constructor(props) {
+        super(props);
+        this.onChangeMessage = this.onChangeMessage.bind(this);
+        this.onKeyUpMessage = this.onKeyUpMessage.bind(this);
+        this.addMessage = this.addMessage.bind(this);
+        this.onClickClear = this.onClickClear.bind(this);
     }
 
     /**
@@ -71,21 +144,7 @@ export default class ChatForm extends React.PureComponent<any, SChatForm> {
                 this.addMessage();
             break;
             case keycodes.ESCAPE :
-                if(this.state.MessageText === '' && this.props.onClose) {
-                    this.props.onClose();
-                    if(this.MessageItem !== null && this.MessageItem.current !== null) {
-                        this.MessageItem.current.blur();
-                    }
-                }
                 this.setState(() => { return {MessageText:''} });
-            break;
-            case keycodes.F9 :
-                if(this.props.onClose) {
-                    this.props.onClose();
-                    if(this.MessageItem !== null && this.MessageItem.current !== null) {
-                        this.MessageItem.current.blur();
-                    }
-                }
             break;
             default: break;
         }
@@ -141,89 +200,45 @@ export default class ChatForm extends React.PureComponent<any, SChatForm> {
     }
 
     /**
-     * Start listeners
+     * Triggered when the component updates.
+     * @param props any
      */
-    componentDidMount() {
-        this.remoteChat = ChatController.subscribe(this.updateChat);
+    componentDidUpdate(prevProps:any) {
+        if(this.props.opened && !prevProps.opened) {
+            if(this.MessageItem !== null && this.MessageItem.current !== null) {
+                this.MessageItem.current.focus();
+                this.MessageItem.current.select();
+            }
+        }
     }
 
     /**
-     * Close listeners
-     */
-    componentWillUnmount() {
-        if(this.remoteChat !== null)
-            this.remoteChat();
-    }
-
-    /**
-     * Renders the component.
+     * Renders the component
      */
     render() {
-        let lines:Array<React.ReactElement> = [];
-        let i = 1;
-        this.state.Messages.forEach((message) => {
-            lines.push(<ChatMessage message={message} key={`msg-${i}`}/>);
-            i++;
-        });
-        let messageLength:number = (this.state.MessageText !== undefined) ? this.state.MessageText.length : 0
-
-        let buttons = [
-            <input type="text" size={20} maxLength={140}
-                value={this.state.MessageText}
-                onChange={this.onChangeMessage}
-                onKeyUp={this.onKeyUpMessage}
-                ref={this.MessageItem}
-                key="txt-message"/>,
-            <Icon
-                key="btn-clear"
-                onClick={this.onClickClear}
-                title="Clear Chat"
-                src={IconDelete}
-            />,
-            <Icon
-                key="btn-send"
-                onClick={this.addMessage}
-                title="Send"
-                active={(messageLength >= 1)}
-                src={IconCheck}
-            />
-        ];
-
+        let messageLength:number = (this.state.MessageText) ? this.state.MessageText.length : 0;
         return (
-            <Panel
-                popup={true}
-                opened={this.props.opened}
-                className="CHT-app-panel"
-                contentName="CHT-app"
-                onClose={this.props.onClose}
-                onOpen={this.onChatOpen}
-                buttons={buttons}
-                scrollBottom={true}
-                title="Chat - (All Users)"
-                >
-                    {lines}
-            </Panel>
-        )
+            <React.Fragment>
+                <input type="text" size={20} maxLength={140}
+                    value={this.state.MessageText}
+                    onChange={this.onChangeMessage}
+                    onKeyUp={this.onKeyUpMessage}
+                    ref={this.MessageItem}
+                    key="txt-message"/>
+                <Icon
+                    key="btn-clear"
+                    onClick={this.onClickClear}
+                    title="Clear Chat"
+                    src={IconDelete}
+                />
+                <Icon
+                    key="btn-send"
+                    onClick={this.addMessage}
+                    title="Send"
+                    active={(messageLength >= 1)}
+                    src={IconCheck}
+                />
+            </React.Fragment>
+        );
     }
-}
-
-interface PChatMessage {
-    message:MessageRecord
-}
-
-/**
- * 
- * @param props PChatMessage
- */
-function ChatMessage(props:PChatMessage) {
-    var className = cnames('chat-line', {self:props.message.self});
-    return (
-        <div className={className} title={props.message.time}>
-            <div className="message-text">{props.message.line}</div>
-            <div className="name">
-                <span className="qm"></span>
-                <span className="nd">{props.message.name}</span>
-            </div>
-        </div>
-    )
 }

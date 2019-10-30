@@ -8,10 +8,7 @@ import ColorPicker from 'material-ui-color-picker';
  * Does not save to original record.
  */
 export default class ColorInput extends React.PureComponent<{
-    /**
-     * Team from the ScoreboardController
-     */
-    Team:SScoreboardTeam
+    side:string;
 }, {
     /**
      * Color for user selection
@@ -52,7 +49,7 @@ export default class ColorInput extends React.PureComponent<{
      * @param {MouseEvent} ev 
      */
     onClick() {
-        ScoreboardController.SetTeamColor(this.props.Team, this.state.color);
+        ScoreboardController.SetTeamColor(this.props.side, this.state.color);
     }
 
     /**
@@ -61,7 +58,7 @@ export default class ColorInput extends React.PureComponent<{
      */
     onKeyUp(ev) {
         if(ev.keyCode === 13) {
-            ScoreboardController.SetTeamColor(this.props.Team, this.state.color);
+            ScoreboardController.SetTeamColor(this.props.side, this.state.color);
         } else if(ev.keyCode === 27) {
             ev.target.blur();
         }
@@ -78,22 +75,13 @@ export default class ColorInput extends React.PureComponent<{
     }
 
     /**
-     * Triggered when the component updates.
-     * @param {Object} prevProps 
-     */
-    componentDidUpdate(prevProps) {
-        if(prevProps.Team.Color !== this.props.Team.Color) {
-            this.setState(() => {
-                return {color:this.props.Team.Color};
-            });
-        }
-    }
-
-    /**
      * Set the color to the team's color
      */
     componentDidMount() {
-        this.setState({color:this.props.Team.Color});
+        let scolor = ScoreboardController.getState().TeamA.Color;
+        if(this.props.side === 'B')
+            scolor = ScoreboardController.getState().TeamB.Color;
+        this.setState({color:scolor});
     }
 
     /**
@@ -101,7 +89,9 @@ export default class ColorInput extends React.PureComponent<{
      */
     render() {
         let color:string = (this.state.color) ? this.state.color : '#000000';
-        let changed:boolean = (color !== this.props.Team.Color);
+        let scolor = ScoreboardController.getState().TeamA.Color;
+        if(this.props.side === 'B')
+            scolor = ScoreboardController.getState().TeamB.Color;
         return (
             <div>
                 <div>Color</div>
@@ -118,7 +108,7 @@ export default class ColorInput extends React.PureComponent<{
                         src={IconCheck}
                         onClick={this.onClick}
                         title="Change Color"
-                        active={changed}
+                        active={(color !== scolor)}
                     />
                 </div>
             </div>

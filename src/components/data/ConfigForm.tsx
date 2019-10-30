@@ -196,6 +196,7 @@ export default class ConfigForm extends React.PureComponent<any, {
             <Panel
                 opened={this.props.opened}
                 contentName={className}
+                className="CFG-app-panel"
                 >
                 <div className="forms">{forms}</div>
                 <div className="sections">{sections}</div>

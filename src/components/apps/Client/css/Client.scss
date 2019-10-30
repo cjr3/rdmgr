@@ -10,7 +10,10 @@
 
 /* Client CSS */
 .panel.client {
-    position: relative;
+    
+    &.opened {
+        height: calc(100% - 48px);
+    }
 
     > .title {
         flex-flow: row-reverse wrap;
@@ -71,50 +74,9 @@
     }
 
     > .content {
-        height: calc(100% - 62px);
-        top: 24px;
-    }
-
-    > .buttons {
-        background-color: $black;
-        justify-content: space-between;
-
-        > .app-buttons, 
-        > .record-buttons {
-            > img.icon {
-                padding: 3px;
-                overflow: visible;
-                transition: background-color 150ms ease-in-out;
-            }
-            > img.icon.active {
-                background-color: $purple;
-            }
-        }
-
-        > .capture-status {
-            flex: 1;
-            padding: 3px 16px;
-            display: flex;
-            flex-flow: column wrap;
-            .progress-bar {
-                flex: 0;
-                height: 12px;
-            }
-            > .capture-content {
-                flex: 1;
-
-                > .text {
-                    text-align: center;
-                    height: 100%;
-                    line-height: 32px;
-                }
-            }
-        }
-    }
-
-    > .content {
         overflow: hidden;
-        height: calc(100% - 72px);
+        top: 24px;
+        height: calc(100% - 24px);
         > .panel > .content {
             overflow: hidden;
         }
@@ -157,28 +119,20 @@
             }
         }
     }
+}
 
+#root {
     .display-options {
-        max-width: 300px;
-    }
-
-    .controller-options {
+        bottom: 48px;
         max-width: 300px;
     }
 }
 
 @media screen and (min-width: 1600px) {
     .panel.client {
-        > .buttons {
-            .icon {
-                width: 64px;
-                height: 64px;
-            }
-        }
-
         > .content {
             top: 48px;
-            height: calc(100% - 112px);
+            height: calc(100% - 48px);
         }
 
         > .title {
@@ -242,6 +196,52 @@
         .scorebanner {
             div.name {
                 display: none;
+            }
+        }
+    }
+}
+
+.client-bar {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    display: flex;
+    height: 48px;
+    flex-flow: row wrap;
+    background-color: $black;
+    justify-content: space-between;
+    overflow:hidden;
+
+    > .app-buttons, 
+    > .record-buttons {
+        > img.icon {
+            padding: 3px;
+            overflow: visible;
+            transition: background-color 150ms ease-in-out;
+        }
+        > img.icon.active {
+            background-color: $purple;
+        }
+    }
+
+    > .capture-status {
+        flex: 1;
+        padding: 3px 16px;
+        display: flex;
+        flex-flow: column wrap;
+        .progress-bar {
+            flex: 0;
+            height: 12px;
+        }
+        > .capture-content {
+            flex: 1;
+
+            > .text {
+                text-align: center;
+                height: 100%;
+                line-height: 32px;
             }
         }
     }

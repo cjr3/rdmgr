@@ -3,6 +3,7 @@ import Clock from 'components/tools/Clock'
 import {Icon, IconStopwatch, Icon2x} from 'components/Elements'
 import ScoreboardController from 'controllers/ScoreboardController';
 import vars from 'tools/vars';
+import ClientController from 'controllers/ClientController';
 
 interface SBreakClock {
     status:number,
@@ -16,13 +17,7 @@ interface PBreakClock {
 /**
  * Scoreboard Break Clock control
  */
-export default class BreakClock extends React.PureComponent<{
-    /**
-     * Remote Peer ID. If provided, the clock does not tick,
-     * and the peer must update its value
-     */
-    remote?:string;
-}, {
+export default class BreakClock extends React.PureComponent<any, {
     /**
      * Status of the clock (playing, stopped, ready)
      */
@@ -70,7 +65,7 @@ export default class BreakClock extends React.PureComponent<{
                 second:ScoreboardController.getState().BreakSecond
             };
         }, () => {
-            if(!this.props.remote && this.ClockItem !== null && this.ClockItem.current !== null) {
+            if(!window.remoteApps.SB && this.ClockItem !== null && this.ClockItem.current !== null) {
                 this.ClockItem.current.set(
                     0,
                     0,
@@ -122,7 +117,7 @@ export default class BreakClock extends React.PureComponent<{
      * @param {Number} second 
      */
     async onTick(hour, minute, second) {
-        if(!this.props.remote)
+        if(!ClientController.ControllerRemote(ScoreboardController.Key))
             ScoreboardController.SetBreakTime(second);
     }
 
@@ -146,7 +141,7 @@ export default class BreakClock extends React.PureComponent<{
      */
     render() {
         let status:number = this.state.status;
-        if(this.props.remote && status === vars.Clock.Status.Running)
+        if(status === vars.Clock.Status.Running && window.remoteApps.SB)
             status = vars.Clock.Status.Ready;
         return (
             <tr>
@@ -157,7 +152,7 @@ export default class BreakClock extends React.PureComponent<{
                         minute={0}
                         second={this.state.second}
                         status={status}
-                        remote={this.props.remote}
+                        remote={window.remoteApps.SB}
                         onClick={this.onClick}
                         onTick={this.onTick}
                         onDone={this.onDone}

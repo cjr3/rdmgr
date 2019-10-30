@@ -1,29 +1,58 @@
 import React from 'react'
 import cnames from 'classnames'
 import vars from 'tools/vars';
-
-interface PStatus {
-    /**
-     * Status code, from vars.Team.Status
-     */
-    status:number;
-}
+import ScoreboardController from 'controllers/ScoreboardController';
 
 /**
  * Component for displaying a team's status on the scoreboard control
- * @param props PStatus
  */
-export default function Status(props:PStatus) {
-    const classNames = cnames({
-        status:true,
-        leadjammer:(props.status === vars.Team.Status.LeadJammer),
-        powerjam:(props.status === vars.Team.Status.PowerJam),
-        timeout:(props.status === vars.Team.Status.Timeout),
-        challenge:(props.status === vars.Team.Status.Challenge),
-        injury:(props.status === vars.Team.Status.Injury)
-    });
+export default class Status extends React.PureComponent<{
+    side:string;
+}, {
+    status:number;
+}>{
+    readonly state = {
+        status:0
+    }
 
-    return (
-        <div className={classNames}>{vars.Team.StatusText[props.status]}</div>
-    );
+    protected remoteScoreboard:Function|null = null;
+
+    constructor(props) {
+        super(props);
+        this.updateScoreboard = this.updateScoreboard.bind(this);
+    }
+
+    updateScoreboard() {
+        let cstate = ScoreboardController.getState();
+        let status = cstate.TeamA.Status;
+        if(this.props.side == cstate.TeamB.Side)
+            status = cstate.TeamB.Status;
+        if(status !== this.state.status) {
+            this.setState({status:status});
+        }
+    }
+
+    componentDidMount() {
+        this.remoteScoreboard = ScoreboardController.subscribe(this.updateScoreboard);
+    }
+
+    componentWillUnmount() {
+        if(this.remoteScoreboard !== null)
+            this.remoteScoreboard();
+    }
+
+    render() {
+        const classNames = cnames({
+            status:true,
+            leadjammer:(this.state.status === vars.Team.Status.LeadJammer),
+            powerjam:(this.state.status === vars.Team.Status.PowerJam),
+            timeout:(this.state.status === vars.Team.Status.Timeout),
+            challenge:(this.state.status === vars.Team.Status.Challenge),
+            injury:(this.state.status === vars.Team.Status.Injury)
+        });
+        return (
+            <div className={classNames}>{vars.Team.StatusText[this.state.status]}</div>
+        );
+    }
+    
 }

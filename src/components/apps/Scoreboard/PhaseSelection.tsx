@@ -84,14 +84,22 @@ export default class PhaseSelection extends React.PureComponent<{
      * Updates the state to match the controller.
      */
     updateState() {
-        this.setState({Phases:DataController.getPhases()});
+        DataController.compareAsync(DataController.getPhases(), this.state.Phases).then((response) => {
+            if(!response) {
+                this.setState(() => {
+                    return {Phases:DataController.getPhases()}
+                });
+            }
+        });
     }
 
     /**
      * Updates the state to match the controller.
      */
     updateScore() {
-        this.setState({PhaseID:ScoreboardController.getState().PhaseID});
+        let id:number = ScoreboardController.getState().PhaseID;
+        if(id !== this.state.PhaseID)
+            this.setState({PhaseID:id});
     }
 
     /**

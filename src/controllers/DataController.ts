@@ -1789,6 +1789,17 @@ const DataController = {
     },
 
     /**
+     * Asyncrhous object comparison
+     * @param obj1 Object
+     * @param obj2 Object
+     */
+    compareAsync(obj1, obj2) : Promise<boolean> {
+        return new Promise((res, rej) => {
+            res(DataController.compare(obj1, obj2));
+        });
+    },
+
+    /**
      * Moves an element within an array
      * @param {Array} arr The array to change
      * @param {Number} a The index of the element to move adjacent to

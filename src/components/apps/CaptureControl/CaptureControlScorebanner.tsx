@@ -165,28 +165,28 @@ export default class CaptureControlScorebanner extends React.PureComponent<PCapt
      * Triggered when the user clicks on the right side team's score
      */
     onClickIncreaseTeamAScore() {
-        ScoreboardController.IncreaseTeamScore(this.state.TeamA, 1);
+        ScoreboardController.IncreaseTeamScore('A', 1);
     }
 
     /**
      * Triggered when the user context-clicks on the left-side team's score
      */
     onClickDecreaseTeamAScore() {
-        ScoreboardController.DecreaseTeamScore(this.state.TeamA, 1);
+        ScoreboardController.DecreaseTeamScore('A', 1);
     }
 
     /**
      * Triggered when the user clicks on the left side team's score
      */
     onClickIncreaseTeamBScore() {
-        ScoreboardController.IncreaseTeamScore(this.state.TeamB, 1);
+        ScoreboardController.IncreaseTeamScore('B', 1);
     }
 
     /**
      * Triggered when the user context-clicks on the right-side team's score
      */
     onClickDecreaseTeamBScore() {
-        ScoreboardController.DecreaseTeamScore(this.state.TeamB, 1);
+        ScoreboardController.DecreaseTeamScore('B', 1);
     }
 
     /**

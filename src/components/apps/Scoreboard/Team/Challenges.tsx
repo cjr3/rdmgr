@@ -7,10 +7,7 @@ import ScoreboardController, {SScoreboardTeam} from 'controllers/ScoreboardContr
  * Component for team challenges.
  */
 export default class Challenges extends React.PureComponent<{
-    /**
-     * Team, from the scoreboard controller
-     */
-    Team:SScoreboardTeam;
+    side:string;
 }, {
     /**
      * Amount of challenges
@@ -51,7 +48,7 @@ export default class Challenges extends React.PureComponent<{
         this.setState(() => {
             var cstate = ScoreboardController.getState();
             var amount = cstate.TeamA.Challenges;
-            if(this.props.Team.Side === 'B')
+            if(this.props.side === 'B')
                 amount = cstate.TeamB.Challenges;
             
             if(this.CounterItem !== null && this.CounterItem.current !== null)
@@ -71,7 +68,7 @@ export default class Challenges extends React.PureComponent<{
         this.setState(() => {
             return {amount:amount}
         }, () => {
-            ScoreboardController.SetTeamChallenges(this.props.Team, amount);
+            ScoreboardController.SetTeamChallenges(this.props.side, amount);
         });
     }
 
@@ -80,7 +77,7 @@ export default class Challenges extends React.PureComponent<{
      * @param amount number
      */
     onAdd(amount:number) {
-        ScoreboardController.IncreaseTeamChallenges(this.props.Team, amount);
+        ScoreboardController.IncreaseTeamChallenges(this.props.side, amount);
     }
 
     /**
@@ -88,7 +85,7 @@ export default class Challenges extends React.PureComponent<{
      * @param amount number
      */
     onSubtract(amount:number) {
-        ScoreboardController.DecreaseTeamChallenges(this.props.Team, amount);
+        ScoreboardController.DecreaseTeamChallenges(this.props.side, amount);
     }
 
     /**
@@ -134,10 +131,10 @@ export default class Challenges extends React.PureComponent<{
                     <Icon 
                         src={IconSubtract}
                         onClick={() => {
-                            ScoreboardController.DecreaseTeamChallenges(this.props.Team, 1);
+                            ScoreboardController.DecreaseTeamChallenges(this.props.side, 1);
                         }}
                         onContextMenu={() => {
-                            ScoreboardController.IncreaseTeamChallenges(this.props.Team, 1)
+                            ScoreboardController.IncreaseTeamChallenges(this.props.side, 1)
                         }}
                         />
                 </div>

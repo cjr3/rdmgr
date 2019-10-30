@@ -47,6 +47,18 @@ export interface SClientController {
      * Number of currently connected peers
      */
     ConnectedPeers:number;
+    /**
+     * Determines if the configuration panel is open or not
+     */
+    ConfigShown:boolean;
+    /**
+     * Determines if the display panel is open or not
+     */
+    DisplayShown:boolean;
+    /**
+     * Determines if the display panel is open or not
+     */
+    ChatShown:boolean;
 };
 
 interface IClientController extends IController {
@@ -66,6 +78,26 @@ interface IClientController extends IController {
      * Attempts to connect to known remote peers.
      */
     ConnectPeers:Function;
+
+    /**
+     * Toggles the configuration panel
+     */
+    ToggleConfiguration:Function;
+
+    /**
+     * Toggles the display panel
+     */
+    ToggleDisplay:Function;
+
+    /**
+     * Toggles the chat panel
+     */
+    ToggleChat:Function;
+
+    /**
+     * Checks if the controller is controlled by a remote peer
+     */
+    ControllerRemote:Function;
 
     /**
      * Handles global keyboard commands
@@ -162,7 +194,10 @@ export enum Actions {
     SET_APPLICATION,
     SET_RECORD_UPDATE_REQUEST,
     SET_PEERS,
-    SET_UNREAD_MESSAGE_COUNT
+    SET_UNREAD_MESSAGE_COUNT,
+    TOGGLE_CONFIG,
+    TOGGLE_DISPLAY,
+    TOGGLE_CHAT
 };
 
 const InitState:SClientController = {
@@ -182,7 +217,10 @@ const InitState:SClientController = {
         [SponsorController.Key]:null,
         [VideoController.Key]:null
     },
-    ConnectedPeers:0
+    ConnectedPeers:0,
+    ConfigShown:false,
+    DisplayShown:false,
+    ChatShown:false
 };
 
 const Controllers:any = {
@@ -241,6 +279,7 @@ function ClientReducer(state:SClientController = InitState, action) {
                 //copy and reset applications
                 let applications:any = Object.assign({}, state.PeerApplications);
                 let c:number = 0;
+                window.remoteApps.SB = false;
                 for(let key in applications) {
                     applications[key] = null;
                 }
@@ -253,6 +292,8 @@ function ClientReducer(state:SClientController = InitState, action) {
                         peer.ControlledApps.forEach((code) => {
                             if(applications[code] === null) {
                                 applications[code] = peer.ID;
+                                if(code === ScoreboardController.Key)
+                                    window.remoteApps.SB = true;
                             }
                         });
                     }
@@ -270,6 +311,27 @@ function ClientReducer(state:SClientController = InitState, action) {
                 return Object.assign({}, state, {
                     UnreadMessageCount:action.amount
                 });
+            }
+            break;
+
+            //Toggle configuration
+            case Actions.TOGGLE_CONFIG : {
+                let value:boolean = (typeof(action.value) === 'boolean') ? action.value : (!state.ConfigShown);
+                return Object.assign({}, state, {ConfigShown:value});
+            }
+            break;
+
+            //Toggle Display
+            case Actions.TOGGLE_DISPLAY : {
+                let value:boolean = (typeof(action.value) === 'boolean') ? action.value : (!state.DisplayShown);
+                return Object.assign({}, state, {DisplayShown:value});
+            }
+            break;
+
+            //Toggle Chat
+            case Actions.TOGGLE_CHAT : {
+                let value:boolean = (typeof(action.value) === 'boolean') ? action.value : (!state.ChatShown);
+                return Object.assign({}, state, {ChatShown:value});
             }
             break;
 
@@ -362,11 +424,14 @@ const ClientController:IClientController = {
      * @param key string
      */
     SetApplication(key:string) {
-        ClientController.getStore().dispatch({
-            type:Actions.SET_APPLICATION,
-            key:key
-        });
-        DataController.SaveMiscRecord('DefaultApp', key);
+        let state = ClientController.getState();
+        if(state.CurrentApplication != key) {
+            ClientController.getStore().dispatch({
+                type:Actions.SET_APPLICATION,
+                key:key
+            });
+            DataController.SaveMiscRecord('DefaultApp', key);
+        }
     },
 
     /**
@@ -391,6 +456,43 @@ const ClientController:IClientController = {
         if(window && window.LocalServer && window.LocalServer.connectPeers) {
             window.LocalServer.connectPeers();
         }
+    },
+
+    /**
+     * Toggles the configuration panel.
+     */
+    ToggleConfiguration(value?:boolean) {
+        ClientController.getStore().dispatch({
+            type:Actions.TOGGLE_CONFIG,
+            value:value
+        });
+    },
+
+    /**
+     * Toggles the configuration panel.
+     */
+    ToggleDisplay(value?:boolean) {
+        ClientController.getStore().dispatch({
+            type:Actions.TOGGLE_DISPLAY,
+            value:value
+        });
+    },
+
+    /**
+     * Toggles the chat panel.
+     */
+    ToggleChat(value?:boolean) {
+        ClientController.getStore().dispatch({
+            type:Actions.TOGGLE_CHAT,
+            value:value
+        });
+    },
+
+    ControllerRemote(key:string) : boolean {
+        let state = ClientController.getState();
+        if(state.PeerApplications[key])
+            return true;
+        return false;
     },
 
     /**

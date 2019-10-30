@@ -2,17 +2,12 @@ import React from 'react'
 import Clock from 'components/tools/Clock'
 import vars from 'tools/vars'
 import ScoreboardController from 'controllers/ScoreboardController'
+import ClientController from 'controllers/ClientController'
 
 /**
  * Jam clock component for the scoreboard.
  */
-export default class JamClock extends React.PureComponent<{
-    /**
-     * Remote Peer ID. If provided, the peer (connected or not) must provide
-     * values to change the clock
-     */
-    remote?:string;
-}, {
+export default class JamClock extends React.PureComponent<any, {
     /**
      * Show tenths on the clock or not
      */
@@ -76,7 +71,7 @@ export default class JamClock extends React.PureComponent<{
                 second:ScoreboardController.getState().JamSecond
             };
         }, () => {
-            if(!this.props.remote && this.ClockItem !== null && this.ClockItem.current !== null) {
+            if(!window.remoteApps.SB && this.ClockItem !== null && this.ClockItem.current !== null) {
                 this.ClockItem.current.set(
                     this.state.hour,
                     this.state.minute,
@@ -112,7 +107,7 @@ export default class JamClock extends React.PureComponent<{
      * @param {Number} second 
      */
     async onTick(hour, minute, second) {
-        if(!this.props.remote)
+        if(!window.remoteApps.SB)
             ScoreboardController.SetJamTime(second);
     }
 
@@ -136,12 +131,12 @@ export default class JamClock extends React.PureComponent<{
      */
     render() {
         let status:number = this.state.status;
-        if(this.props.remote && status === vars.Clock.Status.Running)
+        if(status === vars.Clock.Status.Running && window.remoteApps.SB)
             status = vars.Clock.Status.Ready;
         return (
             <Clock 
                 className="jam-clock"
-                remote={this.props.remote}
+                remote={window.remoteApps.SB}
                 hour={this.state.hour}
                 minute={this.state.minute}
                 second={this.state.second}

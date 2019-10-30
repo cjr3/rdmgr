@@ -37,24 +37,24 @@ export default class Scoreboard extends React.Component<{
     /**
      * true if open, false if not
      */
-    opened:boolean
+    opened:boolean;
 }, {
     /**
      * Status of the scoreboard
      */
-    BoardStatus:number;
+    //BoardStatus:number;
     /**
      * State of the jam clock
      */
-    JamState:number;
+    //JamState:number;
     /**
      * State of the break clock
      */
-    BreakState:number;
+    //BreakState:number;
     /**
      * State of the game clock
      */
-    GameState:number;
+    //GameState:number;
     /**
      * Status of confirming points to in-field referees
      */
@@ -62,15 +62,15 @@ export default class Scoreboard extends React.Component<{
     /**
      * Name of current phase/quarter
      */
-    PhaseName:string;
+    //PhaseName:string;
     /**
      * Left-side team
      */
-    TeamA:SScoreboardTeam;
+    //TeamA:SScoreboardTeam;
     /**
      * Right-side team
      */
-    TeamB:SScoreboardTeam;
+    //TeamB:SScoreboardTeam;
     /**
      * Show/Hide phase selection
      */
@@ -90,36 +90,36 @@ export default class Scoreboard extends React.Component<{
     /**
      * Last jam start hour
      */
-    StartGameHour:number;
+    //StartGameHour:number;
     /**
      * Last jam start minute
      */
-    StartGameMinute:number;
+    //StartGameMinute:number;
     /**
      * Last jam start second
      */
-    StartGameSecond:number;
+    //StartGameSecond:number;
     /**
      * Jam Change Mode
      */
     JamChangeMode:boolean;
 }> {
     readonly state = {
-        BoardStatus:ScoreboardController.getState().BoardStatus,
-        JamState:ScoreboardController.getState().JamState,
-        BreakState:ScoreboardController.getState().BreakState,
-        GameState:ScoreboardController.getState().GameState,
+        //BoardStatus:ScoreboardController.getState().BoardStatus,
+        //JamState:ScoreboardController.getState().JamState,
+        //BreakState:ScoreboardController.getState().BreakState,
+        //GameState:ScoreboardController.getState().GameState,
         ConfirmStatus:ScoreboardController.getState().ConfirmStatus,
-        PhaseName:ScoreboardController.getState().PhaseName,
-        TeamA:ScoreboardController.getState().TeamA,
-        TeamB:ScoreboardController.getState().TeamB,
+        //PhaseName:ScoreboardController.getState().PhaseName,
+        //TeamA:ScoreboardController.getState().TeamA,
+        //TeamB:ScoreboardController.getState().TeamB,
         PhaseOpened:false,
         TeamOpened:false,
         DisplayOpened:false,
         JamResetOpened:false,
-        StartGameHour:ScoreboardController.getState().StartGameHour,
-        StartGameMinute:ScoreboardController.getState().StartGameMinute,
-        StartGameSecond:ScoreboardController.getState().StartGameSecond,
+        //StartGameHour:ScoreboardController.getState().StartGameHour,
+        //StartGameMinute:ScoreboardController.getState().StartGameMinute,
+        //StartGameSecond:ScoreboardController.getState().StartGameSecond,
         JamChangeMode:ScoreboardController.getState().JamChangeMode
     }
 
@@ -158,17 +158,7 @@ export default class Scoreboard extends React.Component<{
     updateState() {
         let cstate = ScoreboardController.getState();
         this.setState({
-            BoardStatus:cstate.BoardStatus,
-            JamState:cstate.JamState,
-            GameState:cstate.GameState,
-            BreakState:cstate.BreakState,
             ConfirmStatus:cstate.ConfirmStatus,
-            PhaseName:cstate.PhaseName,
-            TeamA:cstate.TeamA,
-            TeamB:cstate.TeamB,
-            StartGameHour:cstate.StartGameHour,
-            StartGameMinute:cstate.StartGameMinute,
-            StartGameSecond:cstate.StartGameSecond,
             JamChangeMode:cstate.JamChangeMode
         });
     }
@@ -296,13 +286,6 @@ export default class Scoreboard extends React.Component<{
      * Renders the component
      */
     render() {
-        const jamLabel:string = this.JamLabels[this.state.JamState];
-        let clockIcon:string = IconPlay
-            
-        if(ScoreboardController.getState().GameState === vars.Clock.Status.Running) {
-            clockIcon = IconPause
-        }
-        
         let buttons:Array<React.ReactElement> = [
             <ToggleButton
                 key="btn-jammode"
@@ -311,19 +294,19 @@ export default class Scoreboard extends React.Component<{
                 title={`When checked, jam clock has three steps: Ready, Jam, Stopped`}
             />,
             <Button key="btn-oto" 
-                active={(this.state.BoardStatus === vars.Scoreboard.Status.Timeout)}
+                //active={(this.state.BoardStatus === vars.Scoreboard.Status.Timeout)}
                 onClick={ScoreboardController.OfficialTimeout}>Timeout</Button>,
             <Button key="btn-injury" 
-                active={(this.state.BoardStatus === vars.Scoreboard.Status.Injury)}
+                //active={(this.state.BoardStatus === vars.Scoreboard.Status.Injury)}
                 onClick={ScoreboardController.InjuryTimeout}>Injury</Button>,
             <Button key="btn-review" 
-                active={(this.state.BoardStatus === vars.Scoreboard.Status.Review)}
+                //active={(this.state.BoardStatus === vars.Scoreboard.Status.Review)}
                 onClick={this.onClickReview}>Review</Button>,
             <Button key="btn-upheld" 
-                active={(this.state.BoardStatus === vars.Scoreboard.Status.Upheld)}
+                //active={(this.state.BoardStatus === vars.Scoreboard.Status.Upheld)}
                 onClick={this.onClickUpheld}>Upheld</Button>,
             <Button key="btn-overturned" 
-                active={(this.state.BoardStatus === vars.Scoreboard.Status.Overturned)}
+                //active={(this.state.BoardStatus === vars.Scoreboard.Status.Overturned)}
                 onClick={this.onClickOverturned}>Overturned</Button>,
             <Button key="btn-quarter" 
                 active={(this.state.PhaseOpened)}
@@ -340,46 +323,34 @@ export default class Scoreboard extends React.Component<{
                 buttons={buttons}
                 opened={this.props.opened}
                 {...this.props}>
-                <ScoreboardTeam Team={this.state.TeamA}/>
-                <ScoreboardTeam Team={this.state.TeamB}/>
+                <ScoreboardTeam side='A'/>
+                <ScoreboardTeam side='B'/>
                 <div className="scoreboard-center">
-                    <JamClock remote={this.props.remote}/>
+                    <JamClock/>
                     <div className="jamn-break">
                         <table>
                             <tbody>
                                 <JamCounter/>
-                                <BreakClock remote={this.props.remote}/>
+                                <BreakClock/>
                             </tbody>
                         </table>
                     </div>
-                    <div className="phase">{this.state.PhaseName}</div>
-                    <BoardStatus status={this.state.BoardStatus}/>
-                    <GameClock remote={this.props.remote}/>
+                    <ScoreboardPhaseName/>
+                    <BoardStatus/>
+                    <GameClock/>
                     <PhaseControl/>
-                    <div className="jam-controls">
-                        <Button 
-                            onClick={ScoreboardController.ToggleJamClock} 
-                            className="jam-button"
-                            title="Toggle Jam Clock ( SPACEBAR, ENTER )"
-                            >{jamLabel}</Button>
-                        <Icon 
-                            src={clockIcon}
-                            onClick={ScoreboardController.ToggleGameClock}
-                            className="clock-button"
-                            title="Toggle Game Clock ( UP )"
-                        />
-                    </div>
+                    <ScoreboardJamControls/>
                 </div>
                 <div className="board-status-controls">
                     <Icon 
                         src={IconOfficialTimeout}
-                        active={this.state.BoardStatus === vars.Scoreboard.Status.Timeout}
+                        //active={this.state.BoardStatus === vars.Scoreboard.Status.Timeout}
                         onClick={ScoreboardController.OfficialTimeout}
                         title="Official Timeout ( CTRL+UP )"
                         />
                     <Icon 
                         src={IconInjury}
-                        active={this.state.BoardStatus === vars.Scoreboard.Status.Injury}
+                        //active={this.state.BoardStatus === vars.Scoreboard.Status.Injury}
                         onClick={ScoreboardController.InjuryTimeout}
                         title="Injury Timeout ( CTRL+DOWN )"
                         />
@@ -406,11 +377,104 @@ export default class Scoreboard extends React.Component<{
                 <JamReset
                     opened={this.state.JamResetOpened}
                     onClose={this.onClickResetJam}
-                    hour={this.state.StartGameHour}
-                    minute={this.state.StartGameMinute}
-                    second={this.state.StartGameSecond}
+                    //hour={this.state.StartGameHour}
+                    //minute={this.state.StartGameMinute}
+                    //second={this.state.StartGameSecond}
                     />
             </Panel>
         )
+    }
+}
+
+class ScoreboardJamControls extends React.PureComponent<any, {
+    JamState:number;
+    GameState:number;
+}> {
+    readonly state = {
+        JamState:ScoreboardController.getState().JamState,
+        GameState:ScoreboardController.getState().GameState
+    }
+
+    protected remoteScoreboard:Function|null = null;
+
+    protected JamLabels:Array<string> = ["JAM", "STOP", "READY"];
+
+    constructor(props) {
+        super(props);
+        this.updateScoreboard = this.updateScoreboard.bind(this);
+    }
+
+    updateScoreboard() {
+        this.setState({
+            JamState:ScoreboardController.getState().JamState,
+            GameState:ScoreboardController.getState().GameState
+        });
+    }
+
+    componentDidMount() {
+        this.remoteScoreboard = ScoreboardController.subscribe(this.updateScoreboard);
+    }
+
+    componentWillUnmount() {
+        if(this.remoteScoreboard !== null)
+            this.remoteScoreboard();
+    }
+
+    render() {
+        const jamLabel:string = this.JamLabels[this.state.JamState];
+        let clockIcon:string = IconPlay;
+        if(this.state.GameState === vars.Clock.Status.Running)
+            clockIcon = IconPause;
+        return (
+            <div className="jam-controls">
+                <Button 
+                    onClick={ScoreboardController.ToggleJamClock} 
+                    className="jam-button"
+                    title="Toggle Jam Clock ( SPACEBAR, ENTER )"
+                    >{jamLabel}</Button>
+                <Icon 
+                    src={clockIcon}
+                    onClick={ScoreboardController.ToggleGameClock}
+                    className="clock-button"
+                    title="Toggle Game Clock ( UP )"
+                />
+            </div>
+        );
+    }
+}
+
+class ScoreboardPhaseName extends React.PureComponent<any, {
+    name:string;
+}> {
+    readonly state = {
+        name:ScoreboardController.getState().PhaseName
+    }
+
+    protected remoteScoreboard:Function|null = null;
+
+    constructor(props) {
+        super(props);
+        this.updateScoreboard = this.updateScoreboard.bind(this);
+    }
+
+    updateScoreboard() {
+        this.setState({
+            name:ScoreboardController.getState().PhaseName
+        });
+    }
+
+    componentDidMount() {
+        this.remoteScoreboard = ScoreboardController.subscribe(this.updateScoreboard);
+    }
+
+    componentWillUnmount() {
+        if(this.remoteScoreboard !== null)
+            this.remoteScoreboard();
+    }
+
+    render() {
+        return (
+            <div className="phase">{this.state.name}</div>
+        );
     }
 }

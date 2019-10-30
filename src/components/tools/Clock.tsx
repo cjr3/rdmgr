@@ -31,10 +31,9 @@ export default class Clock extends React.Component<{
      */
     status:number;
     /**
-     * Remote control peer ID
-     * - When provided, then clocks don't tick, and must be updated by the remote peer
+     * Remote control flag
      */
-    remote?:string;
+    remote?:boolean;
     /**
      * Type of clock
      */
@@ -96,6 +95,11 @@ export default class Clock extends React.Component<{
      * Reference for setTimeout
      */
     protected Timer:number = 0;
+
+    /**
+     * Reference for setInterval
+     */
+    protected Ticker:number = 0;
 
     /**
      * Clock Worker
@@ -232,6 +236,8 @@ export default class Clock extends React.Component<{
      * Tick of the clock
      */
     protected async _tick() {
+        if(window.remoteApps.SB)
+            return;
         this._clear();
         var hours = this.state.hour;
         var minutes = this.state.minute;
@@ -267,7 +273,7 @@ export default class Clock extends React.Component<{
             });
 
             if(this.props.onTick)
-                window.setTimeout(this.props.onTick, 1, hours, minutes, seconds, tenths);
+                setTimeout(this.props.onTick, 10, hours, minutes, seconds, tenths);
 
         } else {
             this.setState(() => {
@@ -278,14 +284,26 @@ export default class Clock extends React.Component<{
                 //setTimeout(this.props.onTenths, 10, hours, minutes, seconds, tenths);
         }
 
+        if(this.Ticker === 0) {
+            this.Ticker = window.setInterval(this._tick, 100);
+        }
+
         //continue ticking
-        if(!this._done(hours, minutes, seconds, tenths)) {
-            if(this.props.status === vars.Clock.Status.Running)
-                this.Timer = window.setTimeout(this._tick, 100);
-        } else {
+        if(this._done(hours, minutes, seconds, tenths)) {
+            this.stopDispatcher();
             if(this.props.onDone)
                 this.props.onDone();
         }
+    }
+
+    protected startDispatcher() {
+        this.stopDispatcher();
+        this.Ticker = 0;
+        this._tick();
+    }
+
+    protected stopDispatcher() {
+        try {window.clearInterval(this.Ticker);} catch(er) {}
     }
 
     /**
@@ -322,8 +340,9 @@ export default class Clock extends React.Component<{
      * Triggered when the component has been updated
      * @param {Object} prevProps 
      */
-    componentDidUpdate(prevProps, prevState) {
-        if(typeof(this.props.remote) === "string" && this.props.remote !== '') {
+    componentDidUpdate(prevProps) {
+        if(window.remoteApps.SB) {
+            this.stopDispatcher();
             if(this.props.hour !== this.state.hour
                 || this.props.minute !== this.state.minute
                 || this.props.second !== this.state.second) {
@@ -355,16 +374,18 @@ export default class Clock extends React.Component<{
                 
                 switch(this.props.status) {
                     case vars.Clock.Status.Ready :
-                        this._clear();
+                        this.stopDispatcher();
                         this._reset();
                     break;
     
                     case vars.Clock.Status.Running :
-                        this._tick();
+                        //this._tick();
+                        this.startDispatcher();
                         break;
                         
                     case vars.Clock.Status.Stopped :
-                        this._clear();
+                        //this._clear();
+                        this.stopDispatcher();
                     break;
     
                     default :

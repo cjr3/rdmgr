@@ -6,12 +6,15 @@ import ScoreboardController, {SScoreboardTeam} from 'controllers/ScoreboardContr
  * Score component for team score on the scoreboard control.
  */
 export default class Score extends React.PureComponent<{
-    Team:SScoreboardTeam
+    side:string;
 }, {
-    amount:number
+    amount:number;
+    color:string;
 }> {
+
     readonly state = {
-        amount:0
+        amount:0,
+        color:'#000000'
     }
 
     /**
@@ -26,29 +29,36 @@ export default class Score extends React.PureComponent<{
 
     constructor(props) {
         super(props);
-        this.state.amount = this.props.Team.Score;
 
         //bindings
         this.onChange = this.onChange.bind(this);
         this.onAdd = this.onAdd.bind(this);
         this.onSubtract = this.onSubtract.bind(this);
         this.updateState = this.updateState.bind(this);
-        //this.remoteScore = ScoreboardController.subscribe(this.updateState);
     }
 
     /**
      * Updates the state to match the controller.
      */
     updateState() {
-        this.setState(() => {
-            var score = ScoreboardController.getState().TeamA.Score;
-            if(this.props.Team.Side === 'B')
-                score = ScoreboardController.getState().TeamB.Score;
-            if(this.CounterItem !== null && this.CounterItem.current !== null) {
-                this.CounterItem.current.set(score, false);
-            }
-            return {amount:score};
-        });
+        let state = ScoreboardController.getState();
+        let score = state.TeamA.Score;
+        let color = state.TeamA.Color;
+        if(this.props.side === 'B') {
+            score = state.TeamB.Score;
+            color = state.TeamB.Color;
+        }
+
+        if(this.state.amount != score || this.state.color !== color) {
+            this.setState({
+                amount:score,
+                color:color
+            }, () => {
+                if(this.CounterItem !== null && this.CounterItem.current !== null) {
+                    this.CounterItem.current.set(score, false);
+                }
+            });
+        }
     }
 
     /**
@@ -66,7 +76,7 @@ export default class Score extends React.PureComponent<{
      * @param {Number} amount 
      */
     onAdd(amount) {
-        ScoreboardController.IncreaseTeamScore(this.props.Team, amount);
+        ScoreboardController.IncreaseTeamScore(this.props.side, amount);
     }
 
     /**
@@ -74,7 +84,7 @@ export default class Score extends React.PureComponent<{
      * @param {Number} amount 
      */
     onSubtract(amount) {
-        ScoreboardController.DecreaseTeamScore(this.props.Team, amount);
+        ScoreboardController.DecreaseTeamScore(this.props.side, amount);
     }
 
     /**
@@ -82,6 +92,7 @@ export default class Score extends React.PureComponent<{
      */
     componentDidMount() {
         this.remoteScore = ScoreboardController.subscribe(this.updateState);
+        this.updateState();
         if(this.CounterItem !== null && this.CounterItem.current !== null) {
             this.CounterItem.current.set(this.state.amount, false);
         }
@@ -100,7 +111,7 @@ export default class Score extends React.PureComponent<{
      */
     render() {
         var style:CSSProperties = {
-            backgroundColor:this.props.Team.Color
+            backgroundColor:this.state.color
         }
 
         return (

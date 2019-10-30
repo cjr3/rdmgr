@@ -19,6 +19,9 @@ declare global {
         onPeerStreamClose:Function|null;
         onPeerStreamError:Function|null;
         client?:any;
+        remoteApps:{
+            SB:boolean;
+        }
     }
 }
 
@@ -27,6 +30,9 @@ DataController.Init().then(() => {
         DataController.loadPeers().then(() => {
             DataController.loadFiles().then(() => {
                 DataController.RegisterSaveStates();
+                window.remoteApps = {
+                    SB:false
+                };
                 window.ReactEntryPoint = ReactDOM.render(<ViewManager />, document.getElementById('root'));
                 serviceWorker.unregister();
             });

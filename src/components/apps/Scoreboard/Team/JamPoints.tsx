@@ -7,10 +7,7 @@ import ScoreboardController, {SScoreboardTeam} from 'controllers/ScoreboardContr
  * Component for team jam points entry.
  */
 export default class JamPoints extends React.PureComponent<{
-    /**
-     * Team from the ScoreboardController
-     */
-    Team:SScoreboardTeam;
+    side:string;
 }, {
     /**
      * Number of jam points
@@ -49,7 +46,7 @@ export default class JamPoints extends React.PureComponent<{
     updateState() {
         this.setState(() => {
             var amount = ScoreboardController.getState().TeamA.JamPoints;
-            if(this.props.Team.Side === 'B')
+            if(this.props.side === 'B')
                 amount = ScoreboardController.getState().TeamB.JamPoints;
             if(this.CounterItem !== null && this.CounterItem.current !== null)
                 this.CounterItem.current.set(amount, false);
@@ -65,7 +62,7 @@ export default class JamPoints extends React.PureComponent<{
         this.setState(() => {
             return {amount:amount}
         }, () => {
-            ScoreboardController.SetTeamJamPoints(this.props.Team, amount);
+            ScoreboardController.SetTeamJamPoints(this.props.side, amount);
         });
     }
 
@@ -74,7 +71,7 @@ export default class JamPoints extends React.PureComponent<{
      * @param amount number
      */
     onAdd(amount) {
-        ScoreboardController.IncreaseTeamJamPoints(this.props.Team, amount);
+        ScoreboardController.IncreaseTeamJamPoints(this.props.side, amount);
     }
 
     /**
@@ -82,7 +79,7 @@ export default class JamPoints extends React.PureComponent<{
      * @param amount number
      */
     onSubtract(amount) {
-        ScoreboardController.DecreaseTeamJamPoints(this.props.Team, amount);
+        ScoreboardController.DecreaseTeamJamPoints(this.props.side, amount);
     }
 
     /**
@@ -124,10 +121,10 @@ export default class JamPoints extends React.PureComponent<{
                     <Icon 
                         src={IconPlus}
                         onClick={() => {
-                            ScoreboardController.IncreaseTeamJamPoints(this.props.Team, 1);
+                            ScoreboardController.IncreaseTeamJamPoints(this.props.side, 1);
                         }}
                         onContextMenu={() => {
-                            ScoreboardController.DecreaseTeamJamPoints(this.props.Team, 1);
+                            ScoreboardController.DecreaseTeamJamPoints(this.props.side, 1);
                         }}
                         />
                 </div>

@@ -14,10 +14,7 @@ interface PNameInput {
  * Name input handler for the a team.
  */
 class NameInput extends React.PureComponent<{
-    /**
-     * Team object from ScoreboardController
-     */
-    Team:SScoreboardTeam;
+    side:string;
 }, {
     /**
      * User entered name
@@ -53,26 +50,17 @@ class NameInput extends React.PureComponent<{
      * Triggered when the user accepts the name change.
      */
     onSubmitName() {
-        ScoreboardController.SetTeamName(this.props.Team, this.state.name);
-    }
-
-    /**
-     * Triggered when the component updates.
-     * @param {Object} prevProps 
-     */
-    componentDidUpdate(prevProps) {
-        if(prevProps.Team.Name !== this.props.Team.Name) {
-            this.setState(() => {
-                return {name:this.props.Team.Name};
-            });
-        }
+        ScoreboardController.SetTeamName(this.props.side, this.state.name);
     }
 
     /**
      * Set name from Team
      */
     componentDidMount() {
-        this.setState({name:this.props.Team.Name});
+        let sname = ScoreboardController.getState().TeamA.Name;
+        if(this.props.side === 'B')
+            sname = ScoreboardController.getState().TeamB.Name;
+        this.setState({name:sname});
     }
 
     /**
@@ -80,7 +68,10 @@ class NameInput extends React.PureComponent<{
      */
     render() {
         let name:string = (this.state.name) ? this.state.name : '';
-        let changed:boolean = (this.props.Team.Name !== name);
+        let sname = ScoreboardController.getState().TeamA.Name;
+        if(this.props.side === 'B')
+            sname = ScoreboardController.getState().TeamB.Name;
+        let changed:boolean = (sname !== name);
         return (
             <div>
                 <div>Name</div>

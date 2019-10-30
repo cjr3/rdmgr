@@ -8,10 +8,7 @@ import ScoreboardController, {SScoreboardTeam} from 'controllers/ScoreboardContr
  * Component for controlling team timeout value
  */
 class Timeouts extends React.PureComponent<{
-    /**
-     * Team from ScoreboardController
-     */
-    Team:SScoreboardTeam
+    side:string
 }, {
     /**
      * Amount of timeouts
@@ -55,7 +52,7 @@ class Timeouts extends React.PureComponent<{
         this.setState(() => {
             var cstate = ScoreboardController.getState();
             var amount = cstate.TeamA.Timeouts;
-            if(this.props.Team.Side === 'B')
+            if(this.props.side === 'B')
                 amount = cstate.TeamB.Timeouts;
             
             if(this.CounterItem !== null && this.CounterItem.current !== null) {
@@ -73,7 +70,7 @@ class Timeouts extends React.PureComponent<{
         this.setState(() => {
             return {amount:amount}
         }, () => {
-            ScoreboardController.SetTeamTimeouts(this.props.Team, amount);
+            ScoreboardController.SetTeamTimeouts(this.props.side, amount);
         });
     }
 
@@ -82,7 +79,7 @@ class Timeouts extends React.PureComponent<{
      * @param amount number
      */
     onAdd(amount:number) {
-        ScoreboardController.IncreaseTeamTimeouts(this.props.Team, amount);
+        ScoreboardController.IncreaseTeamTimeouts(this.props.side, amount);
     }
 
     /**
@@ -90,7 +87,7 @@ class Timeouts extends React.PureComponent<{
      * @param amount number
      */
     onSubtract(amount:number) {
-        ScoreboardController.DecreaseTeamTimeouts(this.props.Team, amount);
+        ScoreboardController.DecreaseTeamTimeouts(this.props.side, amount);
     }
 
     /**
@@ -98,13 +95,6 @@ class Timeouts extends React.PureComponent<{
      */
     componentDidMount() {
         this.remoteScore = ScoreboardController.subscribe(this.updateState);
-        this.setState(() => {
-            return {amount:this.props.Team.Timeouts}
-        }, () => {
-            if(this.CounterItem !== null && this.CounterItem.current !== null) {
-                this.CounterItem.current.set(this.state.amount, false);
-            }
-        });
     }
 
     /**
@@ -137,10 +127,10 @@ class Timeouts extends React.PureComponent<{
                     <Icon 
                         src={IconSubtract}
                         onClick={() => {
-                            ScoreboardController.DecreaseTeamTimeouts(this.props.Team, 1);
+                            ScoreboardController.DecreaseTeamTimeouts(this.props.side, 1);
                         }}
                         onContextMenu={() => {
-                            ScoreboardController.IncreaseTeamTimeouts(this.props.Team, 1);
+                            ScoreboardController.IncreaseTeamTimeouts(this.props.side, 1);
                         }}
                         />
                 </div>

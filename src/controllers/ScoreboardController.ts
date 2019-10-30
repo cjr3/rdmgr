@@ -273,23 +273,6 @@ export const InitState:SScoreboardState = {
     JamChangeMode:false
 }
 
-const MidiControllers = {
-    MPX16:{
-        PAD5:() => {
-            ScoreboardController.IncreaseTeamScore(ScoreboardController.getState().TeamA, 1);
-        },
-        PAD9:() => {
-            ScoreboardController.DecreaseTeamScore(ScoreboardController.getState().TeamA, 1);
-        },
-        PAD6:() => {
-            ScoreboardController.IncreaseTeamScore(ScoreboardController.getState().TeamB, 1);
-        },
-        PAD10:() => {
-            ScoreboardController.DecreaseTeamScore(ScoreboardController.getState().TeamB, 1);
-        },
-    }
-};
-
 /**
  * Reducer for the scoreboard ScoreboardController.
  * @param {Object} state 
@@ -1244,7 +1227,8 @@ const ScoreboardController = {
      * @param {Number} amount 
      * @param {Number} jampoints
      */
-    SetTeamScore(team, amount, jampoints) {
+    SetTeamScore(side:string, amount:number, jampoints?:number) {
+        let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
         if(amount < 0)
             amount = 0;
         else if(amount > 999)
@@ -1268,10 +1252,11 @@ const ScoreboardController = {
 
     /**
      * Sets the given team's timeouts
-     * @param {Object} team 
-     * @param {Number} amount 
+     * @param side
+     * @param amount 
      */
-    SetTeamTimeouts(team, amount) {
+    SetTeamTimeouts(side:string, amount:number) {
+        let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
         ScoreboardController.getStore().dispatch({
             type:Actions.SET_TEAM_TIMEOUTS,
             Team:team,
@@ -1281,10 +1266,11 @@ const ScoreboardController = {
 
     /**
      * Sets the given team's Challenges
-     * @param {Object} team 
-     * @param {Number} amount 
+     * @param side
+     * @param amount 
      */
-    SetTeamChallenges(team, amount) {
+    SetTeamChallenges(side:string, amount:number) {
+        let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
         ScoreboardController.getStore().dispatch({
             type:Actions.SET_TEAM_CHALLENGES,
             Team:team,
@@ -1294,10 +1280,11 @@ const ScoreboardController = {
 
     /**
      * Sets the number of jam points for the given team.
-     * @param {Object} team 
-     * @param {Number} amount 
+     * @param side 
+     * @param amount 
      */
-    SetTeamJamPoints(team, amount) {
+    SetTeamJamPoints(side:string, amount:number) {
+        let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
         if(amount < -99)
             amount = 99;
         else if(amount > 99)
@@ -1312,10 +1299,11 @@ const ScoreboardController = {
 
     /**
      * Sets the given team's status.
-     * @param {Object} team 
-     * @param {Number} status 
+     * @param side
+     * @param status 
      */
-    SetTeamStatus(team, status) {
+    SetTeamStatus(side:string, status:number) {
+        let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
         ScoreboardController.getStore().dispatch({
             type:Actions.SET_TEAM_STATUS,
             Team:team,
@@ -1325,10 +1313,11 @@ const ScoreboardController = {
 
     /**
      * Changes the name of the given team on the scoreboard.
-     * @param {Object} team The team to change
-     * @param {String} name The new name
+     * @param side The team to change
+     * @param name The new name
      */
-    SetTeamName(team, name) {
+    SetTeamName(side:string, name:string) {
+        let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
         ScoreboardController.getStore().dispatch({
             type:Actions.SET_TEAM_NAME,
             Team:team,
@@ -1338,10 +1327,11 @@ const ScoreboardController = {
 
     /**
      * Sets the team's color.
-     * @param {Object} team 
-     * @param {String} color 
+     * @param side
+     * @param color 
      */
-    SetTeamColor(team, color) {
+    SetTeamColor(side:string, color:string) {
+        let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
         ScoreboardController.getStore().dispatch({
             type:Actions.SET_TEAM_COLOR,
             Team:team,
@@ -1351,82 +1341,90 @@ const ScoreboardController = {
 
     /**
      * Increases the team's score by the given amount.
-     * @param {Object} team 
-     * @param {Number} amount 
+     * @param side 
+     * @param amount 
      */
-    IncreaseTeamScore(team, amount) {
+    IncreaseTeamScore(side:string, amount:number) {
+        let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
         if(ScoreboardController.getState().JamState !== vars.Clock.Status.Running) {
-            ScoreboardController.SetTeamScore(team, team.Score + amount, amount);
+            ScoreboardController.SetTeamScore(side, team.Score + amount, amount);
         } else {
-            ScoreboardController.SetTeamScore(team, team.Score + amount, 0);
+            ScoreboardController.SetTeamScore(side, team.Score + amount, 0);
         }
     },
 
     /**
      * Decreases the team's score by the given amount
-     * @param {Object} team 
-     * @param {Number} amount 
+     * @param side 
+     * @param amount
      */
-    async DecreaseTeamScore(team, amount) {
+    async DecreaseTeamScore(side:string, amount:number) {
+        let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
         if(ScoreboardController.getState().JamState !== vars.Clock.Status.Running) {
-            ScoreboardController.SetTeamScore(team, team.Score - amount, amount * -1);
+            ScoreboardController.SetTeamScore(side, team.Score - amount, amount * -1);
         } else {
-            ScoreboardController.SetTeamScore(team, team.Score - amount, 0);
+            ScoreboardController.SetTeamScore(side, team.Score - amount, 0);
         }
     },
 
     /**
      * Increases the team's jam points
-     * @param {Object} team 
-     * @param {Amount} amount 
+     * @param side
+     * @param amount 
      */
-    IncreaseTeamJamPoints(team, amount) {
-        ScoreboardController.SetTeamJamPoints(team, team.JamPoints + amount);
+    IncreaseTeamJamPoints(side:string, amount:number) {
+        let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
+        ScoreboardController.SetTeamJamPoints(side, team.JamPoints + amount);
     },
 
     /**
      * Decreases the team's jam points
-     * @param {Object} team 
-     * @param {Number} amount 
+     * @param side
+     * @param amount 
      */
-    DecreaseTeamJamPoints(team, amount) {
-        ScoreboardController.SetTeamJamPoints(team, team.JamPoints - amount);
+    DecreaseTeamJamPoints(side:string, amount:number) {
+        let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
+        ScoreboardController.SetTeamJamPoints(side, team.JamPoints - amount);
     },
 
     /**
      * Increases the team's challenges
-     * @param {Object} team 
-     * @param {Number} amount 
+     * @param side
+     * @param amount
      */
-    IncreaseTeamChallenges(team, amount) {
-        ScoreboardController.SetTeamChallenges(team, team.Challenges + amount);
+    IncreaseTeamChallenges(side:string, amount:number) {
+        let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
+        ScoreboardController.SetTeamChallenges(side, team.Challenges + amount);
     },
 
     /**
      * Decreases the team's challenges
-     * @param {Object} team 
-     * @param {Number} amount 
+     * @param side
+     * @param amount
      */
-    DecreaseTeamChallenges(team, amount) {
-        ScoreboardController.SetTeamChallenges(team, team.Challenges - amount);
+    DecreaseTeamChallenges(side:string, amount:number) {
+        let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
+        ScoreboardController.SetTeamChallenges(side, team.Challenges - amount);
     },
 
     /**
      * Increases the team's timeouts.
-     * @param {Object} team 
-     * @param {Number} amount 
+     * @param side
+     * @param amount
      */
-    IncreaseTeamTimeouts(team, amount) {
-        ScoreboardController.SetTeamTimeouts(team, team.Timeouts + amount);
+    IncreaseTeamTimeouts(side:string, amount:number) {
+        let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
+        ScoreboardController.SetTeamTimeouts(side, team.Timeouts + amount);
     },
 
     /**
      * Decreases the team's timeouts.
-     * @param {Object} team 
-     * @param {Number} amount 
+     * @param side
+     * @param amount 
      */
-    DecreaseTeamTimeouts(team, amount) {
-        ScoreboardController.SetTeamTimeouts(team, team.Timeouts - amount);
+    DecreaseTeamTimeouts(side:string, amount:number) {
+        let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
+        ScoreboardController.SetTeamTimeouts(side, team.Timeouts - amount);
     },
 
     /**
@@ -1558,51 +1556,51 @@ const ScoreboardController = {
             //increase / decrease left-side score
             case keycodes.LEFT :
                 if(ev.shiftKey) {
-                    ScoreboardController.DecreaseTeamScore(ScoreboardController.getState().TeamA, 1);
+                    ScoreboardController.DecreaseTeamScore('A', 1);
                 } else {
-                    ScoreboardController.IncreaseTeamScore(ScoreboardController.getState().TeamA, 1);
+                    ScoreboardController.IncreaseTeamScore('A', 1);
                 }
             break;
 
             //toggle left-side jammer status
             case keycodes.Q :
                 if(ev.shiftKey)
-                    ScoreboardController.SetTeamStatus(ScoreboardController.getState().TeamA, vars.Team.Status.PowerJam)
+                    ScoreboardController.SetTeamStatus('A', vars.Team.Status.PowerJam)
                 else
-                    ScoreboardController.SetTeamStatus(ScoreboardController.getState().TeamA, vars.Team.Status.LeadJammer)
+                    ScoreboardController.SetTeamStatus('A', vars.Team.Status.LeadJammer)
             break;
 
             //toggle left-side timeout / challenge status
             case keycodes.OPENBRACKET :
                 if(ev.shiftKey)
-                    ScoreboardController.SetTeamStatus(ScoreboardController.getState().TeamA, vars.Team.Status.Challenge)
+                    ScoreboardController.SetTeamStatus('A', vars.Team.Status.Challenge)
                 else
-                    ScoreboardController.SetTeamStatus(ScoreboardController.getState().TeamA, vars.Team.Status.Timeout)
+                    ScoreboardController.SetTeamStatus('A', vars.Team.Status.Timeout)
             break;
 
             //increase / decrease right-side score
             case keycodes.RIGHT :
                 if(ev.shiftKey) {
-                    ScoreboardController.DecreaseTeamScore(ScoreboardController.getState().TeamB, 1);
+                    ScoreboardController.DecreaseTeamScore('B', 1);
                 } else {
-                    ScoreboardController.IncreaseTeamScore(ScoreboardController.getState().TeamB, 1);
+                    ScoreboardController.IncreaseTeamScore('B', 1);
                 }
             break;
 
             //toggle right-side jammer status
             case keycodes.W :
                 if(ev.shiftKey)
-                    ScoreboardController.SetTeamStatus(ScoreboardController.getState().TeamB, vars.Team.Status.PowerJam)
+                    ScoreboardController.SetTeamStatus('B', vars.Team.Status.PowerJam)
                 else
-                    ScoreboardController.SetTeamStatus(ScoreboardController.getState().TeamB, vars.Team.Status.LeadJammer)
+                    ScoreboardController.SetTeamStatus('B', vars.Team.Status.LeadJammer)
             break;
 
             //toggle right-side timeout / challenge status
             case keycodes.CLOSEBRACKET :
                 if(ev.shiftKey)
-                    ScoreboardController.SetTeamStatus(ScoreboardController.getState().TeamB, vars.Team.Status.Challenge)
+                    ScoreboardController.SetTeamStatus('B', vars.Team.Status.Challenge)
                 else
-                    ScoreboardController.SetTeamStatus(ScoreboardController.getState().TeamB, vars.Team.Status.Timeout)
+                    ScoreboardController.SetTeamStatus('B', vars.Team.Status.Timeout)
             break;
 
             case keycodes.A :
@@ -1634,13 +1632,6 @@ const ScoreboardController = {
             default :
 
             break;
-        }
-    },
-
-    onMidiButtonPressed(button, controller) {
-        //console.log(MidiControllers[controller.Name][button]);
-        if(MidiControllers[controller.Name] && MidiControllers[controller.Name][button]) {
-            MidiControllers[controller.Name][button]();
         }
     },
 
@@ -1704,9 +1695,9 @@ const ScoreboardController = {
             if(buttons.L2.pressed) {
                 ScoreboardController.DecreaseJamCounter(1);
             } else if(buttons.R2.pressed) {
-                ScoreboardController.DecreaseTeamScore(state.TeamA, 1);
+                ScoreboardController.DecreaseTeamScore('A', 1);
             } else {
-                ScoreboardController.IncreaseTeamScore(state.TeamA, 1);
+                ScoreboardController.IncreaseTeamScore('A', 1);
             }
 
             return;
@@ -1717,9 +1708,9 @@ const ScoreboardController = {
             if(buttons.L2.pressed) {
                 ScoreboardController.IncreaseJamCounter(1);
             } else if(buttons.R2.pressed) {
-                ScoreboardController.DecreaseTeamScore(state.TeamB, 1);
+                ScoreboardController.DecreaseTeamScore('B', 1);
             } else {
-                ScoreboardController.IncreaseTeamScore(state.TeamB, 1);
+                ScoreboardController.IncreaseTeamScore('B', 1);
             }
 
             return;
@@ -1728,41 +1719,20 @@ const ScoreboardController = {
         //L1
         if(buttons.L1.pressed) {
             if(buttons.R2.pressed)
-                ScoreboardController.SetTeamStatus(state.TeamA, vars.Team.Status.PowerJam);
+                ScoreboardController.SetTeamStatus('A', vars.Team.Status.PowerJam);
             else
-                ScoreboardController.SetTeamStatus(state.TeamA, vars.Team.Status.LeadJammer);
+                ScoreboardController.SetTeamStatus('A', vars.Team.Status.LeadJammer);
             return;
         }
 
         //R1
         if(buttons.R1.pressed) {
             if(buttons.R2.pressed)
-                ScoreboardController.SetTeamStatus(state.TeamB, vars.Team.Status.PowerJam);
+                ScoreboardController.SetTeamStatus('B', vars.Team.Status.PowerJam);
             else
-                ScoreboardController.SetTeamStatus(state.TeamB, vars.Team.Status.LeadJammer);
+                ScoreboardController.SetTeamStatus('B', vars.Team.Status.LeadJammer);
             return;
         }
-
-        //L3
-        /*
-        if(buttons.L3.pressed) {
-            if(buttons.R2.pressed) {
-                ScoreboardController.SetTeamStatus(state.TeamA, vars.Team.Status.Challenge);
-            } else {
-                ScoreboardController.SetTeamStatus(state.TeamA, vars.Team.Status.Timeout);
-            }
-            return;
-        }
-
-        //R3
-        if(buttons.R3.pressed) {
-            if(buttons.R2.pressed) {
-                ScoreboardController.SetTeamStatus(state.TeamB, vars.Team.Status.Challenge);
-            } else {
-                ScoreboardController.SetTeamStatus(state.TeamB, vars.Team.Status.Timeout);
-            }
-            return;
-        }*/
 
         //A
         if(buttons.A.pressed) {
@@ -1802,9 +1772,9 @@ const ScoreboardController = {
             if(buttons.L2.pressed) {
                 ScoreboardController.DecreaseJamCounter(1);
             } else if(buttons.R2.pressed) {
-                ScoreboardController.DecreaseTeamScore(state.TeamA, 1);
+                ScoreboardController.DecreaseTeamScore('A', 1);
             } else {
-                ScoreboardController.IncreaseTeamScore(state.TeamA, 1);
+                ScoreboardController.IncreaseTeamScore('A', 1);
             }
             return;
         }
@@ -1814,9 +1784,9 @@ const ScoreboardController = {
             if(buttons.L2.pressed) {
                 ScoreboardController.IncreaseJamCounter(1);
             } else if(buttons.R2.pressed) {
-                ScoreboardController.DecreaseTeamScore(state.TeamB, 1);
+                ScoreboardController.DecreaseTeamScore('B', 1);
             } else {
-                ScoreboardController.IncreaseTeamScore(state.TeamB, 1);
+                ScoreboardController.IncreaseTeamScore('B', 1);
             }
             return;
         }
