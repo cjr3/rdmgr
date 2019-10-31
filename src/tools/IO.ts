@@ -176,9 +176,13 @@ class IOController {
     /**
      * Triggered when the controller is updated
      */
-    onUpdate() {
-        if(!this.Paused)
-            this.States.push(this.Controller.getState());
+    async onUpdate() {
+        if(!this.Paused) {
+            if(this.States[0])
+                this.States.push(this.Controller.getState());
+            else
+                this.States[0] = this.Controller.getState();
+        }
     }
 
     /**

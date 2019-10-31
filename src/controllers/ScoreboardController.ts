@@ -208,6 +208,18 @@ export interface SScoreboardState {
      */
     MaxBreakSeconds:number;
     /**
+     * Maximum seconds on the jam clock
+     */
+    MaxJamSeconds:number;
+    /**
+     * Maximum seconds for a team challenge
+     */
+    MaxChallengeSeconds:number;
+    /**
+     * Maximum seconds for a team timeout
+     */
+    MaxTimeoutSeconds:number;
+    /**
      * Determines how the jam clock changes between steps:
      * true (default) = Ready > Jam > Stopped > Ready > Jam ...
      * false = Ready > Jam > Ready > Jam ...
@@ -270,6 +282,9 @@ export const InitState:SScoreboardState = {
     MaxChallenges:1,
     MaxTimeouts:2,
     MaxBreakSeconds:30,
+    MaxJamSeconds:60,
+    MaxChallengeSeconds:60,
+    MaxTimeoutSeconds:60,
     JamChangeMode:false
 }
 
@@ -280,16 +295,44 @@ export const InitState:SScoreboardState = {
  */
 function ControllerReducer(state:SScoreboardState = InitState, action) {
     switch(action.type) {
-        case Actions.SET_STATE :
-            var obj = Object.assign({}, state, action.state, {
+        case Actions.SET_STATE : {
+            let maxTimeouts:number = state.MaxTimeouts;
+            let maxChallenges:number = state.MaxChallenges;
+
+            let obj:SScoreboardState = Object.assign({}, state, action.state, {
                 TeamA:Object.assign({}, state.TeamA),
                 TeamB:Object.assign({}, state.TeamB)
             });
+
+            if(!Number.isNaN(action.state.MaxTimeouts))
+                maxTimeouts = action.state.MaxTimeouts;
+
+            if(!Number.isNaN(action.state.MaxChallenges))
+                maxChallenges = action.state.MaxChallenges;
+
+            if(state.JamState == vars.Clock.Status.Ready) {
+                obj.JamSecond = state.MaxJamSeconds;
+            }
+
             if(action.state.TeamA)
                 obj.TeamA = Object.assign(obj.TeamA, action.state.TeamA);
             if(action.state.TeamB)
                 obj.TeamB = Object.assign(obj.TeamB, action.state.TeamB);
+
+            if(obj.TeamA.Timeouts > maxTimeouts)
+                obj.TeamA.Timeouts = maxTimeouts;
+
+            if(obj.TeamA.Challenges > maxChallenges)
+                obj.TeamA.Challenges = maxChallenges;
+
+            if(obj.TeamB.Timeouts > maxTimeouts)
+                obj.TeamB.Timeouts = maxTimeouts;
+
+            if(obj.TeamB.Challenges > maxChallenges)
+                obj.TeamB.Challenges = maxChallenges;
+
             return obj;
+        }
 
         //reset the state
         case Actions.RESET_STATE :
@@ -322,6 +365,13 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
 
             //copy initial state, keep team identification and phases
             return Object.assign({}, InitState, {
+                JamSecond:state.MaxJamSeconds,
+                MaxJamSeconds:state.MaxJamSeconds,
+                MaxBreakSeconds:state.MaxBreakSeconds,
+                MaxTimeouts:state.MaxTimeouts,
+                MaxChallenges:state.MaxChallenges,
+                MaxTimeoutSeconds:state.MaxTimeoutSeconds,
+                MaxChallengeSeconds:state.MaxChallengeSeconds,
                 StartGameHour:0,
                 StartGameMinute:0,
                 StartGameSecond:0,
@@ -333,15 +383,15 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
                 PhaseSecond:phase.PhaseSecond,
                 TeamA:Object.assign({}, state.TeamA, {
                     Score:0,
-                    Timeouts:InitState.MaxTimeouts,
-                    Challenges:InitState.MaxChallenges,
+                    Timeouts:state.MaxTimeouts,
+                    Challenges:state.MaxChallenges,
                     JamPoints:0,
                     Status:0
                 }),
                 TeamB:Object.assign({}, state.TeamB, {
                     Score:0,
-                    Timeouts:InitState.MaxTimeouts,
-                    Challenges:InitState.MaxChallenges,
+                    Timeouts:state.MaxTimeouts,
+                    Challenges:state.MaxChallenges,
                     JamPoints:0,
                     Status:0
                 })
@@ -406,11 +456,12 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
     
                         return Object.assign({}, state, {
                             JamCounter:state.JamCounter+1,
+                            JamSecond:state.MaxJamSeconds,
                             JamState:vars.Clock.Status.Running,
                             GameState:vars.Clock.Status.Running,
                             BreakState:vars.Clock.Status.Ready,
                             BoardStatus:vars.Scoreboard.Status.Normal,
-                            BreakSecond:30,
+                            BreakSecond:state.MaxBreakSeconds,
                             //Record game time for jam reset
                             StartGameHour:state.GameHour,
                             StartGameMinute:state.GameMinute,
@@ -431,14 +482,14 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
                         return Object.assign({}, state, {
                             JamState:vars.Clock.Status.Stopped,
                             BreakState:vars.Clock.Status.Running,
-                            BreakSecond:30
+                            BreakSecond:state.MaxBreakSeconds
                         });
     
                     //reset jam clock, board status, and team status
                     case vars.Clock.Status.Stopped :
                         return Object.assign({}, state, {
                             JamState:vars.Clock.Status.Ready,
-                            JamSecond:vars.Scoreboard.JamSeconds,
+                            JamSecond:state.MaxJamSeconds,
                             BoardStatus:vars.Scoreboard.Status.Normal,
                             TeamA:Object.assign({}, state.TeamA,{
                                 Status:vars.Team.Status.Normal
@@ -467,10 +518,11 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
                         return Object.assign({}, state, {
                             JamCounter:state.JamCounter+1,
                             JamState:vars.Clock.Status.Running,
+                            JamSecond:state.MaxJamSeconds,
                             GameState:vars.Clock.Status.Running,
                             BreakState:vars.Clock.Status.Ready,
                             BoardStatus:vars.Scoreboard.Status.Normal,
-                            BreakSecond:30,
+                            BreakSecond:state.MaxBreakSeconds,
                             //Record game time for jam reset
                             StartGameHour:state.GameHour,
                             StartGameMinute:state.GameMinute,
@@ -491,10 +543,9 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
                     case vars.Clock.Status.Stopped :
                         return Object.assign({}, state, {
                             JamState:vars.Clock.Status.Ready,
-                            JamSecond:vars.Scoreboard.JamSeconds,
+                            JamSecond:state.MaxJamSeconds,
                             BreakState:vars.Clock.Status.Running,
-                            BreakSecond:30,
-                            MaxBreakSeconds:30,
+                            BreakSecond:state.MaxBreakSeconds,
                             BoardStatus:vars.Scoreboard.Status.Normal,
                             TeamA:Object.assign({}, state.TeamA,{
                                 Status:vars.Team.Status.Normal
@@ -536,7 +587,7 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
                 case vars.Clock.Status.Stopped :
                     return Object.assign({}, state, {
                         BreakState:vars.Clock.Status.Ready,
-                        BreakSecond:30
+                        BreakSecond:state.MaxBreakSeconds
                     });
                 case vars.Clock.Status.Ready :
                     return Object.assign({}, state, {
@@ -545,7 +596,7 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
                 case vars.Clock.Status.Running :
                     return Object.assign({}, state, {
                         BreakState:vars.Clock.Status.Ready,
-                        BreakSecond:30
+                        BreakSecond:state.MaxBreakSeconds
                     });
                 default :
                     return state;
@@ -821,9 +872,9 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
                 let team = Object.assign({}, state.TeamA, {
                     Status:(action.value === state.TeamA.Status) ? vars.Team.Status.Normal : status
                 });
-                let bseconds = 30;
-                if(team.Status == vars.Team.Status.Timeout)
-                    bseconds = 60;
+                let bseconds = state.MaxBreakSeconds;
+                if(team.Status == vars.Team.Status.Timeout || team.Status == vars.Team.Status.Challenge)
+                    bseconds = state.MaxTimeoutSeconds;
                 return Object.assign({}, state, {
                     BreakSecond:bseconds,
                     TeamA:team,
@@ -835,9 +886,9 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
                 let team = Object.assign({}, state.TeamB, {
                     Status:(action.value === state.TeamB.Status) ? vars.Team.Status.Normal : status
                 });
-                let bseconds = 30;
-                if(team.Status == vars.Team.Status.Timeout)
-                    bseconds = 60;
+                let bseconds = state.MaxBreakSeconds;
+                if(team.Status == vars.Team.Status.Timeout || team.Status == vars.Team.Status.Challenge)
+                    bseconds = state.MaxTimeoutSeconds;
                 return Object.assign({}, state, {
                     BreakSecond:bseconds,
                     TeamB:team,
@@ -858,7 +909,7 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
                 BreakState:vars.Clock.Status.Ready,
                 JamHour:InitState.JamHour,
                 JamMinute:InitState.JamMinute,
-                JamSecond:InitState.JamSecond
+                JamSecond:state.MaxJamSeconds
             });
 
         default :
@@ -868,14 +919,23 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
 
 const ScoreboardStore = createStore(ControllerReducer);
 
-const updateData = function() {
+const updateData = async function() {
     let data:any = DataController.GetMiscRecord('ScoreboardConfig');
     if(data !== null && data !== undefined) {
-        ScoreboardController.SetState({
-            //MaxChallenges:data.MaxChallenges,
-            //MaxTimeouts:data.MaxTimeouts,
-            JamChangeMode:data.JamChangeMode
-        });
+        let state = ScoreboardController.getState();
+        let compare = {
+            MaxBreakSeconds:state.MaxBreakSeconds,
+            MaxJamSeconds:state.MaxJamSeconds,
+            MaxTimeouts:state.MaxTimeouts,
+            MaxChallenges:state.MaxChallenges,
+            MaxTimeoutSeconds:state.MaxTimeoutSeconds,
+            MaxChallengeSeconds:state.MaxChallengeSeconds,
+            JamChangeMode:state.JamChangeMode
+        };
+
+        if(!DataController.compare(data, compare)) {
+            ScoreboardController.SetState(data);
+        }
     }
 };
 
@@ -889,6 +949,7 @@ const ScoreboardController = {
      */
     Init() {
         remoteData = DataController.subscribe(updateData);
+        updateData();
     },
 
     /**
@@ -1079,13 +1140,14 @@ const ScoreboardController = {
     /**
      * Sets the seconds on the jam clock.
      * @param {Number} second 
+     * @param minute
      */
-    SetJamTime(second) {
+    SetJamTime(second:number, minute:number) {
         ScoreboardController.getStore().dispatch({
             type:Actions.SET_STATE,
             state:{
                 JamHour:0,
-                JamMinute:0,
+                JamMinute:minute,
                 JamSecond:second
             }
         });
@@ -1823,6 +1885,8 @@ const ScoreboardController = {
             MaxJamSeconds:60,
             MaxChallenges:1,
             MaxTimeouts:2,
+            MaxTimeoutSeconds:60,
+            MaxChallengeSeconds:60,
             JamChangeMode:false
         }, config);
     },
@@ -1833,6 +1897,7 @@ const ScoreboardController = {
      */
     async saveConfig(settings:any) : Promise<boolean> {
         let config:any = Object.assign(ScoreboardController.getConfig(), settings);
+        console.log('saving...')
         return DataController.SaveMiscRecord('ScoreboardConfig', config);
     },
 

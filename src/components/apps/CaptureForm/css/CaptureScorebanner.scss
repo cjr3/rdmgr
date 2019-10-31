@@ -221,6 +221,20 @@
     .team.team-b {
         left: 255px;
     }
+
+    &.longjam {
+        .jamclock {
+            width: 130px;
+        }
+
+        .phase {
+            left: 755px;
+        }
+
+        .jam-counter {
+            left: 955px;
+        }
+    }
 }
 
 .capture-SB-banner.shown

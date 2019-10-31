@@ -25,7 +25,8 @@ import {
     Icon,
     IconStreamOff,
     IconOnline,
-    IconStreamOn
+    IconStreamOn,
+    IconSkate
 } from 'components/Elements';
 import Panel from 'components/Panel';
 
@@ -39,6 +40,7 @@ import {
     VideoEditor,
     PeerEditor
 } from './RecordEditor';
+import ConfirmFormScoreboard from './ConfigFormScoreboard';
 import DataController from 'controllers/DataController';
 import RecordList from './RecordList';
 
@@ -137,6 +139,8 @@ export default class ConfigForm extends React.PureComponent<any, {
         if(this.Applications[this.state.currentApp]) {
             this.Applications[this.state.currentApp].record = null;
             this.forceUpdate();
+        } else {
+            this.setState({currentApp:''});
         }
     }
 
@@ -148,6 +152,35 @@ export default class ConfigForm extends React.PureComponent<any, {
     render() {
         let sections:Array<React.ReactElement> = [];
         let forms:Array<React.ReactElement> = [];
+
+        //scoreboard settings
+        sections.push(
+            <ConfigFormSection
+                active={this.state.currentApp === 'SB_CONFIG'}
+                icon={IconSkate}
+                key={'SB_CONFIG'}
+                name={"Scoreboard"}
+                onClick={() => {
+                    this.setState(() => {
+                        return {currentApp:'SB_CONFIG'}
+                    }, () => {
+                        //this.forceUpdate();
+                    });
+                }}
+                >
+            </ConfigFormSection>
+        );
+
+        forms.push(
+            <ConfirmFormScoreboard
+                key={'SB+_CONFIG'}
+                opened={(this.state.currentApp === 'SB_CONFIG')}
+                onClose={this.props.onClose}
+                onCancel={this.onCancelRecord}
+                onSubmit={this.onCancelRecord}
+            />
+        );
+
         for(let key in this.Applications) {
             let app = this.Applications[key];
             let current = (this.state.currentApp === key);

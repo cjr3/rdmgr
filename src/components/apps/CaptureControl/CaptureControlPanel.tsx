@@ -35,7 +35,7 @@ export interface PCaptureControlPanel {
     /**
      * Buttons to attach to the panel
      */
-    buttons?:any;
+    buttons?:Array<React.ReactElement>;
     /**
      * Triggered when the user presses the accordion button
      */

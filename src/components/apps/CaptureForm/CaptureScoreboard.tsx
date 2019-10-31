@@ -111,6 +111,7 @@ export default class CaptureScoreboard extends React.Component<{
 
         let jamNames:string = cnames({
             jamclock:true,
+            longjam:(this.state.MaxJamSeconds > 60 || this.state.JamSecond > 60),
             running:(this.state.JamState === vars.Clock.Status.Running),
             warning:(this.state.JamSecond <= 10),
             danger:(this.state.JamSecond <= 5),
@@ -120,17 +121,25 @@ export default class CaptureScoreboard extends React.Component<{
         let jamSecond:number = (this.state.JamSecond) ? this.state.JamSecond : 0;
         let jamCounter:number = (this.state.JamCounter) ? this.state.JamCounter : 0;
         let breakSecond:number = (this.state.BreakSecond) ? this.state.BreakSecond : 0;
-
+        let jamTime = jamSecond.toString().padStart(2,'0');
         let jamStateNames:string = cnames({
             jamstate:true,
             shown:(this.state.JamState === vars.Clock.Status.Ready),
             warning:(this.state.BreakSecond <= 0 && this.state.JamState === vars.Clock.Status.Ready)
         });
 
+        if(this.state.MaxJamSeconds > 60 || jamSecond > 60) {
+            let jamMinute:number = 0;
+            while(jamSecond >= 60) {
+                jamMinute++;
+                jamSecond -= 60;
+            }
+            jamTime = jamMinute.toString().padStart(2,'0') + ":" + jamSecond.toString().padStart(2,'0');
+        }
 
         return (
             <div className={classNames}>
-                <div className={jamNames}>{jamSecond.toString().padStart(2,'0')}</div>
+                <div className={jamNames}>{jamTime}</div>
                 <div className="phase">{this.state.PhaseName}</div>
                 <div className="jam-counter">{"JAM " + jamCounter.toString().padStart(2,'0')}</div>
                 <div className={gameNames}>{this.getClockText()}</div>

@@ -827,12 +827,13 @@ const DataController = {
                 records[key] = Object.assign({}, record);
             else
                 records[key] = record;
+            if(DataController.RecordSavers['MISC']) {
+                DataController.RecordSavers['MISC'].Save(JSON.stringify({Records:records}, null, 4));
+            }
             DataController.getStore().dispatch({
                 type:Actions.SET_MISC_RECORDS,
                 values:records
             });
-            if(DataController.RecordSavers['MISC'])
-                DataController.RecordSavers['MISC'].Save(JSON.stringify({Records:records}, null, 4));
             res(true);
         });
     },

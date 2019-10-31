@@ -32,6 +32,11 @@
         text-align: center;
     }
 
+    .jamclock.longjam {
+        font-size: 160px;
+        line-height: 200px;
+    }
+
     .jamclock.running {
         color: $iceblue;
     }

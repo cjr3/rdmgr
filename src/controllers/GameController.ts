@@ -339,8 +339,8 @@ class GameControllerHandler {
         this.Gamepads = await this.LoadControllers();
         if(e instanceof GamepadEvent && this.Gamepads[e.gamepad.index]) {
             this.Gamepad = this.Gamepads[e.gamepad.index];
-            if(this.Gamepad !== null)
-                console.log(this.Gamepad)
+            //if(this.Gamepad !== null)
+                //console.log(this.Gamepad)
         }
     }
 
@@ -394,11 +394,10 @@ class GameControllerHandler {
      */
     protected queryGamepad() {
         if(this.Gamepad === null) {
-            return;
             this.LoadControllers().then((controllers) => {
                 this.Gamepads = controllers;
             });
-            //this.Timer = window.requestAnimationFrame(this.queryGamepad);
+            this.Timer = window.requestAnimationFrame(this.queryGamepad);
             return;
         }
 

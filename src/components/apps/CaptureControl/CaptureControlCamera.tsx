@@ -70,7 +70,7 @@ export default class CaptureControlCamera extends React.PureComponent<PCaptureCo
     updateCapture() {
         this.setState(() => {
             return {Shown:CaptureController.getState().MainCamera.Shown};
-        })
+        });
     }
 
     /**
@@ -133,8 +133,8 @@ export default class CaptureControlCamera extends React.PureComponent<PCaptureCo
      * Renders the component
      */
     render() {
-        var label = '(no camera)';
-        var cameras = [
+        let label:string = '(no camera)';
+        let cameras:Array<React.ReactElement> = [
             <Button
                 key="btn-no-camera"
                 active={(this.state.DeviceID === '')}
@@ -156,7 +156,7 @@ export default class CaptureControlCamera extends React.PureComponent<PCaptureCo
                 label = camera.label;
         });
 
-        var buttons = [
+        let buttons:Array<React.ReactElement> = [
             <IconButton
                 src={IconLoop}
                 key="btn-load"

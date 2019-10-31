@@ -6,7 +6,7 @@
  * are a one-way state from Client ot CaptureForm.
  */
 
-import {createStore} from 'redux';
+import {createStore, Store, Unsubscribe} from 'redux';
 import vars from './vars';
 
 export enum Actions {
@@ -45,25 +45,33 @@ export const InitState:SCaptureStatus = {
  * @param {Object} state The current state
  * @param {Object} action The action to perform
  */
-function CaptureStatusReducer(state:SCaptureStatus = InitState, action) {
-    switch( action.type ) {
-        //Set the state
-        case Actions.SET_STATE :
-            return Object.assign({}, state, action.values);
-
-        //sets the video state
-        case Actions.SET_VIDEO :
-            return Object.assign({}, state, {
-                Video:Object.assign({}, state.Video, action.values)
-            });
-
-        case Actions.SET_PEER :
-            return Object.assign({}, state, {
-                PeerCamera:Object.assign({}, state.PeerCamera, action.values)
-            });
-
-        default :
-            return state;
+function CaptureStatusReducer(state:SCaptureStatus = InitState, action) : SCaptureStatus{
+    try {
+        switch( action.type ) {
+            //Set the state
+            case Actions.SET_STATE : {
+                return Object.assign({}, state, action.values);
+            }
+    
+            //sets the video state
+            case Actions.SET_VIDEO : {
+                return Object.assign({}, state, {
+                    Video:Object.assign({}, state.Video, action.values)
+                });
+            }
+    
+            //Set ID of remote peer
+            case Actions.SET_PEER : {
+                return Object.assign({}, state, {
+                    PeerCamera:Object.assign({}, state.PeerCamera, action.values)
+                });
+            }
+    
+            default :
+                return state;
+        }
+    } catch(er) {
+        return state;
     }
 }
 
@@ -77,9 +85,9 @@ const CaptureStatus = {
 
     /**
      * Sets the state of the status.
-     * @param {Object} state 
+     * @param state any
      */
-    SetState(state) {
+    SetState(state:any) {
         CaptureStatus.getStore().dispatch({
             type:Actions.SET_STATE,
             values:state
@@ -88,10 +96,10 @@ const CaptureStatus = {
 
     /**
      * Updates the status of the current video.
-     * @param {Number} currentTime Current time of the video
-     * @param {Number} duration Duration of the video
+     * @param currentTime Current time of the video
+     * @param duration Duration of the video
      */
-    UpdateVideo(currentTime, duration) {
+    UpdateVideo(currentTime:number, duration:number) {
         CaptureStatus.getStore().dispatch({
             type:Actions.SET_VIDEO,
             values:{
@@ -103,9 +111,9 @@ const CaptureStatus = {
 
     /**
      * Updates the video status.
-     * @param {Number} status 
+     * @param status 
      */
-    UpdateVideoStatus(status) {
+    UpdateVideoStatus(status:number) {
         CaptureStatus.getStore().dispatch({
             type:Actions.SET_VIDEO,
             values:{
@@ -133,7 +141,7 @@ const CaptureStatus = {
      * Gets the Redux store for the capture status
      * @return {Object} Redux store
      */
-    getStore() {
+    getStore() : Store<SCaptureStatus, any> {
         return CaptureStatusStore;
     },
 
@@ -147,10 +155,12 @@ const CaptureStatus = {
 
     /**
      * Subscribes a function to changes to the state.
-     * @param {Function} f The function to receive the notification
+     * @param f The function to receive the notification
      */
-    subscribe(f) {
-        return CaptureStatusStore.subscribe( f );
+    subscribe(f:any) : Unsubscribe|null {
+        if(typeof(f) === "function")
+            return CaptureStatusStore.subscribe( f );
+        return null;
     }
 };
 

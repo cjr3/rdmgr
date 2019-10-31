@@ -101,6 +101,7 @@ export default class CaptureScorebanner extends React.Component<any, {
         let classNames:string = cnames({
             "capture-SB-banner":true,
             shown:this.props.shown,
+            longjam:(this.state.State.MaxJamSeconds > 60 || this.state.State.JamSecond > 60),
             noclocks:(this.props.clocks === false),
             jamming:(this.state.State.JamState === vars.Clock.Status.Running)
         }, this.props.className);
@@ -129,14 +130,26 @@ export default class CaptureScorebanner extends React.Component<any, {
             stopped:(this.state.State.JamState === vars.Clock.Status.Stopped)
         });
 
+        let jamSecond:number = (this.state.State.JamSecond) ? this.state.State.JamSecond : 0;
+        let jamTime = jamSecond.toString().padStart(2,'0');
         let style:CSSProperties = {};
         if(this.state.BackgroundImage !== undefined && this.state.BackgroundImage.length >= 1) {
             style.backgroundImage = `url('${DataController.mpath(this.state.BackgroundImage)}')`;
         }
 
+        
+        if(this.state.State.MaxJamSeconds > 60 || jamSecond > 60) {
+            let jamMinute:number = 0;
+            while(jamSecond >= 60) {
+                jamMinute++;
+                jamSecond -= 60;
+            }
+            jamTime = jamMinute.toString().padStart(2,'0') + ":" + jamSecond.toString().padStart(2,'0');
+        }
+
         return (
             <div className={classNames} style={style}>
-                <div className={jamNames}>{this.state.State.JamSecond.toString().padStart(2,'0')}</div>
+                <div className={jamNames}>{jamTime}</div>
                 <div className="phase">{this.state.State.PhaseName}</div>
                 <div className="jam-counter">{this.state.State.JamCounter.toString().padStart(2,'0')}</div>
                 <div className={gameNames}>{this.getClockText()}</div>

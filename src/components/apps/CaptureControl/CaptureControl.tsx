@@ -18,7 +18,40 @@ export default class CaptureControl extends React.PureComponent<{
      * Determines if the capture control is displayed or not
      */
     opened:boolean;
-}, {
+}> {
+    /**
+     * Renders the component.
+     */
+    render() {
+        return (
+            <Panel opened={this.props.opened} contentName="CC-app">
+                <CaptureControlPreview/>
+                <CaptureDisplayControls/>
+                <CaptureStreamControls/>
+            </Panel>
+        );
+    }
+}
+
+/**
+ * Component for displaying a preview of the capture window.
+ */
+function CaptureControlPreview() {
+    return (
+        <div className="capture-preview">
+            <CaptureControlMonitor/>
+            <CaptureControlWatcher/>
+            <p>Watching the capture window may degrade performance when streaming.</p>
+            <p><b>Please do not record while streaming.</b></p>
+            <div className="camera-styles">
+                <CaptureCameraStyleButtons/>
+                <CaptureVideoStyleButtons/>
+            </div>
+        </div>
+    );
+}
+
+class CaptureControlWatcher extends React.PureComponent<any, {
     /**
      * Determines if the preview of the capture window is displayed or not
      */
@@ -28,34 +61,20 @@ export default class CaptureControl extends React.PureComponent<{
         CapturePreviewShown:false
     };
 
-    /**
-     * Renders the component.
-     */
     render() {
         return (
-            <Panel opened={this.props.opened} contentName="CC-app">
-                <div className="capture-preview">
-                    <CaptureControlMonitor/>
-                    <CaptureWatcher shown={this.state.CapturePreviewShown}/>
-                    <div className="watcher-control">
-                        <ToggleButton
-                            checked={this.state.CapturePreviewShown}
-                            onClick={() => {
-                                this.setState({CapturePreviewShown:!this.state.CapturePreviewShown});
-                            }}
-                            label="Watch"
-                        />
-                    </div>
-                    <p>Watching the capture window may degrade performance when streaming.</p>
-                    <p><b>Please do not record while streaming.</b></p>
-                    <div className="camera-styles">
-                        <CaptureCameraStyleButtons/>
-                        <CaptureVideoStyleButtons/>
-                    </div>
+            <React.Fragment>
+                <CaptureWatcher shown={this.state.CapturePreviewShown}/>
+                <div className="watcher-control">
+                    <ToggleButton
+                        checked={this.state.CapturePreviewShown}
+                        onClick={() => {
+                            this.setState({CapturePreviewShown:!this.state.CapturePreviewShown});
+                        }}
+                        label="Watch"
+                    />
                 </div>
-                <CaptureDisplayControls/>
-                <CaptureStreamControls/>
-            </Panel>
+            </React.Fragment>
         );
     }
 }

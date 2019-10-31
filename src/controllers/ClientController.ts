@@ -394,6 +394,8 @@ const ClientController:IClientController = {
         Subscriptions[VideoController.Key] = VideoController.subscribe(ClientController.updateVideo);
         Subscriptions[CameraController.Key] = CameraController.subscribe(ClientController.updateCamera);
 
+        ScoreboardController.Init();
+
         if(window) {
             //global keyboard control
             window.addEventListener('keyup', ClientController.onKeyUp);

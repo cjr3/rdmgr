@@ -91,13 +91,15 @@ export default class BreakClock extends React.PureComponent<any, {
      */
     onClickSixty() {
         if(ScoreboardController.getState().JamState !== vars.Clock.Status.Running) {
-            if(this.state.status !== vars.Clock.Status.Running && this.state.second === 60) {
+            let maxSeconds = ScoreboardController.getState().MaxBreakSeconds;
+            let max2 = maxSeconds * 2;
+            if(this.state.status !== vars.Clock.Status.Running && this.state.second === max2) {
                 ScoreboardController.SetState({
                     BreakState:vars.Clock.Status.Running
                 });
             } else {
                 ScoreboardController.SetState({
-                    BreakSecond:60
+                    BreakSecond:max2
                 });
             }
         }

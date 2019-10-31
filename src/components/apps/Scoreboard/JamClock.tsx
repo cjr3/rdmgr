@@ -1,8 +1,8 @@
 import React from 'react'
 import Clock from 'components/tools/Clock'
+import cnames from 'classnames';
 import vars from 'tools/vars'
 import ScoreboardController from 'controllers/ScoreboardController'
-import ClientController from 'controllers/ClientController'
 
 /**
  * Jam clock component for the scoreboard.
@@ -34,7 +34,7 @@ export default class JamClock extends React.PureComponent<any, {
         showTenths:false,
         hour:0,
         minute:0,
-        second:60
+        second:ScoreboardController.getState().JamSecond
     }
 
     /**
@@ -64,11 +64,12 @@ export default class JamClock extends React.PureComponent<any, {
      */
     updateState() {
         this.setState(() => {
+            let cstate = ScoreboardController.getState();
             return {
-                status:ScoreboardController.getState().JamState,
-                hour:ScoreboardController.getState().JamHour,
-                minute:ScoreboardController.getState().JamMinute,
-                second:ScoreboardController.getState().JamSecond
+                status:cstate.JamState,
+                hour:cstate.JamHour,
+                minute:cstate.JamMinute,
+                second:cstate.JamSecond
             };
         }, () => {
             if(!window.remoteApps.SB && this.ClockItem !== null && this.ClockItem.current !== null) {
@@ -108,7 +109,7 @@ export default class JamClock extends React.PureComponent<any, {
      */
     async onTick(hour, minute, second) {
         if(!window.remoteApps.SB)
-            ScoreboardController.SetJamTime(second);
+            ScoreboardController.SetJamTime(second, minute);
     }
 
     /**
@@ -116,6 +117,7 @@ export default class JamClock extends React.PureComponent<any, {
      */
     componentDidMount() {
         this.remoteScore = ScoreboardController.subscribe(this.updateState);
+        this.updateState();
     }
 
     /**
@@ -133,9 +135,14 @@ export default class JamClock extends React.PureComponent<any, {
         let status:number = this.state.status;
         if(status === vars.Clock.Status.Running && window.remoteApps.SB)
             status = vars.Clock.Status.Ready;
+
+        let className = cnames('jam-clock', {
+            longjam:(this.state.second > 60)
+        });
+        
         return (
             <Clock 
-                className="jam-clock"
+                className={className}
                 remote={window.remoteApps.SB}
                 hour={this.state.hour}
                 minute={this.state.minute}
@@ -149,6 +156,6 @@ export default class JamClock extends React.PureComponent<any, {
                 ref={this.ClockItem}
                 {...this.props}
             />
-        )
+        );
     }
 }

@@ -40,37 +40,9 @@ export default class Scoreboard extends React.Component<{
     opened:boolean;
 }, {
     /**
-     * Status of the scoreboard
-     */
-    //BoardStatus:number;
-    /**
-     * State of the jam clock
-     */
-    //JamState:number;
-    /**
-     * State of the break clock
-     */
-    //BreakState:number;
-    /**
-     * State of the game clock
-     */
-    //GameState:number;
-    /**
      * Status of confirming points to in-field referees
      */
     ConfirmStatus:number;
-    /**
-     * Name of current phase/quarter
-     */
-    //PhaseName:string;
-    /**
-     * Left-side team
-     */
-    //TeamA:SScoreboardTeam;
-    /**
-     * Right-side team
-     */
-    //TeamB:SScoreboardTeam;
     /**
      * Show/Hide phase selection
      */
@@ -87,40 +59,13 @@ export default class Scoreboard extends React.Component<{
      * Show/Hide Jam Reset
      */
     JamResetOpened:boolean;
-    /**
-     * Last jam start hour
-     */
-    //StartGameHour:number;
-    /**
-     * Last jam start minute
-     */
-    //StartGameMinute:number;
-    /**
-     * Last jam start second
-     */
-    //StartGameSecond:number;
-    /**
-     * Jam Change Mode
-     */
-    JamChangeMode:boolean;
 }> {
     readonly state = {
-        //BoardStatus:ScoreboardController.getState().BoardStatus,
-        //JamState:ScoreboardController.getState().JamState,
-        //BreakState:ScoreboardController.getState().BreakState,
-        //GameState:ScoreboardController.getState().GameState,
         ConfirmStatus:ScoreboardController.getState().ConfirmStatus,
-        //PhaseName:ScoreboardController.getState().PhaseName,
-        //TeamA:ScoreboardController.getState().TeamA,
-        //TeamB:ScoreboardController.getState().TeamB,
         PhaseOpened:false,
         TeamOpened:false,
         DisplayOpened:false,
-        JamResetOpened:false,
-        //StartGameHour:ScoreboardController.getState().StartGameHour,
-        //StartGameMinute:ScoreboardController.getState().StartGameMinute,
-        //StartGameSecond:ScoreboardController.getState().StartGameSecond,
-        JamChangeMode:ScoreboardController.getState().JamChangeMode
+        JamResetOpened:false
     }
 
     /**
@@ -148,18 +93,16 @@ export default class Scoreboard extends React.Component<{
         this.onClickReview = this.onClickReview.bind(this);
         this.onClickTimeout = this.onClickTimeout.bind(this);
         this.onClickInjury = this.onClickInjury.bind(this);
-        this.onClickJamMode = this.onClickJamMode.bind(this);
         this.updateState = this.updateState.bind(this);
     }
 
     /**
      * Updates the state to match the controller.
      */
-    updateState() {
+    async updateState() {
         let cstate = ScoreboardController.getState();
         this.setState({
-            ConfirmStatus:cstate.ConfirmStatus,
-            JamChangeMode:cstate.JamChangeMode
+            ConfirmStatus:cstate.ConfirmStatus
         });
     }
 
@@ -255,19 +198,6 @@ export default class Scoreboard extends React.Component<{
     }
 
     /**
-     * Triggered when the user clicks to change the jam control mode
-     */
-    onClickJamMode() {
-        let settings:any = ScoreboardController.getConfig();
-        settings.JamChangeMode = !this.state.JamChangeMode;
-        ScoreboardController.saveConfig(settings).then(() => {
-            ScoreboardController.SetState({
-                JamChangeMode:settings.JamChangeMode
-            });
-        });
-    }
-
-    /**
      * Start listeners
      */
     componentDidMount() {
@@ -287,12 +217,6 @@ export default class Scoreboard extends React.Component<{
      */
     render() {
         let buttons:Array<React.ReactElement> = [
-            <ToggleButton
-                key="btn-jammode"
-                checked={this.state.JamChangeMode}
-                onClick={this.onClickJamMode}
-                title={`When checked, jam clock has three steps: Ready, Jam, Stopped`}
-            />,
             <Button key="btn-oto" 
                 //active={(this.state.BoardStatus === vars.Scoreboard.Status.Timeout)}
                 onClick={ScoreboardController.OfficialTimeout}>Timeout</Button>,
