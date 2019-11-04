@@ -3,6 +3,7 @@ import ScoreboardController from 'controllers/ScoreboardController';
 import RosterController from 'controllers/RosterController';
 import ChatController from 'controllers/ChatController';
 import CaptureController from 'controllers/CaptureController';
+import UIController from 'controllers/UIController';
 
 /**
  * Class used for queuing and saving state updates from the controllers
@@ -44,6 +45,7 @@ class IO {
         this.StateRecords.push(new IOController(ChatController, Files.Chat));
         this.StateRecords.push(new IOController(RosterController, Files.Roster));
         this.StateRecords.push(new IOController(CaptureController, Files.Capture));
+        this.StateRecords.push(new IOController(UIController, Files.UI));
     }
 
     /**
@@ -160,7 +162,6 @@ class IOController {
      */
     protected async SaveNext() {
         if(this.States[0] && !this.Paused && !this.Saving) {
-            //console.log('Saving...');
             await this.Save(this.States[0]);
             this.States.shift();
         }
@@ -292,7 +293,7 @@ class IOFileQueue
      * Adds the given content to the queue to be saved
      * @param content any
      */
-    Save(content:any) {
+    async Save(content:any) {
         if(!this.Paused) {
             if(this.Records.length === 0)
                 this.Records.push(content);

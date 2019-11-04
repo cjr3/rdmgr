@@ -9,22 +9,49 @@ import CaptureCameraStyleButtons from './CaptureCameraStyleButtons';
 import CaptureVideoStyleButtons from './CaptureVideoStyleButtons';
 import './css/CaptureControl.scss'
 import CaptureCameraPeerButtons from './CaptureCameraPeerButtons copy';
+import UIController from 'controllers/UIController';
+import { Unsubscribe } from 'redux';
 
 /**
  * Component for determining what is displayed on the capture window.
  */
-export default class CaptureControl extends React.PureComponent<{
+export default class CaptureControl extends React.PureComponent<any, {
     /**
      * Determines if the capture control is displayed or not
      */
     opened:boolean;
 }> {
+
+    readonly state = {
+        opened:UIController.getState().CaptureControl.Shown
+    }
+
+    protected remoteUI:Unsubscribe|null = null;
+
+    constructor(props) {
+        super(props);
+        this.updateUI = this.updateUI.bind(this);
+    }
+
+    protected async updateUI() {
+        this.setState({opened:UIController.getState().CaptureControl.Shown});
+    }
+
+    componentDidMount() {
+        this.remoteUI = UIController.subscribe(this.updateUI);
+    }
+
+    componentWillUnmount() {
+        if(this.remoteUI !== null)
+            this.remoteUI();
+    }
+
     /**
      * Renders the component.
      */
     render() {
         return (
-            <Panel opened={this.props.opened} contentName="CC-app">
+            <Panel opened={this.state.opened} contentName="CC-app">
                 <CaptureControlPreview/>
                 <CaptureDisplayControls/>
                 <CaptureStreamControls/>

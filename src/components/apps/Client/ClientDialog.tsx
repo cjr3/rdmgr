@@ -1,6 +1,8 @@
 import React from 'react';
 import Panel from 'components/Panel';
 import { IconButton, IconCheck, IconNo } from 'components/Elements';
+import { Unsubscribe } from 'redux';
+import ClientController from 'controllers/ClientController';
 
 /**
  * Component for showing a modal dialog to the client.
@@ -23,11 +25,13 @@ export default class ClientDialog extends React.PureComponent<any, {
     /**
      * Callback holder for when user clicks to confirm
      */
-    protected confirm?:Function|null|undefined
+    protected confirm?:Function|null|undefined;
     /**
      * Callback holder for when user clicks to cancel
      */
-    protected cancel?:Function|null|undefined
+    protected cancel?:Function|null|undefined;
+
+    protected remoteClient:Unsubscribe|null = null;
 
     /**
      * Constructor
@@ -35,39 +39,24 @@ export default class ClientDialog extends React.PureComponent<any, {
      */
     constructor(props) {
         super(props);
-        this.state = {
-            shown:false,
-            message:''
-        };
-        
         this.onClickClose = this.onClickClose.bind(this);
         this.onClickConfirm = this.onClickConfirm.bind(this);
-        this.show = this.show.bind(this);
     }
 
-    /**
-     * Shows the
-     * @param {Mixed} message 
-     * @param {Function} confirm 
-     * @param {Function} cancel 
-     */
-    show(message, confirm:Function|null = null, cancel:Function|null = null) {
-        this.confirm = confirm;
-        this.cancel = cancel;
-        this.setState({message:message, shown:true});
+    protected async updateClient() {
+        this.setState({
+            shown:ClientController.getState().DialogShown,
+            message:ClientController.getState().DialogMessage
+        });
     }
 
     /**
      * Triggered when the user clicks the close button.
-     * @param {Event} ev 
      */
-    onClickClose(ev) {
-        this.setState(() => {
-            return {shown:false};
-        },() => {
-            if(this.cancel !== null && this.cancel !== undefined)
-                this.cancel();
-        });
+    protected async onClickClose() {
+        ClientController.HideDialog();
+        if(window && window.onDialogClose)
+            window.onDialogClose();
     }
 
     /**
@@ -75,13 +64,10 @@ export default class ClientDialog extends React.PureComponent<any, {
      * - Only available when 'confirm' is a function
      * @param {Event} ev 
      */
-    onClickConfirm(ev) {
-        this.setState(() => {
-            return {shown:false};
-        },() => {
-            if(this.confirm !== null && this.confirm !== undefined)
-                this.confirm();
-        });
+    protected onClickConfirm(ev) {
+        ClientController.HideDialog();
+        if(window && window.onDialogAccept)
+            window.onDialogAccept();
     }
 
     /**

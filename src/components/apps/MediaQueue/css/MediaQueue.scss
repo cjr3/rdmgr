@@ -58,29 +58,47 @@
         width: calc(100% - 600px);
         height: 100%;
 
-        > .video-preview {
+        > .record-control {
             position: absolute;
-            margin: auto;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            opacity: 0;
-            transition: all 500ms;
-            display: none;
+            margin: auto;
+            transform: translateY(-100%);
+            overflow: hidden scroll;
+            transition: transform 150ms;
+            &.shown {
+                transform: translateY(0);
+            }
         }
 
-        > .video-preview.shown {
-            opacity: 1;
-            display: block;
+        > .video-preview {
+            > video {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                margin: auto;
+            }
+
+            > .camera-styles {
+                position: absolute;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                margin: auto;
+                display: flex;
+                flex-flow: row wrap;
+                justify-content: center;
+                > div {
+                    padding: 8px;
+                }
+            }
         }
 
         > .slideshow-slides {
-            opacity: 0;
-            transition: all 500ms;
-            overflow: hidden auto;
-            height: 100%;
-            display: none;
             > .sortable-pane {
                 > .sortable {
                     flex: 0 0 33.333%;
@@ -92,9 +110,26 @@
             }
         }
 
-        > .slideshow-slides.shown {
-            opacity: 1;
-            display: block;
+        .anthem {
+            display: grid;
+            grid-template-rows: 100px auto;
+            > .singer-name {
+                grid-row: 1;
+                background-color: rgba(0, 0, 0, 0.8);
+                font-size: 36px;
+                line-height: 100px;
+                text-align: center;
+                font-weight: bold;
+                text-shadow: 3px 3px 3px #000;
+            }
+
+            > .singer-bio {
+                grid-row: 2;
+                background-color: rgba(0, 0, 0, 0.8);
+                padding: 16px;
+                font-weight: 100;
+                font-size: 22px;
+            }
         }
     }
 
@@ -170,7 +205,7 @@
         overflow: visible;
         .btn-volume {
             width: 250px;
-            height: 48px;
+            height: 100%;
             border: none;
             overflow: visible;
             padding: 0px 24px 0px 12px;

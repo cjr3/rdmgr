@@ -14,6 +14,7 @@ import {InitState as RosterState} from 'controllers/RosterController';
 import {InitState as SlideshowState} from 'controllers/SlideshowController';
 import {InitState as SponsorState} from 'controllers/SponsorController';
 import {InitState as VideoState} from 'controllers/VideoController';
+import {InitState as UIState} from 'controllers/UIController';
 
 export interface PathCheckResponse {
     path:string,
@@ -370,6 +371,10 @@ class Installation {
             //Video state
             case Files.Video :
                 data = Object.assign({}, VideoState);
+            break;
+
+            case Files.UI :
+                data = Object.assign({}, UIState);
             break;
 
             //base configuration file

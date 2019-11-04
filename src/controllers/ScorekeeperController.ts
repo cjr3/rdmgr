@@ -201,6 +201,7 @@ function ScorekeeperReducer(state = InitState, action) {
         case SHIFT_DECKS :
             if(typeof(action.team) === 'string') {
                 let key = (action.team === 'A') ? 'TeamA' : 'TeamB';
+                console.log(key)
                 return Object.assign({}, state, {
                     [key]:Object.assign({}, state[key], {
                         Track:Object.assign({}, {
@@ -282,7 +283,7 @@ const ScorekeeperController = {
         });
     },
 
-    SetPosition(team, skater = null, position = null, deck = null) {
+    SetPosition(team:string, skater:SkaterRecord|null = null, position:string|null = null, deck:string|null = null) {
         ScorekeeperController.getStore().dispatch({
             type:SET_POSITION,
             team:team,

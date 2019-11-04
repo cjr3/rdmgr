@@ -66,6 +66,7 @@ import FileBrowser from 'components/tools/FileBrowser';
 import {PeerRecordRequest} from 'components/data/PeerEditor';
 import vars from 'tools/vars';
 import keycodes from 'tools/keycodes';
+import { Unsubscribe } from 'redux';
 
 
 /**
@@ -142,145 +143,61 @@ export default class Client extends React.PureComponent<any, {
         return (
             <React.Fragment>
                 <ClientApplications/>
+                <ClientFileBrowser/>
                 <ClientBar/>
-                <ClientChatPanel/>
+                <ChatForm/>
                 <ClientConfigPanel/>
                 <ClientDisplayPanel/>
+                <ClientRecordRequest/>
             </React.Fragment>
         );
     }
 }
 
-/*
-
-
-                <FileBrowser
-                    //opened={this.state.FileBrowserShown}
-                    opened={false}
-                    ref={this.FileBrowserItem}
-                    onSelect={this.onSelectFile}
-                    onClose={() => {
-                        //this.setState({FileBrowserShown:false});
-                    }}
-                    />
-
-
-                <PeerRecordRequest
-                    name={this.state.RecordUpdatePeerName}
-                    opened={this.state.RecordUpdateShown}
-                    id={this.state.RecordUpdatePeerID}
-                    message={`${this.state.RecordUpdatePeerID} wants to update your records. 
-                        Choose which records to update, or click Cancel to ignore the request.`}
-                    types={this.state.RecordUpdateTypes}
-                    method='get-records'
-                    onClose={() => {
-                        this.setState({RecordUpdateShown:false});
-                    }}
-                />
-*/
-
-class ClientApplications extends React.PureComponent<any, {
-    /**
-     * Key code for current application
-     */
-    CurrentApplication:string;
-    /**
-     * Collection of applications controlled by peers
-     */
-    PeerApplications:any;
-}> {
-
-    readonly state = {
-        CurrentApplication:ClientController.getState().CurrentApplication,
-        PeerApplications:{}
-    }
-
-    /**
-     * ClientController listener
-     */
-    protected remoteClient:Function|null = null;
-
-    /**
-     * Constructor
-     * @param props any
-     */
-    constructor(props) {
-        super(props);
-        this.updateClient = this.updateClient.bind(this);
-    }
-
-    /**
-     * Update the state to match the ClientController
-     */
-    updateClient() {
-        let state = ClientController.getState();
-        if(state.CurrentApplication !== this.state.CurrentApplication
-            || !DataController.compare(state.PeerApplications, this.state.PeerApplications)) {
-            this.setState({
-                CurrentApplication:state.CurrentApplication,
-                PeerApplications:state.PeerApplications
-            });
-        }
-    }
-
-    /**
-     * Subscribe to ClientController
-     */
-    componentDidMount() {
-        this.remoteClient = ClientController.subscribe(this.updateClient);
-    }
-
-    /**
-     * Close ClientController subscriber
-     */
-    componentWillUnmount() {
-        if(this.remoteClient !== null) {
-            this.remoteClient();
-        }
-    }
-
-    /**
-     * Renders the component
-     */
-    render() {
-        return (
-            <Panel
-                className="client"
-                contentName="control-app"
-                title={<ClientScorebanner/>}
-                opened={true}
-                onClose={ClientController.Exit}
-                >
-                <Scoreboard opened={(this.state.CurrentApplication === ScoreboardController.Key)}/>
-                <CaptureControl opened={(this.state.CurrentApplication === CaptureController.Key)}/>
-                <PenaltyTracker opened={(this.state.CurrentApplication === PenaltyController.Key)}/>
-                <Scorekeeper opened={(this.state.CurrentApplication === ScorekeeperController.Key)}/>
-                <Roster opened={(this.state.CurrentApplication === RosterController.Key)}/>
-                <MediaQueue opened={(this.state.CurrentApplication === MediaQueueController.Key)}/>
-            </Panel>
-        );
-    }
+function ClientApplications() {
+    return (
+        <Panel
+            className="client"
+            contentName="control-app"
+            title={<ClientScorebanner/>}
+            opened={true}
+            onClose={ClientController.Exit}
+            >
+            <Scoreboard/>
+            <CaptureControl/>
+            <PenaltyTracker/>
+            <Scorekeeper/>
+            <Roster/>
+            <MediaQueue/>
+        </Panel>
+    );
 }
 
-class ClientChatPanel extends React.PureComponent<any, {
+class ClientRecordRequest extends React.PureComponent<any, {
+    RecordUpdatePeerID:string;
     shown:boolean;
+    RecordUpdateTypes:any;
 }> {
+
     readonly state = {
-        shown:false
+        RecordUpdatePeerID:'',
+        shown:false,
+        RecordUpdateTypes:{}
     };
 
-    protected remoteClient:Function|null = null;
+    protected remoteClient:Unsubscribe|null = null;
 
     constructor(props) {
         super(props);
         this.updateClient = this.updateClient.bind(this);
     }
 
-    updateClient() {
-        let shown = ClientController.getState().ChatShown;
-        if(shown !== this.state.shown) {
-            this.setState({shown:shown});
-        }
+    protected async updateClient() {
+        this.setState({
+            RecordUpdatePeerID:ClientController.getState().RecordUpdatePeerID,
+            RecordUpdateTypes:ClientController.getState().RecordUpdateTypes,
+            shown:ClientController.getState().RecordUpdateShown
+        });
     }
 
     componentDidMount() {
@@ -294,13 +211,20 @@ class ClientChatPanel extends React.PureComponent<any, {
 
     render() {
         return (
-            <ChatForm
+            <PeerRecordRequest
+                name={this.state.RecordUpdatePeerID}
                 opened={this.state.shown}
-                onClose={() => {ClientController.ToggleChat(false);}}
+                id={this.state.RecordUpdatePeerID}
+                message={`${this.state.RecordUpdatePeerID} wants to update your records. 
+                    Choose which records to update, or click Cancel to ignore the request.`}
+                types={this.state.RecordUpdateTypes}
+                method='get-records'
+                onClose={() => {
+                    ClientController.HidePeerRequest();
+                }}
             />
-        );
+        )
     }
-    
 }
 
 class ClientConfigPanel extends React.PureComponent<any, {
@@ -387,5 +311,85 @@ class ClientDisplayPanel extends React.PureComponent<any, {
                 </div>
             </Panel>
         );
+    }
+}
+
+/**
+ * Component to display a FileBrowser
+ * Set the global window.onSelectFile to a listener to receive the selected filename
+ */
+class ClientFileBrowser extends React.PureComponent<any, {
+    /**
+     * Determines if the FileBrowser is visible or not
+     */
+    opened:boolean;
+}> {
+    readonly state = {
+        opened:false
+    };
+
+    /**
+     * Subscriber for ClientController
+     */
+    protected remoteClient:Unsubscribe|null = null;
+
+    /**
+     * Constructor
+     * @param props 
+     */
+    constructor(props) {
+        super(props);
+        this.updateClient = this.updateClient.bind(this);
+        this.onSelectFile = this.onSelectFile.bind(this);
+    }
+
+    /**
+     * Update state to match the ClientController
+     */
+    updateClient() {
+        this.setState({
+            opened:ClientController.getState().FileBrowserShown
+        });
+    }
+
+    /**
+     * Subscribe to ClientController
+     */
+    componentDidMount() {
+        this.remoteClient = ClientController.subscribe(this.updateClient);
+    }
+
+    /**
+     * Unsubscribe from ClientController
+     */
+    componentWillUnmount() {
+        if(this.remoteClient !== null)
+            this.remoteClient();
+    }
+
+    /**
+     * Triggered when the user selects a file from the FileBrowser
+     * - Set a listener on window.onSelectFile
+     * @param filename 
+     */
+    onSelectFile(filename?:string) {
+        if(window.onSelectFile)
+            window.onSelectFile(filename);
+    }
+    
+    /**
+     * Renders the component
+     * - A FileBrowser component
+     */
+    render() {
+        return (
+            <FileBrowser
+                opened={this.state.opened}
+                onSelect={this.onSelectFile}
+                onClose={() => {
+                    //this.setState({FileBrowserShown:false});
+                }}
+            />
+        )
     }
 }

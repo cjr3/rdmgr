@@ -13,123 +13,150 @@ import ScoreboardController, {SScoreboardTeam} from 'controllers/ScoreboardContr
 import DataController from 'controllers/DataController';
 
 import './css/Team.scss'
+import { Unsubscribe } from 'redux'
 
-interface PTeam {
-    side:string;
+export default function Team(props:{side:string}) {
+    return (
+        <div className={cnames('team', 'side-' + props.side.toLowerCase())}>
+            <Score side={props.side}/>
+            <TeamLogo side={props.side}/>
+            <div className="values">
+                <NameInput side={props.side}/>
+                <ColorInput side={props.side}/>
+                <JamPoints side={props.side}/>
+                <Timeouts side={props.side}/>
+                <Challenges side={props.side}/>
+            </div>
+            <Status side={props.side}/>
+            <TeamControlButtons side={props.side}/>
+        </div>
+    );
 }
 
-export default class Team extends React.PureComponent<{
+class TeamLogo extends React.PureComponent<{
     side:string;
 }, {
-    status:number;
-    thumbnail:string;
-}>{
-
+    src:string;
+}> {
     readonly state = {
-        status:0,
-        thumbnail:''
+        src:''
     }
 
-    protected remoteScoreboard:Function|null = null;
+    protected remoteScoreboard:Unsubscribe|null = null;
 
     constructor(props) {
         super(props);
         this.updateScoreboard = this.updateScoreboard.bind(this);
     }
 
-    updateScoreboard() {
-        let state = ScoreboardController.getState();
-        if(this.props.side === 'A') {
-            if(this.state.status != state.TeamA.Status)
-                this.setState({status:state.TeamA.Status});
-
-            if(this.state.thumbnail != state.TeamA.Thumbnail)
-                this.setState({thumbnail:state.TeamA.Thumbnail});
-        } else {
-
-            if(this.state.status != state.TeamB.Status)
-                this.setState({status:state.TeamB.Status});
-
-            if(this.state.thumbnail != state.TeamB.Thumbnail)
-                this.setState({thumbnail:state.TeamB.Thumbnail});
-        }
+    protected async updateScoreboard() {
+        let src = ScoreboardController.getState().TeamA.Thumbnail;
+        if(this.props.side === 'B')
+            src = ScoreboardController.getState().TeamB.Thumbnail;
+        this.setState({src:src});
     }
 
     componentDidMount() {
         this.remoteScoreboard = ScoreboardController.subscribe(this.updateScoreboard);
-        this.updateScoreboard();
     }
 
     componentWillUnmount() {
-        if(this.remoteScoreboard !== null) {
+        if(this.remoteScoreboard !== null)
             this.remoteScoreboard();
-        }
+    }
+    
+    render() {
+        let src:string = '';
+        if(this.state.src !== '')
+            src = DataController.mpath(this.state.src);
+        return (
+            <img src={src} alt="" className="logo"/>
+        );
+    }
+}
+
+class TeamControlButtons extends React.PureComponent<{
+    side:string;
+}, {
+    status:number;
+}> {
+
+    readonly state = {
+        status:0
     }
 
+    protected remoteScoreboard:Unsubscribe|null = null;
+
+    constructor(props) {
+        super(props);
+        this.updateScoreboard = this.updateScoreboard.bind(this);
+    }
+
+    protected async updateScoreboard() {
+        let status:number = ScoreboardController.getState().TeamA.Status;
+        if(this.props.side === 'B')
+            status = ScoreboardController.getState().TeamB.Status;
+        this.setState({status:status});
+    }
+
+    componentDidMount() {
+        this.remoteScoreboard = ScoreboardController.subscribe(this.updateScoreboard);
+    }
+
+    componentWillUnmount() {
+        if(this.remoteScoreboard !== null)
+            this.remoteScoreboard();
+    }
+    
     render() {
-        
         let scoreTitle:string = `Score ( ${(this.props.side === 'A') ? 'LEFT' : 'RIGHT'} )`;
         let jamTitle:string = `Lead Jammer ( ${(this.props.side === 'A') ? 'Q' : 'W'} )`;
         let timeTitle:string = `Timeout ( ${(this.props.side === 'A') ? '[' : ']'} )`;
         let chalTitle:string = `Challenge ( CTRL + ${(this.props.side === 'A') ? '[' : ']'} )`;
 
-        let src:string = (this.state.thumbnail) ? DataController.mpath(this.state.thumbnail) : '';
-
         return (
-            <div className={cnames('team', 'side-' + this.props.side.toLowerCase())}>
-                <Score side={this.props.side}/>
-                <img src={src} alt="" className="logo"/>
-                <div className="values">
-                    <NameInput side={this.props.side}/>
-                    <ColorInput side={this.props.side}/>
-                    <JamPoints side={this.props.side}/>
-                    <Timeouts side={this.props.side}/>
-                    <Challenges side={this.props.side}/>
-                </div>
-                <Status side={this.props.side}/>
-                <div className="controls">
-                    <Icon
-                        src={IconPlus}
-                        onClick={() => {
-                            ScoreboardController.IncreaseTeamScore(this.props.side, 1);
-                        }}
-                        onContextMenu={(ev) => {
-                            ev.preventDefault();
-                            ScoreboardController.DecreaseTeamScore(this.props.side, 1);
-                        }}
-                        title={scoreTitle}
-                    />
-                    <Icon
-                        src={IconBolt}
-                        active={(this.state.status === vars.Team.Status.LeadJammer || this.state.status === vars.Team.Status.PowerJam)}
-                        onClick={() => {
-                            ScoreboardController.SetTeamStatus(this.props.side, vars.Team.Status.LeadJammer)
-                        }}
-                        onContextMenu={(ev) => {
-                            ev.preventDefault();
-                            ev.stopPropagation();
-                            ScoreboardController.SetTeamStatus(this.props.side, vars.Team.Status.PowerJam)}
-                        }
-                        title={jamTitle}
-                    />
-                    <Icon
-                        src={IconNo}
-                        active={(this.state.status === vars.Team.Status.Timeout)}
-                        onClick={() => {
-                            ScoreboardController.SetTeamStatus(this.props.side, vars.Team.Status.Timeout)
-                        }}
-                        title={timeTitle}
-                    />
-                    <Icon
-                        src={IconFlag}
-                        active={(this.state.status === vars.Team.Status.Challenge)}
-                        onClick={() => {
-                            ScoreboardController.SetTeamStatus(this.props.side, vars.Team.Status.Challenge)
-                        }}
-                        title={chalTitle}
-                    />
-                </div>
+            <div className="controls">
+                <Icon
+                    src={IconPlus}
+                    onClick={() => {
+                        ScoreboardController.IncreaseTeamScore(this.props.side, 1);
+                    }}
+                    onContextMenu={(ev) => {
+                        ev.preventDefault();
+                        ScoreboardController.DecreaseTeamScore(this.props.side, 1);
+                    }}
+                    title={scoreTitle}
+                />
+                <Icon
+                    src={IconBolt}
+                    active={(this.state.status === vars.Team.Status.LeadJammer || this.state.status === vars.Team.Status.PowerJam)}
+                    onClick={() => {
+                        ScoreboardController.SetTeamStatus(this.props.side, vars.Team.Status.LeadJammer)
+                    }}
+                    onContextMenu={(ev) => {
+                        ev.preventDefault();
+                        ev.stopPropagation();
+                        ScoreboardController.SetTeamStatus(this.props.side, vars.Team.Status.PowerJam)}
+                    }
+                    title={jamTitle}
+                />
+                <Icon
+                    src={IconNo}
+                    active={(this.state.status === vars.Team.Status.Timeout)}
+                    onClick={() => {
+                        ScoreboardController.SetTeamStatus(this.props.side, vars.Team.Status.Timeout)
+                    }}
+                    title={timeTitle}
+                />
+                <Icon
+                    src={IconFlag}
+                    active={(this.state.status === vars.Team.Status.Challenge)}
+                    onClick={() => {
+                        ScoreboardController.SetTeamStatus(this.props.side, vars.Team.Status.Challenge)
+                    }}
+                    title={chalTitle}
+                />
             </div>
-        );
+        )
     }
 }

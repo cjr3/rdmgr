@@ -51,8 +51,10 @@ export default class ClientScorebanner extends React.PureComponent<any, SScorebo
      * Renders the component.
      */
     render() {
-        const gameClock = this.state.GameMinute.toString().padStart(2,'0') + ":" +
+        let gameClock = this.state.GameMinute.toString().padStart(2,'0') + ":" +
             this.state.GameSecond.toString().padStart(2,'0');
+        if(this.state.GameHour > 0)
+            gameClock = this.state.GameHour.toString().padStart(2,'0') + ":" + gameClock;
         const jamClock = this.state.JamSecond.toString().padStart(2,'0');
         const jamCounter = "#" + this.state.JamCounter.toString().padStart(2,'0');
         const boardStatus = vars.Scoreboard.StatusText[this.state.BoardStatus];

@@ -20,28 +20,38 @@
             overflow: hidden scroll;
             display: block;
             .sortable {
-                display: flex;
-                overflow: visible;
-                width: 100%;
+                .skater-item {
+                    display: flex;
+                    overflow: visible;
+                    width: 100%;
+                    &:hover {
+                        z-index: 3;
+                    }
+    
+                    > .icon {
+                        pointer-events: all;
+                    }
+    
+                    .number {
+                        flex: 0 0 75px;
+                        padding: 6px;
+                    }
+    
+                    .name {
+                        flex: 1;
+                        padding: 6px;
+                        text-align: left;
 
-                > .icon {
-                    pointer-events: all;
+                        .skater-form {
+                            display: block;
+                            width: 100%;
+                            user-select: initial;
+                            &.shown {
+                                display: block;
+                            }
+                        }
+                    }
                 }
-
-                .number {
-                    flex: 0 0 75px;
-                    padding: 6px;
-                }
-
-                .name {
-                    flex: 1;
-                    padding: 6px;
-                    text-align: left;
-                }
-            }
-
-            .sortable:hover {
-                z-index: 3;
             }
         }
     }
@@ -96,6 +106,31 @@
                     text-align: left;
                     padding: 6px;
                 }
+            }
+        }
+
+        .skater-entry {
+            display: grid;
+            grid-template-columns: 36px 50px auto auto 36px;
+            border-top: solid 1px #666;
+            img.icon {
+                max-width: 36px;
+                height: 36px;
+                padding: 6px;
+            }
+
+            input[type="text"], select {
+                border: solid 1px #333;
+                border-top: none;
+                border-bottom: none;
+            }
+
+            input[type="text"]:last-of-type {
+                width: 200px;
+            }
+
+            select {
+                width: 100px;
             }
         }
     }

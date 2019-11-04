@@ -9,6 +9,8 @@ import {Button, IconButton, Icon, IconDelete, IconSave, IconX, IconHidden, IconS
 import DataController from 'controllers/DataController';
 import './css/PenaltyTracker.scss';
 import vars, { SkaterRecord, PenaltyRecord } from 'tools/vars';
+import UIController from 'controllers/UIController';
+import { Unsubscribe } from 'redux';
 
 /**
  * Component for the penalty tracker
@@ -51,6 +53,7 @@ export default class PenaltyTracker extends React.PureComponent<any, {
     },
     TeamBSkaters:Array<SkaterRecord>;
     Skater:SkaterRecord;
+    opened:boolean;
 }> {
     readonly state = {
         Penalties:DataController.getPenalties(true),
@@ -69,7 +72,8 @@ export default class PenaltyTracker extends React.PureComponent<any, {
             Color:ScoreboardController.getState().TeamB.Color
         },
         TeamBSkaters:RosterController.getState().TeamB.Skaters.slice(),
-        Skater:DataController.getNewRecord(vars.RecordType.Skater)
+        Skater:DataController.getNewRecord(vars.RecordType.Skater),
+        opened:UIController.getState().PenaltyTracker.Shown
     }
 
     /**
@@ -94,6 +98,11 @@ export default class PenaltyTracker extends React.PureComponent<any, {
     protected remoteRoster:Function|null = null;
 
     /**
+     * UIController listener
+     */
+    protected remoteUI:Unsubscribe|null = null;
+
+    /**
      * For some reason, even with null type checking, TypeScript
      * still throws an error if the 'Skater' object of the state is set to null,
      * so let's use a fake one
@@ -115,6 +124,13 @@ export default class PenaltyTracker extends React.PureComponent<any, {
         this.updateScoreboard = this.updateScoreboard.bind(this);
         this.updateData = this.updateData.bind(this);
         this.updateRoster = this.updateRoster.bind(this);
+        this.updateUI = this.updateUI.bind(this);
+    }
+
+    protected async updateUI() {
+        this.setState({
+            opened:UIController.getState().PenaltyTracker.Shown
+        });
     }
 
     /**
@@ -288,6 +304,7 @@ export default class PenaltyTracker extends React.PureComponent<any, {
         this.remoteScoreboard = ScoreboardController.subscribe(this.updateScoreboard);
         this.remoteData = DataController.subscribe(this.updateData);
         this.remoteRoster = RosterController.subscribe(this.updateRoster);
+        this.remoteUI = UIController.subscribe(this.updateUI);
     }
 
     /**
@@ -304,6 +321,8 @@ export default class PenaltyTracker extends React.PureComponent<any, {
             this.remoteData();
         if(this.remoteRoster !== null)
             this.remoteRoster();
+        if(this.remoteUI !== null)
+            this.remoteUI();
     }
 
     /**
@@ -392,7 +411,7 @@ export default class PenaltyTracker extends React.PureComponent<any, {
 
         return (
             <Panel
-                opened={this.props.opened}
+                opened={this.state.opened}
                 buttons={buttons}
                 contentName="PT-app"
                 >

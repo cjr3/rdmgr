@@ -326,6 +326,10 @@ export default class ConfirmFormScoreboard extends React.PureComponent<{
                             </tr>
                         </tbody>
                     </table>
+                    <p>
+                        Jam Clock changes take effect after you reset the board, by
+                        selectong <i>Teams</i> on the Scoreboard, and checking <i>Reset Board</i>
+                    </p>
                 </div>
             </Panel>
         )

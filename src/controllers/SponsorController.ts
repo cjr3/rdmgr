@@ -1,4 +1,4 @@
-import {createStore} from 'redux';
+import {createStore, Unsubscribe} from 'redux';
 
 const SET_STATE = 'SET_STATE';
 const SET_INDEX = 'SET_INDEX';
@@ -27,6 +27,11 @@ export interface SSponsorController {
      * Filename of temporary slide.
      */
     TemporarySlide:string;
+
+    /**
+     * RecordID of current sponsor slideshow
+     */
+    RecordID:number;
 }
 
 export const InitState:SSponsorController = {
@@ -34,7 +39,8 @@ export const InitState:SSponsorController = {
     Index:0,
     SlideDuration:1000 * 10, //10 seconds
     Transition:"fade",
-    TemporarySlide:''
+    TemporarySlide:'',
+    RecordID:0
 }
 
 function SponsorReducer(state:SSponsorController = InitState, action) {
@@ -51,7 +57,8 @@ function SponsorReducer(state:SSponsorController = InitState, action) {
         case SET_SLIDES :
             return Object.assign({}, state, {
                 Slides:action.values,
-                Index:0
+                Index:0,
+                RecordID:action.RecordID
             });
 
         case NEXT_SLIDE :
@@ -69,35 +76,36 @@ const SponsorStore = createStore( SponsorReducer );
 
 const SponsorController = {
     Key:'SPN',
-    SetState(values) {
+    async SetState(values) {
         SponsorController.getStore().dispatch({
             type:SET_STATE,
             values:values
         });
     },
 
-    SetIndex(index) {
+    async SetIndex(index) {
         SponsorController.getStore().dispatch({
             type:SET_INDEX,
             value:index
         });
     },
 
-    SetTemporarySlide(value) {
+    async SetTemporarySlide(value) {
         SponsorController.getStore().dispatch({
             type:SET_TEMPORARY,
             value:value
         });
     },
 
-    SetSlides(slides) {
+    async SetSlides(slides:Array<any>|undefined, recordid:number = 0) {
         SponsorController.getStore().dispatch({
             type:SET_SLIDES,
-            values:slides
+            values:slides,
+            RecordID:recordid
         });
     },
 
-    Next() {
+    async Next() {
         SponsorController.getStore().dispatch({
             type:NEXT_SLIDE
         })
@@ -111,7 +119,7 @@ const SponsorController = {
         return SponsorStore;
     },
 
-    subscribe(f) {
+    subscribe(f) : Unsubscribe {
         return SponsorStore.subscribe(f);
     }
 };

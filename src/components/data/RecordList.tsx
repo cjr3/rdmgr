@@ -4,92 +4,25 @@ import {Button} from 'components/Elements';
 import DataController from 'controllers/DataController';
 import './css/RecordList.scss';
 
-interface SRecordList {
-    DragIndex:number,
-    DropIndex:number,
-    records:Array<any>
-}
-
-interface PRecordList {
-    records:Array<any>,
-    keywords?:string,
-    recordid?:number,
-    onSelect?:Function,
-    className?:string
-}
-
-class RecordList extends React.Component<PRecordList, SRecordList> {
-    readonly state:SRecordList = {
+export default class RecordList extends React.Component<{
+    records:Array<any>;
+    keywords?:string;
+    recordid?:number;
+    onSelect?:Function;
+    className?:string;
+}, {
+    DragIndex:number;
+    DropIndex:number;
+    records:Array<any>;
+}> {
+    readonly state = {
         DragIndex:-1,
         DropIndex:-1,
         records:[]
     }
+
     constructor(props) {
         super(props);
-        this.onDragOver = this.onDragOver.bind(this);
-        this.onDragStart = this.onDragStart.bind(this);
-        this.onDrop = this.onDrop.bind(this);
-        this.onDragEnd = this.onDragEnd.bind(this);
-        this.onDragLeave = this.onDragLeave.bind(this);
-        this.swapRecords = this.swapRecords.bind(this);
-    }
-
-    /**
-     * Triggered when the user drags an item over a droppable item
-     */
-    async onDragOver(ev) {
-        var index = ev.target.dataset.index;
-        ev.preventDefault();
-        this.setState(() => {
-            return {DropIndex:index}
-        });
-    }
-
-    /**
-     * Triggered when the user begins dragging a slide.
-     */
-    async onDragStart(ev) {
-        var index = ev.target.dataset.index;
-        this.setState(() => {
-            return {DragIndex:index}
-        });
-    }
-
-    /**
-     * Triggered when a slide is dropped onto a droppable item.
-     */
-    async onDrop() {
-        if(this.state.DropIndex > -1 && this.state.DragIndex > -1 && this.state.DropIndex !== this.state.DragIndex) {
-            this.swapRecords(this.state.DropIndex, this.state.DragIndex);
-        }
-    }
-
-    /**
-     * Triggered when dragging stops.
-     */
-    async onDragEnd() {
-        this.setState(() => {
-            return {DragIndex:-1, DropIndex:-1}
-        });
-    }
-
-    /**
-     * Triggered when a draggable is no longer over a droppable.
-     */
-    async onDragLeave() {
-        this.setState(() => {
-            return {DropIndex:-1}
-        });
-    }
-
-    swapRecords(dropIndex, dragIndex) {
-        if(this.state.records) {
-            var records = this.state.records.slice();
-            [records[dropIndex], records[dragIndex]] = [records[dragIndex], records[dropIndex]];
-            this.setState(() => {
-                return {records:records}
-            });
-        }
     }
 
     /**
@@ -127,7 +60,7 @@ class RecordList extends React.Component<PRecordList, SRecordList> {
 
             var keys = Object.entries(this.props.records);
             keys.forEach((item) => {
-                var hidden = false;
+                let hidden = false;
                 let record = item[1];
                 let key = item[0];
                 if(rx !== null) {
@@ -138,8 +71,8 @@ class RecordList extends React.Component<PRecordList, SRecordList> {
                         hidden = false;
                 }
                 
-                var className = cnames({
-                    active:(record.RecordID === this.props.recordid),
+                let className = cnames({
+                    active:(record.RecordID == this.props.recordid),
                     hidden:hidden
                 });
                 items.push(
@@ -155,14 +88,10 @@ class RecordList extends React.Component<PRecordList, SRecordList> {
             });
         }
 
-        var className = cnames('record-list', this.props.className);
-
         return (
-            <div className={className}>
+            <div className={cnames('record-list', this.props.className)}>
                 {items}
             </div>
         );
     }
 }
-
-export default RecordList;

@@ -28,13 +28,16 @@ export default class JamClock extends React.PureComponent<any, {
      * Status (playing, stopped, ready)
      */
     status:number;
+
+    maxseconds:number;
 }> {
     readonly state = {
         status:vars.Clock.Status.Ready,
         showTenths:false,
         hour:0,
         minute:0,
-        second:ScoreboardController.getState().JamSecond
+        second:ScoreboardController.getState().JamSecond,
+        maxseconds:ScoreboardController.getState().MaxJamSeconds
     }
 
     /**
@@ -62,14 +65,15 @@ export default class JamClock extends React.PureComponent<any, {
     /**
      * Updates the state to match the controller.
      */
-    updateState() {
+    protected async updateState() {
         this.setState(() => {
             let cstate = ScoreboardController.getState();
             return {
                 status:cstate.JamState,
                 hour:cstate.JamHour,
                 minute:cstate.JamMinute,
-                second:cstate.JamSecond
+                second:cstate.JamSecond,
+                maxseconds:cstate.MaxJamSeconds
             };
         }, () => {
             if(!window.remoteApps.SB && this.ClockItem !== null && this.ClockItem.current !== null) {
@@ -83,13 +87,13 @@ export default class JamClock extends React.PureComponent<any, {
         });
     }
 
-    onClick(ev) {
+    protected async onClick(ev) {
         ev.preventDefault();
         ev.stopPropagation();
         ScoreboardController.ToggleJamClock();
     }
 
-    onContextMenu(ev) {
+    protected async onContextMenu(ev) {
         ev.preventDefault();
         ev.stopPropagation();
         this.setState((state) => {
@@ -97,7 +101,7 @@ export default class JamClock extends React.PureComponent<any, {
         });
     }
 
-    onDone() {
+    async onDone() {
         ScoreboardController.ToggleJamClock();
     }
 
@@ -137,7 +141,7 @@ export default class JamClock extends React.PureComponent<any, {
             status = vars.Clock.Status.Ready;
 
         let className = cnames('jam-clock', {
-            longjam:(this.state.second > 60)
+            longjam:(this.state.second > 60 || this.state.maxseconds > 60)
         });
         
         return (
@@ -147,6 +151,7 @@ export default class JamClock extends React.PureComponent<any, {
                 hour={this.state.hour}
                 minute={this.state.minute}
                 second={this.state.second}
+                maxseconds={this.state.maxseconds}
                 type={vars.Clock.Types.Stopwatch}
                 showTenths={this.state.showTenths}
                 status={status}

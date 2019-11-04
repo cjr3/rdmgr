@@ -3,6 +3,7 @@ import DataController from 'controllers/DataController';
 import {Icon, Button, IconButton, IconCheck, IconAttachment, ProgressBar, IconLoop, IconShown} from 'components/Elements';
 import './css/FileBrowser.scss';
 import Panel from 'components/Panel';
+import ClientController from 'controllers/ClientController';
 
 /**
  * A component for browsing media files.
@@ -60,7 +61,11 @@ export default class FileBrowser extends React.PureComponent<{
         let buttons:Array<React.ReactElement> = [
             <Button
                 key="btn-close"
-                onClick={this.props.onClose}
+                onClick={() => {
+                    ClientController.ToggleFileBrowser(false);
+                    if(this.props.onClose)
+                        this.props.onClose();
+                }}
                 >Cancel</Button>
         ];
 
@@ -80,6 +85,7 @@ export default class FileBrowser extends React.PureComponent<{
             <Button
                 key="btn-select"
                 onClick={() => {
+                    ClientController.ToggleFileBrowser(false);
                     if(this.props.onSelect)
                         this.props.onSelect(this.state.previewSrc);
                     this.previewImage('');
@@ -121,7 +127,11 @@ export default class FileBrowser extends React.PureComponent<{
                 <FileBrowserList 
                     path={this.state.path} 
                     onClickPreview={this.previewImage}
-                    onSelect={this.props.onSelect}
+                    onSelect={(filename) => {
+                        ClientController.ToggleFileBrowser(false);
+                        if(this.props.onSelect)
+                            this.props.onSelect(filename);
+                    }}
                     />
                 <Panel
                     opened={(previewItem !== null)}

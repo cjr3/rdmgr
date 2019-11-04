@@ -68,19 +68,25 @@ class CaptureControlRoster extends React.PureComponent<PCaptureControlPanel, SCa
     /**
      * Updates the state to match the camera controller.
      */
-    updateState() {
-        this.setState({
-            CurrentTeam:RosterController.getState().CurrentTeam,
-            SkaterIndex:RosterController.getState().SkaterIndex,
-            SkatersA:RosterController.getState().TeamA.Skaters,
-            SkatersB:RosterController.getState().TeamB.Skaters
-        });
+    protected async updateState() {
+        let cstate = RosterController.getState();
+        let changes:any = {
+            CurrentTeam:cstate.CurrentTeam,
+            SkaterIndex:cstate.SkaterIndex,
+        }
+
+        if(!DataController.compare(cstate.TeamA.Skaters, this.state.SkatersA))
+            changes.SkatersA = cstate.TeamA.Skaters;
+        if(!DataController.compare(cstate.TeamB.Skaters, this.state.SkatersB))
+            changes.SkatersB = cstate.TeamB.Skaters;
+
+        this.setState(changes);
     }
 
     /**
      * Updates the state to match the capture controller.
      */
-    updateCapture() {
+    protected async updateCapture() {
         this.setState({
             Shown:CaptureController.getState().Roster.Shown
         });
@@ -91,11 +97,13 @@ class CaptureControlRoster extends React.PureComponent<PCaptureControlPanel, SCa
      * - Update Team A
      * - Update Team B
      */
-    updateScoreboard() {
-        this.setState({
-            TeamA:ScoreboardController.getState().TeamA,
-            TeamB:ScoreboardController.getState().TeamB
-        });
+    protected async updateScoreboard() {
+        let teamA = ScoreboardController.getState().TeamA;
+        let teamB = ScoreboardController.getState().TeamB;
+        if(!DataController.compare(teamA, this.state.TeamA))
+            this.setState({TeamA:teamA});
+        if(!DataController.compare(teamB, this.state.TeamB))
+            this.setState({TeamB:teamB});
     }
 
     /**

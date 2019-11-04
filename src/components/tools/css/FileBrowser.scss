@@ -125,4 +125,6 @@
 
 .file-browser-panel {
     z-index: 1000;
+    height: calc(100% - 72px);
+    top: 24px;
 }

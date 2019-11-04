@@ -21,6 +21,7 @@ import IPCX from 'controllers/IPCX';
 //utilities
 import vars, {IController} from 'tools/vars';
 import keycodes from 'tools/keycodes';
+import UIController from './UIController';
 
 export interface SClientController {
     /**
@@ -34,7 +35,7 @@ export interface SClientController {
     /**
      * Array of record type codes to request / send
      */
-    RecordUpdateTypes:Array<string>;
+    RecordUpdateTypes:any;
     /**
      * Number of unread messages in chat
      */
@@ -59,6 +60,23 @@ export interface SClientController {
      * Determines if the display panel is open or not
      */
     ChatShown:boolean;
+
+    /**
+     * Determines if the file browser is open or not
+     */
+    FileBrowserShown:boolean;
+    /**
+     * Determines if the dialog is open or not
+     */
+    DialogShown:boolean;
+    /**
+     * Determines if the dialog is open or not
+     */
+    RecordUpdateShown:boolean;
+    /**
+     * Message to display in the dialog
+     */
+    DialogMessage:string;
 };
 
 interface IClientController extends IController {
@@ -67,6 +85,19 @@ interface IClientController extends IController {
      * Sets the client's application
      */
     SetApplication:Function;
+
+    /**
+     * Shows the dialog window with a message
+     */
+    ShowDialog:Function;
+
+    /**
+     * Hides the dialog window
+     */
+    HideDialog:Function;
+
+    HidePeerRequest:Function;
+
     /**
      * Exits the application, attempting to
      * close any connections and I/O operations
@@ -95,9 +126,9 @@ interface IClientController extends IController {
     ToggleChat:Function;
 
     /**
-     * Checks if the controller is controlled by a remote peer
+     * Toggles the file browser
      */
-    ControllerRemote:Function;
+    ToggleFileBrowser:Function;
 
     /**
      * Handles global keyboard commands
@@ -190,20 +221,24 @@ interface IClientController extends IController {
     updateMediaQueue:Function;
 };
 
-export enum Actions {
+enum Actions {
     SET_APPLICATION,
     SET_RECORD_UPDATE_REQUEST,
     SET_PEERS,
     SET_UNREAD_MESSAGE_COUNT,
     TOGGLE_CONFIG,
     TOGGLE_DISPLAY,
-    TOGGLE_CHAT
+    TOGGLE_CHAT,
+    TOGGLE_FILE_BROWSER,
+    SET_DIALOG,
+    SET_STATE
 };
 
 const InitState:SClientController = {
     CurrentApplication:ScoreboardController.Key,
     RecordUpdatePeerID:'',
-    RecordUpdateTypes:[],
+    RecordUpdateTypes:{},
+    RecordUpdateShown:false,
     UnreadMessageCount:0,
     PeerApplications:{
         [CaptureController.Key]:null,
@@ -220,7 +255,10 @@ const InitState:SClientController = {
     ConnectedPeers:0,
     ConfigShown:false,
     DisplayShown:false,
-    ChatShown:false
+    ChatShown:false,
+    FileBrowserShown:false,
+    DialogShown:false,
+    DialogMessage:''
 };
 
 const Controllers:any = {
@@ -258,6 +296,12 @@ let Subscriptions:any = {
 function ClientReducer(state:SClientController = InitState, action) {
     try {
         switch(action.type) {
+
+            case Actions.SET_STATE : {
+                return Object.assign({}, state, action.state);
+            }
+            break;
+
             //set the current application
             case Actions.SET_APPLICATION : {
                 return Object.assign({}, state, {
@@ -269,7 +313,8 @@ function ClientReducer(state:SClientController = InitState, action) {
             case Actions.SET_RECORD_UPDATE_REQUEST : {
                 return  Object.assign({}, state, {
                     RecordUpdatePeerID:action.ID,
-                    RecordUpdateTypes:Object.assign({}, action.RecordTypes)
+                    RecordUpdateTypes:Object.assign({}, action.RecordTypes),
+                    RecordUpdateShown:true
                 });
             }
             break;
@@ -335,6 +380,21 @@ function ClientReducer(state:SClientController = InitState, action) {
             }
             break;
 
+            //Toggle FileBrowser
+            case Actions.TOGGLE_FILE_BROWSER : {
+                let value:boolean = (typeof(action.value) === 'boolean') ? action.value : (!state.FileBrowserShown);
+                return Object.assign({}, state, {FileBrowserShown:value});
+            }
+            break;
+
+            case Actions.SET_DIALOG : {
+                return Object.assign({}, state, {
+                    DialogShown:action.shown,
+                    DialogMessage:action.message
+                });
+            }
+            break;
+
             default : {
                 return state;
             }
@@ -370,9 +430,7 @@ const ClientController:IClientController = {
                 window.RDMGR.mainWindow.setTitle('RDMGR : Control Window');
                 document.body.className = 'client';
 
-                window.RDMGR.mainWindow.on('close', () => {
-                    ClientController.onExit();
-                });
+                window.RDMGR.mainWindow.on('close', ClientController.onExit);
             }
 
             //setup IPC renderer if there is a capture window.
@@ -382,17 +440,18 @@ const ClientController:IClientController = {
         }
 
         //subscribe to controllers
-        Subscriptions[ScoreboardController.Key] = ScoreboardController.subscribe(ClientController.updateScoreboard);
+        Subscriptions[ChatController.Key] = ChatController.subscribe(ClientController.updateChat);
+        Subscriptions[CameraController.Key] = CameraController.subscribe(ClientController.updateCamera);
         Subscriptions[CaptureController.Key] = CaptureController.subscribe(ClientController.updateCapture);
         Subscriptions[MediaQueueController.Key] = MediaQueueController.subscribe(ClientController.updateMediaQueue);
-        Subscriptions[ScorekeeperController.Key] = ScorekeeperController.subscribe(ClientController.updateScorekeeper);
         Subscriptions[PenaltyController.Key] = PenaltyController.subscribe(ClientController.updatePenalty);
         Subscriptions[RaffleController.Key] = RaffleController.subscribe(ClientController.updateRaffle);
         Subscriptions[RosterController.Key] = RosterController.subscribe(ClientController.updateRoster);
+        Subscriptions[ScoreboardController.Key] = ScoreboardController.subscribe(ClientController.updateScoreboard);
+        Subscriptions[ScorekeeperController.Key] = ScorekeeperController.subscribe(ClientController.updateScorekeeper);
         Subscriptions[SlideshowController.Key] = SlideshowController.subscribe(ClientController.updateSlideshow);
         Subscriptions[SponsorController.Key] = SponsorController.subscribe(ClientController.updateSponsor);
         Subscriptions[VideoController.Key] = VideoController.subscribe(ClientController.updateVideo);
-        Subscriptions[CameraController.Key] = CameraController.subscribe(ClientController.updateCamera);
 
         ScoreboardController.Init();
 
@@ -425,7 +484,7 @@ const ClientController:IClientController = {
      * Sets the current main application for the client
      * @param key string
      */
-    SetApplication(key:string) {
+    async SetApplication(key:string) {
         let state = ClientController.getState();
         if(state.CurrentApplication != key) {
             ClientController.getStore().dispatch({
@@ -433,7 +492,51 @@ const ClientController:IClientController = {
                 key:key
             });
             DataController.SaveMiscRecord('DefaultApp', key);
+
+            switch(key) {
+                case ScoreboardController.Key : {
+                    UIController.ShowScoreboard();
+                }
+                break;
+
+                case CaptureController.Key : {
+                    UIController.ShowCaptureController();
+                }
+                break;
+
+                case PenaltyController.Key : {
+                    UIController.ShowPenaltyTracker();
+                }
+                break;
+
+                case ScorekeeperController.Key : {
+                    UIController.ShowScorekeeper();
+                }
+                break;
+
+                case RosterController.Key : {
+                    UIController.ShowRoster();
+                }
+                break;
+
+                case MediaQueueController.Key : {
+                    UIController.ShowMediaQueue();
+                }
+                break;
+                default : 
+                    UIController.ShowScoreboard();
+                break;
+            }
         }
+    },
+
+    async HidePeerRequest() {
+        ClientController.getStore().dispatch({
+            type:Actions.SET_STATE,
+            state:{
+                RecordUpdateShown:false
+            }
+        })
     },
 
     /**
@@ -454,7 +557,7 @@ const ClientController:IClientController = {
     /**
      * Instructs the local server/peer to connect to available peers.
      */
-    ConnectPeers() {
+    async ConnectPeers() {
         if(window && window.LocalServer && window.LocalServer.connectPeers) {
             window.LocalServer.connectPeers();
         }
@@ -463,7 +566,7 @@ const ClientController:IClientController = {
     /**
      * Toggles the configuration panel.
      */
-    ToggleConfiguration(value?:boolean) {
+    async ToggleConfiguration(value?:boolean) {
         ClientController.getStore().dispatch({
             type:Actions.TOGGLE_CONFIG,
             value:value
@@ -473,7 +576,7 @@ const ClientController:IClientController = {
     /**
      * Toggles the configuration panel.
      */
-    ToggleDisplay(value?:boolean) {
+    async ToggleDisplay(value?:boolean) {
         ClientController.getStore().dispatch({
             type:Actions.TOGGLE_DISPLAY,
             value:value
@@ -483,18 +586,37 @@ const ClientController:IClientController = {
     /**
      * Toggles the chat panel.
      */
-    ToggleChat(value?:boolean) {
+    async ToggleChat(value?:boolean) {
         ClientController.getStore().dispatch({
             type:Actions.TOGGLE_CHAT,
             value:value
         });
     },
 
-    ControllerRemote(key:string) : boolean {
-        let state = ClientController.getState();
-        if(state.PeerApplications[key])
-            return true;
-        return false;
+    /**
+     * Toggles the FileBrowser
+     */
+    async ToggleFileBrowser(value?:boolean) {
+        ClientController.getStore().dispatch({
+            type:Actions.TOGGLE_FILE_BROWSER,
+            value:value
+        });
+    },
+
+    async ShowDialog(message:string) {
+        ClientController.getStore().dispatch({
+            type:Actions.SET_DIALOG,
+            shown:true,
+            message:message
+        });
+    },
+
+    async HideDialog() {
+        ClientController.getStore().dispatch({
+            type:Actions.SET_DIALOG,
+            shown:false,
+            message:''
+        });
     },
 
     /**
@@ -512,13 +634,17 @@ const ClientController:IClientController = {
         if(window && window.LocalServer) {
             window.LocalServer.onExit();
         }
+
+        if(window && window.RDMGR && window.RDMGR.mainWindow) {
+            window.RDMGR.mainWindow.off('close', ClientController.onExit);
+        }
     },
 
     /**
      * Triggered on keyUp from connected keyboards
      * @param ev KeyEvent
      */
-    onKeyUp(ev) {
+    async onKeyUp(ev) {
         let state:SClientController = ClientController.getState();
         let name:string = ev.target.tagName.toLowerCase();
         
@@ -679,7 +805,7 @@ const ClientController:IClientController = {
      * @param peer any
      * @param data any
      */
-    onPeerdata(peer:any, data:any) {
+    async onPeerdata(peer:any, data:any) {
         switch(data.type) {
             //update the state of a controller
             case 'state' :
@@ -777,7 +903,7 @@ const ClientController:IClientController = {
             //Chat Message
             case 'chat-message' :
                 data.message.self = false;
-                //data.message.read = this.state.ChatShown;
+                data.message.read = false;
                 ChatController.AddMessage(data.message);
             break;
 
@@ -792,7 +918,7 @@ const ClientController:IClientController = {
      *   filename as its only parameter.
      * @param filename string
      */
-    onSelectFile(filename?:string) {
+    async onSelectFile(filename?:string) {
         if(window && window.onSelectFile && typeof(window.onSelectFile) === 'function') {
             window.onSelectFile(filename);
         }
@@ -802,7 +928,7 @@ const ClientController:IClientController = {
      * Triggered when the local server / peers update
      * - When a peer connects or disconnects
      */
-    updateServer() {
+    async updateServer() {
         let wstate:any = window.LocalServer.getState();
         let connected:any = {};
         let records:any = DataController.getPeers();
@@ -832,14 +958,14 @@ const ClientController:IClientController = {
     /**
      * Triggered when the ChatController state is updated
      */
-    updateChat() {
+    async updateChat() {
         ClientController.getStore().dispatch({
-            types:Actions.SET_UNREAD_MESSAGE_COUNT,
+            type:Actions.SET_UNREAD_MESSAGE_COUNT,
             amount:ChatController.GetUnreadMessageCount()
         });
     },
 
-    updateCamera() {
+    async updateCamera() {
         IPC.send({
             type:'state',
             app:CameraController.Key,
@@ -847,7 +973,7 @@ const ClientController:IClientController = {
         });
     },
 
-    updateRoster() {
+    async updateRoster() {
         let cstate = RosterController.getState();
         IPC.send({
             type:'state',
@@ -860,7 +986,7 @@ const ClientController:IClientController = {
         }
     },
 
-    updateCapture() {
+    async updateCapture() {
         let state = CaptureController.getState();
         IPC.send({
             type:'state',
@@ -873,7 +999,7 @@ const ClientController:IClientController = {
         }
     },
 
-    updatePenalty() {
+    async updatePenalty() {
         let cstate = PenaltyController.getState();
         IPC.send({
             type:'state',
@@ -886,7 +1012,7 @@ const ClientController:IClientController = {
         }
     },
 
-    updateRaffle() {
+    async updateRaffle() {
         let cstate = RaffleController.getState();
         IPC.send({
             type:'state',
@@ -899,7 +1025,7 @@ const ClientController:IClientController = {
         }
     },
 
-    updateScoreboard() {
+    async updateScoreboard() {
         let cstate = ScoreboardController.getState();
         IPC.send({
             type:'state',
@@ -912,7 +1038,7 @@ const ClientController:IClientController = {
         }
     },
 
-    updateScorekeeper() {
+    async updateScorekeeper() {
         let cstate = ScorekeeperController.getState();
         IPC.send({
             type:'state',
@@ -925,7 +1051,7 @@ const ClientController:IClientController = {
         }
     },
 
-    updateSlideshow() {
+    async updateSlideshow() {
         let cstate = SlideshowController.getState();
         IPC.send({
             type:'state',
@@ -938,7 +1064,7 @@ const ClientController:IClientController = {
         }
     },
 
-    updateSponsor() {
+    async updateSponsor() {
         let cstate = SponsorController.getState();
         IPC.send({
             type:'state',
@@ -951,7 +1077,7 @@ const ClientController:IClientController = {
         }
     },
 
-    updateVideo() {
+    async updateVideo() {
         let state = VideoController.getState();
         IPC.send({
             type:'state',
@@ -964,11 +1090,11 @@ const ClientController:IClientController = {
         }
     },
 
-    updateMediaQueue() {
+    async updateMediaQueue() {
 
     },
 
-    updateData() {
+    async updateData() {
         let peers = DataController.getPeers();
         let state = ClientController.getState();
 

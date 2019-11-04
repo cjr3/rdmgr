@@ -3,6 +3,7 @@ import cnames from 'classnames';
 import { Icon, IconDelete, IconFolder, IconLoop } from 'components/Elements';
 import DataController from 'controllers/DataController';
 import './css/MediaPreview.scss';
+import ClientController from 'controllers/ClientController';
 
 /**
  * Component for previewing and changing a media element, such as an Image or video
@@ -92,7 +93,7 @@ export default class MediaPreview extends React.PureComponent<{
      */
     private onClickSelect() {
         window.onSelectFile = this.onSelectFile;
-        window.client.showFileBrowser();
+        ClientController.ToggleFileBrowser(true);
     }
 
     /**

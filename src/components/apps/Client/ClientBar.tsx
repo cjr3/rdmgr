@@ -22,6 +22,8 @@ import RosterController from 'controllers/RosterController';
 import MediaQueueController from 'controllers/MediaQueueController';
 import ClientController from 'controllers/ClientController';
 import ClientCaptureStatus from './ClientCaptureStatus';
+import UIController from 'controllers/UIController';
+import ChatController from 'controllers/ChatController';
 
 export default class ClientBar extends React.PureComponent<any, {
     PeerApplications:Array<string>;
@@ -164,9 +166,9 @@ export default class ClientBar extends React.PureComponent<any, {
             <Icon
                 src={IconChat}
                 key="btn-chat"
-                active={(this.state.UnreadMessageCount >= 1)}
+                attention={(this.state.UnreadMessageCount >= 1)}
                 title={`${this.state.UnreadMessageCount} unread messages.`}
-                onClick={ClientController.ToggleChat}/>,
+                onClick={UIController.ToggleChat}/>,
             <Icon
                 src={IconSettings}
                 key="btn-settings"

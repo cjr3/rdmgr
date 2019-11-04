@@ -26,6 +26,11 @@ export default class Clock extends React.Component<{
      * Starting second
      */
     second:number;
+
+    /**
+     * If provided, determines the format of stopwatch 
+     */
+    maxseconds?:number;
     /**
      * Current status
      */
@@ -301,7 +306,7 @@ export default class Clock extends React.Component<{
             str += this.state.minute.toString().padStart(2,'0') + ":";
             str += this.state.second.toString().padStart(2,'0');
         } else {
-            if(this.state.second > 60) {
+            if(this.state.second > 60 || (this.props.maxseconds !== undefined && !Number.isNaN(this.props.maxseconds)) && this.props.maxseconds > 60) {
                 let minutes = 0;
                 let seconds = this.state.second;
                 while(seconds >= 60) {

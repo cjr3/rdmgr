@@ -24,6 +24,7 @@ import Installation from 'tools/Installation';
 import IO, { IOFileQueue } from 'tools/IO';
 import PenaltyController from './PenaltyController';
 import ScorekeeperController from './ScorekeeperController';
+import UIController from './UIController';
 
 const os = require('os');
 const USER_PATH = os.homedir();
@@ -281,6 +282,7 @@ const FILE_STATE_SLIDESHOW = FOLDER_STATES + "/slideshow.state.json";
 const FILE_STATE_SPONSOR = FOLDER_STATES + "/sponsor.state.json";
 const FILE_STATE_VIDEO = FOLDER_STATES + "/video.state.json";
 const FILE_STATE_MEDIA_QUEUE = FOLDER_STATES + "/media.state.json";
+const FILE_STATE_UI = FOLDER_STATES + "/ui.state.json";
 
 
 export const Files = {
@@ -379,7 +381,11 @@ export const Files = {
     /**
      * Video state file
      */
-    Video:FILE_STATE_VIDEO
+    Video:FILE_STATE_VIDEO,
+    /**
+     * 
+     */
+    UI:FILE_STATE_UI
 }
 
 /**
@@ -549,7 +555,7 @@ const DataController = {
      * @param {String} filename 
      * @param {Boolean} sync true to return data synchronously
      */
-    loadFile(filename:string, sync:boolean = false) : Promise<any> {
+    async loadFile(filename:string, sync:boolean = false) : Promise<any> {
         let fs:any = DataController.FS;
         return new Promise((res, rej) => {
             if(sync) {
@@ -601,7 +607,7 @@ const DataController = {
      * @param {String} type
      * @param {Object} values
      */
-    saveRecordsFile(type:string, values) {
+    async saveRecordsFile(type:string, values) {
         if(DataController.RecordSavers[type]) {
             DataController.RecordSavers[type].Save(JSON.stringify({
                 Records:DataController.prepareRecordsForSaving(values)
@@ -853,7 +859,7 @@ const DataController = {
     /**
      * Loads required files
      */
-    loadFiles() {
+    async loadFiles() {
         return Promise.all([
             //records first
             DataController.loadSkaters(),
@@ -869,10 +875,11 @@ const DataController = {
             return Promise.all([
                 DataController.loadScoreboardState(),
                 DataController.loadCaptureState(),
-                DataController.loadRosterState(),
                 DataController.loadChatState(),
                 DataController.loadPenaltyState(),
-                DataController.loadScorekeeperState()
+                DataController.loadScorekeeperState(),
+                DataController.loadRosterState(),
+                DataController.loadUIState()
             ]);
         })
     },
@@ -880,7 +887,7 @@ const DataController = {
     /**
      * Loads the user configuration settings.
      */
-    loadConfig() {
+    async loadConfig() {
         return DataController.loadFile(Files.Config)
             .then((data) => {
                 try {
@@ -898,7 +905,7 @@ const DataController = {
     /**
      * Loads the capture state to the capture controller.
      */
-    loadCaptureState() {
+    async loadCaptureState() {
         return DataController.loadFile(Files.Capture)
             .then((data:any) => {
                 try {
@@ -913,7 +920,7 @@ const DataController = {
     /**
      * Loads the roster state to the controller
      */
-    loadRosterState() {
+    async loadRosterState() {
         return DataController.loadFile(Files.Roster)
             .then((data:any) => {
                 try {
@@ -928,7 +935,7 @@ const DataController = {
     /**
      * Loads the chat state file into the chat controller
      */
-    loadChatState() {
+    async loadChatState() {
         return DataController.loadFile(Files.Chat)
             .then((data:any) => {
                 try {
@@ -943,7 +950,7 @@ const DataController = {
     /**
      * Loads the state of the penalty controller
      */
-    loadPenaltyState() {
+    async loadPenaltyState() {
         return DataController.loadFile(Files.Penalty)
             .then((data:any) => {
                 try {
@@ -958,12 +965,27 @@ const DataController = {
     /**
      * Loads the scorekeeper state from the local file
      */
-    loadScorekeeperState() {
+    async loadScorekeeperState() {
         return DataController.loadFile(Files.Scorekeeper)
             .then((data:any) => {
                 try {
                     var content = JSON.parse(data);
                     ScorekeeperController.SetState(content);
+                } catch(er) {
+
+                }
+            });
+    },
+
+    /**
+     * Loads the UI state from the local file
+     */
+    async loadUIState() {
+        return DataController.loadFile(Files.UI)
+            .then((data:any) => {
+                try {
+                    var content = JSON.parse(data);
+                    UIController.SetState(content);
                 } catch(er) {
 
                 }
@@ -980,7 +1002,7 @@ const DataController = {
     /**
      * Load skater records
      */
-    loadSkaters() {
+    async loadSkaters() {
         return DataController.loadFile(Files.Skaters)
             .then((data:any) => {
                 try {
@@ -988,16 +1010,16 @@ const DataController = {
                         type:Actions.SET_SKATERS,
                         records:DataController.prepareRecords(JSON.parse(data).Records)
                     });
-                } catch(er) {
+            } catch(er) {
 
-                }
-            });
+            }
+        });
     },
 
     /**
      * Loads the team records to the state.
      */
-    loadTeams() {
+    async loadTeams() {
         return DataController.loadFile(Files.Teams)
             .then((data:any) => {
                 try {
@@ -1030,7 +1052,7 @@ const DataController = {
     /**
      * Loads the scoreboard phases.
      */
-    loadPhases() {
+    async loadPhases() {
         return DataController.loadFile(Files.Phases)
         .then((data:any) => {
             try {
@@ -1073,7 +1095,7 @@ const DataController = {
     /**
      * Loads the video files.
      */
-    loadVideos() {
+    async loadVideos() {
         return DataController.loadFile(Files.Videos)
         .then((data:any) => {
             try {
@@ -1090,7 +1112,7 @@ const DataController = {
     /**
      * Loads the slideshows to the state.
      */
-    loadSlideshows() {
+    async loadSlideshows() {
         return DataController.loadFile(Files.Slideshows)
         .then((data:any) => {
             try {
@@ -1107,7 +1129,7 @@ const DataController = {
     /**
      * Loads the penalties to the state.
      */
-    loadPenalties() {
+    async loadPenalties() {
         return DataController.loadFile(Files.Penalties)
         .then((data:any) => {
             try {
@@ -1134,7 +1156,7 @@ const DataController = {
      * Loads the national anthem singers.
      * @returns Promise
      */
-    loadAnthemSingers() {
+    async loadAnthemSingers() {
         return DataController.loadFile(Files.AnthemSingers)
         .then((data:any) => {
             try {
@@ -1170,7 +1192,7 @@ const DataController = {
     /**
      * Loads the last state of the scoreboard
      */
-    loadScoreboardState() {
+    async loadScoreboardState() {
         return DataController.loadFile(Files.Scoreboard)
         .then((data:any) => {
             try {
@@ -1189,7 +1211,7 @@ const DataController = {
     /**
      * Loads the misc records.
      */
-    loadMiscRecords() {
+    async loadMiscRecords() {
         return DataController.loadFile(Files.MiscRecords)
         .then((data:any) => {
             try {
@@ -1206,7 +1228,7 @@ const DataController = {
     /**
      * Loads the peer records.
      */
-    loadPeers() {
+    async loadPeers() {
         return DataController.loadFile(Files.Peers)
         .then((data:any) => {
             try {
@@ -1529,9 +1551,11 @@ const DataController = {
         switch(type) {
             //Skater
             case vars.RecordType.Skater :
-                record.Teams = [];
+                record.Teams = new Array<SkaterTeamRecord>();
+                record.Penalties = new Array<PenaltyRecord>();
                 record.BirthDate = '';
                 record.RetireDate = '';
+                record.Position = '';
             break;
 
             //Team
@@ -2058,7 +2082,7 @@ const DataController = {
     /**
      * Builds the REST API for this controller
      */
-    buildAPI() {
+    async buildAPI() {
         const server = window.LocalServer;
         const exp = server.ExpressApp;
         

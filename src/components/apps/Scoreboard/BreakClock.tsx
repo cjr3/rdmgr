@@ -119,7 +119,7 @@ export default class BreakClock extends React.PureComponent<any, {
      * @param {Number} second 
      */
     async onTick(hour, minute, second) {
-        if(!ClientController.ControllerRemote(ScoreboardController.Key))
+        if(!window.remoteApps.SB)
             ScoreboardController.SetBreakTime(second);
     }
 

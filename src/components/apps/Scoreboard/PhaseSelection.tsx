@@ -4,6 +4,7 @@ import vars, { PhaseRecord } from 'tools/vars';
 import ScoreboardController from 'controllers/ScoreboardController'
 import DataController from 'controllers/DataController'
 import { Button } from 'components/Elements';
+import UIController from 'controllers/UIController';
 
 export interface PPhaseSelection {
     /**
@@ -96,7 +97,7 @@ export default class PhaseSelection extends React.PureComponent<{
     /**
      * Updates the state to match the controller.
      */
-    updateScore() {
+    protected async updateScore() {
         let id:number = ScoreboardController.getState().PhaseID;
         if(id !== this.state.PhaseID)
             this.setState({PhaseID:id});
@@ -106,8 +107,9 @@ export default class PhaseSelection extends React.PureComponent<{
      * Triggered when the user select a phase/quarter.
      * @param {Number} index 
      */
-    onSelect(index:number) {
+    protected async onSelect(index:number) {
         ScoreboardController.SetPhase(index);
+        UIController.SetScoreboardPanel('');
         if(ScoreboardController.getState().GameState !== vars.Clock.Status.Running) {
             let Phases = DataController.getState().Phases;
             if(Phases[index]) {

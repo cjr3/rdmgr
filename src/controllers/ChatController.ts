@@ -68,7 +68,7 @@ const ChatController = {
      * Sets the state of the chat controller.
      * @param {Object} state An object with key/value pairs
      */
-    SetState(state) {
+    async SetState(state) {
         ChatController.getStore().dispatch({
             type:SET_STATE,
             values:state
@@ -88,7 +88,7 @@ const ChatController = {
      * 
      * @param {Object} message 
      */
-    AddMessage(message:MessageRecord) {
+    async AddMessage(message:MessageRecord) {
         ChatController.getStore().dispatch({
             type:ADD_MESSAGE,
             message:message
@@ -98,7 +98,7 @@ const ChatController = {
     /**
      * Marks all messages as read.
      */
-    ReadMesssages() {
+    async ReadMesssages() {
         ChatController.getStore().dispatch({
             type:MARK_READ
         });
@@ -119,7 +119,7 @@ const ChatController = {
     /**
      * CLears the chat room of messages.
      */
-    Clear() {
+    async Clear() {
         ChatController.getStore().dispatch({
             type:CLEAR_CHAT
         });

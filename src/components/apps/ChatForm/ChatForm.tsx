@@ -5,16 +5,28 @@ import {Icon, IconCheck, IconDelete} from 'components/Elements';
 import keycodes from 'tools/keycodes';
 import cnames from 'classnames';
 import './css/ChatForm.scss';
+import { Unsubscribe } from 'redux';
+import DataController from 'controllers/DataController';
+import UIController from 'controllers/UIController';
 
 /**
  * Component for displaying a chat room for peer connections.
  */
-export default class ChatForm extends React.PureComponent<any, SChatController> {
+export default class ChatForm extends React.PureComponent<any, {
+    opened:boolean;
+    Messages:Array<MessageRecord>;
+}> {
 
-    readonly state:SChatController = ChatController.getState();
+    readonly state = {
+        opened:false,
+        Messages:ChatController.getState().Messages
+    }
+    
     /**
-     * ChatController remote
+     * UIController listener
      */
+    protected remoteUI:Function|null = null;
+
     protected remoteChat:Function|null = null;
 
     /**
@@ -23,76 +35,116 @@ export default class ChatForm extends React.PureComponent<any, SChatController> 
      */
     constructor(props) {
         super(props);
-
-        //bindings
         this.onChatOpen = this.onChatOpen.bind(this);
-        this.updateChat = this.updateChat.bind(this);
+        this.updateUI = this.updateUI.bind(this);
     }
 
-    /**
-     * Updates the state to match the chat controller.
-     */
-    updateChat() {
-        this.setState(ChatController.getState());
+    protected async updateUI() {
+        this.setState({
+            opened:UIController.getState().Chat.Shown
+        });
     }
 
-    onChatOpen() {
+    protected async updateChat() {
+        let records = ChatController.getState().Messages;
+        if(!DataController.compare(records, this.state.Messages))
+            this.setState({Messages:records});
+    }
+
+    protected async onChatOpen() {
         ChatController.ReadMesssages();
     }
 
-    /**
-     * Start listeners
-     */
     componentDidMount() {
-        this.remoteChat = ChatController.subscribe(this.updateChat);
+        this.remoteUI = UIController.subscribe(this.updateUI);
     }
 
-    /**
-     * Close listeners
-     */
     componentWillUnmount() {
-        if(this.remoteChat !== null)
-            this.remoteChat();
+        if(this.remoteUI !== null)
+            this.remoteUI();
     }
 
     /**
      * Renders the component.
      */
     render() {
-        let lines:Array<React.ReactElement> = [];
-        let i:number = 1;
-        this.state.Messages.forEach((message) => {
-            lines.push(<ChatMessage message={message} key={`msg-${i}`}/>);
-            i++;
-        });
-
         return (
             <Panel
                 popup={true}
-                opened={this.props.opened}
+                opened={this.state.opened}
                 className="CHT-app-panel"
                 contentName="CHT-app"
-                onClose={this.props.onClose}
+                onClose={UIController.ToggleChat}
                 onOpen={this.onChatOpen}
-                buttons={[<ChatMessageEntry key="chat-entry" opened={this.props.opened}/>]}
+                buttons={[<ChatMessageEntry key="chat-entry" opened={this.state.opened}/>]}
                 scrollBottom={true}
                 title="Chat - (All Users)"
                 >
-                {lines}
+                <ChatMessages/>
             </Panel>
         )
     }
 }
 
-interface PChatMessage {
-    message:MessageRecord
+class ChatMessages extends React.PureComponent<any, {
+    Messages:Array<MessageRecord>;
+}> {
+    readonly state = {
+        Messages:ChatController.getState().Messages
+    }
+
+    protected ScrollItem:React.RefObject<HTMLDivElement> = React.createRef();
+
+    protected remoteChat:Unsubscribe|null = null;
+
+    constructor(props) {
+        super(props);
+        this.updateChat = this.updateChat.bind(this);
+    }
+
+    protected async updateChat() {
+        let records = ChatController.getState().Messages;
+        if(!DataController.compare(records, this.state.Messages))
+            this.setState({Messages:records})
+    }
+
+    /**
+     * Triggered when the component updates
+     */
+    componentDidUpdate() {
+        if(this.ScrollItem !== null && this.ScrollItem.current !== null)
+            this.ScrollItem.current.scrollIntoView({behavior:"smooth"});
+    }
+
+    componentDidMount() {
+        this.remoteChat = ChatController.subscribe(this.updateChat);
+    }
+
+    componentWillUnmount() {
+        if(this.remoteChat !== null)
+            this.remoteChat();
+    }
+
+    render() {
+        let lines:Array<React.ReactElement> = new Array<React.ReactElement>();
+        this.state.Messages.forEach((message, index) => {
+            lines.push(<ChatMessage message={message} key={`msg-${index}`}/>);
+        });
+        return (
+            <React.Fragment>
+                {lines}
+                <div ref={this.ScrollItem}></div>
+            </React.Fragment>
+        )
+    }
+    
 }
 
 /**
  * 
  * @param props PChatMessage
  */
-function ChatMessage(props:PChatMessage) {
+function ChatMessage(props:{message:MessageRecord}) {
     var className = cnames('chat-line', {self:props.message.self});
     return (
         <div className={className} title={props.message.time}>

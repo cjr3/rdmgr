@@ -15,9 +15,14 @@ export default class CaptureJamClock extends React.PureComponent<{
      * Seconds on the jam clock
      */
     JamSecond:number;
+    /**
+     * Maximum jam seconds
+     */
+    MaxJamSeconds:number;
 }> {
     readonly state = {
-        JamSecond:ScoreboardController.getState().JamSecond
+        JamSecond:ScoreboardController.getState().JamSecond,
+        MaxJamSeconds:ScoreboardController.getState().MaxJamSeconds
     }
 
     /**
@@ -37,8 +42,11 @@ export default class CaptureJamClock extends React.PureComponent<{
     /**
      * Updates the state to match the ScoreboardController
      */
-    updateState() {
-        this.setState({JamSecond:ScoreboardController.getState().JamSecond});
+    async updateState() {
+        this.setState({
+            JamSecond:ScoreboardController.getState().JamSecond,
+            MaxJamSeconds:ScoreboardController.getState().MaxJamSeconds
+        });
     }
 
     /**
@@ -65,9 +73,21 @@ export default class CaptureJamClock extends React.PureComponent<{
             warning:(this.state.JamSecond <= 10),
             danger:(this.state.JamSecond <= 5)
         });
+
+        let text:string = this.state.JamSecond.toString().padStart(2,'0');
+        if(this.state.JamSecond > 60 || this.state.MaxJamSeconds > 60) {
+            let seconds:number = this.state.JamSecond;
+            let minutes:number = 0;
+            while(seconds >= 60) {
+                minutes++;
+                seconds -= 60;
+            }
+            text = minutes.toString().padStart(2,'0') + ":" + seconds.toString().padStart(2,'0');
+        }
+
         return (
             <div className={className}>
-                {this.state.JamSecond.toString().padStart(2,'0')}
+                {text}
             </div>
         )
     }

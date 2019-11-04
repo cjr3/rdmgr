@@ -297,7 +297,7 @@ export default class Video extends React.PureComponent<{
      */
     play() {
         try {
-            if(window && window.client && this.VideoItem !== null && this.VideoItem.current !== null)
+            if(window && this.VideoItem !== null && this.VideoItem.current !== null)
                 this.VideoItem.current.play();
         } catch(er) {
 

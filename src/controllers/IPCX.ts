@@ -210,7 +210,7 @@ class IPCX {
      * Sends data to the listening window.
      * @param {Object} data 
      */
-    send(data) {
+    async send(data) {
         if(this.Receiver) {
             switch(data.type) {
                 case 'state' :
@@ -230,7 +230,7 @@ class IPCX {
      * Sends a request for the state of a given controller.
      * @param {string} app 
      */
-    requestState(app) {
+    async requestState(app) {
         this.send({
             type:'request-state',
             app:app

@@ -1,13 +1,13 @@
 /**
- * Scoreboard Controller / Store
+ * Scoreboard Controller
  */
 
-import {createStore} from 'redux';
+import {createStore, Unsubscribe} from 'redux';
 import DataController from 'controllers/DataController'
-import vars from 'tools/vars'
+import vars, { PhaseRecord } from 'tools/vars'
 import keycodes from 'tools/keycodes'
 import RosterController from './RosterController';
-import { GameButton, IGamepadButtonMap, IGamepadAxes } from './GameController';
+import { IGamepadButtonMap, IGamepadAxes } from './GameController';
 
 export enum Actions {
     SET_STATE,
@@ -311,7 +311,7 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
                 maxChallenges = action.state.MaxChallenges;
 
             if(state.JamState == vars.Clock.Status.Ready) {
-                obj.JamSecond = state.MaxJamSeconds;
+                obj.JamSecond = obj.MaxJamSeconds;
             }
 
             if(action.state.TeamA)
@@ -335,13 +335,13 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
         }
 
         //reset the state
-        case Actions.RESET_STATE :
+        case Actions.RESET_STATE : {
             //ignore reset if game/jam clock is running
             if(state.JamState === vars.Clock.Status.Running || state.GameState === vars.Clock.Status.Running)
                 return state;
 
-            var phases = DataController.getPhases();
-            var phase = {
+            let phases:Array<PhaseRecord> = DataController.getPhases();
+            let phase:any = {
                 PhaseID:0,
                 PhaseName:"DERBY!",
                 PhaseIndex:0,
@@ -349,9 +349,13 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
                 PhaseMinute:0,
                 PhaseSecond:0
             };
-            var index = phases.findIndex((p) => {
+            let index:number = phases.findIndex((p) => {
                 return (p.PhaseQtr >= 1);
             });
+
+            let maxJamSeconds:number = state.MaxJamSeconds;
+            if(action.MaxJamSeconds && !Number.isNaN(action.MaxJamSeconds))
+                maxJamSeconds = action.MaxJamSeconds;
 
             if(index >= 0) {
                 phase.PhaseIndex = index;
@@ -365,8 +369,8 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
 
             //copy initial state, keep team identification and phases
             return Object.assign({}, InitState, {
-                JamSecond:state.MaxJamSeconds,
-                MaxJamSeconds:state.MaxJamSeconds,
+                JamSecond:maxJamSeconds,
+                MaxJamSeconds:maxJamSeconds,
                 MaxBreakSeconds:state.MaxBreakSeconds,
                 MaxTimeouts:state.MaxTimeouts,
                 MaxChallenges:state.MaxChallenges,
@@ -396,6 +400,8 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
                     Status:0
                 })
             });
+        }
+        break;
 
         //calls an official timeout
         case Actions.SET_OFFICIAL_TIMEOUT :
@@ -919,13 +925,20 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
 
 const ScoreboardStore = createStore(ControllerReducer);
 
+/**
+ * Updates the scoreboard state to match the configuration
+ * - MaxJamSeconds is ignored until there is a board reset
+ */
 const updateData = async function() {
     let data:any = DataController.GetMiscRecord('ScoreboardConfig');
     if(data !== null && data !== undefined) {
+        data = Object.assign({}, data);
+        if(data.MaxJamSeconds !== undefined)
+            delete data.MaxJamSeconds;
         let state = ScoreboardController.getState();
         let compare = {
             MaxBreakSeconds:state.MaxBreakSeconds,
-            MaxJamSeconds:state.MaxJamSeconds,
+            //MaxJamSeconds:state.MaxJamSeconds,
             MaxTimeouts:state.MaxTimeouts,
             MaxChallenges:state.MaxChallenges,
             MaxTimeoutSeconds:state.MaxTimeoutSeconds,
@@ -950,13 +963,17 @@ const ScoreboardController = {
     Init() {
         remoteData = DataController.subscribe(updateData);
         updateData();
+        let data:any = DataController.GetMiscRecord('ScoreboardConfig');
+        if(data && !Number.isNaN(data.MaxJamSeconds)) {
+            ScoreboardController.SetState({MaxJamSeconds:data.MaxJamSeconds});
+        }
     },
 
     /**
      * Sets the state of the scoreboard.
      * @param {Object} state 
      */
-    SetState(state) {
+    async SetState(state) {
         ScoreboardController.getStore().dispatch({
             type:Actions.SET_STATE,
             state:state
@@ -966,7 +983,7 @@ const ScoreboardController = {
     /**
      * Toggles the jam clock
      */
-    ToggleJamClock() {
+    async ToggleJamClock() {
         ScoreboardController.getStore().dispatch({
             type:Actions.TOGGLE_JAM_CLOCK
         });
@@ -975,7 +992,7 @@ const ScoreboardController = {
     /**
      * Starts the jam clock, game clock, and stops the break clock.
      */
-    StartJamClock() {
+    async StartJamClock() {
         ScoreboardController.getStore().dispatch({
             type:Actions.SET_STATE,
             state:{
@@ -989,7 +1006,7 @@ const ScoreboardController = {
     /**
      * Stops the jam clock and starts the break clock
      */
-    StopJamClock() {
+    async StopJamClock() {
         ScoreboardController.getStore().dispatch({
             type:Actions.SET_STATE,
             state:{
@@ -1002,7 +1019,7 @@ const ScoreboardController = {
     /**
      * Toggles the game clock
      */
-    ToggleGameClock() {
+    async ToggleGameClock() {
         ScoreboardController.getStore().dispatch({
             type:Actions.TOGGLE_GAME_CLOCK
         });
@@ -1011,7 +1028,7 @@ const ScoreboardController = {
     /**
      * Starts the game clock
      */
-    StartGameClock() {
+    async StartGameClock() {
         ScoreboardController.getStore().dispatch({
             type:Actions.SET_STATE,
             state:{
@@ -1023,7 +1040,7 @@ const ScoreboardController = {
     /**
      * Stops the game clock.
      */
-    StopGameClock() {
+    async StopGameClock() {
         ScoreboardController.getStore().dispatch({
             type:Actions.SET_STATE,
             state:{
@@ -1035,7 +1052,7 @@ const ScoreboardController = {
     /**
      * Stops the game and break clock at the same time.
      */
-    StopBreakGameClock() {
+    async StopBreakGameClock() {
         if(ScoreboardController.getState().JamState !== vars.Clock.Status.Running) {
             ScoreboardController.getStore().dispatch({
                 type:Actions.SET_STATE,
@@ -1050,7 +1067,7 @@ const ScoreboardController = {
     /**
      * Toggles the break clock
      */
-    ToggleBreakClock() {
+    async ToggleBreakClock() {
         ScoreboardController.getStore().dispatch({
             type:Actions.TOGGLE_BREAK_CLOCK
         });
@@ -1059,7 +1076,7 @@ const ScoreboardController = {
     /**
      * Starts the break clock
      */
-    StartBreakClock() {
+    async StartBreakClock() {
         ScoreboardController.getStore().dispatch({
             type:Actions.SET_STATE,
             state:{
@@ -1071,7 +1088,7 @@ const ScoreboardController = {
     /**
      * Stops the break clock
      */
-    StopBreakClock() {
+    async StopBreakClock() {
         ScoreboardController.getStore().dispatch({
             type:Actions.SET_STATE,
             state:{
@@ -1083,7 +1100,7 @@ const ScoreboardController = {
     /**
      * Toggles the confirm status
      */
-    ToggleConfirm() {
+    async ToggleConfirm() {
         ScoreboardController.getStore().dispatch({
             type:Actions.TOGGLE_CONFIRM
         });
@@ -1092,9 +1109,14 @@ const ScoreboardController = {
     /**
      * Resets all values on the board.
      */
-    Reset() {
+    async Reset() {
+        let data:any = DataController.GetMiscRecord('ScoreboardConfig');
+        let seconds:number = ScoreboardController.getState().MaxJamSeconds;
+        if(data && data.MaxJamSeconds && !Number.isNaN(data.MaxJamSeconds))
+            seconds = data.MaxJamSeconds;
         ScoreboardController.getStore().dispatch({
-            type:Actions.RESET_STATE
+            type:Actions.RESET_STATE,
+            MaxJamSeconds:seconds
         });
     },
 
@@ -1126,7 +1148,7 @@ const ScoreboardController = {
      * Sets the seconds on the break clock.
      * @param {Number} second Seconds on the break clock
      */
-    SetBreakTime(second) {
+    async SetBreakTime(second) {
         ScoreboardController.getStore().dispatch({
             type:Actions.SET_STATE,
             state:{
@@ -1142,7 +1164,7 @@ const ScoreboardController = {
      * @param {Number} second 
      * @param minute
      */
-    SetJamTime(second:number, minute:number) {
+    async SetJamTime(second:number, minute:number) {
         ScoreboardController.getStore().dispatch({
             type:Actions.SET_STATE,
             state:{
@@ -1157,7 +1179,7 @@ const ScoreboardController = {
      * Sets the board status, such as official timeout
      * @param {Number} value 
      */
-    SetBoardStatus(value) {
+    async SetBoardStatus(value) {
         ScoreboardController.getStore().dispatch({
             type:Actions.SET_BOARD_STATUS,
             BoardStatus:value
@@ -1168,7 +1190,7 @@ const ScoreboardController = {
      * Sets the phase / quarter
      * @param {Number} index 
      */
-    SetPhase(index:number) {
+    async SetPhase(index:number) {
         var Phases = DataController.getState().Phases;
         if(index < 0)
             index = Phases.length - 1;
@@ -1186,7 +1208,7 @@ const ScoreboardController = {
      * @param {Number} minute 
      * @param {Number} second 
      */
-    SetPhaseTime(hour, minute, second) {
+    async SetPhaseTime(hour, minute, second) {
         if(hour > 23)
             hour = 23;
         else if(hour < 0)
@@ -1210,14 +1232,14 @@ const ScoreboardController = {
     /**
      * Move to the next phase
      */
-    IncreasePhase() {
+    async IncreasePhase() {
         ScoreboardController.SetPhase(ScoreboardController.getState().PhaseIndex + 1);
     },
 
     /**
      * Move to the previous phase
      */
-    DecreasePhase() {
+    async DecreasePhase() {
         ScoreboardController.SetPhase(ScoreboardController.getState().PhaseIndex - 1);
     },
 
@@ -1225,7 +1247,7 @@ const ScoreboardController = {
      * Sets the Jam Counter / #
      * @param {Number} amount 
      */
-    SetJamCounter(amount) {
+    async SetJamCounter(amount) {
         ScoreboardController.getStore().dispatch({
             type:Actions.SET_JAM_COUNTER,
             amount:amount
@@ -1236,7 +1258,7 @@ const ScoreboardController = {
      * Increases the Jam Counter
      * @param {Number} amount 
      */
-    IncreaseJamCounter(amount) {
+    async IncreaseJamCounter(amount) {
         ScoreboardController.SetJamCounter(ScoreboardController.getState().JamCounter + amount);
     },
 
@@ -1244,7 +1266,7 @@ const ScoreboardController = {
      * Decreases the Jam Counter
      * @param {Number} amount 
      */
-    DecreaseJamCounter(amount) {
+    async DecreaseJamCounter(amount) {
         ScoreboardController.SetJamCounter(ScoreboardController.getState().JamCounter - amount);
     },
 
@@ -1253,7 +1275,7 @@ const ScoreboardController = {
      * @param {Object} currentTeam 
      * @param {Object} nextTeam 
      */
-    SetTeam(currentTeam, nextTeam) {
+    async SetTeam(currentTeam, nextTeam) {
         ScoreboardController.getStore().dispatch({
             type:Actions.SET_TEAM,
             current:currentTeam,
@@ -1268,7 +1290,7 @@ const ScoreboardController = {
      * @param {Boolean} reset
      * @param {Boolean} resetRoster
      */
-    SetTeams(a:SScoreboardTeam, b:SScoreboardTeam, reset:boolean = false, resetRoster:boolean = false) {
+    async SetTeams(a:SScoreboardTeam, b:SScoreboardTeam, reset:boolean = false, resetRoster:boolean = false) {
         if(a === null || typeof(a) !== "object" || b === null || typeof(b) !== "object")
             return;
         ScoreboardController.getStore().dispatch({
@@ -1289,7 +1311,7 @@ const ScoreboardController = {
      * @param {Number} amount 
      * @param {Number} jampoints
      */
-    SetTeamScore(side:string, amount:number, jampoints?:number) {
+    async SetTeamScore(side:string, amount:number, jampoints?:number) {
         let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
         if(amount < 0)
             amount = 0;
@@ -1317,7 +1339,7 @@ const ScoreboardController = {
      * @param side
      * @param amount 
      */
-    SetTeamTimeouts(side:string, amount:number) {
+    async SetTeamTimeouts(side:string, amount:number) {
         let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
         ScoreboardController.getStore().dispatch({
             type:Actions.SET_TEAM_TIMEOUTS,
@@ -1331,7 +1353,7 @@ const ScoreboardController = {
      * @param side
      * @param amount 
      */
-    SetTeamChallenges(side:string, amount:number) {
+    async SetTeamChallenges(side:string, amount:number) {
         let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
         ScoreboardController.getStore().dispatch({
             type:Actions.SET_TEAM_CHALLENGES,
@@ -1345,7 +1367,7 @@ const ScoreboardController = {
      * @param side 
      * @param amount 
      */
-    SetTeamJamPoints(side:string, amount:number) {
+    async SetTeamJamPoints(side:string, amount:number) {
         let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
         if(amount < -99)
             amount = 99;
@@ -1364,7 +1386,7 @@ const ScoreboardController = {
      * @param side
      * @param status 
      */
-    SetTeamStatus(side:string, status:number) {
+    async SetTeamStatus(side:string, status:number) {
         let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
         ScoreboardController.getStore().dispatch({
             type:Actions.SET_TEAM_STATUS,
@@ -1378,7 +1400,7 @@ const ScoreboardController = {
      * @param side The team to change
      * @param name The new name
      */
-    SetTeamName(side:string, name:string) {
+    async SetTeamName(side:string, name:string) {
         let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
         ScoreboardController.getStore().dispatch({
             type:Actions.SET_TEAM_NAME,
@@ -1392,7 +1414,7 @@ const ScoreboardController = {
      * @param side
      * @param color 
      */
-    SetTeamColor(side:string, color:string) {
+    async SetTeamColor(side:string, color:string) {
         let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
         ScoreboardController.getStore().dispatch({
             type:Actions.SET_TEAM_COLOR,
@@ -1406,7 +1428,7 @@ const ScoreboardController = {
      * @param side 
      * @param amount 
      */
-    IncreaseTeamScore(side:string, amount:number) {
+    async IncreaseTeamScore(side:string, amount:number) {
         let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
         if(ScoreboardController.getState().JamState !== vars.Clock.Status.Running) {
             ScoreboardController.SetTeamScore(side, team.Score + amount, amount);
@@ -1434,7 +1456,7 @@ const ScoreboardController = {
      * @param side
      * @param amount 
      */
-    IncreaseTeamJamPoints(side:string, amount:number) {
+    async IncreaseTeamJamPoints(side:string, amount:number) {
         let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
         ScoreboardController.SetTeamJamPoints(side, team.JamPoints + amount);
     },
@@ -1444,7 +1466,7 @@ const ScoreboardController = {
      * @param side
      * @param amount 
      */
-    DecreaseTeamJamPoints(side:string, amount:number) {
+    async DecreaseTeamJamPoints(side:string, amount:number) {
         let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
         ScoreboardController.SetTeamJamPoints(side, team.JamPoints - amount);
     },
@@ -1454,7 +1476,7 @@ const ScoreboardController = {
      * @param side
      * @param amount
      */
-    IncreaseTeamChallenges(side:string, amount:number) {
+    async IncreaseTeamChallenges(side:string, amount:number) {
         let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
         ScoreboardController.SetTeamChallenges(side, team.Challenges + amount);
     },
@@ -1464,7 +1486,7 @@ const ScoreboardController = {
      * @param side
      * @param amount
      */
-    DecreaseTeamChallenges(side:string, amount:number) {
+    async DecreaseTeamChallenges(side:string, amount:number) {
         let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
         ScoreboardController.SetTeamChallenges(side, team.Challenges - amount);
     },
@@ -1474,7 +1496,7 @@ const ScoreboardController = {
      * @param side
      * @param amount
      */
-    IncreaseTeamTimeouts(side:string, amount:number) {
+    async IncreaseTeamTimeouts(side:string, amount:number) {
         let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
         ScoreboardController.SetTeamTimeouts(side, team.Timeouts + amount);
     },
@@ -1484,7 +1506,7 @@ const ScoreboardController = {
      * @param side
      * @param amount 
      */
-    DecreaseTeamTimeouts(side:string, amount:number) {
+    async DecreaseTeamTimeouts(side:string, amount:number) {
         let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
         ScoreboardController.SetTeamTimeouts(side, team.Timeouts - amount);
     },
@@ -1492,7 +1514,7 @@ const ScoreboardController = {
     /**
      * Calls an official timeout
      */
-    OfficialTimeout() {
+    async OfficialTimeout() {
         ScoreboardController.getStore().dispatch({
             type:Actions.SET_OFFICIAL_TIMEOUT
         });
@@ -1501,20 +1523,16 @@ const ScoreboardController = {
     /**
      * Calls an injury timeout.
      */
-    InjuryTimeout() {
+    async InjuryTimeout() {
         ScoreboardController.getStore().dispatch({
             type:Actions.SET_INJURY_TIMEOUT
         });
     },
 
-    AddJamRecord(record) {
-        //DataController.AddJamRecord(record);
-    },
-
     /**
      * Resets the jam to the previous 
      */
-    ResetJam() {
+    async ResetJam() {
         ScoreboardController.getStore().dispatch({
             type:Actions.RESET_JAM
         });
@@ -1524,7 +1542,7 @@ const ScoreboardController = {
      * Applies the given configuration options against the state of the scoreboard.
      * @param {Object} config 
      */
-    ApplyConfig(config) {
+    async ApplyConfig(config) {
         if(config === null || typeof(config) !== "object")
             return;
 
@@ -1587,7 +1605,7 @@ const ScoreboardController = {
      * Handles keyboard events for the Scoreboard
      * @param {KeyEvent} ev 
      */
-    onKeyUp(ev) {
+    async onKeyUp(ev) {
         switch(ev.keyCode) {
             //toggle jam clock
             case keycodes.SPACEBAR :
@@ -1683,14 +1701,6 @@ const ScoreboardController = {
                 ScoreboardController.IncreasePhase();
             break;
 
-            case keycodes.U :
-                ScoreboardController.IncreaseJamCounter(1);
-            break;
-
-            case keycodes.I :
-                ScoreboardController.DecreaseJamCounter(1);
-            break;
-
             default :
 
             break;
@@ -1701,7 +1711,7 @@ const ScoreboardController = {
      * Triggered when the user presses a button on a connected GamePad
      * @param button GameButton
      */
-    onGamepadButtonPress(buttons:IGamepadButtonMap) {
+    async onGamepadButtonPress(buttons:IGamepadButtonMap) {
         let state = ScoreboardController.getState();
         //X
         if(buttons.X.pressed) {
@@ -1827,7 +1837,7 @@ const ScoreboardController = {
      * Triggered when the user holds a button down
      * @param buttons IGamepadButtonMap
      */
-    onGamepadButtonDown(buttons:IGamepadButtonMap) {
+    async onGamepadButtonDown(buttons:IGamepadButtonMap) {
         let state = ScoreboardController.getState();
         //LEFT
         if(buttons.LEFT.pressed && buttons.LEFT.frames%12 === 0) {
@@ -1858,7 +1868,7 @@ const ScoreboardController = {
      * Triggered when the user releases a button on the gamepad
      * @param buttons IGamepadButtonMap
      */
-    onGamepadButtonUp(buttons:IGamepadButtonMap) {
+    async onGamepadButtonUp(buttons:IGamepadButtonMap) {
 
     },
 
@@ -1866,7 +1876,7 @@ const ScoreboardController = {
      * Triggered when the connected game controller's axes have moved
      * @param axes IGamepadAxes
      */
-    onGamepadAxis(axes:IGamepadAxes) {
+    async onGamepadAxis(axes:IGamepadAxes) {
 
     },
 
@@ -1919,14 +1929,14 @@ const ScoreboardController = {
      * Subscribes to the store changes, and returns a function to unsubscribe.
      * @param {Function} f 
      */
-    subscribe(f) {
+    subscribe(f) : Unsubscribe {
         return ScoreboardController.getStore().subscribe(f);
     },
 
     /**
      * Builds the API for the scoreboard
      */
-    buildAPI() {
+    async buildAPI() {
         const server = window.LocalServer;
         const exp = server.ExpressApp;
 

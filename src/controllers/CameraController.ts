@@ -36,20 +36,24 @@ export const InitState:CameraControllerState = {
     PeerID:''
 };
 
-function CameraReducer(state = InitState, action) {
-    switch(action.type) {
-        case Actions.SET_STATE :
-            return Object.assign({}, state, action.values);
-        case Actions.SET_CAMERA_ID :
-            return Object.assign({}, state, {
-                DeviceID:action.deviceId
-            });
-        case Actions.SET_CAMERAS :
-            return Object.assign({}, state, {
-                Cameras:action.records
-            });
-        default :
-            return state;
+function CameraReducer(state:CameraControllerState = InitState, action) {
+    try {
+        switch(action.type) {
+            case Actions.SET_STATE :
+                return Object.assign({}, state, action.values);
+            case Actions.SET_CAMERA_ID :
+                return Object.assign({}, state, {
+                    DeviceID:action.deviceId
+                });
+            case Actions.SET_CAMERAS :
+                return Object.assign({}, state, {
+                    Cameras:action.records
+                });
+            default :
+                return state;
+        }
+    } catch(er) {
+        return state;
     }
 }
 
@@ -97,7 +101,7 @@ const CameraController:CameraControllerDefinition = {
      * Updates the state with the given values.
      * @param {Object} state 
      */
-    SetState(state:object) {
+    async SetState(state:object) {
         CameraController.getStore().dispatch({
             type:Actions.SET_STATE,
             values:state
@@ -108,7 +112,7 @@ const CameraController:CameraControllerDefinition = {
      * Sets the device ID.
      * @param {String} deviceId 
      */
-    SetDeviceID(deviceId:string) {
+    async SetDeviceID(deviceId:string) {
         CameraController.getStore().dispatch({
             type:Actions.SET_CAMERA_ID,
             deviceId:deviceId
@@ -118,7 +122,7 @@ const CameraController:CameraControllerDefinition = {
     /**
      * Loads the cameras connected to the system.
      */
-    LoadCameras() {
+    async LoadCameras() {
         try {
             navigator.mediaDevices.enumerateDevices().then((devices:Array<MediaDeviceInfo>) => {
                 let cameras:Array<MediaDeviceInfo> = [];

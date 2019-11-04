@@ -11,6 +11,7 @@ import {
     IconDelete,
     IconFolder
 } from 'components/Elements';
+import ClientController from 'controllers/ClientController';
 
 /**
  * Component for editing slideshow records.
@@ -132,7 +133,7 @@ export default class SlideshowEditor extends React.PureComponent<{
      */
     onSelectFolder(path) {
         window.onSelectFolder = null;
-        window.client.hideFileBrowser();
+        ClientController.ToggleFileBrowser(false);
         let fs:any = DataController.FS;
         if(fs !== null) {
             fs.readdir(path, "utf8", (eer, files) => {
@@ -194,7 +195,7 @@ export default class SlideshowEditor extends React.PureComponent<{
                                     window.onSelectFile = (filename) => {
                                         this.updateSlide(i, filename);
                                     };
-                                    window.client.showFileBrowser();
+                                    ClientController.ToggleFileBrowser(true);
                                 }}
                                 title="Remove"
                             />
@@ -218,7 +219,7 @@ export default class SlideshowEditor extends React.PureComponent<{
                 key="btn-add-image"
                 onClick={() => {
                     window.onSelectFile = this.addSlide;
-                    window.client.showFileBrowser();
+                    ClientController.ToggleFileBrowser(true);
                 }}
             >Add</IconButton>,
             <IconButton
@@ -227,7 +228,7 @@ export default class SlideshowEditor extends React.PureComponent<{
                 key="btn-folder"
                 onClick={() => {
                     window.onSelectFolder = this.onSelectFolder;
-                    window.client.showFileBrowser();
+                    ClientController.ToggleFileBrowser(true);
                 }}
             >Set Folder</IconButton>
         ];

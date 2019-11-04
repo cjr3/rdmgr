@@ -1,4 +1,4 @@
-import {createStore} from 'redux'
+import {createStore, Store, Unsubscribe} from 'redux'
 import vars, { AnthemRecord } from 'tools/vars';
 import DataController from './DataController';
 import {startTimeout} from 'tools/functions';
@@ -441,7 +441,7 @@ const CaptureController = {
      * Sets the state of the capture controller.
      * @param {Object} state 
      */
-    SetState(state:object) {
+    async SetState(state:object) {
         CaptureController.getStore().dispatch({
             type:Actions.SET_STATE,
             state:state
@@ -452,7 +452,7 @@ const CaptureController = {
      * Sets the scoreboard visibility.
      * @param {Boolean} value 
      */
-    SetScoreboardVisibility(value:boolean) {
+    async SetScoreboardVisibility(value:boolean) {
         CaptureController.getStore().dispatch({
             type:Actions.SET_SCOREBOARD,
             values:{Shown:value}
@@ -463,7 +463,7 @@ const CaptureController = {
      * Sets the scorebanner visibility.
      * @param {Boolean} value 
      */
-    SetScorebannerVisibility(value:boolean) {
+    async SetScorebannerVisibility(value:boolean) {
         CaptureController.getStore().dispatch({
             type:Actions.SET_SCOREBANNER,
             values:{Shown:value}
@@ -474,7 +474,7 @@ const CaptureController = {
      * Sets the class of the Scorebanner
      * @param {String} value 
      */
-    SetScorebannerClassName(value:string) {
+    async SetScorebannerClassName(value:string) {
         CaptureController.getStore().dispatch({
             type:Actions.SET_SCOREBANNER,
             values:{className:value}
@@ -485,7 +485,7 @@ const CaptureController = {
      * Sets the background image of the scorebanner
      * @param value string
      */
-    SetScorebannerBackground(value:string) {
+    async SetScorebannerBackground(value:string) {
         CaptureController.getStore().dispatch({
             type:Actions.SET_SCOREBANNER,
             values:{BackgroundImage:value}
@@ -496,7 +496,7 @@ const CaptureController = {
      * Sets the main camera visibility.
      * @param {Boolean} value 
      */
-    SetMainCameraVisibility(value:boolean) {
+    async SetMainCameraVisibility(value:boolean) {
         CaptureController.getStore().dispatch({
             type:Actions.SET_CAMERA,
             values:{Shown:value}
@@ -507,7 +507,7 @@ const CaptureController = {
      * Sets the main video visibility.
      * @param {Boolean} value 
      */
-    SetMainVideoVisibility(value:boolean) {
+    async SetMainVideoVisibility(value:boolean) {
         CaptureController.getStore().dispatch({
             type:Actions.SET_VIDEO,
             values:{Shown:value}
@@ -518,7 +518,7 @@ const CaptureController = {
      * Sets the main slideshow visibility.
      * @param {Boolean} value 
      */
-    SetMainSlideshowVisibility(value:boolean) {
+    async SetMainSlideshowVisibility(value:boolean) {
         CaptureController.getStore().dispatch({
             type:Actions.SET_SLIDESHOW,
             values:{Shown:value}
@@ -529,7 +529,7 @@ const CaptureController = {
      * Sets the slideshow visibility.
      * @param {Boolean} value 
      */
-    SetSponsorSlideshowVisibility(value:boolean) {
+    async SetSponsorSlideshowVisibility(value:boolean) {
         CaptureController.getStore().dispatch({
             type:Actions.SET_SPONSORS,
             values:{Shown:value}
@@ -540,7 +540,7 @@ const CaptureController = {
      * Sets the penalty tracker visibility.
      * @param {Boolean} value 
      */
-    SetPenaltyTrackerVisibility(value:boolean) {
+    async SetPenaltyTrackerVisibility(value:boolean) {
         CaptureController.getStore().dispatch({
             type:Actions.SET_PENALTY_TRACKER,
             values:{Shown:value}
@@ -556,7 +556,7 @@ const CaptureController = {
      * Sets the national anthem singer visibility.
      * @param {Boolean} value 
      */
-    SetNationalAnthemSingerVisibility(value:boolean) {
+    async SetNationalAnthemSingerVisibility(value:boolean) {
         CaptureController.getStore().dispatch({
             type:Actions.SET_ANTHEM,
             values:{Shown:value}
@@ -567,7 +567,7 @@ const CaptureController = {
      * Sets the raffle visibility flag.
      * @param {Boolean} value 
      */
-    SetRaffleVisibility(value:boolean) {
+    async SetRaffleVisibility(value:boolean) {
         CaptureController.getStore().dispatch({
             type:Actions.SET_RAFFLE,
             values:{Shown:value}
@@ -578,7 +578,7 @@ const CaptureController = {
      * Sets the roster visibility flag.
      * @param {Boolean} value 
      */
-    SetRosterVisibility(value:boolean) {
+    async SetRosterVisibility(value:boolean) {
         CaptureController.getStore().dispatch({
             type:Actions.SET_ROSTER,
             values:{Shown:value}
@@ -589,7 +589,7 @@ const CaptureController = {
      * Sets the National Anthem singer and bio.
      * @param {Object} record
      */
-    SetNationalAnthemSinger(record:object) {
+    async SetNationalAnthemSinger(record:object) {
         CaptureController.getStore().dispatch({
             type:Actions.SET_ANTHEM,
             values:{Record:Object.assign({}, record)}
@@ -602,7 +602,7 @@ const CaptureController = {
      * - 'banner' (banner, bottom center)
      * @param {String} name 
      */
-    SetNationalAnthemClass(name:string) {
+    async SetNationalAnthemClass(name:string) {
         CaptureController.getStore().dispatch({
             type:Actions.SET_ANTHEM,
             values:{className:name}
@@ -613,7 +613,7 @@ const CaptureController = {
      * Sets the visibility of the jam clock.
      * @param {Boolean} value true|false
      */
-    SetJamClockVisibility(value:boolean) {
+    async SetJamClockVisibility(value:boolean) {
         CaptureController.getStore().dispatch({
             type:Actions.SET_SCOREBOARD,
             values:{
@@ -626,7 +626,7 @@ const CaptureController = {
      * Sets the visibility of the jam counter.
      * @param {Boolean} value true|false
      */
-    SetJamCounterVisibility(value:boolean) {
+    async SetJamCounterVisibility(value:boolean) {
         CaptureController.getStore().dispatch({
             type:Actions.SET_SCOREBOARD,
             values:{
@@ -639,7 +639,7 @@ const CaptureController = {
      * Set the main video class.
      * @param {String} name 
      */
-    SetMainVideoClass(name:string) {
+    async SetMainVideoClass(name:string) {
         CaptureController.getStore().dispatch({
             type:Actions.SET_VIDEO,
             values:{
@@ -652,7 +652,7 @@ const CaptureController = {
      * Set the main camera class.
      * @param {String} name 
      */
-    SetMainCameraClass(name:string) {
+    async SetMainCameraClass(name:string) {
         CaptureController.getStore().dispatch({
             type:Actions.SET_CAMERA,
             values:{
@@ -665,7 +665,7 @@ const CaptureController = {
      * Set the main camera class.
      * @param {String} name 
      */
-    SetPeerCameraClass(name:string) {
+    async SetPeerCameraClass(name:string) {
         CaptureController.getStore().dispatch({
             type:Actions.SET_PEER_CAMERA,
             values:{
@@ -678,7 +678,7 @@ const CaptureController = {
      * Sets the duration of the penalty tracker.
      * @param {Number} duration 
      */
-    SetPenaltyTrackerDuration(duration:number) {
+    async SetPenaltyTrackerDuration(duration:number) {
         CaptureController.getStore().dispatch({
             type:Actions.SET_PENALTY_TRACKER,
             values:{
@@ -693,7 +693,7 @@ const CaptureController = {
      * @param {string} announcer2 
      * @param {string} duration 
      */
-    SetAnnouncers(announcer1:string, announcer2:string, duration:number = 7000) {
+    async SetAnnouncers(announcer1:string, announcer2:string, duration:number = 7000) {
         DataController.SaveMiscRecord('Announcers', {
             Announcer1:announcer1,
             Announcer2:announcer2
@@ -715,7 +715,7 @@ const CaptureController = {
      * Sets the visibility of the announcer on the capture window
      * @param value boolean
      */
-    SetAnnouncerVisibility(value:boolean) {
+    async SetAnnouncerVisibility(value:boolean) {
         CaptureController.getStore().dispatch({
             type:Actions.SET_ANNOUNCERS,
             values:{
@@ -728,7 +728,7 @@ const CaptureController = {
      * Sets the current control for the capture control form
      * @param control number
      */
-    SetCurrentControl(control:number) {
+    async SetCurrentControl(control:number) {
         CaptureController.getStore().dispatch({
             type:Actions.SET_CONTROL,
             value:control
@@ -739,7 +739,7 @@ const CaptureController = {
      * Sets the current stream control for the capture control form
      * @param control string
      */
-    SetStreamControl(control:string) {
+    async SetStreamControl(control:string) {
         CaptureController.getStore().dispatch({
             type:Actions.SET_STREAM_CONTROL,
             value:control
@@ -750,7 +750,7 @@ const CaptureController = {
      * Sets the current display control for the capture control form
      * @param control string
      */
-    SetDisplayControl(control:string) {
+    async SetDisplayControl(control:string) {
         CaptureController.getStore().dispatch({
             type:Actions.SET_DISPLAY_CONTROL,
             value:control
@@ -760,7 +760,7 @@ const CaptureController = {
     /**
      * Toggles the Main Scoreboard visibility.
      */
-    ToggleScoreboard() {
+    async ToggleScoreboard() {
         CaptureController.getStore().dispatch({
             type:Actions.TOGGLE_SCOREBOARD
         });
@@ -769,7 +769,7 @@ const CaptureController = {
     /**
      * Toggles the scoreboard from light / dark. (dark is default)
      */
-    ToggleScoreboardLight() {
+    async ToggleScoreboardLight() {
         CaptureController.getStore().dispatch({
             type:Actions.TOGGLE_SCOREBOARD_LIGHT
         });
@@ -778,7 +778,7 @@ const CaptureController = {
     /**
      * Toggles the screen-size Jam Clock visibility.
      */
-    ToggleJamClock() {
+    async ToggleJamClock() {
         CaptureController.getStore().dispatch({
             type:Actions.TOGGLE_JAM_CLOCK
         });
@@ -787,7 +787,7 @@ const CaptureController = {
     /**
      * Toggles the screen-size Jam Counter visibility.
      */
-    ToggleJamCounter() {
+    async ToggleJamCounter() {
         CaptureController.getStore().dispatch({
             type:Actions.TOGGLE_JAM_COUNTER
         });
@@ -796,7 +796,7 @@ const CaptureController = {
     /**
      * Toggles the Scorebanner visibility.
      */
-    ToggleScorebanner() {
+    async ToggleScorebanner() {
         CaptureController.getStore().dispatch({
             type:Actions.TOGGLE_SCOREBANNER
         });
@@ -805,7 +805,7 @@ const CaptureController = {
     /**
      * Toggles the visibility of clocks on the main Scorebanner.
      */
-    ToggleScorebannerClocks() {
+    async ToggleScorebannerClocks() {
         CaptureController.getStore().dispatch({
             type:Actions.TOGGLE_SCOREBANNER_CLOCKS
         });
@@ -814,7 +814,7 @@ const CaptureController = {
     /**
      * Toggles the Slideshow visibility.
      */
-    ToggleSlideshow() {
+    async ToggleSlideshow() {
         CaptureController.getStore().dispatch({
             type:Actions.TOGGLE_SLIDESHOW
         });
@@ -823,7 +823,7 @@ const CaptureController = {
     /**
      * Toggles the Sponsor visibility.
      */
-    ToggleSponsors() {
+    async ToggleSponsors() {
         CaptureController.getStore().dispatch({
             type:Actions.TOGGLE_SPONSORS
         });
@@ -832,7 +832,7 @@ const CaptureController = {
     /**
      * Toggles the Main Camera visibility.
      */
-    ToggleMainCamera() {
+    async ToggleMainCamera() {
         CaptureController.getStore().dispatch({
             type:Actions.TOGGLE_MAIN_CAMERA
         });
@@ -841,7 +841,7 @@ const CaptureController = {
     /**
      * Toggles the Peer Camera visibility.
      */
-    TogglePeerCamera() {
+    async TogglePeerCamera() {
         CaptureController.getStore().dispatch({
             type:Actions.TOGGLE_PEER_CAMERA
         });
@@ -850,7 +850,7 @@ const CaptureController = {
     /**
      * Toggles the Main Video visibility.
      */
-    ToggleMainVideo() {
+    async ToggleMainVideo() {
         CaptureController.getStore().dispatch({
             type:Actions.TOGGLE_MAIN_VIDEO
         });
@@ -859,7 +859,7 @@ const CaptureController = {
     /**
      * Toggles the Penalty Tracker visibility.
      */
-    TogglePenaltyTracker() {
+    async TogglePenaltyTracker() {
         CaptureController.getStore().dispatch({
             type:Actions.TOGGLE_PENALTY_TRACKER
         });
@@ -871,7 +871,7 @@ const CaptureController = {
     /**
      * Toggles the National Anthem visibility.
      */
-    ToggleNationalAnthem() {
+    async ToggleNationalAnthem() {
         CaptureController.getStore().dispatch({
             type:Actions.TOGGLE_ANTHEM
         });
@@ -880,7 +880,7 @@ const CaptureController = {
     /**
      * Toggles the Announcer visibility.
      */
-    ToggleAnnouncers() {
+    async ToggleAnnouncers() {
         CaptureController.getStore().dispatch({
             type:Actions.TOGGLE_ANNOUNCER
         });
@@ -892,7 +892,7 @@ const CaptureController = {
     /**
      * Toggles the Raffle visibility.
      */
-    ToggleRaffle() {
+    async ToggleRaffle() {
         CaptureController.getStore().dispatch({
             type:Actions.TOGGLE_RAFFLE
         });
@@ -901,7 +901,7 @@ const CaptureController = {
     /**
      * Toggles the Roster visibility.
      */
-    ToggleRoster() {
+    async ToggleRoster() {
         CaptureController.getStore().dispatch({
             type:Actions.TOGGLE_ROSTER
         });
@@ -910,7 +910,7 @@ const CaptureController = {
     /**
      * Toggles the Scorekeeper visibility.
      */
-    ToggleScorekeeper() {
+    async ToggleScorekeeper() {
         CaptureController.getStore().dispatch({
             type:Actions.TOGGLE_SCOREKEEPER
         });
@@ -919,7 +919,7 @@ const CaptureController = {
     /**
      * Toggles the Sponsor View class.
      */
-    ToggleSponsorView() {
+    async ToggleSponsorView() {
         CaptureController.getStore().dispatch({
             type:Actions.TOGGLE_SPONSOR_VIEW
         });
@@ -929,260 +929,19 @@ const CaptureController = {
      * Triggered when the capture controller receives the KeyUp event from the user
      * @param ev KeyEvent
      */
-    onKeyUp(ev:any) {
-
-        const state = CaptureController.getState();
-
-        switch(ev.keyCode) {
-            case keycodes.PAGEDOWN : {
-                CaptureController.__nextControl();
-                return;
-            }
-            break;
-
-            case keycodes.PAGEUP : {
-                CaptureController.__prevControl();
-                return;
-            }
-            break;
-
-            case keycodes.V : {
-                switch(state.Control) {
-                    case CapturePanels.SCOREBOARD :
-                        CaptureController.ToggleScorebanner();
-                    break;
-
-                    case CapturePanels.ROSTER :
-                        CaptureController.ToggleRoster();
-                    break;
-
-                    case CapturePanels.ANNOUNCER :
-                        CaptureController.ToggleAnnouncers();
-                    break;
-
-                    case CapturePanels.ANTHEM :
-                        CaptureController.ToggleNationalAnthem();
-                    break;
-
-                    case CapturePanels.CAMERA :
-                        CaptureController.ToggleMainCamera();
-                    break;
-
-                    case CapturePanels.PENALTY :
-                        CaptureController.TogglePenaltyTracker();
-                    break;
-
-                    case CapturePanels.SCOREKEEPER :
-                        CaptureController.ToggleScorekeeper();
-                    break;
-                }
-
-                return;
-            }
-            break;
-
-            default : break;
-        }
-
-        //send command up to controller
-        switch(state.Control) {
-            case CapturePanels.SCOREBOARD :
-                ScoreboardController.onKeyUp(ev);
-            break;
-            case CapturePanels.ROSTER :
-                RosterController.onKeyUp(ev);
-            break;
-            default : break;
-        }
-    },
-
-    /**
-     * Triggered when the user presses a controller button
-     * @param buttons IGamepadButtonMap
-     */
-    onGamepadButtonPress(buttons:IGamepadButtonMap) {
-
-        //L3
-        if(buttons.L3.pressed) {
-            CaptureController.__prevControl();
-            return;
-        }
-
-        //R3
-        if(buttons.R3.pressed) {
-            CaptureController.__nextControl();
-            return;
-        }
-
-        const state = CaptureController.getState();
-
-        //send command up to controller
-        switch(state.Control) {
-            //Scoreboard / Scorebanner
-            case CapturePanels.SCOREBOARD :
-                if(buttons.Y.pressed) {
-                    CaptureController.ToggleScorebanner();
-                    return;
-                }
-                ScoreboardController.onGamepadButtonPress(buttons);
-            break;
-            //Roster / Intros
-            case CapturePanels.ROSTER :
-                RosterController.onGamepadButtonPress(buttons);
-            break;
-
-            //Announcers
-            case CapturePanels.ANNOUNCER : {
-                if(buttons.Y.pressed) {
-                    CaptureController.ToggleAnnouncers();
-                    return;
-                }
-            }
-            break;
-
-            //National Anthem
-            case CapturePanels.ANTHEM : {
-                //Toggle visibility
-                if(buttons.Y.pressed) {
-                    CaptureController.ToggleNationalAnthem();
-                    return;
-                }
-
-                //Toggle Banner
-                if(buttons.B.pressed) {
-                    if(state.NationalAnthem.className === 'banner')
-                        CaptureController.SetNationalAnthemClass('');
-                    else
-                        CaptureController.SetNationalAnthemClass('banner');
-                    return;
-                }
-
-                //select previous anthem singer
-                if(buttons.UP.pressed) {
-                    let singers:Array<AnthemRecord> = DataController.getAnthemSingers(true);
-                    let sindex:number = 0;
-                    if(state.NationalAnthem.Record.RecordID > 0) {
-                        let index:number = singers.findIndex((singer) => {
-                            return (singer.RecordID === state.NationalAnthem.Record.RecordID)
-                        });
-                        index--;
-                        if(index < 0)
-                            index = singers.length - 1;
-                        sindex = index;
-                    } else if(singers.length >= 1) {
-                        sindex = 0;
-                    }
-
-                    if(singers[sindex] !== undefined)
-                        CaptureController.SetNationalAnthemSinger(singers[sindex]);
-                    return;
-                }
-
-                //select next anthem singer
-                if(buttons.DOWN.pressed) {
-                    let singers:Array<AnthemRecord> = DataController.getAnthemSingers(true);
-                    let sindex:number = 0;
-                    if(state.NationalAnthem.Record.RecordID > 0) {
-                        let index:number = singers.findIndex((singer) => {
-                            return (singer.RecordID === state.NationalAnthem.Record.RecordID)
-                        });
-                        index++;
-                        if(index >= singers.length)
-                            index = 0;
-                        sindex = index;
-                    } else if(singers.length >= 1) {
-                        sindex = 0;
-                    }
-
-                    if(singers[sindex] !== undefined)
-                        CaptureController.SetNationalAnthemSinger(singers[sindex]);
-                    return;
-                }
-            }
-            break;
-
-            //Camera
-            case CapturePanels.CAMERA : {
-                if(buttons.Y.pressed) {
-                    CaptureController.ToggleMainCamera();
-                    return;
-                }
-            }
-            break;
-
-            //Penalty Tracker
-            case CapturePanels.PENALTY : {
-                if(buttons.Y.pressed) {
-                    CaptureController.TogglePenaltyTracker();
-                    return;
-                }
-            }
-            break;
-
-            //Scorekeeper
-            case CapturePanels.SCOREKEEPER : {
-                if(buttons.Y.pressed) {
-                    CaptureController.ToggleScorekeeper();
-                    return;
-                }
-            }
-            break;
-
-            default : break;
-        }
-    },
-
-    /**
-     * Triggered when the user holds down a controller button
-     * @param buttons IGamepadButtonMap
-     */
-    onGamepadButtonDown(buttons:IGamepadButtonMap) {
-        
-    },
-
-    /**
-     * Triggered when the control stick value has changed
-     * @param buttons IGamepadButtonMap
-     */
-    onGamepadAxis(buttons:IGamepadAxes) {
-        // if(buttons.RSTICK.x === -1 && (buttons.RSTICK.y < 0.2 || buttons.RSTICK.y > -0.2)) {
-        //     CaptureController.__prevControl();
-        // } else if(buttons.RSTICK.x === 1 && (buttons.RSTICK.y < 0.2 || buttons.RSTICK.y > -0.2)) {
-        //     CaptureController.__nextControl();
-        // }
-    },
-
-    /**
-     * Moves control of the keyboard / game controls to the next panel
-     */
-    __nextControl() {
-        let control:number = CaptureController.getState().Control;
-        control++;
-        if(control >= CaptureController.PanelSize)
-            control = 0;
-        CaptureController.SetCurrentControl(control);
-    },
-
-    /**
-     * Moves control of the keyboard / game controls to the previous panel
-     */
-    __prevControl() {
-        let control:number = CaptureController.getState().Control;
-        control--;
-        if(control < 0)
-            control = CaptureController.PanelSize - 1;
-        CaptureController.SetCurrentControl(control);
+    async onKeyUp(ev:any) {
+        ScoreboardController.onKeyUp(ev);
     },
     
-    getState() {
+    getState() : CaptureControllerState {
         return CaptureStore.getState();
     },
 
-    getStore() {
+    getStore() : Store<CaptureControllerState> {
         return CaptureStore;
     },
 
-    subscribe(f) {
+    subscribe(f) : Unsubscribe {
         return CaptureStore.subscribe(f);
     },
 

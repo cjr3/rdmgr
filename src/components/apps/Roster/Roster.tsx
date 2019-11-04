@@ -2,13 +2,16 @@ import React, { CSSProperties } from 'react';
 import RosterController, {SRosterController} from 'controllers/RosterController';
 import DataController from 'controllers/DataController';
 import ScoreboardController from 'controllers/ScoreboardController';
-import {IconButton, Icon, IconX, IconRight, IconLeft, IconLoop, IconNo} from 'components/Elements';
+import {IconButton, Icon, IconX, IconRight, IconLeft, IconLoop, IconNo, IconFolder, IconSave} from 'components/Elements';
 import Panel from 'components/Panel';
 import SortPanel from 'components/tools/SortPanel';
+import RosterSkaterList from './RosterSkaterList';
 import cnames from 'classnames';
 import keycodes from 'tools/keycodes';
 import { SkaterRecord } from 'tools/vars';
 import './css/Roster.scss';
+import UIController from 'controllers/UIController';
+import { Unsubscribe } from 'redux';
 
 /**
  * Component for building the roster of skaters and coaches on the track
@@ -46,7 +49,9 @@ export default class Roster extends React.PureComponent<any, {
      * Skaters visible on the form
      * So the user can press 'enter' to add the one skater available
      */
-    VisibleSkaters:Array<SkaterRecord>
+    VisibleSkaters:Array<SkaterRecord>;
+
+    opened:boolean;
 }> {
     readonly state = {
         State:Object.assign({}, RosterController.getState()),
@@ -62,7 +67,8 @@ export default class Roster extends React.PureComponent<any, {
             Name:ScoreboardController.getState().TeamB.Name
         },
         Keywords:'',
-        VisibleSkaters:[]
+        VisibleSkaters:[],
+        opened:UIController.getState().Roster.Shown
     }
 
     /**
@@ -78,6 +84,8 @@ export default class Roster extends React.PureComponent<any, {
      */
     protected remoteScore:Function|null = null;
 
+    protected remoteUI:Unsubscribe|null = null;
+
     /**
      * Constructor
      * @param props 
@@ -91,6 +99,13 @@ export default class Roster extends React.PureComponent<any, {
         this.updateState = this.updateState.bind(this);
         this.updateData = this.updateData.bind(this);
         this.updateScore = this.updateScore.bind(this);
+        this.updateUI = this.updateUI.bind(this);
+    }
+
+    protected async updateUI() {
+        this.setState({
+            opened:UIController.getState().Roster.Shown
+        });
     }
 
     /**
@@ -193,6 +208,7 @@ export default class Roster extends React.PureComponent<any, {
         this.remoteState = RosterController.subscribe(this.updateState);
         this.remoteData = DataController.subscribe(this.updateData);
         this.remoteScore = ScoreboardController.subscribe(this.updateScore);
+        this.remoteUI = UIController.subscribe(this.updateUI);
     }
 
     /**
@@ -205,6 +221,8 @@ export default class Roster extends React.PureComponent<any, {
             this.remoteData();
         if(this.remoteScore !== null)
             this.remoteScore();
+        if(this.remoteUI !== null)
+            this.remoteUI();
     }
 
     /**
@@ -219,74 +237,13 @@ export default class Roster extends React.PureComponent<any, {
      * - Close: To close the panel.
      */
     render() {
-        var skaters:Array<React.ReactElement> = [];
-        var rx:RegExp|null = null;
-        if(this.state.Keywords.length) {
-            rx = new RegExp(this.state.Keywords, 'ig');
-        }
-
-        for(var key in this.state.Skaters) {
-            let skater = this.state.Skaters[key];
-            if(skater.Name === undefined)
-                continue;
-            
-            if(rx !== null) {
-                if(skater.Name.search(rx) < 0 && skater.Number !== undefined && skater.Number.toString().search(rx) < 0)
-                    continue;
-            }
-            
-            let aindex:number = this.state.State.TeamA.Skaters.findIndex((s) => {
-                return (s.RecordID === skater.RecordID);
-            });
-            let bindex:number = this.state.State.TeamB.Skaters.findIndex((s) => {
-                return (s.RecordID === skater.RecordID);
-            });
-            
-            skaters.push(
-                <div 
-                    className="skater-item" 
-                    key={`${skater.RecordType}-${skater.RecordID}`}>
-                    <Icon
-                        src={(aindex >= 0) ? IconX : IconLeft}
-                        active={(aindex >= 0)}
-                        onClick={() => {
-                            if(aindex < 0)
-                                RosterController.AddSkater('A', skater);
-                            else
-                                RosterController.RemoveSkater('A', skater);
-                            RosterController.RemoveSkater('B', skater);
-                        }}
-                    />
-                    <div className="number">{`#${skater.Number}`}</div>
-                    <div className="name">{skater.Name}</div>
-                    <Icon
-                        src={(bindex >= 0) ? IconX : IconRight}
-                        active={(bindex >= 0)}
-                        onClick={() => {
-                            if(bindex < 0)
-                                RosterController.AddSkater('B', skater);
-                            else
-                                RosterController.RemoveSkater('B', skater);
-                            RosterController.RemoveSkater('A', skater);
-                        }}
-                    />
-                </div>
-            );
-        }
-        
-
         let buttons:Array<React.ReactElement> = [
-            <input type="text" key="txt-keywords"
-                value={this.state.Keywords}
-                onChange={this.onChangeKeywords}
-                size={20}
-                maxLength={40}
-                />,
             <IconButton
                 src={IconLoop}
                 onClick={this.loadSkaters}
-                key="btn-load"
-                >Load</IconButton>,
+                key="btn-reset"
+                title="Reset from skater records"
+                >Reset</IconButton>,
             <IconButton
                 src={IconNo}
                 onClick={this.clearSkaters}
@@ -296,8 +253,7 @@ export default class Roster extends React.PureComponent<any, {
 
         return (
             <Panel
-                opened={this.props.opened}
-                onClose={this.props.onClose}
+                opened={this.state.opened}
                 contentName="ROS-app"
                 buttons={buttons}
                 >
@@ -311,12 +267,7 @@ export default class Roster extends React.PureComponent<any, {
                     color={this.state.TeamB.Color}
                     name={this.state.TeamB.Name}
                     />
-                <div className="skater-list-holder">
-                    <div className="name">Skaters</div>
-                    <div className="skater-list">
-                        {skaters}
-                    </div>
-                </div>
+                <RosterSkaterList/>
             </Panel>
         )
     }
@@ -344,7 +295,7 @@ function RosterTeam(props:SRosterTeam) {
     }
 
     if(props.team.Skaters) {
-        props.team.Skaters.forEach((skater) => {
+        props.team.Skaters.forEach((skater, index) => {
             let src:string|null|undefined = skater.Thumbnail;
             if(src === null || src === '')
                 src = skater.Slide;
@@ -354,7 +305,15 @@ function RosterTeam(props:SRosterTeam) {
             if(src !==  null && src !== '')
                 src = DataController.mpath(src);
             skaters.push({
-                label:<React.Fragment key={`${skater.RecordType}-${skater.RecordID}`}>
+                label:<SkaterItem
+                    key={`${skater.RecordType}-${index}`}
+                    side={props.team.Side}
+                    skater={skater}
+                />
+            });
+            /*
+            skaters.push({
+                label:<React.Fragment key={`${skater.RecordType}-${index}`}>
                     <div className="number">{`${skater.Number}`}</div>
                     <div className="name">{`${skater.Name}`}</div>
                     <Icon
@@ -364,7 +323,7 @@ function RosterTeam(props:SRosterTeam) {
                         }}
                     />
                 </React.Fragment>
-            });
+            });*/
         })
     }
 
@@ -384,4 +343,27 @@ function RosterTeam(props:SRosterTeam) {
                 />
         </div>
     );
+}
+
+class SkaterItem extends React.PureComponent<{
+    skater:SkaterRecord;
+    side:string;
+}> {
+    constructor(props) {
+        super(props);
+    }
+    render() {
+        return (
+            <div className="skater-item">
+                <div className="number">{`${this.props.skater.Number}`}</div>
+                <div className="name">{`${this.props.skater.Name}`}</div>
+                <Icon
+                    src={IconX}
+                    onClick={() => {
+                        RosterController.RemoveSkater(this.props.side, this.props.skater);
+                    }}
+                />
+            </div>
+        )
+    }
 }

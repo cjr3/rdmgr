@@ -11,10 +11,10 @@ const SET_STATE = 'SET_STATE';
 const TOGGLE_LOOP = 'TOGGLE_LOOP';
 
 export interface SMediaQueueController {
-    Index:number,
-    Records:Array<SlideshowRecord | VideoRecord | AnthemRecord>,
-    Record:Record | VideoRecord | AnthemRecord | SlideshowRecord | null,
-    Loop:boolean
+    Index:number;
+    Records:Array<SlideshowRecord | VideoRecord | AnthemRecord>;
+    Record:Record | VideoRecord | AnthemRecord | SlideshowRecord | null;
+    Loop:boolean;
 }
 
 export const InitState:SMediaQueueController = {

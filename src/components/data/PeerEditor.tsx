@@ -21,6 +21,7 @@ import MediaQueueController from 'controllers/MediaQueueController';
 import VideoController from 'controllers/VideoController';
 import Panel from 'components/Panel';
 import DataController from 'controllers/DataController';
+import ClientController from 'controllers/ClientController';
 
 type PeerControlRecord = {
     name:string;
@@ -248,6 +249,7 @@ export default class PeerEditor extends React.PureComponent<{
      * Triggered when the user wishes to update records from the peer.
      */
     onClickSyncFromPeer() {
+        /*
         if(window && window.client) {
             window.client.showDialog(
                 `Update your files to match ${this.state.PeerID}?`,
@@ -258,6 +260,7 @@ export default class PeerEditor extends React.PureComponent<{
                 }
             )
         }
+        */
     }
 
     /**
@@ -265,6 +268,17 @@ export default class PeerEditor extends React.PureComponent<{
      * - Require confirmation on the peer side ???
      */
     onClickSyncToPeer() {
+        window.onDialogAccept = () => {
+            if(window.LocalServer) {
+                window.LocalServer.SendData(this.state.PeerID, {
+                    type:'request-sync'
+                });
+            }
+        };
+
+        ClientController.ShowDialog()
+
+        /*
         if(window && window.client) {
             window.client.showDialog(
                 `Request ${this.state.PeerID} to update their files to match yours?
@@ -279,6 +293,7 @@ export default class PeerEditor extends React.PureComponent<{
                 }
             )
         }
+        */
     }
 
     /**
@@ -575,6 +590,7 @@ export class PeerRecordRequest extends React.PureComponent<PPeerRecordRequest, S
                 buttons={buttons}
                 className="peer-record-request"
                 popup={true}
+                onClose={this.props.onClose}
                 >
                 <p>{this.props.message}</p>
                 <div className="stack-panel s3">

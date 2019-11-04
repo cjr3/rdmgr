@@ -9,6 +9,11 @@ import {Button, IconButton, Icon, IconShown, IconHidden, IconUp} from 'component
 import { SkaterRecord } from 'tools/vars';
 import DataController from 'controllers/DataController';
 import './css/Scorekeeper.scss';
+import UIController from 'controllers/UIController';
+import { Unsubscribe } from 'redux';
+
+import Team from './Team';
+import Positions from './Positions';
 
 /**
  * Component for tracking skaters on the track / on-deck
@@ -38,6 +43,7 @@ export default class Scorekeeper extends React.PureComponent<any, {
      * Skaters on the right team
      */
     TeamBSkaters:Array<SkaterRecord>;
+    opened:boolean;
 }> {
     readonly state = {
         Shown:CaptureController.getState().Scorekeeper.Shown,
@@ -45,7 +51,8 @@ export default class Scorekeeper extends React.PureComponent<any, {
         TeamB:ScoreboardController.getState().TeamB,
         State:ScorekeeperController.getState(),
         TeamASkaters:RosterController.getState().TeamA.Skaters,
-        TeamBSkaters:RosterController.getState().TeamB.Skaters
+        TeamBSkaters:RosterController.getState().TeamB.Skaters,
+        opened:UIController.getState().Scorekeeper.Shown
     };
 
     /**
@@ -65,6 +72,8 @@ export default class Scorekeeper extends React.PureComponent<any, {
      */
     protected remoteRoster:Function|null = null;
 
+    protected remoteUI:Unsubscribe|null = null;
+
     /**
      * Constructor
      * @param props 
@@ -75,6 +84,13 @@ export default class Scorekeeper extends React.PureComponent<any, {
         this.updateCapture = this.updateCapture.bind(this);
         this.updateScoreboard = this.updateScoreboard.bind(this);
         this.updateRoster = this.updateRoster.bind(this);
+        this.updateUI = this.updateUI.bind(this);
+    }
+
+    protected async updateUI() {
+        this.setState({
+            opened:UIController.getState().Scorekeeper.Shown
+        })
     }
 
     /**
@@ -119,6 +135,7 @@ export default class Scorekeeper extends React.PureComponent<any, {
         this.remoteCapture = CaptureController.subscribe(this.updateCapture);
         this.remoteScore = ScoreboardController.subscribe(this.updateScoreboard);
         this.remoteRoster = RosterController.subscribe(this.updateRoster);
+        this.remoteUI = UIController.subscribe(this.updateUI);
     }
 
     /**
@@ -133,6 +150,8 @@ export default class Scorekeeper extends React.PureComponent<any, {
             this.remoteScore();
         if(this.remoteRoster !== null)
             this.remoteRoster();
+        if(this.remoteUI !== null)
+            this.remoteUI();
     }
 
     /**
@@ -215,32 +234,13 @@ export default class Scorekeeper extends React.PureComponent<any, {
 
         return (
             <Panel 
-                opened={this.props.opened}
+                opened={this.state.opened}
                 contentName="SK-app"
                 buttons={buttons}
                 {...this.props}>
-                <ScorekeeperTeam 
-                    side='A' 
-                    name={this.state.TeamA.Name}
-                    color={this.state.TeamA.Color}
-                    team={this.state.State.TeamA}
-                    skaters={this.state.TeamASkaters}
-                    />
-                <ScorekeeperTeam 
-                    side='B' 
-                    name={this.state.TeamB.Name}
-                    color={this.state.TeamB.Color}
-                    team={this.state.State.TeamB}
-                    skaters={this.state.TeamBSkaters}
-                    />
-                <div className="positions">
-                    <div className="team team-a">
-                        {teamASkaters}
-                    </div>
-                    <div className="team team-b">
-                        {teamBSkaters}
-                    </div>
-                </div>
+                <Team side='A'/>
+                <Team side='B'/>
+                <Positions/>
             </Panel>
         )
     }

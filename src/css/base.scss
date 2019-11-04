@@ -165,15 +165,16 @@ td {
 }
 
 ::-webkit-scrollbar-track:hover {
-    background: rgba(97,92,120,1);
+    background: rgba(97,92,120,0.6);
 }
 
 ::-webkit-scrollbar-thumb {
     background: rgba(155,148,182,0.5);
+    min-height: 48px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-    background: rgba(201,194,230,0.5);
+::-webkit-scrollbar-thumb:active {
+    background: rgba(151,144,200,0.9);
 }
 
 /* Material UI Overrides */

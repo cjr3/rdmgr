@@ -18,10 +18,12 @@ declare global {
         onPeerStream:Function|null;
         onPeerStreamClose:Function|null;
         onPeerStreamError:Function|null;
+        onDialogClose:Function|undefined|null;
+        onDialogAccept:Function|undefined|null;
         client?:any;
         remoteApps:{
             SB:boolean;
-        }
+        },
     }
 }
 

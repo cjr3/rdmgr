@@ -13,240 +13,57 @@ import {
     IconPause,
     IconCheck,
     IconInjury,
-    IconOfficialTimeout,
-    ToggleButton
+    IconOfficialTimeout
 } from 'components/Elements'
 import PhaseControl from './PhaseControl'
 import PhaseSelection from './PhaseSelection'
+import {default as ScoreboardControllerPanel} from 'components/controllers/Scoreboard';
 import TeamPicker from './TeamPicker'
 import JamReset from './JamReset'
 import vars from 'tools/vars'
-import ScoreboardController, {SScoreboardTeam} from 'controllers/ScoreboardController'
+import ScoreboardController from 'controllers/ScoreboardController'
 import './css/Scoreboard.scss'
-import DataController from 'controllers/DataController'
+import { Unsubscribe } from 'redux'
+import UIController from 'controllers/UIController'
 
 /**
  * Component for the Scoreboard control
  */
-export default class Scoreboard extends React.Component<{
-    /**
-     * Remote peer's PeerID
-     * - If provided, clock values must be set with state updates
-     */
-    remote?:string;
-    /**
-     * true if open, false if not
-     */
+export default class Scoreboard extends React.PureComponent<any, {
     opened:boolean;
-}, {
-    /**
-     * Status of confirming points to in-field referees
-     */
-    ConfirmStatus:number;
-    /**
-     * Show/Hide phase selection
-     */
-    PhaseOpened:boolean;
-    /**
-     * Show/Hide team selection
-     */
-    TeamOpened:boolean;
-    /**
-     * Show/hide display buttons
-     */
-    DisplayOpened:boolean;
-    /**
-     * Show/Hide Jam Reset
-     */
-    JamResetOpened:boolean;
 }> {
     readonly state = {
-        ConfirmStatus:ScoreboardController.getState().ConfirmStatus,
-        PhaseOpened:false,
-        TeamOpened:false,
-        DisplayOpened:false,
-        JamResetOpened:false
+        opened:UIController.getState().Scoreboard.Shown
     }
 
-    /**
-     * Labels for the jam button
-     */
-    protected JamLabels:Array<string> = ["JAM", "STOP", "READY"];
+    protected remoteUI:Unsubscribe|null = null;
 
-    /**
-     * Listener for Scoreboard controller
-     */
-    protected remoteScore:Function|null = null;
-
-    /**
-     * Constroctor
-     * @param props 
-     */
     constructor(props) {
         super(props);
-        this.onClickDisplay = this.onClickDisplay.bind(this);
-        this.onClickPhase = this.onClickPhase.bind(this);
-        this.onClickResetJam = this.onClickResetJam.bind(this);
-        this.onClickTeams = this.onClickTeams.bind(this);
-        this.onClickOverturned = this.onClickOverturned.bind(this);
-        this.onClickUpheld = this.onClickUpheld.bind(this);
-        this.onClickReview = this.onClickReview.bind(this);
-        this.onClickTimeout = this.onClickTimeout.bind(this);
-        this.onClickInjury = this.onClickInjury.bind(this);
-        this.updateState = this.updateState.bind(this);
+        this.updateUI = this.updateUI.bind(this);
     }
 
-    /**
-     * Updates the state to match the controller.
-     */
-    async updateState() {
-        let cstate = ScoreboardController.getState();
+    protected async updateUI() {
         this.setState({
-            ConfirmStatus:cstate.ConfirmStatus
+            opened:UIController.getState().Scoreboard.Shown
         });
     }
 
-    /**
-     * Triggered when the user clicks the Quarter / Phase button
-     */
-    onClickPhase() {
-        this.setState((state) => {
-            return {
-                PhaseOpened:!state.PhaseOpened,
-                TeamOpened:false,
-                DisplayOpened:false,
-                JamResetOpened:false
-            }
-        });
-    }
-
-    /**
-     * Triggered when the user clicks the Teams button
-     */
-    onClickTeams() {
-        this.setState((state) => {
-            return {
-                PhaseOpened:false,
-                TeamOpened:!state.TeamOpened,
-                DisplayOpened:false,
-                JamResetOpened:false
-            }
-        });
-    }
-
-    /**
-     * Triggered when the user clicks the jam reset button
-     */
-    onClickResetJam() {
-        this.setState((state) => {
-            return {
-                PhaseOpened:false,
-                TeamOpened:false,
-                DisplayOpened:false,
-                JamResetOpened:!state.JamResetOpened
-            }
-        });
-    }
-
-    /**
-     * Triggered when the user clicks the display button
-     */
-    onClickDisplay() {
-        this.setState((state) => {
-            return {
-                PhaseOpened:false,
-                TeamOpened:false,
-                DisplayOpened:!state.DisplayOpened,
-                JamResetOpened:false
-            }
-        });
-    }
-
-    /**
-     * Triggered when the user clicks the upheld button
-     */
-    onClickUpheld() {
-        ScoreboardController.SetBoardStatus(vars.Scoreboard.Status.Upheld);
-    }
-
-    /**
-     * Triggered when the user clicks the overturned button.
-     */
-    onClickOverturned() {
-        ScoreboardController.SetBoardStatus(vars.Scoreboard.Status.Overturned);
-    }
-
-    /**
-     * Triggered when the user clicks the under review button.
-     */
-    onClickReview() {
-        ScoreboardController.SetBoardStatus(vars.Scoreboard.Status.Review);
-    }
-
-    /**
-     * Triggered when the user clicks the timeout button.
-     */
-    onClickTimeout() {
-        ScoreboardController.SetBoardStatus(vars.Scoreboard.Status.Timeout);
-    }
-
-    /**
-     * Triggered when the user clicks the injury button.
-     */
-    onClickInjury() {
-        ScoreboardController.SetBoardStatus(vars.Scoreboard.Status.Injury);
-    }
-
-    /**
-     * Start listeners
-     */
     componentDidMount() {
-        this.remoteScore = ScoreboardController.subscribe(this.updateState);
+        this.remoteUI = UIController.subscribe(this.updateUI);
     }
 
-    /**
-     * Close listeners
-     */
     componentWillUnmount() {
-        if(this.remoteScore !== null)
-            this.remoteScore();
+        if(this.remoteUI !== null)
+            this.remoteUI();
     }
 
-    /**
-     * Renders the component
-     */
     render() {
-        let buttons:Array<React.ReactElement> = [
-            <Button key="btn-oto" 
-                //active={(this.state.BoardStatus === vars.Scoreboard.Status.Timeout)}
-                onClick={ScoreboardController.OfficialTimeout}>Timeout</Button>,
-            <Button key="btn-injury" 
-                //active={(this.state.BoardStatus === vars.Scoreboard.Status.Injury)}
-                onClick={ScoreboardController.InjuryTimeout}>Injury</Button>,
-            <Button key="btn-review" 
-                //active={(this.state.BoardStatus === vars.Scoreboard.Status.Review)}
-                onClick={this.onClickReview}>Review</Button>,
-            <Button key="btn-upheld" 
-                //active={(this.state.BoardStatus === vars.Scoreboard.Status.Upheld)}
-                onClick={this.onClickUpheld}>Upheld</Button>,
-            <Button key="btn-overturned" 
-                //active={(this.state.BoardStatus === vars.Scoreboard.Status.Overturned)}
-                onClick={this.onClickOverturned}>Overturned</Button>,
-            <Button key="btn-quarter" 
-                active={(this.state.PhaseOpened)}
-                onClick={this.onClickPhase}>Quarter</Button>,
-            <Button key="btn-teams" 
-                active={(this.state.TeamOpened)}
-                onClick={this.onClickTeams}>Teams</Button>,
-            <Button key="btn-reset" onClick={this.onClickResetJam}>Reset Jam</Button>
-        ];
-
         return (
             <Panel 
                 contentName="SB-app" 
-                buttons={buttons}
-                opened={this.props.opened}
-                {...this.props}>
+                buttons={[<ScoreboardButtons key="buttons"/>]}
+                opened={this.state.opened}>
                 <ScoreboardTeam side='A'/>
                 <ScoreboardTeam side='B'/>
                 <div className="scoreboard-center">
@@ -265,51 +82,86 @@ export default class Scoreboard extends React.Component<{
                     <PhaseControl/>
                     <ScoreboardJamControls/>
                 </div>
-                <div className="board-status-controls">
-                    <Icon 
-                        src={IconOfficialTimeout}
-                        //active={this.state.BoardStatus === vars.Scoreboard.Status.Timeout}
-                        onClick={ScoreboardController.OfficialTimeout}
-                        title="Official Timeout ( CTRL+UP )"
-                        />
-                    <Icon 
-                        src={IconInjury}
-                        //active={this.state.BoardStatus === vars.Scoreboard.Status.Injury}
-                        onClick={ScoreboardController.InjuryTimeout}
-                        title="Injury Timeout ( CTRL+DOWN )"
-                        />
-                    <Icon 
-                        src={IconCheck}
-                        active={this.state.ConfirmStatus === 1}
-                        onClick={ScoreboardController.ToggleConfirm}
-                        title="Confirm Jam Points ( A )"
-                        />
-                </div>
-                <PhaseSelection opened={this.state.PhaseOpened}
-                    onClose={this.onClickPhase}
-                    onSelect={() => {
-                        this.setState(() => {
-                            return {PhaseOpened:false};
-                        });
-                    }}
-                    className="phase-selection"
-                    />
-                <TeamPicker opened={this.state.TeamOpened}
-                    onClose={this.onClickTeams}
-                    onSubmit={this.onClickTeams}
-                    />
-                <JamReset
-                    opened={this.state.JamResetOpened}
-                    onClose={this.onClickResetJam}
-                    //hour={this.state.StartGameHour}
-                    //minute={this.state.StartGameMinute}
-                    //second={this.state.StartGameSecond}
-                    />
+                <ScoreboardStatusControls/>
+                <ScoreboardPanels/>
             </Panel>
         )
     }
 }
 
+/**
+ * Component to display status button controls
+ * - Timeout
+ * - Injury
+ * - Confirm Points
+ */
+class ScoreboardStatusControls extends React.PureComponent<any, {
+    BoardStatus:number;
+    ConfirmStatus:number;
+}> {
+
+    readonly state = {
+        BoardStatus:ScoreboardController.getState().BoardStatus,
+        ConfirmStatus:ScoreboardController.getState().ConfirmStatus
+    }
+
+    protected remoteScoreboard:Unsubscribe|null = null;
+
+    constructor(props) {
+        super(props);
+        this.updateScoreboard = this.updateScoreboard.bind(this);
+    }
+
+    protected async updateScoreboard() {
+        this.setState({
+            BoardStatus:ScoreboardController.getState().BoardStatus,
+            ConfirmStatus:ScoreboardController.getState().ConfirmStatus
+        })
+    }
+
+    componentDidMount() {
+        this.remoteScoreboard = ScoreboardController.subscribe(this.updateScoreboard);
+    }
+
+    componentWillUnmount() {
+        if(this.remoteScoreboard !== null)
+            this.remoteScoreboard();
+    }
+    
+    /**
+     * Renders the component
+     */
+    render() {
+        return (
+            <div className="board-status-controls">
+                <Icon 
+                    src={IconOfficialTimeout}
+                    active={this.state.BoardStatus === vars.Scoreboard.Status.Timeout}
+                    onClick={ScoreboardController.OfficialTimeout}
+                    title="Official Timeout ( CTRL+UP )"
+                    />
+                <Icon 
+                    src={IconInjury}
+                    active={this.state.BoardStatus === vars.Scoreboard.Status.Injury}
+                    onClick={ScoreboardController.InjuryTimeout}
+                    title="Injury Timeout ( CTRL+DOWN )"
+                    />
+                <Icon 
+                    src={IconCheck}
+                    active={this.state.ConfirmStatus === 1}
+                    onClick={ScoreboardController.ToggleConfirm}
+                    title="Confirm Jam Points ( A )"
+                    />
+            </div>
+        );
+    }
+}
+
+/**
+ * Component for jam control
+ * - Jam Button
+ * - Game Clock Button
+ */
 class ScoreboardJamControls extends React.PureComponent<any, {
     JamState:number;
     GameState:number;
@@ -328,7 +180,7 @@ class ScoreboardJamControls extends React.PureComponent<any, {
         this.updateScoreboard = this.updateScoreboard.bind(this);
     }
 
-    updateScoreboard() {
+    protected async updateScoreboard() {
         this.setState({
             JamState:ScoreboardController.getState().JamState,
             GameState:ScoreboardController.getState().GameState
@@ -367,6 +219,9 @@ class ScoreboardJamControls extends React.PureComponent<any, {
     }
 }
 
+/**
+ * Component for displaying the phase name
+ */
 class ScoreboardPhaseName extends React.PureComponent<any, {
     name:string;
 }> {
@@ -381,7 +236,7 @@ class ScoreboardPhaseName extends React.PureComponent<any, {
         this.updateScoreboard = this.updateScoreboard.bind(this);
     }
 
-    updateScoreboard() {
+    protected async updateScoreboard() {
         this.setState({
             name:ScoreboardController.getState().PhaseName
         });
@@ -396,9 +251,227 @@ class ScoreboardPhaseName extends React.PureComponent<any, {
             this.remoteScoreboard();
     }
 
+    /**
+     * 
+     */
     render() {
         return (
             <div className="phase">{this.state.name}</div>
         );
+    }
+}
+
+/**
+ * Component for scoreboard buttons
+ */
+class ScoreboardButtons extends React.PureComponent<any, {
+    BoardStatus:number;
+    panel:string;
+}> {
+    readonly state = {
+        BoardStatus:ScoreboardController.getState().BoardStatus,
+        panel:''
+    }
+
+    /**
+     * Subscriber for ScoreboardController
+     */
+    protected remoteScoreboard:Unsubscribe|null = null;
+
+    /**
+     * Subscriber for UIController
+     */
+    protected remoteUI:Unsubscribe|null = null;
+
+    constructor(props) {
+        super(props);
+        this.updateScoreboard = this.updateScoreboard.bind(this);
+        this.onClickOverturned = this.onClickOverturned.bind(this);
+        this.onClickUpheld = this.onClickUpheld.bind(this);
+        this.onClickReview = this.onClickReview.bind(this);
+        this.onClickTimeout = this.onClickTimeout.bind(this);
+        this.onClickInjury = this.onClickInjury.bind(this);
+        this.updateUI = this.updateUI.bind(this);
+    }
+
+    /**
+     * Updates the state to match the scoreboard
+     */
+    protected async updateScoreboard() {
+        this.setState({
+            BoardStatus:ScoreboardController.getState().BoardStatus
+        });
+    }
+
+    /**
+     * Updates the state to match the UI controller
+     */
+    protected async updateUI() {
+        this.setState({
+            panel:UIController.getState().Scoreboard.Panel
+        });
+    }
+
+    /**
+     * Triggered when the user clicks the upheld button
+     */
+    protected async onClickUpheld() {
+        ScoreboardController.SetBoardStatus(vars.Scoreboard.Status.Upheld);
+    }
+
+    /**
+     * Triggered when the user clicks the overturned button.
+     */
+    protected async onClickOverturned() {
+        ScoreboardController.SetBoardStatus(vars.Scoreboard.Status.Overturned);
+    }
+
+    /**
+     * Triggered when the user clicks the under review button.
+     */
+    protected async onClickReview() {
+        ScoreboardController.SetBoardStatus(vars.Scoreboard.Status.Review);
+    }
+
+    /**
+     * Triggered when the user clicks the timeout button.
+     */
+    protected async onClickTimeout() {
+        ScoreboardController.SetBoardStatus(vars.Scoreboard.Status.Timeout);
+    }
+
+    /**
+     * Triggered when the user clicks the injury button.
+     */
+    protected async onClickInjury() {
+        ScoreboardController.SetBoardStatus(vars.Scoreboard.Status.Injury);
+    }
+
+    /**
+     * Subscribe to controllers
+     */
+    componentDidMount() {
+        this.remoteScoreboard = ScoreboardController.subscribe(this.updateScoreboard);
+        this.remoteUI = UIController.subscribe(this.updateUI);
+    }
+
+    /**
+     * Close controllers
+     */
+    componentWillUnmount() {
+        if(this.remoteScoreboard !== null)
+            this.remoteScoreboard();
+        if(this.remoteUI !== null)
+            this.remoteUI();
+    }
+    
+    /**
+     * Renders the component
+     */
+    render() {
+        return (
+            <React.Fragment>
+                <Button 
+                    active={(this.state.BoardStatus === vars.Scoreboard.Status.Timeout)}
+                    onClick={ScoreboardController.OfficialTimeout}>Timeout</Button>
+                <Button
+                    active={(this.state.BoardStatus === vars.Scoreboard.Status.Injury)}
+                    onClick={ScoreboardController.InjuryTimeout}>Injury</Button>
+                <Button 
+                    active={(this.state.BoardStatus === vars.Scoreboard.Status.Review)}
+                    onClick={this.onClickReview}>Review</Button>
+                <Button 
+                    active={(this.state.BoardStatus === vars.Scoreboard.Status.Upheld)}
+                    onClick={this.onClickUpheld}>Upheld</Button>
+                <Button 
+                    active={(this.state.BoardStatus === vars.Scoreboard.Status.Overturned)}
+                    onClick={this.onClickOverturned}>Overturned</Button>
+                <Button 
+                    active={(this.state.panel === 'phase')}
+                    onClick={() => {UIController.SetScoreboardPanel('phase');}}
+                    >Quarter</Button>
+                <Button 
+                    active={(this.state.panel === 'teams')}
+                    onClick={() => {UIController.SetScoreboardPanel('teams');}}
+                    >Teams</Button>
+                <Button 
+                    active={(this.state.panel === 'jamreset')}
+                    onClick={() => {UIController.SetScoreboardPanel('jamreset');}}
+                    >Jam Reset</Button>
+                <Button 
+                    active={(this.state.panel === 'edit')}
+                    onClick={() => {UIController.SetScoreboardPanel('edit');}}
+                    >Edit</Button>
+            </React.Fragment>
+        )
+    }
+}
+
+/**
+ * Component that holds popup panels for the scoreboard
+ */
+class ScoreboardPanels extends React.PureComponent<any, {
+    panel:string;
+}> {
+    readonly state = {
+        panel:''
+    }
+
+    protected remoteUI:Unsubscribe|null = null;
+
+    constructor(props) {
+        super(props);
+        this.updateUI = this.updateUI.bind(this);
+    }
+
+    /**
+     * Updates the state to match the UIController
+     */
+    protected async updateUI() {
+        this.setState({
+            panel:UIController.getState().Scoreboard.Panel
+        });
+    }
+
+    /**
+     * Start subscribers
+     */
+    componentDidMount() {
+        this.remoteUI = UIController.subscribe(this.updateUI);
+    }
+
+    /**
+     * Close subscribers
+     */
+    componentWillUnmount() {
+        if(this.remoteUI !== null)
+            this.remoteUI();
+    }
+    
+    /**
+     * Renders the component
+     */
+    render() {
+        return (
+            <React.Fragment>
+                <PhaseSelection opened={(this.state.panel === 'phase')}
+                    onClose={() => {UIController.SetScoreboardPanel('');}}
+                    onSelect={() => {UIController.SetScoreboardPanel('');}}
+                    className="phase-selection"
+                    />
+                <TeamPicker opened={(this.state.panel === 'teams')}
+                    onClose={() => {UIController.SetScoreboardPanel('');}}
+                    onSubmit={() => {UIController.SetScoreboardPanel('');}}
+                    />
+                <JamReset
+                    opened={(this.state.panel === 'jamreset')}
+                    onClose={() => {UIController.SetScoreboardPanel('');}}
+                    />
+                <ScoreboardControllerPanel
+                    opened={(this.state.panel === 'edit')}
+                    onClose={() => {UIController.SetScoreboardPanel('');}}
+                />
+            </React.Fragment>
+        )
     }
 }

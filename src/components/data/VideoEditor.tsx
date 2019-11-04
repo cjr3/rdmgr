@@ -3,6 +3,7 @@ import RecordEditor from './RecordEditor';
 import DataController from 'controllers/DataController';
 import vars, {VideoRecord} from 'tools/vars';
 import {IconButton, IconFolder} from 'components/Elements';
+import ClientController from 'controllers/ClientController';
 
 interface SVideoEditor {
     source:string,
@@ -108,7 +109,7 @@ class VideoEditor extends React.PureComponent<{
                 src={IconFolder}
                 onClick={() => {
                     window.onSelectFile = this.onSelectFile;
-                    window.client.showFileBrowser();
+                    ClientController.ToggleFileBrowser(true);
                 }}
             >Select</IconButton>
         ];
