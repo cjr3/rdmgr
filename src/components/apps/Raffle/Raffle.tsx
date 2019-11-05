@@ -5,39 +5,27 @@ import Panel from 'components/Panel';
 import { IconButton, Button, IconDelete, IconCheck, IconShown, IconHidden } from 'components/Elements'
 import keycodes from 'tools/keycodes'
 import './css/Raffle.scss'
+import { Unsubscribe } from 'redux';
+import DataController from 'controllers/DataController';
 
 /**
  * Component for managing the raffle tickets
  */
 export default class Raffle extends React.PureComponent<any, {
     /**
-     * State of the raffle cotnroller
-     */
-    Raffle:SRaffleController;
-    /**
      * True if visible, false if not
      */
     Shown:boolean;
-    /**
-     * Ticket number entry field value
-     */
-    TicketNumber:string;
 }> {
     readonly state = {
-        Raffle:RaffleController.getState(),
-        Shown:CaptureController.getState().Raffle.Shown,
-        TicketNumber:''
+        Shown:CaptureController.getState().Raffle.Shown
     }
 
     /**
      * Ticket number entry reference
      */
-    protected TicketItem:React.RefObject<HTMLInputElement> = React.createRef()
+    protected TicketItem:React.RefObject<RaffleTicketEntry> = React.createRef();
 
-    /**
-     * RaffleController remote
-     */
-    protected remoteState:Function|null = null;
     /**
      * CaptureController remote
      */
@@ -45,124 +33,20 @@ export default class Raffle extends React.PureComponent<any, {
 
     constructor(props) {
         super(props);
-        this.onChangeTicket = this.onChangeTicket.bind(this);
-        this.sendTicket = this.sendTicket.bind(this);
-        this.onTicketKeyUp = this.onTicketKeyUp.bind(this);
-        this.addDigit = this.addDigit.bind(this);
-        this.updateState = this.updateState.bind(this);
         this.updateCapture = this.updateCapture.bind(this);
-    }
-
-    /**
-     * Updates the state to match the controller.
-     */
-    updateState() {
-        this.setState({Raffle:RaffleController.getState()});
     }
 
     /**
      * Updates the capture state to match the controller.
      */
-    updateCapture() {
+    protected async updateCapture() {
         this.setState({Shown:CaptureController.getState().Raffle.Shown});
-    }
-
-    /**
-     * Triggered when the user changes the value of the ticket entry field.
-     * @param {Event} ev 
-     */
-    onChangeTicket(ev) {
-        var value = ev.target.value;
-        this.setState(() => {
-            return {TicketNumber:value}
-        });
-    }
-
-    /**
-     * Adds the given digit to the end of the ticket number.
-     * @param {String} digit 
-     */
-    addDigit(digit) {
-        var value = this.state.TicketNumber;
-        var ml = 10;
-        if(this.TicketItem != null && this.TicketItem.current !== null)
-            ml = this.TicketItem.current.maxLength;
-        if(digit === 'X') {
-            if(value.length < 1)
-                return;
-            this.setState(() => {
-                return {TicketNumber:value.substring(0, value.length - 1)};
-            }, () => {
-                if(this.TicketItem != null && this.TicketItem.current !== null)
-                    this.TicketItem.current.focus();
-            });
-        } else {
-            if(value.length >= ml)
-                return;
-            this.setState(() => {
-                return {TicketNumber:value + digit};
-            }, () => {
-                if(this.TicketItem != null && this.TicketItem.current !== null)
-                    this.TicketItem.current.focus();
-            });
-        }
-    }
-
-    /**
-     * Sends the ticket to the controller / capture window.
-     */
-    sendTicket() {
-        var value = this.state.TicketNumber;
-        if(value === '') {
-            RaffleController.Remove();
-        } else {
-            RaffleController.Add(value);
-            this.setState(() => {
-                return {TicketNumber:''}
-            }, () => {
-                if(this.TicketItem != null && this.TicketItem.current !== null)
-                    this.TicketItem.current.focus();
-            });
-        }
-    }
-
-    /**
-     * Triggered when the user presses a keyboard key in the ticket entry field.
-     * @param {Event} ev 
-     */
-    onTicketKeyUp(ev) {
-        ev.stopPropagation();
-        switch(ev.keyCode) {
-            //enter - send
-            case keycodes.ENTER :
-                this.sendTicket();
-            break;
-
-            //escape - clear
-            case keycodes.ESCAPE :
-                if(this.state.TicketNumber === '')
-                    RaffleController.Remove();
-                else {
-                    this.setState(() => {
-                        return {TicketNumber:''}
-                    });
-                }
-            break;
-
-            case keycodes.F12 :
-                CaptureController.ToggleRaffle();
-            break;
-
-            default :
-            break;
-        }
     }
 
     /**
      * Start listeners
      */
     componentDidMount() {
-        this.remoteState = RaffleController.subscribe(this.updateState);
         this.remoteCapture = CaptureController.subscribe(this.updateCapture);
     }
 
@@ -170,8 +54,6 @@ export default class Raffle extends React.PureComponent<any, {
      * Close listeners
      */
     componentWillUnmount() {
-        if(this.remoteState !== null)
-            this.remoteState();
         if(this.remoteCapture !== null)
             this.remoteCapture();
     }
@@ -200,40 +82,12 @@ export default class Raffle extends React.PureComponent<any, {
             >Clear</IconButton>,
             <IconButton
                 src={IconCheck}
-                onClick={this.sendTicket}
+                onClick={() => {
+                    if(this.TicketItem && this.TicketItem.current)
+                        this.TicketItem.current.sendTicket();
+                }}
                 key="btn-send"
                 >Submit</IconButton>
-        ];
-
-        //list of tickets
-        let tickets:Array<React.ReactElement> = [];
-        let i = 0;
-        this.state.Raffle.Tickets.forEach((ticket) => {
-            let index = i;
-            tickets.push(
-                <div className="ticket" key={"ticket-" + i}>
-                    <div 
-                        className="ticket-number"
-                        onClick={() => {RaffleController.Remove(index);}}
-                        >{ticket}</div>
-                </div>
-            );
-            i++;
-        });
-
-        //digits to push
-        let digits:Array<React.ReactElement> = [
-            <Button onClick={() => {this.addDigit('0');}} key="btn-0">0</Button>,
-            <Button onClick={() => {this.addDigit('1');}} key="btn-1">1</Button>,
-            <Button onClick={() => {this.addDigit('2');}} key="btn-2">2</Button>,
-            <Button onClick={() => {this.addDigit('3');}} key="btn-3">3</Button>,
-            <Button onClick={() => {this.addDigit('4');}} key="btn-4">4</Button>,
-            <Button onClick={() => {this.addDigit('5');}} key="btn-5">5</Button>,
-            <Button onClick={() => {this.addDigit('6');}} key="btn-6">6</Button>,
-            <Button onClick={() => {this.addDigit('7');}} key="btn-7">7</Button>,
-            <Button onClick={() => {this.addDigit('8');}} key="btn-8">8</Button>,
-            <Button onClick={() => {this.addDigit('9');}} key="btn-9">9</Button>,
-            <Button onClick={() => {this.addDigit('X');}} key="btn-x">X</Button>
         ];
 
         return (
@@ -250,17 +104,188 @@ export default class Raffle extends React.PureComponent<any, {
                 onClose={this.props.onClose}
                 title="Raffle Tickets"
                 >
-                <div className="tickets">{tickets}</div>
-                <div className="entry">
-                    <div className="digit-buttons">{digits}</div>
-                    <input type="text" maxLength={10} 
-                        onChange={this.onChangeTicket}
-                        value={this.state.TicketNumber}
-                        onKeyUp={this.onTicketKeyUp}
-                        ref={this.TicketItem}
-                        />
-                </div>
+                <RaffleTickets
+                    onClick={(index) => {
+                        RaffleController.Remove(index);
+                        if(this.TicketItem && this.TicketItem.current)
+                            this.TicketItem.current.focus();
+                    }}
+                />
+                <RaffleTicketEntry ref={this.TicketItem}/>
             </Panel>
+        )
+    }
+}
+
+class RaffleTickets extends React.PureComponent<{
+    onClick:Function;
+}, {
+    Tickets:Array<string>;
+}> {
+    readonly state = {
+        Tickets:RaffleController.getState().Tickets
+    }
+
+    protected remoteRaffle:Unsubscribe|null = null;
+
+    constructor(props) {
+        super(props);
+        this.updateRaffle = this.updateRaffle.bind(this);
+    }
+
+    protected async updateRaffle() {
+        this.setState({Tickets:RaffleController.getState().Tickets.slice(0)});
+    }
+
+    componentDidMount() {
+        this.remoteRaffle = RaffleController.subscribe(this.updateRaffle);
+    }
+
+    componentWillUnmount() {
+        if(this.remoteRaffle !== null)
+            this.remoteRaffle();
+    }
+
+    render() {
+        let tickets:Array<React.ReactElement> = new Array<React.ReactElement>();
+        this.state.Tickets.forEach((ticket, index) => {
+            tickets.push(
+                <div className="ticket" key={"ticket-"+index}>
+                    <div
+                        className="ticket-number"
+                        onClick={() => {this.props.onClick(index)}}
+                        >{ticket}</div>
+                </div>
+            );
+        });
+
+        return (
+            <div className="tickets">{tickets}</div>
+        )
+    }
+}
+
+class RaffleTicketEntry extends React.PureComponent<any, {
+    value:string;
+}> {
+    readonly state = {
+        value:''
+    }
+
+    protected TicketItem:React.RefObject<HTMLInputElement> = React.createRef();
+
+    constructor(props) {
+        super(props);
+        this.onChangeTicketNumber = this.onChangeTicketNumber.bind(this);
+        this.onKeyUpTicketNumber = this.onKeyUpTicketNumber.bind(this);
+        this.sendTicket = this.sendTicket.bind(this);
+    }
+
+    protected onChangeTicketNumber(ev: React.ChangeEvent<HTMLInputElement>) {
+        let value:string = ev.currentTarget.value;
+        this.setState({value:value});
+    }
+
+    protected onKeyUpTicketNumber(ev: React.KeyboardEvent<HTMLInputElement>) {
+        ev.stopPropagation();
+        switch(ev.keyCode) {
+            //enter - send
+            case keycodes.ENTER :
+                this.sendTicket();
+            break;
+
+            //escape - clear
+            case keycodes.ESCAPE :
+                if(this.state.value === '')
+                    RaffleController.Remove();
+                else {
+                    this.setState({value:''});
+                }
+            break;
+
+            case keycodes.F12 :
+                CaptureController.ToggleRaffle();
+            break;
+
+            default :
+            break;
+        }
+    }
+
+    sendTicket() {
+        var value = this.state.value.trim();
+        if(value === '') {
+            RaffleController.Remove();
+        } else {
+            RaffleController.Add(value);
+            this.setState({value:''}, () => {
+                if(this.TicketItem && this.TicketItem.current)
+                    this.TicketItem.current.focus();
+            });
+        }
+    }
+    
+
+    /**
+     * Adds the given digit to the end of the ticket number.
+     * @param {String} digit 
+     */
+    protected addDigit(digit) {
+        var value = this.state.value;
+        var ml = 10;
+        if(this.TicketItem != null && this.TicketItem.current !== null)
+            ml = this.TicketItem.current.maxLength;
+        if(digit === 'X') {
+            if(value.length < 1)
+                return;
+            this.setState(() => {
+                return {value:value.substring(0, value.length - 1)};
+            }, () => {
+                if(this.TicketItem != null && this.TicketItem.current !== null)
+                    this.TicketItem.current.focus();
+            });
+        } else {
+            if(value.length >= ml)
+                return;
+            this.setState(() => {
+                return {value:value + digit};
+            }, () => {
+                if(this.TicketItem != null && this.TicketItem.current !== null)
+                    this.TicketItem.current.focus();
+            });
+        }
+    }
+
+    focus() {
+        if(this.TicketItem && this.TicketItem.current)
+            this.TicketItem.current.focus();
+    }
+
+    render() {
+        let digits:Array<React.ReactElement> = new Array<React.ReactElement>(
+            <Button onClick={() => {this.addDigit('0');}} key="btn-0">0</Button>,
+            <Button onClick={() => {this.addDigit('1');}} key="btn-1">1</Button>,
+            <Button onClick={() => {this.addDigit('2');}} key="btn-2">2</Button>,
+            <Button onClick={() => {this.addDigit('3');}} key="btn-3">3</Button>,
+            <Button onClick={() => {this.addDigit('4');}} key="btn-4">4</Button>,
+            <Button onClick={() => {this.addDigit('5');}} key="btn-5">5</Button>,
+            <Button onClick={() => {this.addDigit('6');}} key="btn-6">6</Button>,
+            <Button onClick={() => {this.addDigit('7');}} key="btn-7">7</Button>,
+            <Button onClick={() => {this.addDigit('8');}} key="btn-8">8</Button>,
+            <Button onClick={() => {this.addDigit('9');}} key="btn-9">9</Button>,
+            <Button onClick={() => {this.addDigit('X');}} key="btn-x">X</Button>
+        );
+
+        return (
+            <div className="entry">
+                <div className="digit-buttons">{digits}</div>
+                <input type="text" maxLength={10} 
+                    onChange={this.onChangeTicketNumber}
+                    value={this.state.value}
+                    onKeyUp={this.onKeyUpTicketNumber}
+                    ref={this.TicketItem}
+                    />
+            </div>
         )
     }
 }
