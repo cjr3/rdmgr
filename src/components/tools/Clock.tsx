@@ -214,7 +214,7 @@ export default class Clock extends React.Component<{
     protected async _tick() {
         if(window.remoteApps.SB)
             return;
-        this._clear();
+        //this._clear();
         var hours = this.state.hour;
         var minutes = this.state.minute;
         var seconds = this.state.second;

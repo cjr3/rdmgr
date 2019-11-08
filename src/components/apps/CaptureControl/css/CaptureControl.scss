@@ -204,6 +204,34 @@
         > select {
             width: 100%;
         }
+
+        &.misc-records {
+            .item {
+                display: flex;
+                flex-flow: row wrap;
+                border-bottom: solid 1px #666;
+                > .name {
+                    padding: 3px;
+                    flex: 1;
+                    line-height: 24px;
+                }
+
+                > .icon {
+                    flex: 0;
+                    width: 36px;
+                    height: 36px;
+                    border: solid 1px #666;
+                    padding: 3px;
+                    &.hidden {
+                        display: none;
+                    }
+                }
+
+                > .error-message {
+                    flex-basis: 100%;
+                }
+            }
+        }
     }
 }
 

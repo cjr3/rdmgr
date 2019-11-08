@@ -123,6 +123,25 @@ export default class MediaQueueItems extends React.PureComponent<any, {
                         className:cnames({active:(index === this.state.Index)})
                     });
                 break;
+
+                case vars.RecordType.Roster :
+                    let src:string = '';
+                    if(record.Thumbnail)
+                        src = DataController.mpath(record.Thumbnail);
+                    items.push({
+                        label:<React.Fragment key={`${record.RecordType}-${index}`}>
+                            <div className="slide-title">{record.Name}</div>
+                            <MediaThumbnail src={src}/>
+                            <Icon src={IconX} 
+                                className="remove"
+                                onClick={() => {
+                                    MediaQueueController.Remove(index);
+                                }}
+                            />
+                        </React.Fragment>,
+                        className:cnames({active:(index === this.state.Index)})
+                    })
+                break;
             }
 
         });

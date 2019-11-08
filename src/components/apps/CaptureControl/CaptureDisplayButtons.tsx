@@ -12,7 +12,8 @@ import {
     IconSkate, 
     IconSlideshow, 
     IconMovie,
-    IconTeam
+    IconTeam,
+    IconClipboard
 } from 'components/Elements';
 
 
@@ -72,6 +73,10 @@ export default class CaptureDisplayButtons extends React.PureComponent<any, {
      * Determines if the roster is displayed
      */
     Roster:boolean;
+    /**
+     * Determines if the Scorekeeper is displayed
+     */
+    Scorekeeper:boolean;
 }> {
     readonly state = {
         Announcers:CaptureController.getState().Announcers.Shown,
@@ -81,6 +86,7 @@ export default class CaptureDisplayButtons extends React.PureComponent<any, {
         NationalAnthem:CaptureController.getState().NationalAnthem.Shown,
         PenaltyTracker:CaptureController.getState().PenaltyTracker.Shown,
         Scorebanner:CaptureController.getState().Scorebanner.Shown,
+        Scorekeeper:CaptureController.getState().Scorekeeper.Shown,
         Scoreboard:CaptureController.getState().Scoreboard.Shown,
         SponsorSlideshow:CaptureController.getState().SponsorSlideshow.Shown,
         JamClock:CaptureController.getState().Scoreboard.JamClockShown,
@@ -122,7 +128,8 @@ export default class CaptureDisplayButtons extends React.PureComponent<any, {
                 JamClock:cstate.Scoreboard.JamClockShown,
                 JamCounter:cstate.Scoreboard.JamCounterShown,
                 Raffle:cstate.Raffle.Shown,
-                Roster:cstate.Roster.Shown
+                Roster:cstate.Roster.Shown,
+                Scorekeeper:cstate.Scorekeeper.Shown
             };
         });
     }
@@ -176,7 +183,13 @@ export default class CaptureDisplayButtons extends React.PureComponent<any, {
                     src={IconPlus}
                     active={this.state.JamCounter}
                     onClick={CaptureController.ToggleJamCounter}>
-                        Jam #
+                        Jam Counter
+                </IconButton>
+                <IconButton
+                    src={IconClipboard}
+                    active={this.state.Scorekeeper}
+                    onClick={CaptureController.ToggleScorekeeper}>
+                        Jammers
                 </IconButton>
                 <IconButton
                     src={IconWhistle}

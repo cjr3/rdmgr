@@ -161,11 +161,11 @@ td {
 }
 
 ::-webkit-scrollbar-track {
-    background: rgba(97,92,120,0.5);
+    background: rgba(47,42,60,1);
 }
 
 ::-webkit-scrollbar-track:hover {
-    background: rgba(97,92,120,0.6);
+    background: rgba(57,52,70,1);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -199,4 +199,15 @@ td {
 
 .hidden {
     display: none !important;
+}
+
+.error-message {
+    display: none;
+    color: #900;
+    background-color: #ccc;
+    padding: 3px;
+    border: solid 2px #900;
+    &.shown {
+        display: block;
+    }
 }

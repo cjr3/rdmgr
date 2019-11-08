@@ -8,6 +8,7 @@ import CaptureControlScorekeeper from './CaptureControlScorekeeper';
 import CaptureControlAnthem from './CaptureControlAnthem';
 import CaptureControlAnnouncers from './CaptureControlAnnouncers';
 import CaptureControlPenaltyTracker from './CaptureControlPenaltyTracker';
+import CaptureControlMisc from './CaptureControlMisc';
 import {
     IconMic,
     IconFlag,
@@ -15,7 +16,8 @@ import {
     IconWhistle,
     IconClipboard,
     IconTeam,
-    IconOffline
+    IconOffline,
+    IconCapture
 } from 'components/Elements';
 import vars from 'tools/vars';
 import RosterController from 'controllers/RosterController';
@@ -78,6 +80,12 @@ export default class CaptureDisplayControls extends React.PureComponent<any, {
             icon:IconClipboard,
             toggle:CaptureController.ToggleScorekeeper,
             control:CapturePanels.SCOREKEEPER
+        },
+        ['MISC']:{
+            type:CaptureControlMisc,
+            name:"Misc",
+            icon:IconCapture,
+            toggle:() => {}
         }
     }
 

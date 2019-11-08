@@ -4,16 +4,23 @@ import VideoController from 'controllers/VideoController';
 import SlideshowController from 'controllers/SlideshowController';
 import CaptureController from 'controllers/CaptureController';
 import CaptureStatus from 'tools/CaptureStatus';
-import vars, {Record, SlideshowRecord, VideoRecord, AnthemRecord} from 'tools/vars';
+import vars from 'tools/vars';
 import keycodes from 'tools/keycodes';
+import RosterController from './RosterController';
 
 const SET_STATE = 'SET_STATE';
 const TOGGLE_LOOP = 'TOGGLE_LOOP';
 
+export enum Actions {
+    SET_STATE,
+    TOGGLE_LOOP,
+    ADD_RECORD
+};
+
 export interface SMediaQueueController {
     Index:number;
-    Records:Array<SlideshowRecord | VideoRecord | AnthemRecord>;
-    Record:Record | VideoRecord | AnthemRecord | SlideshowRecord | null;
+    Records:Array<any>;
+    Record:any;
     Loop:boolean;
 }
 
@@ -99,6 +106,7 @@ const MediaQueueController = {
     Next() {
         var state = MediaQueueController.getState();
         var sstate = SlideshowController.getState();
+        var rstate = RosterController.getState();
         const record = state.Record;
         var index = state.Index + 1;
         if(index >= state.Records.length) {
@@ -109,6 +117,26 @@ const MediaQueueController = {
                 && (sstate.Index + 1) >= sstate.Slides.length) {
                 MediaQueueController.SetRecord( -1 );
                 return;
+            } else if(record.RecordType === vars.RecordType.Roster) {
+                if(rstate.CurrentTeam === 'A') {
+                    //Side A
+                    if((rstate.SkaterIndex+1) < rstate.TeamA.Skaters.length) {
+                        RosterController.Next();
+                        return;
+                    } else {
+                        MediaQueueController.SetRecord(-1);
+                        return;
+                    }
+                } else {
+                    //Side B
+                    if((rstate.SkaterIndex+1) < rstate.TeamB.Skaters.length) {
+                        RosterController.Next();
+                        return;
+                    } else {
+                        MediaQueueController.SetRecord(-1);
+                        return;
+                    }
+                }
             }
         }
 
@@ -146,6 +174,17 @@ const MediaQueueController = {
             case vars.RecordType.Anthem :
                 CaptureController.SetNationalAnthemSingerVisibility( false );
             break;
+
+            //Roster
+            case vars.RecordType.Roster :
+                if(rstate.CurrentTeam === 'A' && (rstate.SkaterIndex+1) < rstate.TeamA.Skaters.length) {
+                    update = false;
+                    RosterController.Next();
+                } else if(rstate.CurrentTeam === 'B' && (rstate.SkaterIndex+1) < rstate.TeamB.Skaters.length) {
+                    update = false;
+                    RosterController.Next();
+                }
+            break;
         }
 
         if(update) {
@@ -159,6 +198,7 @@ const MediaQueueController = {
     Prev() {
         var state = MediaQueueController.getState();
         var sstate = SlideshowController.getState();
+        var rstate = RosterController.getState();
         const record = state.Record;
         var index = state.Index - 1;
         var update = true;
@@ -168,8 +208,12 @@ const MediaQueueController = {
                 if(record.RecordType === vars.RecordType.Slideshow && sstate.Index <= 0) {
                     MediaQueueController.SetRecord( -1 );
                     return;
+                } else if(record.RecordType === vars.RecordType.Roster) {
+                    if(rstate.SkaterIndex <= 0) {
+                        MediaQueueController.SetRecord( -1 );
+                        return;
+                    }
                 }
-
             } else {
                 MediaQueueController.SetRecord( -1 );
                 return;
@@ -205,6 +249,16 @@ const MediaQueueController = {
             case vars.RecordType.Anthem :
                 CaptureController.SetNationalAnthemSingerVisibility( false );
             break;
+
+            //Roster
+            case vars.RecordType.Roster :
+                if(rstate.SkaterIndex <= 0)
+                    CaptureController.SetRosterVisibility( false );
+                else {
+                    RosterController.Prev();
+                    update = false;
+                }
+            break;
         }
 
         if(update) {
@@ -239,23 +293,35 @@ const MediaQueueController = {
                         Source:DataController.mpath('videos/' + record.Filename, false)
                     });
                     CaptureController.SetMainSlideshowVisibility( false );
+                    CaptureController.SetRosterVisibility( false );
                     CaptureController.SetNationalAnthemSingerVisibility( false );
                 break;
 
                 //start slideshow
                 case vars.RecordType.Slideshow :
                     SlideshowController.SetSlides(record.Records, record.RecordID, record.Name);
-                    CaptureController.SetMainSlideshowVisibility( true );
                     CaptureController.SetMainVideoVisibility( false );
+                    CaptureController.SetRosterVisibility( false );
                     CaptureController.SetNationalAnthemSingerVisibility( false );
+                    CaptureController.SetMainSlideshowVisibility( true );
                 break;
 
                 //National Anthem
                 case vars.RecordType.Anthem :
                     CaptureController.SetMainSlideshowVisibility( false );
                     CaptureController.SetMainVideoVisibility( false );
+                    CaptureController.SetRosterVisibility( false );
                     CaptureController.SetNationalAnthemSinger(record);
                     CaptureController.SetNationalAnthemSingerVisibility( true );
+                break;
+
+                //Roster
+                case vars.RecordType.Roster :
+                    CaptureController.SetMainSlideshowVisibility( false );
+                    CaptureController.SetMainVideoVisibility( false );
+                    CaptureController.SetNationalAnthemSingerVisibility( false );
+                    RosterController.SetSkater(record.Side, -1);
+                    CaptureController.SetRosterVisibility( true );
                 break;
             }
 
@@ -272,6 +338,7 @@ const MediaQueueController = {
             CaptureController.SetMainVideoVisibility( false );
             CaptureController.SetMainSlideshowVisibility( false );
             CaptureController.SetNationalAnthemSingerVisibility( false );
+            CaptureController.SetRosterVisibility( false );
         }
     },
 
@@ -279,8 +346,7 @@ const MediaQueueController = {
      * Adds the record to the queue.
      * @param {Object} record 
      */
-    Add(record) {
-        //console.log(record);
+    Add(record:any) {
         var state = MediaQueueController.getState();
         var records = state.Records.slice();
         records.push(record);
@@ -316,6 +382,10 @@ const MediaQueueController = {
                     case vars.RecordType.Anthem :
                         CaptureController.SetNationalAnthemSingerVisibility( false );
                     break;
+
+                    case vars.RecordType.Roster :
+                        CaptureController.SetRosterVisibility( false );
+                    break;
                 }
             }
 
@@ -333,6 +403,7 @@ const MediaQueueController = {
                 CaptureController.SetMainVideoVisibility( false );
                 CaptureController.SetMainSlideshowVisibility( false );
                 CaptureController.SetNationalAnthemSingerVisibility( false );
+                CaptureController.SetRosterVisibility( false );
             } else if(state.Index >= index) {
                 MediaQueueController.getStore().dispatch({
                     type:SET_STATE,
@@ -380,6 +451,7 @@ const MediaQueueController = {
             CaptureController.SetMainVideoVisibility( false );
             CaptureController.SetMainSlideshowVisibility( false );
             CaptureController.SetNationalAnthemSingerVisibility( false );
+            CaptureController.SetRosterVisibility( false );
         } else {
             switch(state.Record.RecordType) {
                 case vars.RecordType.Video :
@@ -392,6 +464,10 @@ const MediaQueueController = {
 
                 case vars.RecordType.Anthem :
                     CaptureController.ToggleNationalAnthem();
+                break;
+
+                case vars.RecordType.Roster :
+                    CaptureController.ToggleRoster();
                 break;
             }
         }
@@ -494,6 +570,8 @@ const MediaQueueController = {
      * @param {KeyEvent} ev 
      */
     onKeyUp(ev) {
+        ev.stopPropagation();
+        ev.preventDefault();
         switch(ev.keyCode) {
             case keycodes.ENTER :
                 if(ev.ctrlKey) {

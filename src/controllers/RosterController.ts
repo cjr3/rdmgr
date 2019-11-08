@@ -18,11 +18,13 @@ export enum Actions {
     PREV_SKATER
 };
 
+export type Sides = "A" | "B";
+
 export interface SRosterControllerTeam {
     /**
      * Side of the scoreboard
      */
-    Side:string;
+    Side:Sides;
     /**
      * Team thumbnail / logo
      */
@@ -54,6 +56,11 @@ export interface SRosterController {
      * Right-side team
      */
     TeamB:SRosterControllerTeam;
+    /**
+     * True if the remote peer that controls the roster
+     * has it visible on their screen.
+     */
+    RemoteShown:boolean;
 }
 
 export const InitState:SRosterController = {
@@ -70,7 +77,8 @@ export const InitState:SRosterController = {
         Thumbnail:'',
         Slide:'',
         Skaters:[]
-    }
+    },
+    RemoteShown:false
 };
 
 /**
@@ -537,5 +545,10 @@ const RosterController = {
         });
     }
 };
+
+const remoteCapture = CaptureController.subscribe(() => {
+    if(window && window.remoteApps && !window.remoteApps.ROS)
+        RosterController.SetState({RemoteShown:CaptureController.getState().Roster.Shown});
+});
 
 export default RosterController;

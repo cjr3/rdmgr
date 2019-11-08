@@ -1,77 +1,17 @@
-import {createStore, Store, Unsubscribe} from 'redux';
 import vars from 'tools/vars';
-
-export enum Actions {
-    SET_STATE,
-    SET_TIME,
-    SET_STATUS
-}
-
-interface ClockState {
-    hour:number;
-    minute:number;
-    second:number;
-    tenths:number;
-    status:number;
-    maxSeconds:number;
-}
-
-const InitState:ClockState = {
-    hour:0,
-    minute:0,
-    second:0,
-    tenths:0,
-    status:vars.Clock.Status.Ready,
-    maxSeconds:60
-};
-
-function ClockReducer(state:ClockState = InitState, action:any) {
-    try {
-        switch(action.type) {
-            case Actions.SET_STATE : {
-                return Object.assign({}, state, action.state);
-            }
-            case Actions.SET_TIME : {
-                if(state.status === vars.Clock.Status.Running)
-                    return state;
-                
-                let stenths = action.tenths;
-                let hour = action.hour;
-                let minute = action.minute;
-                let second = action.second;
-                let tenths = action.tenths;
-                if(hour > state.hour)
-                    stenths = tenths;
-                else if(hour === state.hour && minute > state.minute)
-                    stenths = tenths;
-                return Object.assign({}, state, {
-                    hour:hour,
-                    minute:minute,
-                    second:second,
-                    tenths:stenths
-                });
-            }
-            break;
-
-            case Actions.SET_STATUS : {
-                
-            }
-            break;
-
-            default : {return state;}
-            break;
-        }
-    } catch(er) {
-        return state;
-    }
-}
 
 class ClockController {
 
     protected onTick:Function|undefined;
     protected onDone:Function|undefined;
-    protected store:Store<ClockState>|undefined;
-    protected state:ClockState|undefined;
+    protected onTenths:Function|undefined;
+    protected Timer:NodeJS.Timeout|null = null;
+    protected Hours:number = 0;
+    protected Minutes:number = 0;
+    protected Seconds:number = 0;
+    protected Tenths:number = 0;
+    protected Max:number = 60;
+    Status:number = vars.Clock.Status.Ready;
 
     constructor(props:{
         hour:number;
@@ -80,16 +20,22 @@ class ClockController {
         max:number;
         onTick:Function;
         onDone:Function;
-        status?:number;
+        onTenths?:Function;
     }) {
-        this.state = Object.assign({}, InitState);
-        this.state.hour = props.hour;
-        this.state.minute = props.minute;
-        this.state.maxSeconds = props.max;
-        if(props.status !== undefined)
-            this.state.status = props.status;
+        this.Hours = props.hour;
+        this.Minutes = props.minute;
+        this.Seconds = props.second;
+        this.Max = props.max;
+        this.onTick = props.onTick;
+        this.onDone = props.onDone;
+        this.onTenths = props.onTenths;
 
-        this.store = createStore(ClockReducer);
+        this.clear = this.clear.bind(this);
+        this.set = this.set.bind(this);
+        this.stop = this.stop.bind(this);
+        this.run = this.run.bind(this);
+        this.ready = this.ready.bind(this);
+        this.tick = this.tick.bind(this);
     }
 
     /**
@@ -101,62 +47,84 @@ class ClockController {
      * @param {Number} tenths 
      */
     set(hour:number, minute:number, second:number, tenths:number) {
-        if(this.state && this.state.status !== vars.Clock.Status.Running) {
+        if(this.Status !== vars.Clock.Status.Running) {
             
-            let stenths = this.state.tenths;
-            if(hour > this.state.hour)
-                stenths = tenths;
-            else if(hour === this.state.hour && minute > this.state.minute)
-                stenths = tenths;
-            this.setState({
-                hour:hour,
-                minute:minute,
-                second:second,
-                tenths:stenths
-            });
+            let stenths = this.Tenths;
+            if(hour > this.Hours)
+                this.Tenths = tenths;
+            else if(hour === this.Hours && minute > this.Minutes)
+                this.Tenths = tenths;
+            this.Hours = hour;
+            this.Minutes = minute;
+            this.Seconds = second;
         }
     }
 
     stop() {
-        this.setState({status:vars.Clock.Status.Stopped});
+        this.clear();
+        this.Status = vars.Clock.Status.Stopped;
     }
 
-    play() {
-        this.setState({status:vars.Clock.Status.Running});
+    run() {
+        this.clear();
+        this.Status = vars.Clock.Status.Running;
+        this.Timer = setInterval(this.tick, 100);
     }
 
-    reset() {
-        this.setState({status:vars.Clock.Status.Ready});
+    ready() {
+        this.clear();
+        this.Status = vars.Clock.Status.Ready;
+
     }
 
-    protected async setState(state:any) {
-        if(this.store) {
-            this.store.dispatch({
-                type:Actions.SET_STATE,
-                state:state
-            });
+    protected clear() {
+        try {
+            if(this.Timer !== null)
+                clearInterval(this.Timer);
+        } catch(er) {
+
         }
     }
 
-    getState() {
-        if(this.store !== undefined)
-            return this.store.getState();
-        return Object.assign({}, InitState);
-    }
-
-    getStore() :Store|undefined {
-        return this.store;
-    }
-
-    subscribe(f:any) : Unsubscribe|null {
-        if(this.store !== undefined) {
-            try {
-                this.store.subscribe(f);
-            } catch(er) {
-
+    protected async tick() {
+        this.Tenths--;
+        if(this.Tenths < 0) {
+            this.Tenths = 9;
+            this.Seconds--;
+            if(this.Seconds < 0) {
+                this.Minutes--;
+                this.Seconds = 59;
+                if(this.Minutes < 0) {
+                    this.Hours--;
+                    this.Minutes = 59;
+                    if(this.Hours < 0) {
+                        this.Hours = 0;
+                        this.Minutes = 0;
+                        this.Seconds = 0;
+                        this.Tenths = 0;
+                    }
+                }
             }
+
+            if(this.onTick) {
+                //this.onTick(this.Hours, this.Minutes, this.Seconds, this.Tenths);
+                setTimeout(this.onTick, 10, this.Hours, this.Minutes, this.Seconds, this.Tenths);
+            }
+        } else if(this.onTenths) {
+            //this.onTenths(this.Hours, this.Minutes, this.Seconds, this.Tenths);
+            setTimeout(this.onTenths, 10, this.Hours, this.Minutes, this.Seconds, this.Tenths);
         }
-        return null;
+
+        //continue ticking ???
+        if(this.done()) {
+            this.clear();
+            if(this.onDone)
+                this.onDone();
+        }
+    }
+
+    protected done() : boolean {
+        return (this.Hours <= 0 && this.Minutes <= 0 && this.Seconds <= 0 && this.Tenths <= 0);
     }
 }
 

@@ -3,7 +3,7 @@
  * such as buttons, so we can have default behaviors,
  * such as keeping buttons from retaining focus when clicked.
  */
-import React from 'react'
+import React, { CSSProperties } from 'react'
 import cnames from 'classnames'
 import './css/Elements.scss'
 import {default as UISlider, SliderProps} from '@material-ui/core/Slider'
@@ -67,28 +67,32 @@ export const IconPlay = require('images/icons/play.png');
 export const IconPause = require('images/icons/pause.png');
 export const IconController = require('images/icons/gamepad.png');
 export const Icon2x = require('images/icons/2x.png');
+export const IconLeague = require('images/icons/leagueicon.png');
 
 /**
  * Creates a <button> element
  * @param {Object} props 
  */
-function ButtonElement(props) {
-    var className = cnames({active:props.active}, props.className);
-    return (
-        <button
-            className={className}
-            onClick={props.onClick}
-            onDoubleClick={props.onDoubleClick}
-            onContextMenu={props.onContextMenu}
-            title={props.title}
-            //{...props}
-            onFocus={(ev) => {
-                ev.preventDefault();
-                ev.target.blur();
-                if(props.onFocus)
-                    props.onFocus(ev)
-            }}>{props.children}</button>
-    )
+class ButtonElement extends React.PureComponent<any> {
+
+    render() {
+        var className = cnames({active:this.props.active}, this.props.className);
+        return (
+            <button
+                className={className}
+                onClick={this.props.onClick}
+                onDoubleClick={this.props.onDoubleClick}
+                onContextMenu={this.props.onContextMenu}
+                title={this.props.title}
+                //{...props}
+                onFocus={(ev) => {
+                    ev.preventDefault();
+                    ev.target.blur();
+                    if(this.props.onFocus)
+                        this.props.onFocus(ev)
+                }}>{this.props.children}</button>
+        )
+    }
 }
 
 /**
@@ -107,6 +111,10 @@ interface PElement {
      * HTML title attribute
      */
     title?:string;
+    /**
+     * Additional styles
+     */
+    style?:CSSProperties
 }
 
 interface PMediaElement extends PElement {

@@ -2072,6 +2072,78 @@ const DataController = {
     },
 
     /**
+     * Loads standings records from an API endpoint
+     */
+    async loadStandings() : Promise<Array<any>|string> {
+        return new Promise((res, rej) => {
+            let url:string = DataController.GetMiscRecord('APIEndpoint');
+            if(!url) {
+                rej("Can't get data: API endpoint is not set.");
+            } else {
+                fetch(url + "/standings").then((response) => {
+                    return response.json();
+                }).then((data) => {
+                    if(data && data.records) {
+                        res(data.records);
+                    } else {
+                        res([]);
+                    }
+                }).catch(() => {
+                    rej("Failed to load Standings.");
+                });
+            }
+        });
+    },
+
+    /**
+     * Loads match records from the API endpoint
+     */
+    async loadSchedule() {
+        return new Promise((res, rej) => {
+            let url:string = DataController.GetMiscRecord('APIEndpoint');
+            if(!url) {
+                rej("Can't get data: API endpoint is not set.");
+            } else {
+                fetch(url + "/schedule").then((response) => {
+                    return response.json();
+                }).then((data) => {
+                    if(data && data.records) {
+                        res(data.records);
+                    } else {
+                        res([]);
+                    }
+                }).catch(() => {
+                    rej("Failed to load Schedule.");
+                });
+            }
+        });
+    },
+
+    /**
+     * Loads score records from the API endpoint
+     */
+    async loadScores() {
+        return new Promise((res, rej) => {
+            let url:string = DataController.GetMiscRecord('APIEndpoint');
+            if(!url) {
+                rej("Can't get data: API endpoint is not set.");
+            } else {
+                fetch(url + "/scores").then((response) => {
+                    return response.json();
+                }).then((data) => {
+                    if(data && data.records) {
+                        res(data.records);
+                    } else {
+                        res([]);
+                    }
+                }).catch(() => {
+                    rej("Failed to load Scores.");
+                });
+            }
+        });
+    },
+
+    /**
      * Subscribes to the store, and returns a function that can cancel that subscription
      * @param {Function} f 
      */

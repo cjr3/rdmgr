@@ -25,6 +25,9 @@ export enum Actions {
     SET_STREAM_CONTROL,
     SET_DISPLAY_CONTROL,
     SET_CONTROL,
+    SET_STANDINGS,
+    SET_SCHEDULE,
+    SET_SCORES,
     TOGGLE_SLIDESHOW,
     TOGGLE_SCOREBOARD,
     TOGGLE_JAM_CLOCK,
@@ -42,7 +45,10 @@ export enum Actions {
     TOGGLE_ROSTER,
     TOGGLE_SCOREBOARD_LIGHT,
     TOGGLE_SCOREKEEPER,
-    TOGGLE_SPONSOR_VIEW
+    TOGGLE_SPONSOR_VIEW,
+    TOGGLE_STANDINGS,
+    TOGGLE_SCHEDULE,
+    TOGGLE_SCORES
 }
 
 export enum CapturePanels {
@@ -106,6 +112,18 @@ export interface CaptureStateAnthem extends CaptureStateBase {
     Record:AnthemRecord;
 }
 
+export interface CaptureStateStandings extends CaptureStateBase {
+    Records:Array<any>;
+}
+
+export interface CaptureStateSchedule extends CaptureStateBase {
+    Records:Array<any>;
+}
+
+export interface CaptureStateScores extends CaptureStateBase {
+    Records:Array<any>;
+}
+
 export interface CaptureControllerState {
     className:string;
     Control:number;
@@ -123,6 +141,9 @@ export interface CaptureControllerState {
     Raffle:CaptureStateBase;
     Roster:CaptureStateBase;
     Scorekeeper:CaptureStateBase;
+    Standings:CaptureStateStandings;
+    Schedule:CaptureStateSchedule;
+    Scores:CaptureStateSchedule;
 }
 
 export const InitState:CaptureControllerState = {
@@ -199,8 +220,23 @@ export const InitState:CaptureControllerState = {
         className:''
     },
     Scorekeeper:{
-        Shown:true,
+        Shown:false,
         className:''
+    },
+    Standings:{
+        Shown:false,
+        className:'',
+        Records:[]
+    },
+    Schedule:{
+        Shown:false,
+        className:'',
+        Records:[]
+    },
+    Scores:{
+        Shown:false,
+        className:'',
+        Records:[]
     }
 };
 
@@ -403,6 +439,63 @@ function CaptureReducer(state:CaptureControllerState = InitState, action) {
                 })
             });
 
+        //Standings
+        case Actions.TOGGLE_STANDINGS : {
+            return Object.assign({}, state, {
+                Standings:Object.assign({}, state.Standings, {
+                    Shown:!state.Standings.Shown
+                })
+            });
+        }
+        break;
+
+        case Actions.SET_STANDINGS : {
+            return Object.assign({}, state, {
+                Standings:Object.assign({}, state.Standings, {
+                    Records:action.records
+                })
+            });
+        }
+        break;
+
+        //Schedule
+        case Actions.TOGGLE_SCHEDULE : {
+            return Object.assign({}, state, {
+                Schedule:Object.assign({}, state.Schedule, {
+                    Shown:!state.Schedule.Shown
+                })
+            });
+        }
+        break;
+
+        case Actions.SET_SCHEDULE : {
+            return Object.assign({}, state, {
+                Schedule:Object.assign({}, state.Schedule, {
+                    Records:action.records
+                })
+            });
+        }
+        break;
+
+        //Scores
+        case Actions.TOGGLE_SCORES : {
+            return Object.assign({}, state, {
+                Scores:Object.assign({}, state.Scores, {
+                    Shown:!state.Scores.Shown
+                })
+            });
+        }
+        break;
+
+        case Actions.SET_SCORES : {
+            return Object.assign({}, state, {
+                Scores:Object.assign({}, state.Scores, {
+                    Records:action.records
+                })
+            });
+        }
+        break;
+
         default :
             return state;
     }
@@ -585,6 +678,13 @@ const CaptureController = {
         });
     },
 
+    async SetRosterClass(className:string) {
+        CaptureController.getStore().dispatch({
+            type:Actions.SET_ROSTER,
+            values:{className:className}
+        });
+    },
+
     /**
      * Sets the National Anthem singer and bio.
      * @param {Object} record
@@ -758,6 +858,39 @@ const CaptureController = {
     },
 
     /**
+     * Sets the standings records
+     * @param records 
+     */
+    async SetStandings(records:Array<any>) {
+        CaptureController.getStore().dispatch({
+            type:Actions.SET_STANDINGS,
+            records:records.slice(0)
+        });
+    },
+
+    /**
+     * Sets the schedule records
+     * @param records 
+     */
+    async SetSchedule(records:Array<any>) {
+        CaptureController.getStore().dispatch({
+            type:Actions.SET_SCHEDULE,
+            records:records.slice(0)
+        });
+    },
+
+    /**
+     * Sets the score records
+     * @param records 
+     */
+    async SetScores(records:Array<any>) {
+        CaptureController.getStore().dispatch({
+            type:Actions.SET_SCORES,
+            records:records.slice(0)
+        });
+    },
+
+    /**
      * Toggles the Main Scoreboard visibility.
      */
     async ToggleScoreboard() {
@@ -922,6 +1055,33 @@ const CaptureController = {
     async ToggleSponsorView() {
         CaptureController.getStore().dispatch({
             type:Actions.TOGGLE_SPONSOR_VIEW
+        });
+    },
+
+    /**
+     * Toggles the Sponsor View class.
+     */
+    async ToggleStandings() {
+        CaptureController.getStore().dispatch({
+            type:Actions.TOGGLE_STANDINGS
+        });
+    },
+
+    /**
+     * Toggles the Sponsor View class.
+     */
+    async ToggleSchedule() {
+        CaptureController.getStore().dispatch({
+            type:Actions.TOGGLE_SCHEDULE
+        });
+    },
+
+    /**
+     * Toggles the Sponsor View class.
+     */
+    async ToggleScores() {
+        CaptureController.getStore().dispatch({
+            type:Actions.TOGGLE_SCORES
         });
     },
 

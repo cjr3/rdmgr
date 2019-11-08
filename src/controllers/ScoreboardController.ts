@@ -82,6 +82,11 @@ export interface SScoreboardTeam {
      * Logo for score banner
      */
     ScoreboardThumbnail:string;
+    /**
+     * Full-screen slide
+     */
+    Slide:string|undefined;
+    Photo:string|undefined;
 }
 
 export interface SScoreboardState {
@@ -261,7 +266,9 @@ export const InitState:SScoreboardState = {
         Color:"#990000",
         Name:"Team A",
         Thumbnail:"default/TeamA.jpg",
-        ScoreboardThumbnail:"default/TeamAScoreboard.png"
+        ScoreboardThumbnail:"default/TeamAScoreboard.png",
+        Slide:"",
+        Photo:""
     },
     TeamB:{
         Side:'B',
@@ -274,7 +281,9 @@ export const InitState:SScoreboardState = {
         Color:"#000099",
         Name:"Team B",
         Thumbnail:"default/TeamB.jpg",
-        ScoreboardThumbnail:"default/TeamBScoreboard.png"
+        ScoreboardThumbnail:"default/TeamBScoreboard.png",
+        Slide:"",
+        Photo:""
     },
     StartGameHour:0,
     StartGameMinute:0,
@@ -713,7 +722,8 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
                         Name:action.nextTeam.Name,
                         Color:action.nextTeam.Color,
                         Thumbnail:action.nextTeam.Thumbnail,
-                        ScoreboardThumbnail:action.nextTeam.ScoreboardThumbnail
+                        ScoreboardThumbnail:action.nextTeam.ScoreboardThumbnail,
+                        Slide:action.nextTeam.Slide
                     })
                 });
             } else {
@@ -723,7 +733,8 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
                         Name:action.nextTeam.Name,
                         Color:action.nextTeam.Color,
                         Thumbnail:action.nextTeam.Thumbnail,
-                        ScoreboardThumbnail:action.nextTeam.ScoreboardThumbnail
+                        ScoreboardThumbnail:action.nextTeam.ScoreboardThumbnail,
+                        Slide:action.nextTeam.Slide
                     })
                 });
             }
@@ -736,14 +747,18 @@ function ControllerReducer(state:SScoreboardState = InitState, action) {
                     Name:action.TeamA.Name,
                     Color:action.TeamA.Color,
                     Thumbnail:action.TeamA.Thumbnail,
-                    ScoreboardThumbnail:action.TeamA.ScoreboardThumbnail
+                    ScoreboardThumbnail:action.TeamA.ScoreboardThumbnail,
+                    Slide:action.TeamA.Slide,
+                    Photo:action.TeamA.Photo
                 }),
                 TeamB:Object.assign({}, state.TeamB, {
                     ID:action.TeamB.RecordID,
                     Name:action.TeamB.Name,
                     Color:action.TeamB.Color,
                     Thumbnail:action.TeamB.Thumbnail,
-                    ScoreboardThumbnail:action.TeamB.ScoreboardThumbnail
+                    ScoreboardThumbnail:action.TeamB.ScoreboardThumbnail,
+                    Slide:action.TeamB.Slide,
+                    Photo:action.TeamB.Photo
                 }),
             });
 
@@ -1577,7 +1592,9 @@ const ScoreboardController = {
                     Status: parseInt(config.TeamA.Status),
                     Color:(teamA) ? teamA.Color : '#333333',
                     Thumbnail:(teamA) ? teamA.Thumbnail : '',
-                    ScoreboardThumbnail:(teamA) ? teamA.ScoreboardThumbnail : ''
+                    ScoreboardThumbnail:(teamA) ? teamA.ScoreboardThumbnail : '',
+                    Slide:(teamA) ? teamA.Slide : '',
+                    Photo:(teamA) ? teamA.Photo : '',
                 },
                 TeamB:{
                     ID: parseInt(config.TeamB.ID),
@@ -1590,7 +1607,9 @@ const ScoreboardController = {
                     Status: parseInt(config.TeamB.Status),
                     Color:(teamB) ? teamB.Color : '#333333',
                     Thumbnail:(teamB) ? teamB.Thumbnail : '',
-                    ScoreboardThumbnail:(teamB) ? teamB.ScoreboardThumbnail : ''
+                    ScoreboardThumbnail:(teamB) ? teamB.ScoreboardThumbnail : '',
+                    Slide:(teamB) ? teamB.Slide : '',
+                    Photo:(teamB) ? teamB.Photo : '',
                 },
                 PhaseID: parseInt( config.PhaseID ),
                 PhaseName: config.PhaseName,

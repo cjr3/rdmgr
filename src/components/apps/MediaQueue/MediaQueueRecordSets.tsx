@@ -4,11 +4,12 @@ import { Unsubscribe } from 'redux';
 import cnames from 'classnames';
 import DataController from 'controllers/DataController';
 import CaptureController from 'controllers/CaptureController';
-import { IconButton, IconFlag, IconCheck, IconX, IconSlideshow, IconShown, IconHidden, ToggleButton, IconMovie, IconTicket } from 'components/Elements';
+import { IconButton, IconFlag, IconCheck, IconX, IconSlideshow, IconShown, IconHidden, ToggleButton, IconMovie, IconTicket, IconTeam, Button, IconPlus } from 'components/Elements';
 import RecordList from 'components/data/RecordList';
 import MediaQueueController from 'controllers/MediaQueueController';
 import Raffle from 'components/apps/Raffle/Raffle';
 import SponsorController from 'controllers/SponsorController';
+import ScoreboardController from 'controllers/ScoreboardController';
 
 export default class MediaQueueRecordSets extends React.PureComponent<any, {
     RecordType:string;
@@ -38,6 +39,11 @@ export default class MediaQueueRecordSets extends React.PureComponent<any, {
                     shown={(this.state.RecordType == vars.RecordType.Video)}
                     onClick={() => {this.setState({RecordType:vars.RecordType.Video})}}
                     />
+
+                <RosterRecords
+                    shown={(this.state.RecordType == vars.RecordType.Roster)}
+                    onClick={() => {this.setState({RecordType:vars.RecordType.Roster})}}
+                />
                 
                 <div className={cnames('recordset', {shown:(this.state.RecordType === vars.RecordType.RafflePrize)})}>
                     <IconButton
@@ -344,5 +350,107 @@ class VideoRecords extends React.PureComponent<{
                 />
             </div>
         )
+    }
+}
+
+class RosterRecords extends React.PureComponent<{
+    shown:boolean;
+    onClick:Function;
+}, {
+    TeamA:{
+        RecordID:number;
+        Name:string;
+        Color:string;
+        Thumbnail:string;
+    },
+    TeamB:{
+        RecordID:number;
+        Name:string;
+        Color:string;
+        Thumbnail:string;
+    }
+}> {
+    
+    readonly state = {
+        TeamA:{
+            RecordID:ScoreboardController.getState().TeamA.ID,
+            Name:ScoreboardController.getState().TeamA.Name,
+            Color:ScoreboardController.getState().TeamA.Color,
+            Thumbnail:ScoreboardController.getState().TeamA.Thumbnail
+        },
+        TeamB:{
+            RecordID:ScoreboardController.getState().TeamB.ID,
+            Name:ScoreboardController.getState().TeamB.Name,
+            Color:ScoreboardController.getState().TeamB.Color,
+            Thumbnail:ScoreboardController.getState().TeamB.Thumbnail
+        },
+    }
+    protected remoteScoreboard:Unsubscribe|null = null;
+
+    constructor(props) {
+        super(props);
+        this.updateScoreboard = this.updateScoreboard.bind(this);
+    }
+    
+    protected async updateScoreboard() {
+        let cstate = ScoreboardController.getState();
+        let teama = {
+            RecordID:cstate.TeamA.ID,
+            Name:cstate.TeamA.Name,
+            Color:cstate.TeamA.Color,
+            Thumbnail:cstate.TeamA.Thumbnail
+        };
+        let teamb = {
+            RecordID:cstate.TeamB.ID,
+            Name:cstate.TeamB.Name,
+            Color:cstate.TeamB.Color,
+            Thumbnail:cstate.TeamB.Thumbnail
+        };
+
+        if(!DataController.compare(teama, this.state.TeamA))
+            this.setState({TeamA:teama});
+
+        if(!DataController.compare(teamb, this.state.TeamB))
+            this.setState({TeamB:teamb});
+    }
+    
+    componentDidMount() {
+        this.remoteScoreboard = ScoreboardController.subscribe(this.updateScoreboard);
+    }
+
+    componentWillUnmount() {
+        if(this.remoteScoreboard !== null)
+            this.remoteScoreboard();
+    }
+    
+    render() {
+        return (
+            <div className={cnames('recordset', {shown:this.props.shown})}>
+                <IconButton
+                    src={IconTeam}
+                    onClick={this.props.onClick}
+                    >Roster / Intros</IconButton>
+                <IconButton
+                    src={IconPlus}
+                    onClick={() => {
+                        MediaQueueController.Add(Object.assign({
+                            RecordType:vars.RecordType.Roster,
+                            Side:'A'
+                        }, this.state.TeamA));
+                    }}
+                    style={{backgroundColor:this.state.TeamA.Color}}
+                >{this.state.TeamA.Name}</IconButton>
+                <IconButton
+                    src={IconPlus}
+                    onClick={() => {
+                        MediaQueueController.Add(Object.assign({
+                            RecordType:vars.RecordType.Roster,
+                            Side:'B'
+                        }, this.state.TeamB));
+                    }}
+                    style={{backgroundColor:this.state.TeamB.Color}}
+                >{this.state.TeamB.Name}</IconButton>
+            </div>
+        );
     }
 }

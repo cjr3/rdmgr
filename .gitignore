@@ -1,6 +1,8 @@
 node_modules
 dist
 build
+test
+src/App.test.js
 .env
 jsconfig.json.old
 public/tools/peer.js

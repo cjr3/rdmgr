@@ -25,6 +25,7 @@ import MediaQueueAnthem from './MediaQueueAnthem';
 import MediaQueueRecordSets from './MediaQueueRecordSets';
 import './css/MediaQueue.scss';
 import { Unsubscribe } from 'redux';
+import MediaQueueRoster from './MediaQueueRoster';
 
 /**
  * Component for media to be queued to the capture window,
@@ -76,6 +77,7 @@ export default class MediaQueue extends React.PureComponent<any, {
                     <MediaQueueVideo/>
                     <MediaQueueSlideshow/>
                     <MediaQueueAnthem/>
+                    <MediaQueueRoster/>
                 </div>
                 <MediaQueueRecordSets/>
             </Panel>
@@ -87,6 +89,7 @@ class MediaQueueButtons extends React.PureComponent<any, {
     VideoShown:boolean;
     SlideshowShown:boolean;
     AnthemShown:boolean;
+    RosterShown:boolean;
     Loop:boolean;
     Muted:boolean;
     Volume:number;
@@ -97,6 +100,7 @@ class MediaQueueButtons extends React.PureComponent<any, {
         VideoShown:CaptureController.getState().MainVideo.Shown,
         SlideshowShown:CaptureController.getState().MainSlideshow.Shown,
         AnthemShown:CaptureController.getState().NationalAnthem.Shown,
+        RosterShown:CaptureController.getState().Roster.Shown,
         Loop:MediaQueueController.getState().Loop,
         Index:MediaQueueController.getState().Index,
         Muted:VideoController.getState().Muted,
@@ -137,7 +141,8 @@ class MediaQueueButtons extends React.PureComponent<any, {
         this.setState({
             VideoShown:cstate.MainVideo.Shown,
             SlideshowShown:cstate.MainSlideshow.Shown,
-            AnthemShown:cstate.NationalAnthem.Shown
+            AnthemShown:cstate.NationalAnthem.Shown,
+            RosterShown:cstate.Roster.Shown
         });
     }
 
@@ -185,7 +190,11 @@ class MediaQueueButtons extends React.PureComponent<any, {
     render() {
         let shown:boolean = false;
 
-        if(this.state.AnthemShown || this.state.SlideshowShown || this.state.VideoShown) {
+        if(this.state.AnthemShown 
+            || this.state.SlideshowShown 
+            || this.state.VideoShown
+            || this.state.RosterShown
+            ) {
             shown = true;
         }
 

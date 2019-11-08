@@ -1,0 +1,61 @@
+@import 'src/css/vars.scss';
+
+.capture-scores {
+    position: absolute;
+    left: 24px;
+    bottom: 24px;
+    margin: auto;
+    width: 300px;
+    transition: transform 150ms ease-in-out 500ms, opacity 150ms ease-in-out 500ms;
+    transform: rotateY(90deg);
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-end;
+    align-content: center;
+    font-family: $base-font-display;
+    z-index: 1;
+    opacity: 0;
+    
+    &.shown {
+        transform: rotateY(0deg);
+        opacity: 1;
+    }
+
+    > h1 {
+        margin: 0;
+        font-size: 24px;
+        background-color: $navy;
+        border-bottom: solid 3px $gold;
+        padding: 8px;
+        text-align: center;
+    }
+
+    .matches {
+        background-color: $black-t;
+        .match {
+            display: flex;
+            flex-flow: row wrap;
+            overflow: hidden;
+            text-align: center;
+            font-size: 24px;
+            border-bottom: dotted 1px #666;
+            padding: 4px 4px 2px 4px;
+            > .team {
+                flex: 1 0 50%;
+                display: flex;
+                flex-flow: row wrap;
+                > .logo {
+                    flex: 0 0 50px;
+                    > img {
+                        max-height: 50px;
+                        max-width: 50px;
+                    }
+                }
+                > .score {
+                    flex: 1;
+                    line-height: 40px;
+                }
+            }
+        }
+    }
+}

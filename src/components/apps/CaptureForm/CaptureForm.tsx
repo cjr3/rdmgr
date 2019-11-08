@@ -31,6 +31,9 @@ import ScorekeeperController from 'controllers/ScorekeeperController';
 import RaffleController from 'controllers/RaffleController';
 
 import './css/CaptureForm.scss';
+import CaptureStandings from './CaptureStandings';
+import CaptureSchedule from './CaptureSchedule';
+import CaptureScores from './CaptureScores';
 
 /**
  * Main component for the capture window.
@@ -209,7 +212,13 @@ export default class CaptureForm extends React.Component {
                     TeamB={this.state.TeamB}
                     />
                 <CaptureAnnouncers shown={this.state.Announcers.Shown}/>
-                <CaptureRoster shown={this.state.Roster.Shown}/>
+                <CaptureRoster 
+                    shown={this.state.Roster.Shown}
+                    className={this.state.Roster.className}
+                    />
+                <CaptureStandings/>
+                <CaptureSchedule/>
+                <CaptureScores/>
             </div>
         );
     }

@@ -23,6 +23,7 @@ declare global {
         client?:any;
         remoteApps:{
             SB:boolean;
+            ROS:boolean;
         },
     }
 }
@@ -33,7 +34,8 @@ DataController.Init().then(() => {
             DataController.loadFiles().then(() => {
                 DataController.RegisterSaveStates();
                 window.remoteApps = {
-                    SB:false
+                    SB:false,
+                    ROS:false
                 };
                 window.ReactEntryPoint = ReactDOM.render(<ViewManager />, document.getElementById('root'));
                 serviceWorker.unregister();

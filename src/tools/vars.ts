@@ -50,7 +50,11 @@ const vars = {
         /**
          * RecordType code for Announcers
          */
-        Announcer:"ANC"
+        Announcer:"ANC",
+        /**
+         * RecordType code for Rosters
+         */
+        Roster:"ROS"
     },
 
     //Clocks

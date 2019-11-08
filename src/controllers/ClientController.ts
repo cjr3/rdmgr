@@ -325,6 +325,7 @@ function ClientReducer(state:SClientController = InitState, action) {
                 let applications:any = Object.assign({}, state.PeerApplications);
                 let c:number = 0;
                 window.remoteApps.SB = false;
+                window.remoteApps.ROS = false;
                 for(let key in applications) {
                     applications[key] = null;
                 }
@@ -339,6 +340,8 @@ function ClientReducer(state:SClientController = InitState, action) {
                                 applications[code] = peer.ID;
                                 if(code === ScoreboardController.Key)
                                     window.remoteApps.SB = true;
+                                else if(code === RosterController.Key)
+                                    window.remoteApps.ROS = true;
                             }
                         });
                     }

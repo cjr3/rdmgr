@@ -26,7 +26,8 @@ import {
     IconStreamOff,
     IconOnline,
     IconStreamOn,
-    IconSkate
+    IconSkate,
+    IconQueue
 } from 'components/Elements';
 import Panel from 'components/Panel';
 
@@ -40,9 +41,11 @@ import {
     VideoEditor,
     PeerEditor
 } from './RecordEditor';
-import ConfirmFormScoreboard from './ConfigFormScoreboard';
-import DataController from 'controllers/DataController';
+import ConfigFormScoreboard from './ConfigFormScoreboard';
+import ConfirgFormAPI from './ConfigFormAPI';
 import RecordList from './RecordList';
+
+import DataController from 'controllers/DataController';
 
 import './css/ConfigForm.scss';
 
@@ -153,8 +156,8 @@ export default class ConfigForm extends React.PureComponent<any, {
         let sections:Array<React.ReactElement> = [];
         let forms:Array<React.ReactElement> = [];
 
-        //scoreboard settings
         sections.push(
+            //scoreboard settings
             <ConfigFormSection
                 active={this.state.currentApp === 'SB_CONFIG'}
                 icon={IconSkate}
@@ -163,8 +166,19 @@ export default class ConfigForm extends React.PureComponent<any, {
                 onClick={() => {
                     this.setState(() => {
                         return {currentApp:'SB_CONFIG'}
-                    }, () => {
-                        //this.forceUpdate();
+                    });
+                }}
+                >
+            </ConfigFormSection>,
+            //API Settings
+            <ConfigFormSection
+                active={this.state.currentApp === 'API_CONFIG'}
+                icon={IconQueue}
+                key={'API_CONFIG'}
+                name={"API"}
+                onClick={() => {
+                    this.setState(() => {
+                        return {currentApp:'API_CONFIG'}
                     });
                 }}
                 >
@@ -172,9 +186,19 @@ export default class ConfigForm extends React.PureComponent<any, {
         );
 
         forms.push(
-            <ConfirmFormScoreboard
-                key={'SB+_CONFIG'}
+            <ConfigFormScoreboard
+                key={'SB_CONFIG'}
                 opened={(this.state.currentApp === 'SB_CONFIG')}
+                onClose={this.props.onClose}
+                onCancel={this.onCancelRecord}
+                onSubmit={this.onCancelRecord}
+            />
+        );
+
+        forms.push(
+            <ConfirgFormAPI
+                key={'API_CONFIG'}
+                opened={(this.state.currentApp === 'API_CONFIG')}
                 onClose={this.props.onClose}
                 onCancel={this.onCancelRecord}
                 onSubmit={this.onCancelRecord}

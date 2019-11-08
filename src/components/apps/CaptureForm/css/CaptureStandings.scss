@@ -1,0 +1,69 @@
+@import 'src/css/vars.scss';
+
+.capture-standings {
+    position: absolute;
+    left: 24px;
+    bottom: 24px;
+    margin: auto;
+    width: 300px;
+    transition: transform 150ms ease-in-out 500ms, opacity 150ms ease-in-out 500ms;
+    transform: rotateY(90deg);
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-end;
+    align-content: center;
+    font-family: $base-font-display;
+    z-index: 1;
+    opacity: 0;
+
+    &.shown {
+        transform: rotateY(0deg);
+        opacity: 1;
+    }
+
+    > h1 {
+        margin: 0;
+        font-size: 24px;
+        background-color: $navy;
+        border-bottom: solid 3px $gold;
+        padding: 8px;
+        text-align: center;
+    }
+
+    .standings {
+        background-color: $black-t;
+        .team {
+            display: flex;
+            flex-flow: row wrap;
+            overflow: hidden;
+            text-align: center;
+            font-size: 24px;
+            border-bottom: dotted 1px #666;
+            padding: 4px 4px 2px 4px;
+            > .logo {
+                flex: 1;
+                > img {
+                    max-height: 50px;
+                    max-width: 50px;
+                }
+            }
+
+            > .standing {
+                font-weight: bold;
+                flex: 0 0 50px;
+                line-height: 40px;
+            }
+
+            > .win-loss {
+                flex: 0 0 100px;
+                line-height: 40px;
+            }
+
+            > .points
+            {
+                flex: 0 0 50px;
+                line-height: 40px;
+            }
+        }
+    }
+}
