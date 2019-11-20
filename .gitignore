@@ -6,3 +6,4 @@ src/App.test.js
 .env
 jsconfig.json.old
 public/tools/peer.js
+src/images/icons/Thumbs.db
