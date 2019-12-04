@@ -1,6 +1,6 @@
 ## Roller Derby Manager (RDMGR)
 
-RDMGR is a peer-to-peer A/V production application for Roller Derby. It's written in React, Typescript, and Node.js, packaged under Electron. 
+RDMGR is a peer-to-peer A/V production application for Roller Derby. It's written in React, Typescript, and Node.js, packaged under Electron. You can support the development of this software at [patreon.com/rollerderby](https://patreon.com/rollerderby) .
 
 ## Features
 - Scoreboard
