@@ -98,7 +98,7 @@ export default class JamCounter extends React.PureComponent<any, {
      */
     render() {
         return (
-            <tr>
+            <tr className="jam-counter">
                 <td>JAM #</td>
                 <td>
                     <Counter

@@ -31,6 +31,9 @@ const USER_PATH = os.homedir();
 //const TEMP_PATH = os.tmpdir();
 //console.log(TEMP_PATH);
 
+//API authorization token - usually JWT
+let API_AUTH_TOKEN:string = '';
+
 /**
  * Defines user configuration
  */
@@ -59,35 +62,44 @@ export interface IDataControllerState {
     /**
      * Main configuration
      */
-    Config:IConfig,
-    Skaters:any,
-    Teams:any,
-    Penalties:any,
-    Videos:any,
-    Phases:Array<PhaseRecord>,
-    Slideshows:any,
-    ScoreboardConfig:any,
-    ScorekeeperConfig:any,
-    BroadcasterConfig:any,
-    PenaltyTrackerConfig:any,
-    Peers:any,
-    Anthems:any,
-    ServerConfig:any,
-    Jams:Array<any>,
+    Config:IConfig;
+    Skaters:any;
+    Teams:any;
+    Penalties:any;
+    Videos:any;
+    Phases:Array<PhaseRecord>;
+    Slideshows:any;
+    ScoreboardConfig:any;
+    ScorekeeperConfig:any;
+    BroadcasterConfig:any;
+    PenaltyTrackerConfig:any;
+    Peers:any;
+    Anthems:any;
+    ServerConfig:any;
+    Jams:Array<any>;
     MiscRecords:{
         NationalAnthemSinger:{
-            Name:string,
-            Biography:string,
-            Background:string
-        },
+            Name:string;
+            Biography:string;
+            Background:string;
+        };
         Raffle:{
-            Background:string
-        },
+            Background:string;
+        };
         Announcers:{
-            Announcer1:string,
-            Announcer2:string
-        },
-        NextBoutFlier:string
+            Announcer1:string;
+            Announcer2:string;
+        };
+        NextBoutFlier:string;
+        APIEndpoint:string;
+        APIAuthEndpoint:string;
+        APIValidateEndpoint:string;
+    },
+    APIRecords:{
+        Matches:Array<any>;
+        Standings:Array<any>;
+        Scores:Array<any>;
+        Schedule:Array<any>;
     }
 }
 
@@ -125,7 +137,16 @@ const InitState:IDataControllerState = {
             Announcer1:"Old Greg",
             Announcer2:"ChingadDora"
         },
-        NextBoutFlier:""
+        NextBoutFlier:"",
+        APIEndpoint:"",
+        APIAuthEndpoint:"",
+        APIValidateEndpoint:""
+    },
+    APIRecords:{
+        Matches:[],
+        Standings:[],
+        Scores:[],
+        Schedule:[]
     }
 };
 
@@ -173,6 +194,22 @@ export enum Actions {
      * Sets the peer records
      */
     SET_PEERS,
+    /**
+     * Sets the standings records from the API endpoint
+     */
+    SET_API_STANDINGS,
+    /**
+     * Sets the schedule records from the API endpoint
+     */
+    SET_API_SCHEDULE,
+    /**
+     * Sets the scores records from the API endpoint
+     */
+    SET_API_SCORES,
+    /**
+     * Sets the match records from the API endpoint
+     */
+    SET_API_MATCHES,
     /**
      * Sets the user configuration
      */
@@ -463,9 +500,33 @@ function DataReducer(state = InitState, action) {
                 MiscRecords:Object.assign({}, state.MiscRecords, action.values)
             });
 
+        //Set match records from the API Endpoint
+        case Actions.SET_API_MATCHES : {
+            if(action.records && action.records.map) {
+                return Object.assign({}, state, {
+                    APIRecords:Object.assign({}, state.APIRecords, {
+                        Matches:action.records
+                    })
+                });
+            }
+            return state;
+        }
+        break;
+
         default :
             return state;
     }
+}
+
+function getAPIHeaders() {
+    let headers = {
+        "Content-Type":"application/json"
+    };
+
+    if(API_AUTH_TOKEN)
+        headers["Authorization"] = "Bearer " + API_AUTH_TOKEN;
+
+    return headers;
 }
 
 const DataStore = createStore(DataReducer);
@@ -1825,6 +1886,33 @@ const DataController = {
     },
 
     /**
+     * 
+     * @source https://stackoverflow.com/a/48218209
+     * @param objs 
+     */
+    merge(...objs) {
+        let res:any = {};
+        const isObject = obj => obj && typeof obj === 'object';
+
+        objs.reduce((prev, current) => {
+            Object.keys(current).forEach(key => {
+                const pVal = prev[key];
+                const cVal = current[key];
+                if(Array.isArray(pVal) && Array.isArray(cVal)) {
+                    prev[key] = cVal.slice();
+                }
+                else if(isObject(pVal) && isObject(cVal)) {
+                    prev[key] = DataController.merge(pVal, cVal);
+                } else {
+                    prev[key] = cVal;
+                }
+            })
+        });
+
+        return res;
+    },
+
+    /**
      * Moves an element within an array
      * @param {Array} arr The array to change
      * @param {Number} a The index of the element to move adjacent to
@@ -2071,6 +2159,10 @@ const DataController = {
         });
     },
 
+    async loadAPIRecords() : Promise<any> {
+        //let response:boolean|string = await DataController.loadAPIToken();
+    },
+
     /**
      * Loads standings records from an API endpoint
      */
@@ -2128,7 +2220,7 @@ const DataController = {
             if(!url) {
                 rej("Can't get data: API endpoint is not set.");
             } else {
-                fetch(url + "/scores").then((response) => {
+                fetch(url + "/scores", {cache:"no-cache"}).then((response) => {
                     return response.json();
                 }).then((data) => {
                     if(data && data.records) {
@@ -2139,6 +2231,170 @@ const DataController = {
                 }).catch(() => {
                     rej("Failed to load Scores.");
                 });
+            }
+        });
+    },
+
+    async validateAPIToken() : Promise<boolean> {
+        return new Promise((res, rej) => {
+            let url:string = DataController.GetMiscRecord('APIValidateEndpoint');
+            if(!url) {
+                rej("Can't authorize token: API Validation Endpoint is not set.");
+            } else if(!API_AUTH_TOKEN) {
+                rej("Can't authorize token: Please get a token from the API Authorization Endpoint.");
+            } else {
+                fetch(url, {
+                    method:"POST",
+                    mode:"cors",
+                    cache:"no-cache",
+                    headers:getAPIHeaders()
+                }).then(() => {
+                    
+                }).catch(() => {
+
+                })
+            }
+        });
+    },
+
+    /**
+     * Sends a request to the APIAuthEndpoint to get an authorization token.
+     * @param username username
+     * @param password password 
+     */
+    async loadAPIToken(username:string, password:string) : Promise<boolean|string> {
+        return new Promise((res, rej) => {
+            let url:string = DataController.GetMiscRecord('APIAuthEndpoint');
+            if(!url) {
+                rej("Can't send authorization: API Authorization Endpoint is not set.");
+            } else {
+                fetch(url, {
+                    method:"POST",
+                    mode:"cors",
+                    cache:"no-cache",
+                    headers:{
+                        "Content-Type":"application/json"
+                    },
+                    redirect:"manual",
+                    body:JSON.stringify({
+                        username:username,
+                        password:password
+                    })
+                }).then((response) => {
+                    return response.json();
+                }).then((data) => {
+                    if(data && data.token) {
+                        API_AUTH_TOKEN = data.token;
+                        res();
+                    } else {
+                        rej("Login failed. Username/password may be incorrect.");
+                    }
+                }).catch(() => {
+                    rej("Failed to login.");
+                })
+            }
+        });
+    },
+
+    /**
+     * Loads bout records from the API endpoint
+     */
+    async loadAPIBouts() : Promise<any> {
+        return new Promise((res, rej) => {
+            let url:string = DataController.GetMiscRecord('APIEndpoint');
+            if(!url) {
+                rej("Can't get data: API endpoint is not set.");
+            } else {
+                fetch(url + "/bouts").then((response) => {
+                    return response.json();
+                }).then((data) => {
+                    if(data && data.records) {
+                        res(data.records);
+                    } else {
+                        res([]);
+                    }
+                }).catch(() => {
+                    rej("Failed to load Scores.");
+                });
+            }
+        });
+    },
+
+    async loadAPIMatches(update:boolean = false, options:any = null) : Promise<any> {
+        return new Promise((res, rej) => {
+            let url:string = DataController.GetMiscRecord('APIEndpoint');
+            if(!url) {
+                rej("Can't get data: API endpoint is not set.");
+            } else {
+
+                url += "/matches";
+                let params = new Array<any>();
+                if(options) {
+                    if(options.sdate)
+                        params.push("sdate=" + options.sdate);
+                    if(options.edate)
+                        params.push("edate=" + options.edate);
+                    if(options.order) {
+                        params.push("order=" + options.order);
+                        params.push("orderby=meta_value");
+                    }
+                }
+
+                if(params.length >= 1) {
+                    url += "?" + params.join('&');
+                }
+
+                fetch(url).then((response) => {
+                    return response.json();
+                }).then((data) => {
+                    if(data && data.records) {
+                        if(update === true) {
+                            DataController.getStore().dispatch({
+                                type:Actions.SET_API_MATCHES,
+                                records:data.records
+                            });
+                        }
+                        res(data.records);
+                    } else {
+                        res([]);
+                    }
+                }).catch(() => {
+                    rej(`Failed to load scores from ${url}/matches`);
+                });
+            }
+        });
+    },
+
+    async putMatchScores(id:number, scoreA:number, scoreB:number) : Promise<any> {
+        return new Promise((res, rej) => {
+            if(!API_AUTH_TOKEN) {
+                UIController.SetDisplay("APILogin", true);
+                rej("Please login to post scores.");
+                return;
+            }
+            let url:string = DataController.GetMiscRecord('APIEndpoint');
+            if(!url) {
+                rej("Can't get data: API endpoint is not set.");
+            } else {
+                fetch(url + "/match/" + id, {
+                    method:"PUT",
+                    mode:"cors",
+                    cache:"no-cache",
+                    headers:getAPIHeaders(),
+                    redirect:"manual",
+                    body:JSON.stringify({
+                        TeamA:{
+                            Score:scoreA
+                        },
+                        TeamB:{
+                            Score:scoreB
+                        }
+                    })
+                }).then(() => {
+                    res();
+                }).catch(() => {
+                    rej("Failed to post scores!");
+                })
             }
         });
     },

@@ -85,60 +85,85 @@
             background-color: #006600;
         }
     }
-}
 
-.panel.opened {
-    transform: scale(1,1);
-}
-
-.panel.popup {
-    left: initial;
-    top: initial;
-    right: 0;
-    bottom: 0;
-    min-width: 100px;
-    min-height: 48px;
-    max-width: 50%;
-    max-height: 80%;
-    transition: transform 75ms linear;
-    transform-origin: 50% 100%;
-    z-index: 9;
-    > .content {
-        border-right: solid 1px $purple-light;
-        border-left: solid 1px $purple-light;
-        top: 36px;
-        height: calc(100% - 36px);
+    > .error-message {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 36px;
+        margin: auto;
+        z-index: 99;
+        min-height: 36px;
+        transition: transform 150ms;
+        transform: translateX(-100%);
+        display: block;
     }
 
-    > .title {
-        height: 36px;
-    }
-}
-
-.panel.has-buttons {
-    > .content {
-        height: calc(100% - 48px);
+    &.has-error {
+        > .error-message {
+            transform: translateX(0);
+        }
     }
 
-    > .buttons {
-        height: 48px;
+    &.opened {
+        transform: scale(1,1);
     }
-}
 
-.panel.buttons-only {
-    width: 150px;
-    height: 100%;
-    > .title,
-    > .content
-    {
-        display: none;
-    }
-    > .buttons {
-        height: auto;
-        flex-flow: column wrap;
-        > button {
+    &.has-buttons {
+        > .content {
+            height: calc(100% - 48px);
+        }
+    
+        > .buttons {
             height: 48px;
-            width: 100%;
+        }
+    }
+
+    &.popup {
+        left: initial;
+        top: initial;
+        right: 0;
+        bottom: 0;
+        min-width: 100px;
+        min-height: 48px;
+        max-width: 50%;
+        max-height: 80%;
+        transition: transform 75ms linear;
+        transform-origin: 50% 100%;
+        z-index: 9;
+        > .content {
+            border-right: solid 1px $purple-light;
+            border-left: solid 1px $purple-light;
+            top: 36px;
+            height: calc(100% - 36px);
+        }
+    
+        > .title {
+            height: 36px;
+        }
+
+        &.has-buttons {
+            > .content {
+                height: calc(100% - 84px);
+            }
+        }
+    }
+
+    &.buttons-only {
+        width: 150px;
+        height: 100%;
+        > .title,
+        > .content
+        {
+            display: none;
+        }
+        > .buttons {
+            height: auto;
+            flex-flow: column wrap;
+            > button {
+                height: 48px;
+                width: 100%;
+            }
         }
     }
 }

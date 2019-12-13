@@ -1,4 +1,5 @@
 import {createStore, Unsubscribe, Store} from 'redux';
+import DataController from './DataController';
 
 export enum Actions {
     SET_STATE,
@@ -7,65 +8,75 @@ export enum Actions {
     SET_DISPLAY
 }
 
+interface UIControllerDisplayState {
+    Panel:string;
+    Shown:boolean;
+    Application:boolean;
+}
+
 interface UIControllerState {
-    Scoreboard:{
-        Panel:string;
-        Shown:boolean;
-    },
-    Chat:{
-        Shown:boolean;
-    },
-    Scorekeeper:{
-        Shown:boolean;
-    },
-    PenaltyTracker:{
-        Shown:boolean;
-    },
-    Roster:{
-        Shown:boolean;
-    },
-    CaptureControl:{
-        Shown:boolean;
-    },
-    MediaQueue:{
-        Shown:boolean;
-    },
-    DisplayControls:{
-        Shown:boolean;
-    },
-    ConfigPanel:{
-        Shown:boolean;
-    }
+    Scoreboard:UIControllerDisplayState;
+    Chat:UIControllerDisplayState;
+    Scorekeeper:UIControllerDisplayState;
+    PenaltyTracker:UIControllerDisplayState;
+    Roster:UIControllerDisplayState;
+    CaptureControl:UIControllerDisplayState;
+    MediaQueue:UIControllerDisplayState;
+    DisplayControls:UIControllerDisplayState;
+    ConfigPanel:UIControllerDisplayState;
+    APILogin:UIControllerDisplayState;
 };
 
 export const InitState:UIControllerState = {
     Scoreboard:{
         Panel:'',
-        Shown:false
+        Shown:false,
+        Application:true
     },
     Chat:{
-        Shown:false
+        Panel:'',
+        Shown:false,
+        Application:false
     },
     Scorekeeper:{
-        Shown:false
+        Panel:'',
+        Shown:false,
+        Application:true
     },
     PenaltyTracker:{
-        Shown:false
+        Panel:'',
+        Shown:false,
+        Application:true
     },
     Roster:{
-        Shown:false
+        Panel:'',
+        Shown:false,
+        Application:true
     },
     CaptureControl:{
-        Shown:false
+        Panel:'',
+        Shown:false,
+        Application:true
     },
     MediaQueue:{
-        Shown:false
+        Panel:'',
+        Shown:false,
+        Application:true
     },
     DisplayControls:{
-        Shown:false
+        Panel:'',
+        Shown:false,
+        Application:false
     },
     ConfigPanel:{
-        Shown:false
+        Panel:'',
+        Shown:false,
+        Application:false
+    },
+    APILogin:{
+        Panel:'',
+        Shown:false,
+        Application:false
     }
 }
 
@@ -73,7 +84,8 @@ function UIControllerReducer(state:UIControllerState = InitState, action:any) {
     try {
         switch(action.type) {
             case Actions.SET_STATE : {
-                return Object.assign({}, state, action.values);
+                //return Object.assign({}, state, action.values);
+                return DataController.merge({}, state, action.values);
             }
             break;
 
@@ -109,15 +121,17 @@ function UIControllerReducer(state:UIControllerState = InitState, action:any) {
             case Actions.SET_DISPLAY : {
                 if(!state[action.index])
                     return state;
-
+   
                 let obj = Object.assign({}, state);
-                for(let key in obj) {
-                    obj[key].Shown = false;
+
+                //hide other Applications if this is an Application
+                if(state[action.index].Application) {
+                    for(let key in obj) {
+                        if(obj[key].Application)
+                            obj[key].Shown = false;
+                    }
                 }
-
                 obj[action.index].Shown = action.shown;
-
-                console.log(action.index);
 
                 return obj;
             }

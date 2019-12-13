@@ -44,6 +44,10 @@ export interface PCaptureControlPanel {
      * Child elements to put inside the panel
      */
     children?:any;
+    /**
+     * Additional class name
+     */
+    className?:any;
 }
 
 /**
@@ -52,7 +56,7 @@ export interface PCaptureControlPanel {
  */
 export default function CaptureControlPanel(props:PCaptureControlPanel) {
     return (
-        <div className={cnames('config-panel', {shown:props.active})}>
+        <div className={cnames('config-panel', {shown:props.active}, props.className)}>
             <div className="buttons">
                 <IconButton
                     src={props.icon}

@@ -6,11 +6,29 @@ import DataController from 'controllers/DataController';
 import {
     IconX,
     IconCheck,
-    IconButton
+    IconButton,
+    Button,
+    IconSave,
+    IconLoop,
+    Icon,
+    IconTeam,
+    IconStopwatch
 } from 'components/Elements';
 import { PhaseRecord } from 'tools/vars';
 import Counter from 'components/tools/Counter';
 import MediaPreview from 'components/tools/MediaPreview';
+
+import JamCounter from 'components/apps/Scoreboard/JamCounter';
+import GameClock from 'components/apps/Scoreboard/GameClock';
+import JamClock from 'components/apps/Scoreboard/JamClock';
+import TeamPicker from 'components/apps/Scoreboard/TeamPicker';
+import PhaseSelection from '../Scoreboard/PhaseSelection';
+import JamReset from '../Scoreboard/JamReset';
+import {default as ScoreboardControllerPanel} from 'components/controllers/Scoreboard';
+import UIController from 'controllers/UIController';
+import {ScoreboardJamControls} from 'components/apps/Scoreboard/Scoreboard';
+import Scores from 'components/data/api/Scores';
+import Panel from 'components/Panel';
 
 /**
  * Component for configuring the score banner.
@@ -48,6 +66,10 @@ export default class CaptureControlScorebanner extends React.PureComponent<PCapt
      * Background for the scorebanner
      */
     BackgroundImage?:string;
+    /**
+     * Currently opened panel
+     */
+    panel:string;
 }> {
 
     readonly state = {
@@ -58,7 +80,8 @@ export default class CaptureControlScorebanner extends React.PureComponent<PCapt
         Phases:DataController.getPhases(),
         Shown:CaptureController.getState().Scorebanner.Shown,
         ClocksShown:CaptureController.getState().Scorebanner.ClocksShown,
-        BackgroundImage:CaptureController.getState().Scorebanner.BackgroundImage
+        BackgroundImage:CaptureController.getState().Scorebanner.BackgroundImage,
+        panel:''
     }
 
     /**
@@ -81,6 +104,9 @@ export default class CaptureControlScorebanner extends React.PureComponent<PCapt
      */
     protected remoteData:Function|null = null;
 
+    protected StartDate:string|undefined;
+    protected EndDate:string|undefined;
+
     /**
      * 
      * @param props PCaptureControlPanel
@@ -98,6 +124,21 @@ export default class CaptureControlScorebanner extends React.PureComponent<PCapt
         this.onClickDecreaseTeamAScore = this.onClickDecreaseTeamAScore.bind(this);
         this.onClickIncreaseTeamBScore = this.onClickIncreaseTeamBScore.bind(this);
         this.onClickDecreaseTeamBScore = this.onClickDecreaseTeamBScore.bind(this);
+
+        let edate:Date = new Date();
+        let sdate:Date = new Date();
+        sdate.setDate(sdate.getDate() - 30);
+        this.StartDate = sdate.toLocaleDateString("en", {
+            year:"numeric",
+            month:"2-digit",
+            day:"numeric"
+        });
+
+        this.EndDate = edate.toLocaleDateString("en", {
+            year:"numeric",
+            month:"2-digit",
+            day:"numeric"
+        });
     }
 
     /**
@@ -247,6 +288,47 @@ export default class CaptureControlScorebanner extends React.PureComponent<PCapt
 
         let bg:string = (this.state.BackgroundImage !== undefined) ? this.state.BackgroundImage : '';
 
+        let buttons:Array<React.ReactElement> = new Array<React.ReactElement>(
+            <IconButton
+                src={(this.state.panel === 'scores') ? IconX : IconSave}
+                active={this.state.panel === 'scores'}
+                key="btn-scores"
+                title="Scores"
+                onClick={() => {
+                    this.setState((state) => {
+                        if(state.panel == 'scores')
+                            return {panel:''};
+                        return {panel:'scores'}
+                    });
+                }}/>,
+            <IconButton
+                src={(this.state.panel === 'teams') ? IconX : IconTeam} 
+                active={this.state.panel === 'teams'}
+                key="btn-teams"
+                title="Teams"
+                onClick={() => {
+                    this.setState((state) => {
+                        if(state.panel == 'teams')
+                            return {panel:''};
+                        return {panel:'teams'}
+                    });
+                }}
+                />,
+            <IconButton
+                src={(this.state.panel === 'phase') ? IconX : IconStopwatch}
+                active={this.state.panel === 'phase'}
+                key="btn-phase"
+                title="Quarter"
+                onClick={() => {
+                    this.setState((state) => {
+                        if(state.panel == 'phase')
+                            return {panel:''};
+                        return {panel:'phase'}
+                    });
+                }}
+                />
+        );
+
         return (
             <CaptureControlPanel
                 active={this.props.active}
@@ -254,7 +336,10 @@ export default class CaptureControlScorebanner extends React.PureComponent<PCapt
                 icon={this.props.icon}
                 toggle={this.props.toggle}
                 shown={this.state.Shown}
-                onClick={this.props.onClick}>
+                onClick={this.props.onClick}
+                className="scorebanner"
+                buttons={buttons}
+                >
                     <div className="stack-panel s2">
                         <div 
                             className="team-score"
@@ -284,31 +369,128 @@ export default class CaptureControlScorebanner extends React.PureComponent<PCapt
                             onClick={CaptureController.ToggleScorebannerClocks}
                         >Hide Clocks</IconButton>
                     </div>
-                    <div className="phase-selection">
-                        <select size={1}
-                            value={this.state.PhaseIndex}
-                            onChange={this.onChangePhase}
-                            >{phases}</select>
-                    </div>
-                    <div className="stack-panel s2">
-                        <div className="jam-counter">JAM #</div>
-                        <div className="jam-counter">
-                            <Counter
-                                min={0}
-                                max={99}
-                                padding={2}
-                                onAdd={this.onAddJam}
-                                onSubtract={this.onSubtractJam}
-                                ref={this.JamCounterItem}
-                            />
-                        </div>
-                    </div>
-                    <MediaPreview
-                        src={bg}
-                        onChange={this.onChangeBackground}
-                        title="Background"
+                    <table cellPadding={5}>
+                        <tbody>
+                            <tr>
+                                <td>Jam Clock</td>
+                                <td><JamClock onClick={ScoreboardController.ToggleJamClock}/></td>
+                            </tr>
+                            <tr>
+                                <td>Game Clock</td>
+                                <td><GameClock/></td>
+                            </tr>
+                            <JamCounter/>
+                            <tr>
+                                <td>Background</td>
+                                <td>
+                                    <MediaPreview
+                                        src={bg}
+                                        onChange={this.onChangeBackground}
+                                        title="Background"
+                                    />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <ScoreboardJamControls/>
+
+                    <PhaseSelection opened={(this.state.panel === 'phase')}
+                        onClose={() => {this.setState({panel:''})}}
+                        onSelect={() => {this.setState({panel:''})}}
+                        className="phase-selection"
+                        />
+                    <TeamPicker opened={(this.state.panel === 'teams')}
+                        onClose={() => {this.setState({panel:''})}}
+                        onSubmit={() => {this.setState({panel:''})}}
+                        />
+                    <JamReset
+                        opened={(this.state.panel === 'jamreset')}
+                        onClose={() => {this.setState({panel:''})}}
+                        />
+                    <ScoreboardControllerPanel
+                        opened={(this.state.panel === 'edit')}
+                        onClose={() => {this.setState({panel:''})}}
+                    />
+                    <ScoresPanel
+                        opened={(this.state.panel === 'scores')}
+                        onClose={() => {this.setState({panel:''})}}
+                        className="scores-panel"
+                        sdate={this.StartDate}
+                        edate={this.EndDate}
                     />
                 </CaptureControlPanel>
         )
+    }
+}
+
+class ScoresPanel extends React.PureComponent<{
+    opened:boolean;
+    sdate?:string;
+    edate?:string;
+    onClose?:Function;
+    className?:string;
+}, {
+    Matches:Array<any>;
+    error?:string;
+    title:string;
+}> {
+
+    readonly state = {
+        Matches:[],
+        error:'',
+        title:"Post Scores"
+    }
+
+    constructor(props) {
+        super(props);
+        this.load = this.load.bind(this);
+    }
+
+    protected load() {
+        this.setState({error:'',title:"Loading...",Matches:[]});
+        DataController.loadAPIMatches(false, {
+            sdate:this.props.sdate,
+            edate:this.props.edate,
+            order:"DESC"
+        }).then((matches) => {
+            this.setState({Matches:matches, error:'',title:"Post Scores"});
+        }).catch((msg:string) => {
+            this.setState({error:msg});
+        });
+    }
+
+    componentDidMount() {
+        this.load();
+    }
+
+    render() {
+
+        const buttons:Array<React.ReactElement> = new Array<React.ReactElement>(
+            <IconButton
+                src={IconLoop}
+                onClick={this.load}
+                key="btn-load"
+                >
+                Load
+            </IconButton>
+        );
+
+        return (
+            <Panel
+                popup={true}
+                className="scores-panel"
+                opened={this.props.opened}
+                buttons={buttons}
+                error={this.state.error}
+                title={this.state.title}
+                {...this.props}
+                >
+                <p>
+                    Scores that are more than 30 days old cannot be changed.
+                </p>
+                <Scores Matches={this.state.Matches}/>
+            </Panel>
+        );
     }
 }

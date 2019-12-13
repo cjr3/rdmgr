@@ -162,7 +162,7 @@ class ScoreboardStatusControls extends React.PureComponent<any, {
  * - Jam Button
  * - Game Clock Button
  */
-class ScoreboardJamControls extends React.PureComponent<any, {
+export class ScoreboardJamControls extends React.PureComponent<any, {
     JamState:number;
     GameState:number;
 }> {

@@ -8,10 +8,11 @@ interface PPanel {
     popup?:boolean;
     buttons?:Array<React.ReactElement>;
     className?:string;
-    contentName?:string,
-    scrollTop?:number,
-    scrollBottom?:boolean,
-    title?:any,
+    contentName?:string;
+    scrollTop?:number;
+    scrollBottom?:boolean;
+    title?:any;
+    error?:string;
     onOpen?:Function;
     onClose?:Function;
 }

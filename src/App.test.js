@@ -1,26 +1,24 @@
-import ClockController from 'controllers/ClockController';
-import vars from 'tools/vars';
+import DataController, {Actions} from 'controllers/DataController';
 
-let start = 60;
-test('Check clock controller', async done => {
-  let jamclock = new ClockController({
-    hour:0,
-    minute:0,
-    second:start,
-    max:start,
-    status:vars.Clock.Status.Ready,
-    onDone:() => {
-      done();
-    },
-    onTick:(hour, minute, second, tenths) => {
-      expect(second).toBeLessThan(start)
-      start = second;
-    },
-    onTenths:(hour, minute, second, tenths) => {
-      //expect(tenths).toBe(9);
-      //done();
+
+test('Get Matches', async done => {
+
+  DataController.getStore().dispatch({
+    type:Actions.SET_MISC_RECORDS,
+    values:{
+      APIEndpoint:"http://azddseason15.com/wp-json/rdmgr/v1"
     }
   });
 
-  jamclock.run();
-}, (start * 1000) + 2000);
+  DataController.loadAPIMatches().then((records) => {
+    console.log(records);
+    done();
+  }).catch(response => {
+    console.log(response);
+    done();
+  })
+
+  //console.log(DataController.GetMiscRecord('APIEndpoint'));
+
+  //done();
+});

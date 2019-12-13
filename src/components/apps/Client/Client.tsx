@@ -67,6 +67,8 @@ import {PeerRecordRequest} from 'components/data/PeerEditor';
 import vars from 'tools/vars';
 import keycodes from 'tools/keycodes';
 import { Unsubscribe } from 'redux';
+import Login from 'components/data/api/Login';
+import UIController from 'controllers/UIController';
 
 
 /**
@@ -169,6 +171,7 @@ function ClientApplications() {
             <Scorekeeper/>
             <Roster/>
             <MediaQueue/>
+            <ClientLogin/>
         </Panel>
     );
 }
@@ -390,6 +393,60 @@ class ClientFileBrowser extends React.PureComponent<any, {
                     //this.setState({FileBrowserShown:false});
                 }}
             />
+        )
+    }
+}
+
+class ClientLogin extends React.PureComponent<any, {
+    opened:boolean;
+}> {
+    readonly state = {
+        opened:UIController.getState().APILogin.Shown
+    };
+
+    protected remoteUI:Unsubscribe|undefined;
+
+    constructor(props) {
+        super(props);
+        this.updateUI = this.updateUI.bind(this);
+        this.onLoginClose = this.onLoginClose.bind(this);
+        this.onLoginError = this.onLoginError.bind(this);
+        this.onLoginSuccess = this.onLoginSuccess.bind(this);
+    }
+
+    protected updateUI() {
+        this.setState({opened:UIController.getState().APILogin.Shown});
+    }
+
+    protected onLoginClose() {
+        UIController.SetDisplay('APILogin', false);
+    }
+
+    protected onLoginSuccess() {
+        UIController.SetDisplay('APILogin', false);
+    }
+
+    protected onLoginError(error:any) {
+        UIController.SetDisplay('APILogin', true);
+    }
+
+    componentDidMount() {
+        this.remoteUI = UIController.subscribe(this.updateUI);
+    }
+
+    componentWillUnmount() {
+        if(this.remoteUI)
+            this.remoteUI();
+    }
+
+    render() {
+        return (
+            <Login
+                opened={this.state.opened}
+                onClose={this.onLoginClose}
+                onError={this.onLoginError}
+                onSuccess={this.onLoginSuccess}
+                />
         )
     }
 }
