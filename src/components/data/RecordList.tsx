@@ -1,8 +1,8 @@
 import React from 'react';
 import cnames from 'classnames';
 import {Button} from 'components/Elements';
-import DataController from 'controllers/DataController';
 import './css/RecordList.scss';
+import { Compare } from 'controllers/functions';
 
 export default class RecordList extends React.Component<{
     records:Array<any>;
@@ -33,13 +33,15 @@ export default class RecordList extends React.Component<{
      * @returns {Boolean} true to update, false to not update
      */
     shouldComponentUpdate(nextProps, nextState) {
-        if(!DataController.compare(nextState, this.state))
+        if(!Compare(nextState, this.state))
             return true;
         if(nextProps.keywords !== this.props.keywords)
             return true;
         if(nextProps.recordid !== this.props.recordid)
             return true;
-        if(DataController.compare(nextProps.records, this.props.records)) {
+        if(nextProps.className != this.props.className)
+            return true;
+        if(Compare(nextProps.records, this.props.records)) {
             return false;
         }
         return true;

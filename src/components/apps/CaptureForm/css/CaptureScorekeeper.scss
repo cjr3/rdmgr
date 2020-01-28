@@ -16,8 +16,9 @@
         right: 32px;
         display: flex;
         flex-flow: row wrap;
-        opacity: 0;
-        transition: opacity 150ms linear;
+        transform: rotateX(90deg) scaleX(1.5);
+        transform-origin: 50% 50%;
+        transition: transform 150ms ease-in-out;
 
         > .skater {
             position: relative;
@@ -25,10 +26,14 @@
             width: 80px;
             height: 80px;
             overflow: visible;
-            transform-origin: 0 0;
-            transform: rotateX(90deg);
-            transition: all 150ms linear;
+            transform-origin: 50% 50%;
+            transform: translateX(200px);
+            transition: all 150ms ease-in-out;
             opacity: 0;
+            &.shown {
+                transform: translateX(0px);
+                opacity: 1;
+            }
 
             > img {
                 height: 100%;
@@ -48,20 +53,12 @@
                 text-shadow: 2px 2px 2px rgba(0,0,0,0.5);
             }
         }
-
-        > .skater.shown {
-            transform: rotateX(0deg);
-            opacity: 1;
-            > label {
-                display: block;
-            }
-        }
     }
-}
 
-.capture-scorekeeper.shown {
-    .jammers {
-        opacity:1;
+    &.shown {
+        .jammers {
+            transform: rotateX(0deg) scaleX(1);
+        }
     }
 }
 

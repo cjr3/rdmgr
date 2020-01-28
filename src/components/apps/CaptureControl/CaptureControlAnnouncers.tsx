@@ -1,7 +1,7 @@
 import React from 'react';
-import CaptureController from 'controllers/CaptureController';
 import CaptureControlPanel, {PCaptureControlPanel} from './CaptureControlPanel';
 import {IconX, IconCheck, IconButton} from 'components/Elements';
+import AnnouncerCaptureController from 'controllers/capture/Announcer';
 
 /**
  * Component for configuring announcers.
@@ -29,10 +29,10 @@ export default class CaptureControlAnnouncers extends React.PureComponent<PCaptu
      * State
      */
     readonly state = {
-        Announcer1:CaptureController.getState().Announcers.Announcer1,
-        Announcer2:CaptureController.getState().Announcers.Announcer2,
-        Duration:CaptureController.getState().Announcers.Duration/1000,
-        Shown:CaptureController.getState().Announcers.Shown
+        Announcer1:AnnouncerCaptureController.GetState().Announcer1,
+        Announcer2:AnnouncerCaptureController.GetState().Announcer2,
+        Duration:AnnouncerCaptureController.GetState().Duration/1000,
+        Shown:AnnouncerCaptureController.GetState().Shown
     }
 
     /**
@@ -53,9 +53,9 @@ export default class CaptureControlAnnouncers extends React.PureComponent<PCaptu
     /**
      * Updates the state to match the capture controller.
      */
-    updateCapture() {
+    protected updateCapture() {
         this.setState({
-            Shown:CaptureController.getState().Announcers.Shown
+            Shown:AnnouncerCaptureController.GetState().Shown
         });
     }
 
@@ -63,8 +63,8 @@ export default class CaptureControlAnnouncers extends React.PureComponent<PCaptu
      * Triggered when the user changes the name of the first announcer.
      * @param {Event} ev 
      */
-    onChangeAnnouncer1(ev) {
-        var value = ev.target.value;
+    protected onChangeAnnouncer1(ev: React.ChangeEvent<HTMLInputElement>) {
+        var value = ev.currentTarget.value;
         this.setState(() => {return {Announcer1:value}});
     }
 
@@ -72,27 +72,27 @@ export default class CaptureControlAnnouncers extends React.PureComponent<PCaptu
      * Triggered when the user changes the name of the second announcer
      * @param {Event} ev 
      */
-    onChangeAnnouncer2(ev) {
-        var value = ev.target.value;
+    protected onChangeAnnouncer2(ev: React.ChangeEvent<HTMLInputElement>) {
+        var value = ev.currentTarget.value;
         this.setState(() => {return {Announcer2:value}});
     }
 
     /**
      * Triggered when the user clicks the submit button.
      */
-    onClickSubmit() {
-        CaptureController.SetAnnouncers(this.state.Announcer1, this.state.Announcer2, this.state.Duration * 1000);
+    protected onClickSubmit() {
+        AnnouncerCaptureController.SetAnnouncers(this.state.Announcer1, this.state.Announcer2, this.state.Duration * 1000);
     }
 
     /**
      * Triggered when the user clicks the cancel button.
      */
-    onClickCancel() {
+    protected onClickCancel() {
         this.setState({
-            Announcer1:CaptureController.getState().Announcers.Announcer1,
-            Announcer2:CaptureController.getState().Announcers.Announcer2,
-            Duration:CaptureController.getState().Announcers.Duration/1000,
-            Shown:CaptureController.getState().Announcers.Shown
+            Announcer1:AnnouncerCaptureController.GetState().Announcer1,
+            Announcer2:AnnouncerCaptureController.GetState().Announcer2,
+            Duration:AnnouncerCaptureController.GetState().Duration/1000,
+            Shown:AnnouncerCaptureController.GetState().Shown
         });
     }
 
@@ -100,8 +100,8 @@ export default class CaptureControlAnnouncers extends React.PureComponent<PCaptu
      * Triggered when the user changes the duration for the announcer
      * @param {Event} ev 
      */
-    onChangeDuration(ev) {
-        var duration = parseInt(ev.target.value);
+    protected onChangeDuration(ev: React.ChangeEvent<HTMLInputElement>) {
+        var duration = parseInt(ev.currentTarget.value);
         this.setState(() => {
             return {Duration:duration}
         });
@@ -111,7 +111,7 @@ export default class CaptureControlAnnouncers extends React.PureComponent<PCaptu
      * Start listeners
      */
     componentDidMount() {
-        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
+        this.remoteCapture = AnnouncerCaptureController.Subscribe(this.updateCapture);
     }
 
     /**
@@ -129,9 +129,9 @@ export default class CaptureControlAnnouncers extends React.PureComponent<PCaptu
     render() {
         //submit button is active if values don't match the state
         var active = (
-            this.state.Announcer1 !== CaptureController.getState().Announcers.Announcer1 ||
-            this.state.Announcer2 !== CaptureController.getState().Announcers.Announcer2 ||
-            (this.state.Duration*1000) !== CaptureController.getState().Announcers.Duration
+            this.state.Announcer1 !== AnnouncerCaptureController.GetState().Announcer1 ||
+            this.state.Announcer2 !== AnnouncerCaptureController.GetState().Announcer2 ||
+            (this.state.Duration*1000) !== AnnouncerCaptureController.GetState().Duration
         );
 
         var buttons = [

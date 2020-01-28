@@ -1,7 +1,8 @@
 import React from 'react'
 import Counter from 'components/tools/Counter'
-import {Icon, IconSubtract} from 'components/Elements'
-import ScoreboardController, {SScoreboardTeam} from 'controllers/ScoreboardController'
+import {Icon, IconSubtract, IconPlus} from 'components/Elements'
+import ScoreboardController from 'controllers/ScoreboardController'
+import { Unsubscribe } from 'redux'
 
 /**
  * Component for team challenges.
@@ -19,8 +20,8 @@ export default class Challenges extends React.PureComponent<{
     max:number;
 }> {
     readonly state = {
-        amount:ScoreboardController.getState().MaxChallenges,
-        max:ScoreboardController.getState().MaxChallenges
+        amount:ScoreboardController.GetState().MaxChallenges,
+        max:ScoreboardController.GetState().MaxChallenges
     }
 
     /**
@@ -31,7 +32,7 @@ export default class Challenges extends React.PureComponent<{
     /**
      * Listener for scoreboard controller
      */
-    protected remoteScoreboard:Function|null = null;
+    protected remoteScoreboard?:Unsubscribe;
 
     constructor(props) {
         super(props);
@@ -44,9 +45,9 @@ export default class Challenges extends React.PureComponent<{
     /**
      * Updates the state to match the controller.
      */
-    updateState() {
+    protected updateState() {
         this.setState(() => {
-            var cstate = ScoreboardController.getState();
+            var cstate = ScoreboardController.GetState();
             var amount = cstate.TeamA.Challenges;
             if(this.props.side === 'B')
                 amount = cstate.TeamB.Challenges;
@@ -64,7 +65,7 @@ export default class Challenges extends React.PureComponent<{
      * Triggered when the counter changes.
      * @param {Number} amount 
      */
-    onChange(amount) {
+    protected onChange(amount) {
         this.setState(() => {
             return {amount:amount}
         }, () => {
@@ -76,7 +77,7 @@ export default class Challenges extends React.PureComponent<{
      * Triggered when the user adds challenges
      * @param amount number
      */
-    onAdd(amount:number) {
+    protected onAdd(amount:number) {
         ScoreboardController.IncreaseTeamChallenges(this.props.side, amount);
     }
 
@@ -84,7 +85,7 @@ export default class Challenges extends React.PureComponent<{
      * Triggered when the user subtracts challenges
      * @param amount number
      */
-    onSubtract(amount:number) {
+    protected onSubtract(amount:number) {
         ScoreboardController.DecreaseTeamChallenges(this.props.side, amount);
     }
 
@@ -94,7 +95,7 @@ export default class Challenges extends React.PureComponent<{
      * - Set value on counter
      */
     componentDidMount() {
-        this.remoteScoreboard = ScoreboardController.subscribe(this.updateState);
+        this.remoteScoreboard = ScoreboardController.Subscribe(this.updateState);
 
         if(this.CounterItem !== null && this.CounterItem.current !== null) {
             this.CounterItem.current.set(this.state.amount, false);
@@ -105,7 +106,7 @@ export default class Challenges extends React.PureComponent<{
      * Close listeners
      */
     componentWillUnmount() {
-        if(this.remoteScoreboard !== null)
+        if(this.remoteScoreboard)
             this.remoteScoreboard();
     }
 
@@ -127,14 +128,17 @@ export default class Challenges extends React.PureComponent<{
                         ref={this.CounterItem}
                     />
                 </div>
-                <div>
+                <div className="icons">
+                    <Icon 
+                        src={IconPlus}
+                        onClick={() => {
+                            ScoreboardController.IncreaseTeamChallenges(this.props.side, 1);
+                        }}
+                        />
                     <Icon 
                         src={IconSubtract}
                         onClick={() => {
                             ScoreboardController.DecreaseTeamChallenges(this.props.side, 1);
-                        }}
-                        onContextMenu={() => {
-                            ScoreboardController.IncreaseTeamChallenges(this.props.side, 1)
                         }}
                         />
                 </div>

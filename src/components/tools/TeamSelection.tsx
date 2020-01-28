@@ -1,7 +1,8 @@
-import React from 'react'
-import cnames from 'classnames'
-import DataController from 'controllers/DataController';
+import React from 'react';
+import cnames from 'classnames';
 import {TeamRecord} from 'tools/vars';
+import TeamsController from 'controllers/TeamsController';
+import { AddMediaPath } from 'controllers/functions';
 
 /**
  * Component for selecting a single team
@@ -30,7 +31,7 @@ export default class TeamSelection extends React.PureComponent<{
     index:number;
 }> {
     readonly state = {
-        teams:DataController.getTeams(true),
+        teams:TeamsController.Get(),
         index:0
     }
 
@@ -54,25 +55,14 @@ export default class TeamSelection extends React.PureComponent<{
     /**
      * Updates the state to match the controller.
      */
-    updateData() {
-        var teams = DataController.getTeams(true);
-        if(!DataController.compare(teams, this.state.teams)) {
-            this.setState((state) => {
-                var index = state.index;
-                if(index >= teams.length)
-                    index = 0;
-                return {
-                    index:index,
-                    teams:teams.slice()
-                };
-            })
-        }
+    protected updateData() {
+        this.setState({teams:TeamsController.Get()});
     }
 
     /**
      * Shows the next team.
      */
-    next() {
+    protected next() {
         var index = this.state.index + 1;
         if(index >= this.state.teams.length)
             index = 0;
@@ -87,7 +77,7 @@ export default class TeamSelection extends React.PureComponent<{
     /**
      * Shows the previous team.
      */
-    prev() {
+    protected prev() {
         var index = this.state.index - 1;
         if(index < 0)
             index = this.state.teams.length - 1;
@@ -103,7 +93,7 @@ export default class TeamSelection extends React.PureComponent<{
      * Triggered when the user changes the selection of the drop-down menu.
      * @param {Event} ev 
      */
-    onChangeSelect(ev) {
+    protected onChangeSelect(ev: React.ChangeEvent<HTMLSelectElement>) {
         var value = parseInt( ev.target.value );
         this.setState(() => {
             return {index:value};
@@ -145,7 +135,7 @@ export default class TeamSelection extends React.PureComponent<{
     componentDidMount() {
         if(this.props.teamid)
             this.updateTeam();
-        this.remoteData = DataController.subscribe(this.updateData);
+        this.remoteData = TeamsController.Subscribe(this.updateData);
     }
 
     /**
@@ -169,7 +159,7 @@ export default class TeamSelection extends React.PureComponent<{
             );
     
             if(i === this.state.index) {
-                src = DataController.mpath(team.Thumbnail);
+                src = AddMediaPath(team.Thumbnail);
             }
             i++;
         });

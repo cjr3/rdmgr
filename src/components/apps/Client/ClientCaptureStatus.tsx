@@ -1,12 +1,18 @@
 import React from 'react';
 import vars from 'tools/vars';
 import CaptureStatus, {SCaptureStatus} from 'tools/CaptureStatus';
+import {SCaptureControllerState} from 'controllers/capture/vars';
 import { ProgressBar } from 'components/Elements';
-import CaptureController, {CaptureStateBase, CaptureStateSponsor} from 'controllers/CaptureController';
-import DataController from 'controllers/DataController';
+import {SCaptureController} from 'controllers/CaptureController';
 import SlideshowController, {SSlideshowController} from 'controllers/SlideshowController';
 import SponsorController, {SSponsorController} from 'controllers/SponsorController';
 import VideoController, {SVideoController} from 'controllers/VideoController';
+import VideoCaptureController from 'controllers/capture/Video';
+import SponsorCaptureController from 'controllers/capture/Sponsor';
+import SlideshowCaptureController from 'controllers/capture/Slideshow';
+import { Unsubscribe } from 'redux';
+import { Basename } from 'controllers/functions.io';
+import { SecondsToTime } from 'controllers/functions';
 
 /**
  * Component for displaying the status of the capture window.
@@ -31,99 +37,83 @@ export default class ClientCaptureStatus extends React.PureComponent<any, {
     /**
      * CaptureController's Video State
      */
-    CaptureVideo:CaptureStateBase;
+    CaptureVideo:SCaptureControllerState;
     /**
      * CaptureController's Sponsor State
      */
-    CaptureSponsor:CaptureStateSponsor;
+    CaptureSponsor:SCaptureControllerState;
     /**
      * CaptureController's slideshow state
      */
-    CaptureSlideshow:CaptureStateBase;
+    CaptureSlideshow:SCaptureControllerState;
 }> {
     readonly state = {
         State:CaptureStatus.getState(),
-        Video:VideoController.getState(),
-        Slideshow:SlideshowController.getState(),
-        Sponsors:SponsorController.getState(),
-        CaptureVideo:CaptureController.getState().MainVideo,
-        CaptureSponsor:CaptureController.getState().SponsorSlideshow,
-        CaptureSlideshow:CaptureController.getState().MainSlideshow
+        Video:VideoController.GetState(),
+        Slideshow:SlideshowController.GetState(),
+        Sponsors:SponsorController.GetState(),
+        CaptureVideo:VideoCaptureController.GetState(),
+        CaptureSponsor:SponsorCaptureController.GetState(),
+        CaptureSlideshow:SlideshowCaptureController.GetState()
     }
 
-    /**
-     * CaptureStatus listener
-     */
-    protected remoteStatus:Function|null = null;
-    /**
-     * CaptureController listener
-     */
-    protected remoteCapture:Function|null = null;
-    /**
-     * SlideshowController listener
-     */
-    protected remoteSlideshow:Function|null = null;
-    /**
-     * SponsorController listener
-     */
-    protected remoteSponsor:Function|null = null;
-    /**
-     * VideoController listener
-     */
-    protected remoteVideo:Function|null = null;
+    protected remoteStatus?:Unsubscribe;
+    protected remoteSlideshow?:Unsubscribe;
+    protected remoteSponsor?:Unsubscribe;
+    protected remoteVideo?:Unsubscribe;
+    protected remoteSlideshowCapture?:Unsubscribe;
+    protected remoteSponsorCapture?:Unsubscribe;
+    protected remoteVideoCapture?:Unsubscribe;
 
     constructor(props) {
         super(props);
         this.updateStatus = this.updateStatus.bind(this);
-        this.updateCapture = this.updateCapture.bind(this);
         this.updateSlideshow = this.updateSlideshow.bind(this);
         this.updateSponsor = this.updateSponsor.bind(this);
         this.updateVideo = this.updateVideo.bind(this);
-
-        this.remoteStatus = CaptureStatus.subscribe(this.updateStatus);
-        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
-        this.remoteSlideshow = SlideshowController.subscribe(this.updateSlideshow);
-        this.remoteSponsor = SponsorController.subscribe(this.updateSponsor);
-        this.remoteVideo = VideoController.subscribe(this.updateVideo);
+        this.updateSlideshowCapture = this.updateSlideshowCapture.bind(this);
+        this.updateSponsorCapture = this.updateSponsorCapture.bind(this);
+        this.updateVideoCapture = this.updateVideoCapture.bind(this);
     }
 
     /**
      * Updates the capture status to match the capture status response.
      */
-    updateStatus() {
+    protected updateStatus() {
         this.setState({State:CaptureStatus.getState()});
     }
-
-    /**
-     * 
-     */
-    updateCapture() {
-        this.setState({
-            CaptureVideo:CaptureController.getState().MainVideo,
-            CaptureSlideshow:CaptureController.getState().MainSlideshow,
-            CaptureSponsor:CaptureController.getState().SponsorSlideshow
-        });
+    
+    protected updateSlideshowCapture() {
+        this.setState({CaptureSlideshow:SlideshowCaptureController.GetState()});
     }
 
     /**
      * Updates the slideshow status
      */
-    updateSlideshow() {
-        this.setState({Slideshow:SlideshowController.getState()});
+    protected updateSlideshow() {
+        this.setState({Slideshow:SlideshowController.GetState()});
+    }
+
+    protected updateSponsorCapture() {
+        this.setState({CaptureSponsor:SponsorCaptureController.GetState()});
     }
 
     /**
      * Updates the state to match the sponsor controller.
      */
-    updateSponsor() {
-        this.setState({Sponsors:SponsorController.getState()});
+    protected updateSponsor() {
+        this.setState({Sponsors:SponsorController.GetState()});
+    }
+
+    protected updateVideoCapture() {
+        this.setState({CaptureVideo:VideoCaptureController.GetState()});
     }
 
     /**
      * Updates the state to match the video controller.
      */
-    updateVideo() {
-        this.setState({Video:VideoController.getState()});
+    protected updateVideo() {
+        this.setState({Video:VideoController.GetState()});
     }
 
     /**
@@ -131,26 +121,32 @@ export default class ClientCaptureStatus extends React.PureComponent<any, {
      */
     componentDidMount() {
         this.remoteStatus = CaptureStatus.subscribe(this.updateStatus);
-        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
-        this.remoteSlideshow = SlideshowController.subscribe(this.updateSlideshow);
-        this.remoteSponsor = SponsorController.subscribe(this.updateSponsor);
-        this.remoteVideo = VideoController.subscribe(this.updateVideo);
+        this.remoteSlideshow = SlideshowController.Subscribe(this.updateSlideshow);
+        this.remoteSponsor = SponsorController.Subscribe(this.updateSponsor);
+        this.remoteVideo = VideoController.Subscribe(this.updateVideo);
+        this.remoteSlideshowCapture = SlideshowCaptureController.Subscribe(this.updateSlideshowCapture);
+        this.remoteSponsorCapture = SponsorCaptureController.Subscribe(this.updateSponsorCapture);
+        this.remoteVideoCapture = VideoCaptureController.Subscribe(this.updateVideoCapture);
     }
 
     /**
      * Close listeners
      */
     componentWillUnmount() {
-        if(this.remoteStatus !== null)
+        if(this.remoteStatus)
             this.remoteStatus();
-        if(this.remoteCapture !== null)
-            this.remoteCapture();
-        if(this.remoteSlideshow !== null)
+        if(this.remoteSlideshow)
             this.remoteSlideshow();
-        if(this.remoteSponsor !== null)
+        if(this.remoteSponsor)
             this.remoteSponsor();
-        if(this.remoteVideo !== null)
+        if(this.remoteVideo)
             this.remoteVideo();
+        if(this.remoteSlideshowCapture)
+            this.remoteSlideshowCapture();
+        if(this.remoteSponsorCapture)
+            this.remoteSponsorCapture();
+        if(this.remoteVideoCapture)
+            this.remoteVideoCapture();
     }
 
     /**
@@ -168,9 +164,9 @@ export default class ClientCaptureStatus extends React.PureComponent<any, {
             max = this.state.State.Video.Duration;
             if(!Number.isNaN(progress) && !Number.isNaN(max)) {
                 let str = 
-                    DataController.basename(this.state.Video.Source) + " - " +
-                    DataController.secondsToTime(progress) + " / " + 
-                    DataController.secondsToTime(max);
+                    Basename(this.state.Video.Source) + " - " +
+                    SecondsToTime(progress) + " / " + 
+                    SecondsToTime(max);
                 children = <React.Fragment>
                     <div className="text">{str}</div>
                 </React.Fragment>
@@ -182,8 +178,9 @@ export default class ClientCaptureStatus extends React.PureComponent<any, {
             max = this.state.Slideshow.Slides.length;
             if(progress > max)
                 progress = max;
-            let str = this.state.Slideshow.Name + " - " + progress + " / " + max + " - " +
-                this.state.Slideshow.Slides[this.state.Slideshow.Index].Name;
+            let str = this.state.Slideshow.Name + " - " + progress + " / " + max;
+            if(this.state.Slideshow.Slides[this.state.Slideshow.Index])
+                str += - this.state.Slideshow.Slides[this.state.Slideshow.Index].Name;
             children = <React.Fragment>
                 <div className="text">{str}</div>
             </React.Fragment>

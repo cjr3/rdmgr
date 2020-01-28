@@ -36,8 +36,8 @@ export default class JamClock extends React.PureComponent<any, {
         showTenths:false,
         hour:0,
         minute:0,
-        second:ScoreboardController.getState().JamSecond,
-        maxseconds:ScoreboardController.getState().MaxJamSeconds
+        second:ScoreboardController.GetState().JamSecond,
+        maxseconds:ScoreboardController.GetState().MaxJamSeconds
     }
 
     /**
@@ -67,7 +67,7 @@ export default class JamClock extends React.PureComponent<any, {
      */
     protected async updateState() {
         this.setState(() => {
-            let cstate = ScoreboardController.getState();
+            let cstate = ScoreboardController.GetState();
             return {
                 status:cstate.JamState,
                 hour:cstate.JamHour,
@@ -101,7 +101,7 @@ export default class JamClock extends React.PureComponent<any, {
         });
     }
 
-    async onDone() {
+    protected async onDone() {
         ScoreboardController.ToggleJamClock();
     }
 
@@ -111,16 +111,17 @@ export default class JamClock extends React.PureComponent<any, {
      * @param {Number} minute 
      * @param {Number} second 
      */
-    async onTick(hour, minute, second) {
-        if(!window.remoteApps.SB)
+    protected async onTick(hour, minute, second, tenths) {
+        if(!window.remoteApps.SB) {
             ScoreboardController.SetJamTime(second, minute);
+        }
     }
 
     /**
      * Start listeners
      */
     componentDidMount() {
-        this.remoteScore = ScoreboardController.subscribe(this.updateState);
+        this.remoteScore = ScoreboardController.Subscribe(this.updateState);
         this.updateState();
     }
 

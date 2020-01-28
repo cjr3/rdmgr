@@ -45,8 +45,8 @@ export default class ClientDialog extends React.PureComponent<any, {
 
     protected async updateClient() {
         this.setState({
-            shown:ClientController.getState().DialogShown,
-            message:ClientController.getState().DialogMessage
+            shown:ClientController.GetState().DialogShown,
+            message:ClientController.GetState().DialogMessage
         });
     }
 

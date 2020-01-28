@@ -15,13 +15,34 @@
     z-index: 10;
     transition: transform 350ms linear, opacity 350ms linear;
     transform: translateY(-150px);
-    background-repeat: no-repeat;
-    background-position: top right;
-    background-size: contain;
 
-    .jamclock {
+    .coverblock,
+    .jamclock, 
+    .gameclock, 
+    .phase, 
+    .jam-counter,
+    .board-status,
+    .team {
         position: absolute;
         margin: auto;
+        z-index: 3;
+    }
+
+    .coverblock {
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 2;
+        background-color: inherit;
+        background-repeat: no-repeat;
+        background-position: top right;
+        background-size: contain;
+    }
+
+    .jamclock {
         font-size: 52px;
         top: 0px;
         left: 620px;
@@ -34,8 +55,6 @@
     }
 
     .gameclock {
-        position: absolute;
-        margin: auto;
         font-size: 48px;
         top: 0px;
         left: 500px;
@@ -44,8 +63,6 @@
     }
 
     .phase {
-        position: absolute;
-        margin: auto;
         font-size: 36px;
         line-height: 65px;
         top: 0px;
@@ -56,8 +73,6 @@
     }
 
     .jam-counter {
-        position: absolute;
-        margin: auto;
         font-size: 36px;
         line-height: 64px;
         top: 0px;
@@ -70,8 +85,6 @@
     }
 
     .board-status {
-        position: absolute;
-        margin: auto;
         left: 500px;
         width: 185px;
         height: 35px;
@@ -81,38 +94,34 @@
         border-radius: 0px 0px 16px 16px;
         transition: transform 150ms linear;
         transform-origin: 0% 0%;
-        transform: rotateY(90deg);
-    }
+        transform: translateY(-35px);
+        z-index: 1;
 
-    .board-status.shown {
-        transform: rotateY(0deg);
-    }
+        &.shown {
+            transform: rotateY(0deg);
+            transform: translateY(0px);
+        }
 
-    .board-status.timeout,
-    .board-status.review
-    {
-        background-image: linear-gradient($blood, rgba(0,0,0,0));
-    }
-
-    .board-status.injury {
-        background-image: linear-gradient($blue, rgba(0,0,0,0));
-    }
-
-    .board-status.upheld {
-        background-image: linear-gradient(#666666, rgba(0,0,0,0));
-    }
-
-    .board-status.overturned {
-        background-image: linear-gradient($green, rgba(0,0,0,0));
+        &.timeout,
+        &.review
+        {
+            background-image: linear-gradient($blood, rgba(0,0,0,0));
+        }
+        &.injury {
+            background-image: linear-gradient($blue, rgba(0,0,0,0));
+        }
+        &.upheld {
+            background-image: linear-gradient(#666666, rgba(0,0,0,0));
+        }
+        &.overturned {
+            background-image: linear-gradient($green, rgba(0,0,0,0));
+        }
     }
 
     .team {
-        position: absolute;
-        margin: auto;
         top: 0px;
         width: 225px;
         height: 65px;
-        z-index: 1;
 
         .team-top {
             position: absolute;
@@ -214,11 +223,11 @@
         }
     }
 
-    .team.team-a {
+    .team.team-A {
         left: 15px;
     }
 
-    .team.team-b {
+    .team.team-B {
         left: 255px;
     }
 
@@ -397,7 +406,7 @@
         }
     }
 
-    .team.team-a {
+    .team.team-A {
         transform-origin: 0 0;
         transform: scale(1.72);
         left: 0;
@@ -418,7 +427,7 @@
         }
     }
 
-    .team.team-b {
+    .team.team-B {
         transform-origin: 50% 0;
         transform: scale(1.72);
         left: initial;
@@ -465,7 +474,7 @@
         .board-status {
             top: -29px;
         }
-        .team.team-a {
+        .team.team-A {
             transform: translateY(31px) scale(1.25);
     
             .jampoints {
@@ -481,7 +490,7 @@
             }
         }
 
-        .team.team-b {
+        .team.team-B {
             transform: rotateY(180deg) translateY(31px) scale(1.25);
             right: 0;
             .score

@@ -1,15 +1,13 @@
 import React from 'react';
-import CameraController from 'controllers/CameraController';
 import CaptureStatus from 'tools/CaptureStatus';
-import CaptureController from 'controllers/CaptureController';
 import CaptureControlPanel, {PCaptureControlPanel} from './CaptureControlPanel';
 import {
     IconButton,
-    IconCheck,
-    IconLoop,
     IconStreamOff,
     IconStreamOn
 } from 'components/Elements';
+
+import {PeerCameraCaptureController} from 'controllers/capture/Camera';
 
 /**
  * Component for configuring the main camera.
@@ -33,8 +31,8 @@ export default class CaptureControlCameraPeer extends React.PureComponent<PCaptu
     Peers:any;
 }> {
     readonly state = {
-        PeerID:CaptureStatus.getState().PeerCamera.PeerID,
-        Shown:CaptureController.getState().PeerCamera.Shown,
+        PeerID:PeerCameraCaptureController.GetState().PeerID,
+        Shown:PeerCameraCaptureController.GetState().Shown,
         Connected:CaptureStatus.getState().PeerCamera.Connected,
         Peers:{}
     }
@@ -62,7 +60,7 @@ export default class CaptureControlCameraPeer extends React.PureComponent<PCaptu
     /**
      * Updates the state to match the camera controller.
      */
-    updateState() {
+    protected updateState() {
         this.setState(() => {
             return {
                 PeerID:CaptureStatus.getState().PeerCamera.PeerID,
@@ -74,16 +72,16 @@ export default class CaptureControlCameraPeer extends React.PureComponent<PCaptu
     /**
      * Updates the state to match the capture controller.
      */
-    updateCapture() {
+    protected updateCapture() {
         this.setState(() => {
-            return {Shown:CaptureController.getState().PeerCamera.Shown};
+            return {Shown:PeerCameraCaptureController.GetState().Shown};
         })
     }
 
     /**
      * Updates the state to match the server controller.
      */
-    updateLocalServer() {
+    protected updateLocalServer() {
         this.setState({
             Peers:Object.assign({}, window.LocalServer.getState().Peers)
         });
@@ -92,7 +90,7 @@ export default class CaptureControlCameraPeer extends React.PureComponent<PCaptu
     /**
      * Triggered when the user clicks the submit button.
      */
-    onClickSubmit(id) {
+    protected onClickSubmit(id) {
         if(this.state.PeerID === id && this.state.Connected == true)
             return;
         if(window && window.IPC) {
@@ -110,7 +108,7 @@ export default class CaptureControlCameraPeer extends React.PureComponent<PCaptu
      */
     componentDidMount() {
         this.remoteState = CaptureStatus.subscribe(this.updateState);
-        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
+        this.remoteCapture = PeerCameraCaptureController.Subscribe(this.updateCapture);
 
         let timer:number = window.setInterval(() => {
             if(window && window.LocalServer) {

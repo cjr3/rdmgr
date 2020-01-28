@@ -1,5 +1,4 @@
-import DataController, {Folders, Files} from 'controllers/DataController';
-import vars from 'tools/vars';
+import {Folders, Files} from 'controllers/vars';
 
 //default states
 import {InitState as ScoreboardState} from 'controllers/ScoreboardController';
@@ -15,6 +14,19 @@ import {InitState as SlideshowState} from 'controllers/SlideshowController';
 import {InitState as SponsorState} from 'controllers/SponsorController';
 import {InitState as VideoState} from 'controllers/VideoController';
 import {InitState as UIState} from 'controllers/UIController';
+import {InitState as CaptureAnthemState} from 'controllers/capture/Anthem';
+import {InitState as CaptureAnnouncerState} from 'controllers/capture/Announcer';
+import {InitState as CapturePenaltyState} from 'controllers/capture/Penalty';
+import {InitState as CaptureScheduleState} from 'controllers/capture/Schedule';
+import {InitBannerState as CaptureScorebannerState} from 'controllers/capture/Scoreboard';
+import {InitState as CaptureSponsorState} from 'controllers/capture/Sponsor';
+import {InitState as CaptureStandingsState} from 'controllers/capture/Standings';
+import {InitState as CaptureScoresState} from 'controllers/capture/Scores';
+
+//import for record helpers
+import PeersController from 'controllers/PeersController';
+import PhasesController from 'controllers/PhasesController';
+import TeamsController from 'controllers/TeamsController';
 
 export interface PathCheckResponse {
     path:string,
@@ -160,7 +172,7 @@ class Installation {
 
             //Peers
             case Files.Peers :
-                let peer = DataController.getNewRecord(vars.RecordType.Peer);
+                let peer = PeersController.NewRecord();
                 peer.PeerID = 'SCR01-RDMGR';
                 peer.Name = 'SCR01';
                 peer.ShortName = 'Scoreboard';
@@ -170,17 +182,17 @@ class Installation {
             //phases
             case Files.Phases :
                 records.push(
-                    DataController.getNewRecord(vars.RecordType.Phase), //setup
-                    DataController.getNewRecord(vars.RecordType.Phase), //warmup
-                    DataController.getNewRecord(vars.RecordType.Phase), //intros
-                    DataController.getNewRecord(vars.RecordType.Phase), //1st
-                    DataController.getNewRecord(vars.RecordType.Phase), //break
-                    DataController.getNewRecord(vars.RecordType.Phase), //2nd
-                    DataController.getNewRecord(vars.RecordType.Phase), //halftime
-                    DataController.getNewRecord(vars.RecordType.Phase), //3rd
-                    DataController.getNewRecord(vars.RecordType.Phase), //break
-                    DataController.getNewRecord(vars.RecordType.Phase), //4th
-                    DataController.getNewRecord(vars.RecordType.Phase), //final
+                    PhasesController.NewRecord(), //setup
+                    PhasesController.NewRecord(), //warmup
+                    PhasesController.NewRecord(), //intros
+                    PhasesController.NewRecord(), //1st
+                    PhasesController.NewRecord(), //break
+                    PhasesController.NewRecord(), //2nd
+                    PhasesController.NewRecord(), //halftime
+                    PhasesController.NewRecord(), //3rd
+                    PhasesController.NewRecord(), //break
+                    PhasesController.NewRecord(), //4th
+                    PhasesController.NewRecord() //final
                 );
 
                 //Setup
@@ -281,8 +293,8 @@ class Installation {
             //Teams - 2 default Teams
             case Files.Teams :
                 records.push(
-                    DataController.getNewRecord(vars.RecordType.Team), //A
-                    DataController.getNewRecord(vars.RecordType.Team) //B
+                    TeamsController.NewRecord(), //A
+                    TeamsController.NewRecord() //B
                 );
                 records[0] = Object.assign({}, records[0], {
                     RecordID:1,
@@ -331,6 +343,58 @@ class Installation {
             //Capture state
             case Files.Capture :
                 data = Object.assign({}, CaptureState);
+            break;
+
+            //General Capture Controllers
+            case Files.CaptureScoreboard :
+            case Files.CaptureJamClock :
+            case Files.CaptureJamCounter :
+            case Files.CaptureRaffle :
+            case Files.CaptureRoster :
+            case Files.CaptureScorekeeper :
+            case Files.CaptureSlideshow :
+            case Files.CaptureVideo :
+                data = {Shown:false,className:''};
+            break;
+
+            //Announcer
+            case Files.CaptureAnnouncer :
+                data = Object.assign({}, CaptureAnnouncerState);
+            break;
+
+            //Anthem
+            case Files.CaptureAnthem :
+                data = Object.assign({}, CaptureAnthemState);
+            break;
+
+            //Penalty Tracker Capture
+            case Files.CapturePenalty :
+                data = Object.assign({}, CapturePenaltyState);
+            break;
+
+            //Schedule
+            case Files.CaptureSchedule :
+                data = Object.assign({}, CaptureScheduleState);
+            break;
+
+            //Scorebanner
+            case Files.CaptureScorebanner :
+                data = Object.assign({}, CaptureScorebannerState);
+            break;
+
+            //Sponsor
+            case Files.CaptureSponsor :
+                data = Object.assign({}, CaptureSponsorState);
+            break;
+
+            //Standings
+            case Files.CaptureStandings :
+                data = Object.assign({}, CaptureStandingsState);
+            break;
+
+            //Scores
+            case Files.CaptureScores :
+                data = Object.assign({}, CaptureScoresState);
             break;
 
             //Chat state

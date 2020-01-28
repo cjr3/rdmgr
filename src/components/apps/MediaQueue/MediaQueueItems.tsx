@@ -3,10 +3,11 @@ import cnames from 'classnames';
 import {Unsubscribe} from 'redux';
 import vars, { AnthemRecord, VideoRecord, SlideshowRecord } from 'tools/vars';
 import SortPanel from 'components/tools/SortPanel';
-import { Icon, IconMovie, IconX, MediaThumbnail } from 'components/Elements';
+import { Icon, IconMovie, IconX, MediaThumbnail, IconFlag, IconTeam } from 'components/Elements';
 import MediaQueueController from 'controllers/MediaQueueController';
-import VideoController from 'controllers/VideoController';
-import DataController from 'controllers/DataController';
+import { Compare, AddMediaPath } from 'controllers/functions';
+import Raffle from 'components/apps/Raffle/Raffle';
+import AnthemCaptureController from 'controllers/capture/Anthem';
 
 export default class MediaQueueItems extends React.PureComponent<any, {
     /**
@@ -19,8 +20,8 @@ export default class MediaQueueItems extends React.PureComponent<any, {
     Records:Array<SlideshowRecord | VideoRecord | AnthemRecord>;
 }> {
     readonly state = {
-        Index:MediaQueueController.getState().Index,
-        Records:MediaQueueController.getState().Records
+        Index:MediaQueueController.GetState().Index,
+        Records:MediaQueueController.GetState().Records
     }
 
     /**
@@ -41,9 +42,9 @@ export default class MediaQueueItems extends React.PureComponent<any, {
      * Updates the state to match the MediaQueueController
      */
     protected async updateMedia() {
-        let cstate = MediaQueueController.getState();
+        let cstate = MediaQueueController.GetState();
         let changes:any = {Index:cstate.Index};
-        if(!DataController.compare(cstate.Records, this.state.Records))
+        if(!Compare(cstate.Records, this.state.Records))
             changes.Records = cstate.Records;
         this.setState(changes);
     }
@@ -52,7 +53,7 @@ export default class MediaQueueItems extends React.PureComponent<any, {
      * Subscribe to controllers
      */
     componentDidMount() {
-        this.remoteMedia = MediaQueueController.subscribe(this.updateMedia);
+        this.remoteMedia = MediaQueueController.Subscribe(this.updateMedia);
     }
 
     /**
@@ -74,8 +75,8 @@ export default class MediaQueueItems extends React.PureComponent<any, {
                 case vars.RecordType.Video :
                     items.push({
                         label:<React.Fragment key={`${record.RecordType}-${index}`}>
-                            <div className="slide-title">{record.Name}</div>
                             <Icon src={IconMovie}/>
+                            <div className="slide-title">{record.Name}</div>
                             <Icon src={IconX} 
                                 className="remove"
                                 onClick={() => {MediaQueueController.Remove(index);}}
@@ -91,10 +92,10 @@ export default class MediaQueueItems extends React.PureComponent<any, {
                 case vars.RecordType.Slideshow : {
                     let src:string = '';
                     if(record.Records && record.Records.length)
-                        src = record.Records[0].Filename;
+                        src = AddMediaPath(record.Records[0].Filename);
                     items.push({
                         label:<React.Fragment key={`${record.RecordType}-${index}`}>
-                            <MediaThumbnail src={src}/>
+                            <Icon src={src}/>
                             <div className="slide-title">{record.Name}</div>
                             <Icon src={IconX} 
                                 className="remove"
@@ -112,6 +113,7 @@ export default class MediaQueueItems extends React.PureComponent<any, {
                 case vars.RecordType.Anthem :
                     items.push({
                         label:<React.Fragment key={`${record.RecordType}-${index}`}>
+                            <Icon src={IconFlag}/>
                             <div className="slide-title">{record.Name}</div>
                             <Icon src={IconX} 
                                 className="remove"
@@ -127,11 +129,11 @@ export default class MediaQueueItems extends React.PureComponent<any, {
                 case vars.RecordType.Roster :
                     let src:string = '';
                     if(record.Thumbnail)
-                        src = DataController.mpath(record.Thumbnail);
+                        src = AddMediaPath(record.Thumbnail);
                     items.push({
                         label:<React.Fragment key={`${record.RecordType}-${index}`}>
+                            <Icon src={IconTeam}/>}
                             <div className="slide-title">{record.Name}</div>
-                            <MediaThumbnail src={src}/>
                             <Icon src={IconX} 
                                 className="remove"
                                 onClick={() => {
@@ -152,7 +154,12 @@ export default class MediaQueueItems extends React.PureComponent<any, {
                     items={items}
                     index={this.state.Index}
                     onDrop={MediaQueueController.SwapRecords}
-                    onDoubleClick={MediaQueueController.SetRecord}
+                    onDoubleClick={(index:number) => {
+                        if(this.state.Records[index] && this.state.Records[index].RecordType == vars.RecordType.Anthem) {
+                            AnthemCaptureController.SetClass('');
+                        }
+                        MediaQueueController.SetRecord(index);
+                    }}
                 />
             </div>
         )

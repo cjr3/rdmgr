@@ -25,6 +25,7 @@ import ScoreboardController from 'controllers/ScoreboardController'
 import './css/Scoreboard.scss'
 import { Unsubscribe } from 'redux'
 import UIController from 'controllers/UIController'
+import ScoreboardCaptureController from 'controllers/capture/Scoreboard'
 
 /**
  * Component for the Scoreboard control
@@ -33,7 +34,7 @@ export default class Scoreboard extends React.PureComponent<any, {
     opened:boolean;
 }> {
     readonly state = {
-        opened:UIController.getState().Scoreboard.Shown
+        opened:UIController.GetState().Scoreboard.Shown
     }
 
     protected remoteUI:Unsubscribe|null = null;
@@ -45,12 +46,12 @@ export default class Scoreboard extends React.PureComponent<any, {
 
     protected async updateUI() {
         this.setState({
-            opened:UIController.getState().Scoreboard.Shown
+            opened:UIController.GetState().Scoreboard.Shown
         });
     }
 
     componentDidMount() {
-        this.remoteUI = UIController.subscribe(this.updateUI);
+        this.remoteUI = UIController.Subscribe(this.updateUI);
     }
 
     componentWillUnmount() {
@@ -95,14 +96,14 @@ export default class Scoreboard extends React.PureComponent<any, {
  * - Injury
  * - Confirm Points
  */
-class ScoreboardStatusControls extends React.PureComponent<any, {
+export class ScoreboardStatusControls extends React.PureComponent<any, {
     BoardStatus:number;
     ConfirmStatus:number;
 }> {
 
     readonly state = {
-        BoardStatus:ScoreboardController.getState().BoardStatus,
-        ConfirmStatus:ScoreboardController.getState().ConfirmStatus
+        BoardStatus:ScoreboardController.GetState().BoardStatus,
+        ConfirmStatus:ScoreboardController.GetState().ConfirmStatus
     }
 
     protected remoteScoreboard:Unsubscribe|null = null;
@@ -114,13 +115,13 @@ class ScoreboardStatusControls extends React.PureComponent<any, {
 
     protected async updateScoreboard() {
         this.setState({
-            BoardStatus:ScoreboardController.getState().BoardStatus,
-            ConfirmStatus:ScoreboardController.getState().ConfirmStatus
+            BoardStatus:ScoreboardController.GetState().BoardStatus,
+            ConfirmStatus:ScoreboardController.GetState().ConfirmStatus
         })
     }
 
     componentDidMount() {
-        this.remoteScoreboard = ScoreboardController.subscribe(this.updateScoreboard);
+        this.remoteScoreboard = ScoreboardController.Subscribe(this.updateScoreboard);
     }
 
     componentWillUnmount() {
@@ -167,8 +168,8 @@ export class ScoreboardJamControls extends React.PureComponent<any, {
     GameState:number;
 }> {
     readonly state = {
-        JamState:ScoreboardController.getState().JamState,
-        GameState:ScoreboardController.getState().GameState
+        JamState:ScoreboardController.GetState().JamState,
+        GameState:ScoreboardController.GetState().GameState
     }
 
     protected remoteScoreboard:Function|null = null;
@@ -182,13 +183,13 @@ export class ScoreboardJamControls extends React.PureComponent<any, {
 
     protected async updateScoreboard() {
         this.setState({
-            JamState:ScoreboardController.getState().JamState,
-            GameState:ScoreboardController.getState().GameState
+            JamState:ScoreboardController.GetState().JamState,
+            GameState:ScoreboardController.GetState().GameState
         });
     }
 
     componentDidMount() {
-        this.remoteScoreboard = ScoreboardController.subscribe(this.updateScoreboard);
+        this.remoteScoreboard = ScoreboardController.Subscribe(this.updateScoreboard);
     }
 
     componentWillUnmount() {
@@ -222,11 +223,11 @@ export class ScoreboardJamControls extends React.PureComponent<any, {
 /**
  * Component for displaying the phase name
  */
-class ScoreboardPhaseName extends React.PureComponent<any, {
+export class ScoreboardPhaseName extends React.PureComponent<any, {
     name:string;
 }> {
     readonly state = {
-        name:ScoreboardController.getState().PhaseName
+        name:ScoreboardController.GetState().PhaseName
     }
 
     protected remoteScoreboard:Function|null = null;
@@ -238,12 +239,12 @@ class ScoreboardPhaseName extends React.PureComponent<any, {
 
     protected async updateScoreboard() {
         this.setState({
-            name:ScoreboardController.getState().PhaseName
+            name:ScoreboardController.GetState().PhaseName
         });
     }
 
     componentDidMount() {
-        this.remoteScoreboard = ScoreboardController.subscribe(this.updateScoreboard);
+        this.remoteScoreboard = ScoreboardController.Subscribe(this.updateScoreboard);
     }
 
     componentWillUnmount() {
@@ -269,7 +270,7 @@ class ScoreboardButtons extends React.PureComponent<any, {
     panel:string;
 }> {
     readonly state = {
-        BoardStatus:ScoreboardController.getState().BoardStatus,
+        BoardStatus:ScoreboardController.GetState().BoardStatus,
         panel:''
     }
 
@@ -299,7 +300,7 @@ class ScoreboardButtons extends React.PureComponent<any, {
      */
     protected async updateScoreboard() {
         this.setState({
-            BoardStatus:ScoreboardController.getState().BoardStatus
+            BoardStatus:ScoreboardController.GetState().BoardStatus
         });
     }
 
@@ -308,7 +309,7 @@ class ScoreboardButtons extends React.PureComponent<any, {
      */
     protected async updateUI() {
         this.setState({
-            panel:UIController.getState().Scoreboard.Panel
+            panel:UIController.GetState().Scoreboard.Panel
         });
     }
 
@@ -351,8 +352,8 @@ class ScoreboardButtons extends React.PureComponent<any, {
      * Subscribe to controllers
      */
     componentDidMount() {
-        this.remoteScoreboard = ScoreboardController.subscribe(this.updateScoreboard);
-        this.remoteUI = UIController.subscribe(this.updateUI);
+        this.remoteScoreboard = ScoreboardController.Subscribe(this.updateScoreboard);
+        this.remoteUI = UIController.Subscribe(this.updateUI);
     }
 
     /**
@@ -371,12 +372,6 @@ class ScoreboardButtons extends React.PureComponent<any, {
     render() {
         return (
             <React.Fragment>
-                <Button 
-                    active={(this.state.BoardStatus === vars.Scoreboard.Status.Timeout)}
-                    onClick={ScoreboardController.OfficialTimeout}>Timeout</Button>
-                <Button
-                    active={(this.state.BoardStatus === vars.Scoreboard.Status.Injury)}
-                    onClick={ScoreboardController.InjuryTimeout}>Injury</Button>
                 <Button 
                     active={(this.state.BoardStatus === vars.Scoreboard.Status.Review)}
                     onClick={this.onClickReview}>Review</Button>
@@ -429,7 +424,7 @@ class ScoreboardPanels extends React.PureComponent<any, {
      */
     protected async updateUI() {
         this.setState({
-            panel:UIController.getState().Scoreboard.Panel
+            panel:UIController.GetState().Scoreboard.Panel
         });
     }
 
@@ -437,7 +432,7 @@ class ScoreboardPanels extends React.PureComponent<any, {
      * Start subscribers
      */
     componentDidMount() {
-        this.remoteUI = UIController.subscribe(this.updateUI);
+        this.remoteUI = UIController.Subscribe(this.updateUI);
     }
 
     /**

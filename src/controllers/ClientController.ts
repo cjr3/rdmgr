@@ -1,8 +1,6 @@
-import {createStore, Store, Unsubscribe} from 'redux';
-
 //controllers
 import CameraController from 'controllers/CameraController';
-import CaptureController from 'controllers/CaptureController';
+//import CaptureController from 'controllers/CaptureController';
 import ChatController from 'controllers/ChatController';
 import DataController from 'controllers/DataController';
 import MediaQueueController from 'controllers/MediaQueueController';
@@ -14,16 +12,40 @@ import ScorekeeperController from 'controllers/ScorekeeperController';
 import SlideshowController from 'controllers/SlideshowController';
 import SponsorController from 'controllers/SponsorController';
 import VideoController from 'controllers/VideoController';
+import ClockController from 'controllers/ClockController';
 
 //inter-process communication
 import IPCX from 'controllers/IPCX';
 
 //utilities
-import vars, {IController} from 'tools/vars';
+import vars from 'tools/vars';
+import {IController } from './vars';
 import keycodes from 'tools/keycodes';
 import UIController from './UIController';
+import { CreateController, BaseReducer } from './functions.controllers';
+import ScoreboardCaptureController, { ScorebannerCaptureController, JamClockCaptureController, JamCounterCaptureController } from './capture/Scoreboard';
+import PenaltyCaptureController from './capture/Penalty';
+import ScorekeeperCaptureController from './capture/Scorekeeper';
+import RosterCaptureController from './capture/Roster';
+import PeersController from './PeersController';
+import SkatersController from './SkatersController';
+import TeamsController from './TeamsController';
+import PhasesController from './PhasesController';
+import PenaltiesController from './PenaltiesController';
+import AnthemsController from './AnthemsController';
+import AnnouncerCaptureController from './capture/Announcer';
+import AnthemCaptureController from './capture/Anthem';
+import CameraCaptureController from './capture/Camera';
+import RaffleCaptureController from './capture/Raffle';
+import ScheduleCaptureController from './capture/Schedule';
+import ScoresCaptureController from './capture/Scores';
+import SlideshowCaptureController from './capture/Slideshow';
+import SponsorCaptureController from './capture/Sponsor';
+import StandingsCaptureController from './capture/Standings';
+import VideoCaptureController from './capture/Video';
+import { SetEndpoint } from './api/functions';
 
-export interface SClientController {
+interface SClientController {
     /**
      * Current main application
      */
@@ -77,161 +99,73 @@ export interface SClientController {
      * Message to display in the dialog
      */
     DialogMessage:string;
+    RaffleTicketNumber:string;
 };
 
 interface IClientController extends IController {
-
-    /**
-     * Sets the client's application
-     */
     SetApplication:Function;
-
-    /**
-     * Shows the dialog window with a message
-     */
     ShowDialog:Function;
-
-    /**
-     * Hides the dialog window
-     */
     HideDialog:Function;
-
     HidePeerRequest:Function;
-
-    /**
-     * Exits the application, attempting to
-     * close any connections and I/O operations
-     * before attempting to
-     */
+    HidePanels:Function;
     Exit:Function;
-
-    /**
-     * Attempts to connect to known remote peers.
-     */
     ConnectPeers:Function;
-
-    /**
-     * Toggles the configuration panel
-     */
     ToggleConfiguration:Function;
-
-    /**
-     * Toggles the display panel
-     */
     ToggleDisplay:Function;
-
-    /**
-     * Toggles the chat panel
-     */
     ToggleChat:Function;
-
-    /**
-     * Toggles the file browser
-     */
     ToggleFileBrowser:Function;
-
-    /**
-     * Handles global keyboard commands
-     */
+    SetRaffleTicketNumber:{(value:string)};
     onKeyUp:any;
-
-    /**
-     * Triggered when a peer sends data
-     */
     onPeerdata:Function;
-
-    /**
-     * Triggered when the client selects a file
-     */
     onSelectFile:Function;
-
-    /**
-     * Triggered when the user reloads or exits the main window
-     */
     onExit:Function;
-
-    /**
-     * Triggered when LocalServer is updated
-     */
     updateServer:Function;
-
-    /**
-     * Triggered when the data controller updates
-     */
     updateData:Function;
-
-    /**
-     * Triggered when the ChatController is updated
-     */
     updateChat:Function;
-
-    /**
-     * Triggered when the ScoreboardController updates
-     */
     updateScoreboard:Function;
-
-    /**
-     * Triggered when the CaptureController updates
-     */
     updateCapture:Function;
-
-    /**
-     * Triggered when the SlideshowController updates
-     */
     updateSlideshow:Function;
-
-    /**
-     * Triggered when the VideoController updates
-     */
     updateVideo:Function;
-
-    /**
-     * Triggered when the RaffleController updates
-     */
     updateRaffle:Function;
-
-    /**
-     * Triggered when the SponsorController updates
-     */
     updateSponsor:Function;
-
-    /**
-     * Triggered when the PenaltyController updates
-     */
     updatePenalty:Function;
-
-    /**
-     * Triggered when the ScorekeeperController updates
-     */
     updateScorekeeper:Function;
-
-    /**
-     * Triggered when the RosterController updates
-     */
     updateRoster:Function;
-
-    /**
-     * Triggered when the CameraController updates
-     */
     updateCamera:Function;
-
-    /**
-     * Triggered when the MediaQueueController updates
-     */
     updateMediaQueue:Function;
+    updateCaptureAnnouncer:Function;
+    updateCaptureAnthem:Function;
+    updateCaptureCamera:Function;
+    updateCapturePenalty:Function;
+    updateCaptureRaffle:Function;
+    updateCaptureRoster:Function;
+    updateCaptureSchedule:Function;
+    updateCaptureScoreboard:Function;
+    updateCaptureScorebanner:Function;
+    updateCaptureJamClock:Function;
+    updateCaptureJamCounter:Function;
+    updateCaptureScorekeeper:Function;
+    updateCaptureScores:Function;
+    updateCaptureSlideshow:Function;
+    updateCaptureSponsor:Function;
+    updateCaptureStandings:Function;
+    updateCaptureVideo:Function;
+    updateClocks:Function;
 };
 
 enum Actions {
-    SET_APPLICATION,
-    SET_RECORD_UPDATE_REQUEST,
-    SET_PEERS,
-    SET_UNREAD_MESSAGE_COUNT,
-    TOGGLE_CONFIG,
-    TOGGLE_DISPLAY,
-    TOGGLE_CHAT,
-    TOGGLE_FILE_BROWSER,
-    SET_DIALOG,
-    SET_STATE
+    SET_APPLICATION = 'SET_APPLICATION',
+    SET_RECORD_UPDATE_REQUEST = 'SET_RECORD_UPDATE_REQUEST',
+    SET_PEERS = 'SET_PEERS',
+    SET_UNREAD_MESSAGE_COUNT = 'SET_UNREAD_MESSAGE_COUNT',
+    TOGGLE_CONFIG = 'TOGGLE_CONFIG',
+    TOGGLE_DISPLAY = 'TOGGLE_DISPLAY',
+    TOGGLE_CHAT = 'TOGGLE_CHAT',
+    TOGGLE_FILE_BROWSER = 'TOGGLE_FILE_BROWSER',
+    SET_DIALOG = 'SET_DIALOG',
+    SET_STATE = 'SET_STATE',
+    HIDE_PANELS = 'HIDE_PANELS',
+    SET_RAFFLE_NUMBER = 'SET_RAFFLE_NUMBER'
 };
 
 const InitState:SClientController = {
@@ -241,7 +175,7 @@ const InitState:SClientController = {
     RecordUpdateShown:false,
     UnreadMessageCount:0,
     PeerApplications:{
-        [CaptureController.Key]:null,
+        //[CaptureController.Key]:null,
         [MediaQueueController.Key]:null,
         [ScoreboardController.Key]:null,
         [ScorekeeperController.Key]:null,
@@ -258,11 +192,12 @@ const InitState:SClientController = {
     ChatShown:false,
     FileBrowserShown:false,
     DialogShown:false,
-    DialogMessage:''
+    DialogMessage:'',
+    RaffleTicketNumber:''
 };
 
 const Controllers:any = {
-    [CaptureController.Key]:CaptureController,
+    //[CaptureController.Key]:CaptureController,
     [MediaQueueController.Key]:MediaQueueController,
     [ScoreboardController.Key]:ScoreboardController,
     [ScorekeeperController.Key]:ScorekeeperController,
@@ -275,7 +210,7 @@ const Controllers:any = {
 };
 
 let Subscriptions:any = {
-    [CaptureController.Key]:null,
+    //[CaptureController.Key]:null,
     [MediaQueueController.Key]:null,
     [ScoreboardController.Key]:null,
     [ScorekeeperController.Key]:null,
@@ -285,7 +220,105 @@ let Subscriptions:any = {
     [SlideshowController.Key]:null,
     [SponsorController.Key]:null,
     [VideoController.Key]:null,
-    [CameraController.Key]:null
+    [CameraController.Key]:null,
+    [AnnouncerCaptureController.Key]:null,
+    [AnthemCaptureController.Key]:null,
+    [CameraCaptureController.Key]:null,
+    [PenaltyCaptureController.Key]:null,
+    [RaffleCaptureController.Key]:null,
+    [RosterCaptureController.Key]:null,
+    [ScheduleCaptureController.Key]:null,
+    [ScoreboardCaptureController.Key]:null,
+    [ScorebannerCaptureController.Key]:null,
+    [JamClockCaptureController.Key]:null,
+    [JamCounterCaptureController.Key]:null,
+    [ScorekeeperCaptureController.Key]:null,
+    [ScoresCaptureController.Key]:null,
+    [SlideshowCaptureController.Key]:null,
+    [SponsorCaptureController.Key]:null,
+    [StandingsCaptureController.Key]:null,
+    [VideoCaptureController.Key]:null,
+};
+
+const SetApplication = (state:SClientController, key:string) => {
+    return {...state, CurrentApplication:key};
+};
+
+const SetRecordUpdateRequest = (state:SClientController, peerid:string, types:any) => {
+    return {...state, 
+        RecordUpdatePeerID:peerid,
+        RecordUpdateTypes:{...types},
+        RecordUpdateShown:true
+    };
+};
+
+const SetPeers = (state:SClientController, peers:any) => {
+    //copy and reset applications
+    let applications:any = {...state.PeerApplications};
+    let c:number = 0;
+    window.remoteApps.SB = false;
+    window.remoteApps.ROS = false;
+    for(let key in applications) {
+        applications[key] = null;
+    }
+
+    //assign connected peer IDs to applications
+    for(let key in peers) {
+        let peer:any = peers[key];
+        c++;
+        if(peer.ControlledApps && peer.ControlledApps.forEach) {
+            peer.ControlledApps.forEach((code) => {
+                if(applications[code] === null) {
+                    applications[code] = peer.ID;
+                    if(code === ScoreboardController.Key)
+                        window.remoteApps.SB = true;
+                    else if(code === RosterController.Key)
+                        window.remoteApps.ROS = true;
+                }
+            });
+        }
+    }
+
+    return {...state, PeerApplications:applications, ConnectedPeers:c};
+};
+
+const SetUnreadMessageCount = (state:SClientController, amount:number) => {
+    return {...state, UnreadMessageCount:amount};
+};
+
+const ToggleConfig = (state:SClientController) => {
+    return {...state, ConfigShown:!state.ConfigShown};
+};
+
+const ToggleDisplay = (state:SClientController) => {
+    return {...state, DisplayShown:!state.DisplayShown};
+};
+
+const ToggleChat = (state:SClientController) => {
+    return {...state, ChatShown:!state.ChatShown};
+};
+
+const ToggleFileBrowser = (state:SClientController) => {
+    return {...state, FileBrowserShown:!state.FileBrowserShown};
+};
+
+const SetDialogMessage = (state:SClientController, message:string, shown:boolean) => {
+    return {...state, DialogShown:shown, DialogMessage:message};
+};
+
+const HidePanels = (state:SClientController) => {
+    return {...state,
+        ConfigShown:false,
+        DisplayShown:false,
+        ChatShown:false,
+        FileBrowserShown:false,
+        DialogShown:false,
+        RecordUpdatesShow:false
+    };
+};
+
+const SetRaffleNumber = (state:SClientController, value:string) => {
+    return {...state, RaffleTicketNumber:value};
 };
 
 /**
@@ -293,835 +326,898 @@ let Subscriptions:any = {
  * @param state SClientController
  * @param action any
  */
-function ClientReducer(state:SClientController = InitState, action) {
+const ClientReducer = (state:SClientController = InitState, action) => {
     try {
         switch(action.type) {
-
-            case Actions.SET_STATE : {
-                return Object.assign({}, state, action.state);
-            }
-            break;
-
             //set the current application
-            case Actions.SET_APPLICATION : {
-                return Object.assign({}, state, {
-                    CurrentApplication:action.key
-                });
-            }
-            break;
+            case Actions.SET_APPLICATION :
+                return SetApplication(state, action.key);
 
-            case Actions.SET_RECORD_UPDATE_REQUEST : {
-                return  Object.assign({}, state, {
-                    RecordUpdatePeerID:action.ID,
-                    RecordUpdateTypes:Object.assign({}, action.RecordTypes),
-                    RecordUpdateShown:true
-                });
-            }
-            break;
+            case Actions.SET_RECORD_UPDATE_REQUEST :
+                return SetRecordUpdateRequest(state, action.ID, action.RecordTypes);
 
             //updates the connected peers
-            case Actions.SET_PEERS : {
-                //copy and reset applications
-                let applications:any = Object.assign({}, state.PeerApplications);
-                let c:number = 0;
-                window.remoteApps.SB = false;
-                window.remoteApps.ROS = false;
-                for(let key in applications) {
-                    applications[key] = null;
-                }
-
-                //assign connected peer IDs to applications
-                for(let key in action.peers) {
-                    let peer:any = action.peers[key];
-                    c++;
-                    if(peer.ControlledApps && peer.ControlledApps.forEach) {
-                        peer.ControlledApps.forEach((code) => {
-                            if(applications[code] === null) {
-                                applications[code] = peer.ID;
-                                if(code === ScoreboardController.Key)
-                                    window.remoteApps.SB = true;
-                                else if(code === RosterController.Key)
-                                    window.remoteApps.ROS = true;
-                            }
-                        });
-                    }
-                }
-
-                return Object.assign({}, state, {
-                    PeerApplications:applications,
-                    ConnectedPeers:c
-                });
-            }
-            break;
+            case Actions.SET_PEERS :
+                return SetPeers(state, action.peers);
 
             //Set the unread message count
-            case Actions.SET_UNREAD_MESSAGE_COUNT : {
-                return Object.assign({}, state, {
-                    UnreadMessageCount:action.amount
-                });
-            }
-            break;
+            case Actions.SET_UNREAD_MESSAGE_COUNT :
+                return SetUnreadMessageCount(state, action.amount);
 
             //Toggle configuration
-            case Actions.TOGGLE_CONFIG : {
-                let value:boolean = (typeof(action.value) === 'boolean') ? action.value : (!state.ConfigShown);
-                return Object.assign({}, state, {ConfigShown:value});
-            }
-            break;
+            case Actions.TOGGLE_CONFIG :
+                return ToggleConfig(state);
 
             //Toggle Display
-            case Actions.TOGGLE_DISPLAY : {
-                let value:boolean = (typeof(action.value) === 'boolean') ? action.value : (!state.DisplayShown);
-                return Object.assign({}, state, {DisplayShown:value});
-            }
-            break;
+            case Actions.TOGGLE_DISPLAY :
+                return ToggleDisplay(state);
 
             //Toggle Chat
-            case Actions.TOGGLE_CHAT : {
-                let value:boolean = (typeof(action.value) === 'boolean') ? action.value : (!state.ChatShown);
-                return Object.assign({}, state, {ChatShown:value});
-            }
-            break;
+            case Actions.TOGGLE_CHAT :
+                return ToggleChat(state);
 
             //Toggle FileBrowser
-            case Actions.TOGGLE_FILE_BROWSER : {
-                let value:boolean = (typeof(action.value) === 'boolean') ? action.value : (!state.FileBrowserShown);
-                return Object.assign({}, state, {FileBrowserShown:value});
-            }
-            break;
+            case Actions.TOGGLE_FILE_BROWSER :
+                return ToggleFileBrowser(state);
 
-            case Actions.SET_DIALOG : {
-                return Object.assign({}, state, {
-                    DialogShown:action.shown,
-                    DialogMessage:action.message
-                });
-            }
-            break;
+            case Actions.SET_DIALOG :
+                return SetDialogMessage(state, action.message, action.shown);
 
-            default : {
-                return state;
-            }
-            break;
+            case Actions.HIDE_PANELS :
+                return HidePanels(state);
+
+            case Actions.SET_RAFFLE_NUMBER :
+                return SetRaffleNumber(state, action.value);
+
+            default :
+                return BaseReducer(state, action);
         }
     } catch(er) {
         return state;
     }
 }
 
-const ClientStore = createStore(ClientReducer);
-
 /**
  * Interprocess communication between mainWindow and captureWindow
  */
 let IPC:any = {
     send:function() {}
-}
+};
 
-const ClientController:IClientController = {
-    /**
-     * Unique key to identify the ClientController
-     */
-    Key:'CLN',
-    /**
-     * Initializes the application
-     */
-    Init() {
+const ClientController:IClientController = CreateController('CLN', ClientReducer);
+ClientController.Init = () => {
 
-        if(window && window.RDMGR) {
-            //set title and body class name
-            if(window.RDMGR.mainWindow) {
-                window.RDMGR.mainWindow.setTitle('RDMGR : Control Window');
-                document.body.className = 'client';
 
-                window.RDMGR.mainWindow.on('close', ClientController.onExit);
-            }
+    if(window && window.RDMGR) {
+        //set title and body class name
+        if(window.RDMGR.mainWindow) {
+            window.RDMGR.mainWindow.setTitle('RDMGR : Control Window');
+            document.body.className = 'client';
 
-            //setup IPC renderer if there is a capture window.
-            if(window.RDMGR.captureWindow) {
-                IPC = new IPCX('controlMessage', 'captureMessage', window.RDMGR.captureWindow);
-            }
+            window.RDMGR.mainWindow.on('close', ClientController.onExit);
         }
 
-        //subscribe to controllers
-        Subscriptions[ChatController.Key] = ChatController.subscribe(ClientController.updateChat);
-        Subscriptions[CameraController.Key] = CameraController.subscribe(ClientController.updateCamera);
-        Subscriptions[CaptureController.Key] = CaptureController.subscribe(ClientController.updateCapture);
-        Subscriptions[MediaQueueController.Key] = MediaQueueController.subscribe(ClientController.updateMediaQueue);
-        Subscriptions[PenaltyController.Key] = PenaltyController.subscribe(ClientController.updatePenalty);
-        Subscriptions[RaffleController.Key] = RaffleController.subscribe(ClientController.updateRaffle);
-        Subscriptions[RosterController.Key] = RosterController.subscribe(ClientController.updateRoster);
-        Subscriptions[ScoreboardController.Key] = ScoreboardController.subscribe(ClientController.updateScoreboard);
-        Subscriptions[ScorekeeperController.Key] = ScorekeeperController.subscribe(ClientController.updateScorekeeper);
-        Subscriptions[SlideshowController.Key] = SlideshowController.subscribe(ClientController.updateSlideshow);
-        Subscriptions[SponsorController.Key] = SponsorController.subscribe(ClientController.updateSponsor);
-        Subscriptions[VideoController.Key] = VideoController.subscribe(ClientController.updateVideo);
+        //setup IPC renderer if there is a capture window.
+        if(window.RDMGR.captureWindow) {
+            IPC = new IPCX('controlMessage', 'captureMessage', window.RDMGR.captureWindow);
+        }
+    }
 
-        ScoreboardController.Init();
+    //subscribe to controllers
+    Subscriptions[DataController.Key] = DataController.Subscribe(ClientController.updateData);
+    Subscriptions[ChatController.Key] = ChatController.Subscribe(ClientController.updateChat);
+    Subscriptions[CameraController.Key] = CameraController.Subscribe(ClientController.updateCamera);
+    //Subscriptions[CaptureController.Key] = CaptureController.Subscribe(ClientController.updateCapture);
+    Subscriptions[MediaQueueController.Key] = MediaQueueController.Subscribe(ClientController.updateMediaQueue);
+    Subscriptions[PenaltyController.Key] = PenaltyController.Subscribe(ClientController.updatePenalty);
+    Subscriptions[RaffleController.Key] = RaffleController.Subscribe(ClientController.updateRaffle);
+    Subscriptions[RosterController.Key] = RosterController.Subscribe(ClientController.updateRoster);
+    Subscriptions[ScoreboardController.Key] = ScoreboardController.Subscribe(ClientController.updateScoreboard);
+    Subscriptions[ScorekeeperController.Key] = ScorekeeperController.Subscribe(ClientController.updateScorekeeper);
+    Subscriptions[SlideshowController.Key] = SlideshowController.Subscribe(ClientController.updateSlideshow);
+    Subscriptions[SponsorController.Key] = SponsorController.Subscribe(ClientController.updateSponsor);
+    Subscriptions[VideoController.Key] = VideoController.Subscribe(ClientController.updateVideo);
 
-        if(window) {
-            //global keyboard control
-            window.addEventListener('keyup', ClientController.onKeyUp);
+    //capture controllers
+    Subscriptions[AnnouncerCaptureController.Key] = AnnouncerCaptureController.Subscribe(ClientController.updateCaptureAnnouncer);
+    Subscriptions[AnthemCaptureController.Key] = AnthemCaptureController.Subscribe(ClientController.updateCaptureAnthem);
+    Subscriptions[CameraCaptureController.Key] = CameraCaptureController.Subscribe(ClientController.updateCaptureCamera);
+    Subscriptions[PenaltyCaptureController.Key] = PenaltyCaptureController.Subscribe(ClientController.updateCapturePenalty);
+    Subscriptions[RaffleCaptureController.Key] = RaffleCaptureController.Subscribe(ClientController.updateCaptureRaffle);
+    Subscriptions[RosterCaptureController.Key] = RosterCaptureController.Subscribe(ClientController.updateCaptureRoster);
+    Subscriptions[ScheduleCaptureController.Key] = ScheduleCaptureController.Subscribe(ClientController.updateCaptureSchedule);
+    Subscriptions[ScoreboardCaptureController.Key] = ScoreboardCaptureController.Subscribe(ClientController.updateCaptureScoreboard);
+    Subscriptions[ScorebannerCaptureController.Key] = ScorebannerCaptureController.Subscribe(ClientController.updateCaptureScorebanner);
+    Subscriptions[JamClockCaptureController.Key] = JamClockCaptureController.Subscribe(ClientController.updateCaptureJamClock);
+    Subscriptions[JamCounterCaptureController.Key] = JamCounterCaptureController.Subscribe(ClientController.updateCaptureJamCounter);
+    Subscriptions[ScorekeeperCaptureController.Key] = ScorekeeperCaptureController.Subscribe(ClientController.updateCaptureScorekeeper);
+    Subscriptions[ScoresCaptureController.Key] = ScoresCaptureController.Subscribe(ClientController.updateCaptureScores);
+    Subscriptions[SlideshowCaptureController.Key] = SlideshowCaptureController.Subscribe(ClientController.updateCaptureSlideshow);
+    Subscriptions[SponsorCaptureController.Key] = SponsorCaptureController.Subscribe(ClientController.updateCaptureSponsor);
+    Subscriptions[StandingsCaptureController.Key] = StandingsCaptureController.Subscribe(ClientController.updateCaptureStandings);
+    Subscriptions[VideoCaptureController.Key] = VideoCaptureController.Subscribe(ClientController.updateCaptureVideo);
 
-            //local server
-            if(window.initControlServer) {
-                window.initControlServer(DataController);
-                if(window.LocalServer) {
-                    window.LocalServer.onDataReceived = ClientController.onPeerdata;
-                    SlideshowController.buildAPI();
-                    CaptureController.buildAPI();
-                    RaffleController.buildAPI();
-                    RosterController.buildAPI();
-                    ScoreboardController.buildAPI();
-                    VideoController.buildAPI();
-                    DataController.buildAPI();
-                    MediaQueueController.buildAPI();
-                    window.LocalServer.subscribe(ClientController.updateServer);
-                }
+    Subscriptions[ClockController.Key] = ClockController.Subscribe(ClientController.updateClocks);
+
+    ScoreboardController.Init();
+
+    if(window) {
+        //global keyboard control
+        window.addEventListener('keyup', ClientController.onKeyUp);
+
+        //local server
+        if(window.initControlServer) {
+            window.initControlServer(DataController);
+            if(window.LocalServer) {
+                window.LocalServer.onDataReceived = ClientController.onPeerdata;
+                SlideshowController.BuildAPI();
+                //CaptureController.BuildAPI();
+                RaffleController.BuildAPI();
+                RosterController.BuildAPI();
+                ScoreboardController.BuildAPI();
+                VideoController.BuildAPI();
+                DataController.BuildAPI();
+                if(MediaQueueController.BuildAPI)
+                    MediaQueueController.BuildAPI();
+                window.LocalServer.subscribe(ClientController.updateServer);
             }
         }
+    }
 
-        ClientController.SetApplication(DataController.GetMiscRecord('DefaultApp'));
-    },
+    SetEndpoint(DataController.GetMiscRecord('APIEndpoint'));
 
-    /**
-     * Sets the current main application for the client
-     * @param key string
-     */
-    async SetApplication(key:string) {
-        let state = ClientController.getState();
-        if(state.CurrentApplication != key) {
-            ClientController.getStore().dispatch({
-                type:Actions.SET_APPLICATION,
-                key:key
-            });
-            DataController.SaveMiscRecord('DefaultApp', key);
+    ClientController.SetApplication(DataController.GetMiscRecord('DefaultApp'));
+};
 
-            switch(key) {
-                case ScoreboardController.Key : {
-                    UIController.ShowScoreboard();
-                }
-                break;
+/**
+ * Sets the current main application for the client
+ * @param key string
+ */
+ClientController.SetApplication = async (key:string) => {
+    let state = ClientController.GetState();
+    if(state.CurrentApplication != key) {
+        ClientController.Dispatch({
+            type:Actions.SET_APPLICATION,
+            key:key
+        });
+        DataController.SaveMiscRecord('DefaultApp', key);
 
-                case CaptureController.Key : {
-                    UIController.ShowCaptureController();
-                }
-                break;
-
-                case PenaltyController.Key : {
-                    UIController.ShowPenaltyTracker();
-                }
-                break;
-
-                case ScorekeeperController.Key : {
-                    UIController.ShowScorekeeper();
-                }
-                break;
-
-                case RosterController.Key : {
-                    UIController.ShowRoster();
-                }
-                break;
-
-                case MediaQueueController.Key : {
-                    UIController.ShowMediaQueue();
-                }
-                break;
-                default : 
-                    UIController.ShowScoreboard();
-                break;
+        switch(key) {
+            case ScoreboardController.Key : {
+                UIController.ShowScoreboard();
             }
-        }
-    },
+            break;
 
-    async HidePeerRequest() {
-        ClientController.getStore().dispatch({
-            type:Actions.SET_STATE,
-            state:{
-                RecordUpdateShown:false
+            case 'CC' : {
+                UIController.ShowCaptureController();
             }
-        })
-    },
+            break;
 
-    /**
-     * Attempts to exit the application
-     */
-    Exit() {
-        ClientController.onExit();
-        if(window && window.close) {
-
-            try {
-                window.close();
-            } catch(er) {
-
+            case PenaltyController.Key : {
+                UIController.ShowPenaltyTracker();
             }
+            break;
+
+            case ScorekeeperController.Key : {
+                UIController.ShowScorekeeper();
+            }
+            break;
+
+            case RosterController.Key : {
+                UIController.ShowRoster();
+            }
+            break;
+
+            case MediaQueueController.Key : {
+                UIController.ShowMediaQueue();
+            }
+            break;
+            default : 
+                UIController.ShowScoreboard();
+            break;
         }
-    },
+    }
+};
 
-    /**
-     * Instructs the local server/peer to connect to available peers.
-     */
-    async ConnectPeers() {
-        if(window && window.LocalServer && window.LocalServer.connectPeers) {
-            window.LocalServer.connectPeers();
-        }
-    },
+ClientController.ShowDialog = async () => {
+    ClientController.SetState({
+        DialogShown:true
+    });
+};
 
-    /**
-     * Toggles the configuration panel.
-     */
-    async ToggleConfiguration(value?:boolean) {
-        ClientController.getStore().dispatch({
-            type:Actions.TOGGLE_CONFIG,
-            value:value
-        });
-    },
+ClientController.HideDialog = async () => {
+    ClientController.SetState({
+        DialogShown:false
+    });
+};
 
-    /**
-     * Toggles the configuration panel.
-     */
-    async ToggleDisplay(value?:boolean) {
-        ClientController.getStore().dispatch({
-            type:Actions.TOGGLE_DISPLAY,
-            value:value
-        });
-    },
+/**
+ * Hides the currently visible peer request
+ */
+ClientController.HidePeerRequest = async () => {
+    ClientController.SetState({
+        RecordUpdateShown:false
+    });
+};
 
-    /**
-     * Toggles the chat panel.
-     */
-    async ToggleChat(value?:boolean) {
-        ClientController.getStore().dispatch({
-            type:Actions.TOGGLE_CHAT,
-            value:value
-        });
-    },
-
-    /**
-     * Toggles the FileBrowser
-     */
-    async ToggleFileBrowser(value?:boolean) {
-        ClientController.getStore().dispatch({
-            type:Actions.TOGGLE_FILE_BROWSER,
-            value:value
-        });
-    },
-
-    async ShowDialog(message:string) {
-        ClientController.getStore().dispatch({
-            type:Actions.SET_DIALOG,
-            shown:true,
-            message:message
-        });
-    },
-
-    async HideDialog() {
-        ClientController.getStore().dispatch({
-            type:Actions.SET_DIALOG,
-            shown:false,
-            message:''
-        });
-    },
-
-    /**
-     * Triggered when the user exits / reloads the main window
-     */
-    onExit() {
-        //close data and IO operations
+/**
+ * Attempts to exit the application
+ */
+ClientController.Exit = () => {
+    ClientController.onExit();
+    if(window && window.close) {
         try {
-            DataController.UnregisterSaveStates();
+            window.close();
         } catch(er) {
 
         }
+    }
+};
 
-        //close network connections gracefully
-        if(window && window.LocalServer) {
-            window.LocalServer.onExit();
+/**
+ * Instructs the local server/peer to connect to available peers.
+ */
+ClientController.ConnectPeers = async () => {
+    if(window && window.LocalServer && window.LocalServer.connectPeers) {
+        window.LocalServer.connectPeers();
+    }
+};
+
+/**
+ * Toggles the configuration panel.
+ */
+ClientController.ToggleConfiguration = async () => {
+    ClientController.Dispatch({
+        type:Actions.TOGGLE_CONFIG
+    });
+};
+
+/**
+ * Toggle the display panel
+ */
+ClientController.ToggleDisplay = async () => {
+    ClientController.Dispatch({
+        type:Actions.TOGGLE_DISPLAY
+    });
+};
+
+/**
+ * Toggle chat visibility
+ */
+ClientController.ToggleChat = async () => {
+    ClientController.Dispatch({
+        type:Actions.TOGGLE_CHAT
+    });
+};
+
+/**
+ * Toggles file browser visibility
+ */
+ClientController.ToggleFileBrowser = async () => {
+    ClientController.Dispatch({
+        type:Actions.TOGGLE_FILE_BROWSER
+    });
+};
+
+/**
+ * Handles keyboard events
+ */
+ClientController.onKeyUp = (ev:any) => {
+
+    let state:SClientController = ClientController.GetState();
+    let name:string = ev.target.tagName.toLowerCase();
+    
+    //ignore any and all keyboard events when the user has
+    //focus on an input element
+    switch(name) {
+        case 'input' :
+            if(ev.target.type === 'text' || ev.target.type === 'password' || ev.target.type === 'number') {
+
+                return;
+            }
+            break;
+
+        case 'textarea' :
+        case 'select' :
+            return true;
+
+        default :
+
+        break;
+    }
+    
+    //global keyup options - do not map these to controllers
+    switch(ev.keyCode) {
+        //ignore when windows/super/meta key is held down
+        case keycodes.RWINDOW :
+        case keycodes.LWINDOW : {
+            return;
         }
+        break;
 
-        if(window && window.RDMGR && window.RDMGR.mainWindow) {
-            window.RDMGR.mainWindow.off('close', ClientController.onExit);
-        }
-    },
-
-    /**
-     * Triggered on keyUp from connected keyboards
-     * @param ev KeyEvent
-     */
-    async onKeyUp(ev) {
-        let state:SClientController = ClientController.getState();
-        let name:string = ev.target.tagName.toLowerCase();
-        
-        //ignore any and all keyboard events when the user has
-        //focus on an input element
-        switch(name) {
-            case 'input' :
-                if(ev.target.type === 'text' || ev.target.type === 'password' || ev.target.type === 'number') {
-
-                    return;
+        //toggle current applications display
+        case keycodes.ESCAPE : {
+            switch(state.CurrentApplication) {
+                //Main Scoreboard
+                case ScoreboardController.Key : {
+                    ScoreboardCaptureController.Toggle();
                 }
                 break;
 
-            case 'textarea' :
-            case 'select' :
-                return true;
+                //Scorebanner
+                case 'CC' : {
+                    if(ev.ctrlKey)
+                        ScoreboardCaptureController.Toggle();
+                    else
+                        ScorebannerCaptureController.Toggle();
+                }
+                break;
 
-            default :
+                //Penalty Tracker
+                case PenaltyController.Key : {
+                    PenaltyCaptureController.Toggle();
+                }
+                break;
 
-            break;
+                //Scorekeeper
+                case ScorekeeperController.Key : {
+                    ScorekeeperCaptureController.Toggle();
+                }
+                break;
+
+                //Roster
+                case RosterController.Key : {
+                    RosterCaptureController.Toggle();
+                }
+                break;
+
+                default : break;
+            }
+            return;
         }
-        
-        //global keyup options - do not map these to controllers
-        switch(ev.keyCode) {
-            //ignore when windows/super/meta key is held down
-            case keycodes.RWINDOW :
-            case keycodes.LWINDOW : {
-                return;
-            }
-            break;
+        break;
 
-            //toggle current applications display
-            case keycodes.ESCAPE : {
-                switch(state.CurrentApplication) {
-                    //Main Scoreboard
-                    case ScoreboardController.Key : {
-                        CaptureController.ToggleScoreboard();
-                    }
-                    break;
-
-                    //Scorebanner
-                    case CaptureController.Key : {
-                        if(ev.ctrlKey)
-                            CaptureController.ToggleScoreboard();
-                        else
-                            CaptureController.ToggleScorebanner();
-                    }
-                    break;
-
-                    //Penalty Tracker
-                    case PenaltyController.Key : {
-                        CaptureController.TogglePenaltyTracker();
-                    }
-                    break;
-
-                    //Scorekeeper
-                    case ScorekeeperController.Key : {
-                        CaptureController.ToggleScorekeeper();
-                    }
-                    break;
-
-                    //Roster
-                    case RosterController.Key : {
-                        CaptureController.ToggleRoster();
-                    }
-                    break;
-
-                    default : break;
-                }
-                return;
-            }
-            break;
-
-            //Main Scoreboard
-            case keycodes.F1 : {
-                ClientController.getStore().dispatch({
-                    type:Actions.SET_APPLICATION,
-                    key:ScoreboardController.Key
-                });
-                return;
-            }
-            break;
-
-            //Capture Controller
-            case keycodes.F2 : {
-                ClientController.getStore().dispatch({
-                    type:Actions.SET_APPLICATION,
-                    key:CaptureController.Key
-                });
-                return;
-            }
-            break;
-
-            //Penalty Tracker 
-            case keycodes.F3 : {
-                ClientController.getStore().dispatch({
-                    type:Actions.SET_APPLICATION,
-                    key:PenaltyController.Key
-                });
-                return;
-            }
-            break;
-
-            //Scorekeeper 
-            case keycodes.F4 : {
-                ClientController.getStore().dispatch({
-                    type:Actions.SET_APPLICATION,
-                    key:ScorekeeperController.Key
-                });
-                return;
-            }
-            break;
-
-            //Roster
-            case keycodes.F5 : {
-                ClientController.getStore().dispatch({
-                    type:Actions.SET_APPLICATION,
-                    key:RosterController.Key
-                });
-                return;
-            }
-            break;
-
-            //Media Queue
-            case keycodes.F6 : {
-                ClientController.getStore().dispatch({
-                    type:Actions.SET_APPLICATION,
-                    key:MediaQueueController.Key
-                });
-                return;
-            }
-            break;
-
-            //fullscreen - ignore
-            case keycodes.F11 : {
-                return;
-            }
-            break;
-
-            //Open Chat
-            case keycodes.F12 : {
-                //this.setState({ChatShown:true});
-                return;
-            }
-            break;
-
-            default : break;
+        //Main Scoreboard
+        case keycodes.F1 : {
+            ClientController.SetApplication(ScoreboardController.Key);
+            return;
         }
+        break;
 
-        //send keyboard commands to the current application's controller
-        let app:any = Controllers[state.CurrentApplication];
-        if(app !== null && typeof(app) == "object" && app.onKeyUp)
-            app.onKeyUp(ev);
-    },
+        //Capture Controller
+        case keycodes.F2 : {
+            ClientController.SetApplication('CC');
+            return;
+        }
+        break;
 
-    /**
-     * Triggered when a peer sends data.
-     * @param peer any
-     * @param data any
-     */
-    async onPeerdata(peer:any, data:any) {
-        switch(data.type) {
-            //update the state of a controller
-            case 'state' :
-                let record = DataController.getPeer(peer.ID);
-                if(record && record.ControlledApps && record.ControlledApps.indexOf(data.app) >= 0) {
-                    if(Controllers[data.app] && Controllers[data.app].SetState) {
-                        Controllers[data.app].SetState(data.state);
-                    }
-                }
-            break;
+        //Penalty Tracker 
+        case keycodes.F3 : {
+            ClientController.SetApplication(PenaltyController.Key);
+            return;
+        }
+        break;
 
-            //Send state to peer.
-            case 'request-state' :
-                if(Controllers[data.app] && Controllers[data.app].getState) {
-                    window.LocalServer.SendState(peer.ID, Controllers[data.app].getState);
-                }
-            break;
+        //Scorekeeper 
+        case keycodes.F4 : {
+            ClientController.SetApplication(ScorekeeperController.Key);
+            return;
+        }
+        break;
 
-            //Disconnect peer
-            case 'disconnect' :
-                window.LocalServer.LocalPeer.disconnectPeer(peer.ID);
-            break;
+        //Roster
+        case keycodes.F5 : {
+            ClientController.SetApplication(RosterController.Key);
+            return;
+        }
+        break;
 
-            //Show request to update local peer's records with remote peer's records.
-            case 'set-record-request' :
-                ClientController.getStore().dispatch({
-                    type:Actions.SET_RECORD_UPDATE_REQUEST,
-                    ID:peer.ID,
-                    RecordTypes:data.types
-                });
-            break;
+        //Media Queue
+        case keycodes.F6 : {
+            ClientController.SetApplication(MediaQueueController.Key);
+            return;
+        }
+        break;
 
-            //Send records back to the peer.
-            case 'get-records' :
-                if(data.types) {
-                    let records = {};
+        //fullscreen - ignore
+        case keycodes.F11 : {
+            return;
+        }
+        break;
 
-                    //Skaters
-                    if(data.types[vars.RecordType.Skater])
-                        records[vars.RecordType.Skater] = DataController.getSkaters(true);
-                        
-                    //Teams
-                    if(data.types[vars.RecordType.Team])
-                        records[vars.RecordType.Team] = DataController.getTeams(true);
+        //Open Chat
+        case keycodes.F12 : {
+            ClientController.ToggleChat();
+            return;
+        }
+        break;
 
-                    //Phases
-                    if(data.types[vars.RecordType.Phase])
-                        records[vars.RecordType.Phase] = DataController.getPhases();
-
-                    //Penalties
-                    if(data.types[vars.RecordType.Penalty])
-                        records[vars.RecordType.Penalty] = DataController.getPenalties(true);
-
-                    //Anthem Singers
-                    if(data.types[vars.RecordType.Anthem])
-                        records[vars.RecordType.Anthem] = DataController.getAnthemSingers(true);
-
-                    window.LocalServer.SendData(peer.ID, {
-                        type:'set-records',
-                        records:records
-                    });
-                }
-            break;
-
-            //receive records from the peer
-            case 'set-records' :
-                if(data.records) {
-                    //skaters
-                    if(data.records[vars.RecordType.Skater]) {
-                        DataController.UpdateRecords(vars.RecordType.Skater, data.records[vars.RecordType.Skater]);
-                    }
-                    
-                    //teams
-                    if(data.records[vars.RecordType.Team]) {
-                        DataController.UpdateRecords(vars.RecordType.Team, data.records[vars.RecordType.Team]);
-                    }
+        default : break;
+    }
     
-                    //penalties
-                    if(data.records[vars.RecordType.Penalty]) {
-                        DataController.UpdateRecords(vars.RecordType.Penalty, data.records[vars.RecordType.Penalty]);
-                    }
-    
-                    //phases
-                    if(data.records[vars.RecordType.Phase]) {
-                        DataController.UpdateRecords(vars.RecordType.Phase, data.records[vars.RecordType.Phase]);
-                    }
-    
-                    //anthem singers
-                    if(data.records[vars.RecordType.Anthem]) {
-                        DataController.UpdateRecords(vars.RecordType.Anthem, data.records[vars.RecordType.Anthem]);
-                    }
-                }
-            break;
-
-            //Chat Message
-            case 'chat-message' :
-                data.message.self = false;
-                data.message.read = false;
-                ChatController.AddMessage(data.message);
-            break;
-
-            default :
-            break;
-        }
-    },
-
-    /**
-     * Triggered when the user selects a file from the FileBrowser
-     * - Assign a function to window.onSelectFile, which will receive the
-     *   filename as its only parameter.
-     * @param filename string
-     */
-    async onSelectFile(filename?:string) {
-        if(window && window.onSelectFile && typeof(window.onSelectFile) === 'function') {
-            window.onSelectFile(filename);
-        }
-    },
-
-    /**
-     * Triggered when the local server / peers update
-     * - When a peer connects or disconnects
-     */
-    async updateServer() {
-        let wstate:any = window.LocalServer.getState();
-        let connected:any = {};
-        let records:any = DataController.getPeers();
-        let peers:any = wstate.Peers;
-        if(peers && typeof(peers) === "object") {
-            for(let key in peers) {
-                let peer:any = peers[key];
-                if(peer.Connected) {
-                    connected[peer.ID] = Object.assign({}, peer, {
-                        ControlledApps:[]
-                    });
-                    for(let pkey in records) {
-                        if(records[pkey].PeerID == peer.ID) {
-                            connected[peer.ID].ControlledApps = records[pkey].ControlledApps;
-                        }
-                    }
-                }
-            }
-        }
-        
-        ClientController.getStore().dispatch({
-            type:Actions.SET_PEERS,
-            peers:connected
-        });
-    },
-
-    /**
-     * Triggered when the ChatController state is updated
-     */
-    async updateChat() {
-        ClientController.getStore().dispatch({
-            type:Actions.SET_UNREAD_MESSAGE_COUNT,
-            amount:ChatController.GetUnreadMessageCount()
-        });
-    },
-
-    async updateCamera() {
-        IPC.send({
-            type:'state',
-            app:CameraController.Key,
-            state:CameraController.getState()
-        });
-    },
-
-    async updateRoster() {
-        let cstate = RosterController.getState();
-        IPC.send({
-            type:'state',
-            app:RosterController.Key,
-            state:cstate
-        });
-
-        if(window && window.LocalServer) {
-            window.LocalServer.SendState(RosterController.Key, Object.assign({}, cstate));
-        }
-    },
-
-    async updateCapture() {
-        let state = CaptureController.getState();
-        IPC.send({
-            type:'state',
-            app:CaptureController.Key,
-            state:state
-        });
-
-        if(window && window.LocalServer) {
-            window.LocalServer.SendState(CaptureController.Key, Object.assign({}, state));
-        }
-    },
-
-    async updatePenalty() {
-        let cstate = PenaltyController.getState();
-        IPC.send({
-            type:'state',
-            app:PenaltyController.Key,
-            state:cstate
-        });
-
-        if(window && window.LocalServer) {
-            window.LocalServer.SendState(PenaltyController.Key, Object.assign({}, cstate));
-        }
-    },
-
-    async updateRaffle() {
-        let cstate = RaffleController.getState();
-        IPC.send({
-            type:'state',
-            app:RaffleController.Key,
-            state:cstate
-        });
-
-        if(window && window.LocalServer) {
-            window.LocalServer.SendState(RaffleController.Key, Object.assign({}, cstate));
-        }
-    },
-
-    async updateScoreboard() {
-        let cstate = ScoreboardController.getState();
-        IPC.send({
-            type:'state',
-            app:ScoreboardController.Key,
-            state:cstate
-        });
-
-        if(window && window.LocalServer) {
-            window.LocalServer.SendState(ScoreboardController.Key, Object.assign({}, cstate));
-        }
-    },
-
-    async updateScorekeeper() {
-        let cstate = ScorekeeperController.getState();
-        IPC.send({
-            type:'state',
-            app:ScorekeeperController.Key,
-            state:cstate
-        });
-
-        if(window && window.LocalServer) {
-            window.LocalServer.SendState(ScorekeeperController.Key, Object.assign({}, cstate));
-        }
-    },
-
-    async updateSlideshow() {
-        let cstate = SlideshowController.getState();
-        IPC.send({
-            type:'state',
-            app:SlideshowController.Key,
-            state:cstate
-        });
-
-        if(window && window.LocalServer) {
-            window.LocalServer.SendState(SlideshowController.Key, Object.assign({}, cstate));
-        }
-    },
-
-    async updateSponsor() {
-        let cstate = SponsorController.getState();
-        IPC.send({
-            type:'state',
-            app:SponsorController.Key,
-            state:cstate
-        });
-
-        if(window && window.LocalServer) {
-            window.LocalServer.SendState(SponsorController.Key, Object.assign({}, cstate));
-        }
-    },
-
-    async updateVideo() {
-        let state = VideoController.getState();
-        IPC.send({
-            type:'state',
-            app:VideoController.Key,
-            state:state
-        });
-
-        if(window && window.LocalServer) {
-            window.LocalServer.SendState(VideoController.Key, Object.assign({}, state));
-        }
-    },
-
-    async updateMediaQueue() {
-
-    },
-
-    async updateData() {
-        let peers = DataController.getPeers();
-        let state = ClientController.getState();
-
-    },
-
-    /**
-     * Gets the Store for the controller
-     */
-    getStore() : Store<SClientController, any> {
-        return ClientStore;
-    },
-    /**
-     * Gets the current state for the controller
-     */
-    getState() : any {
-        return ClientController.getStore().getState();
-    },
-    /**
-     * Subscribes to the redux store
-     * @param f Function
-     */
-    subscribe(f:Function) : Unsubscribe {
-        return ClientController.getStore().subscribe(f);
+    //send keyboard commands to the current application's controller
+    let app:any = Controllers[state.CurrentApplication];
+    if(app !== null && typeof(app) == "object" && app.onKeyUp && typeof(app.onKeyUp) === 'function')
+        app.onKeyUp(ev);
+    else if(state.CurrentApplication !== 'MEQ') {
+        if(Controllers.SB && Controllers.SB.onKeyUp && typeof(Controllers.SB.onKeyUp) === 'function')
+            Controllers.SB.onKeyUp(ev);
     }
 };
+
+/**
+ * Triggered when a peer sends data
+ */
+ClientController.onPeerdata = async (peer:any, data:any) => {
+
+    switch(data.type) {
+        //update the state of a controller
+        case 'state' :
+            let record = PeersController.GetRecord(peer.ID);
+            if(record && record.ControlledApps && record.ControlledApps.indexOf(data.app) >= 0) {
+                if(Controllers[data.app] && Controllers[data.app].SetState) {
+                    Controllers[data.app].SetState(data.state);
+                }
+            }
+        break;
+
+        //Send state to peer.
+        case 'request-state' :
+            if(Controllers[data.app] && Controllers[data.app].getState) {
+                window.LocalServer.SendState(peer.ID, Controllers[data.app].getState);
+            }
+        break;
+
+        //Disconnect peer
+        case 'disconnect' :
+            window.LocalServer.LocalPeer.disconnectPeer(peer.ID);
+        break;
+
+        //Show request to update local peer's records with remote peer's records.
+        case 'set-record-request' :
+            ClientController.Dispatch({
+                type:Actions.SET_RECORD_UPDATE_REQUEST,
+                ID:peer.ID,
+                RecordTypes:data.types
+            });
+        break;
+
+        //Send records back to the peer.
+        case 'get-records' :
+            if(data.types) {
+                let records = {};
+
+                //Skaters
+                if(data.types[vars.RecordType.Skater])
+                    records[vars.RecordType.Skater] = SkatersController.Get();
+                    
+                //Teams
+                if(data.types[vars.RecordType.Team])
+                    records[vars.RecordType.Team] = TeamsController.Get();
+
+                //Phases
+                if(data.types[vars.RecordType.Phase])
+                    records[vars.RecordType.Phase] = PhasesController.Get();
+
+                //Penalties
+                if(data.types[vars.RecordType.Penalty])
+                    records[vars.RecordType.Penalty] = PenaltiesController.Get();
+
+                //Anthem Singers
+                if(data.types[vars.RecordType.Anthem])
+                    records[vars.RecordType.Anthem] = AnthemsController.Get();
+
+                window.LocalServer.SendData(peer.ID, {
+                    type:'set-records',
+                    records:records
+                });
+            }
+        break;
+
+        //receive records from the peer
+        case 'set-records' :
+            if(data.records) {
+                //skaters
+                if(data.records[vars.RecordType.Skater]) {
+                    //DataController.UpdateRecords(vars.RecordType.Skater, data.records[vars.RecordType.Skater]);
+                }
+                
+                //teams
+                if(data.records[vars.RecordType.Team]) {
+                    //DataController.UpdateRecords(vars.RecordType.Team, data.records[vars.RecordType.Team]);
+                }
+
+                //penalties
+                if(data.records[vars.RecordType.Penalty]) {
+                    //DataController.UpdateRecords(vars.RecordType.Penalty, data.records[vars.RecordType.Penalty]);
+                }
+
+                //phases
+                if(data.records[vars.RecordType.Phase]) {
+                    //DataController.UpdateRecords(vars.RecordType.Phase, data.records[vars.RecordType.Phase]);
+                }
+
+                //anthem singers
+                if(data.records[vars.RecordType.Anthem]) {
+                    //DataController.UpdateRecords(vars.RecordType.Anthem, data.records[vars.RecordType.Anthem]);
+                }
+            }
+        break;
+
+        //Chat Message
+        case 'chat-message' :
+            data.message.self = false;
+            data.message.read = false;
+            ChatController.AddMessage(data.message);
+        break;
+
+        default :
+        break;
+    }
+};
+
+/**
+ * Triggered when the user selects a file from the FileBrowser
+ * - Assign a function to window.onSelectFile, which will receive the
+ *   filename as its only parameter.
+ * @param filename string
+ */
+ClientController.onSelectFile = async (filename?:string) => {
+    if(window && window.onSelectFile && typeof(window.onSelectFile) === 'function') {
+        window.onSelectFile(filename);
+    }
+};
+
+ClientController.onExit = () => {
+    //close data and IO operations
+    try {
+        DataController.UnregisterSaveStates();
+    } catch(er) {
+
+    }
+
+    //close network connections gracefully
+    if(window && window.LocalServer) {
+        window.LocalServer.onExit();
+    }
+
+    if(window && window.RDMGR && window.RDMGR.mainWindow) {
+        window.RDMGR.mainWindow.off('close', ClientController.onExit);
+    }
+};
+
+/**
+ * Triggered when the local server / peers update
+ * - When a peer connects or disconnects
+ */
+ClientController.updateServer = async () => {
+    let wstate:any = window.LocalServer.getState();
+    let connected:any = {};
+    //records stored
+    let records:any = PeersController.Get();
+    //peers registered to the server
+    let peers:any = wstate.Peers;
+    if(peers && typeof(peers) === "object") {
+        for(let key in peers) {
+            let peer:any = peers[key];
+            if(peer.Connected) {
+                connected[peer.ID] = Object.assign({}, peer, {
+                    ControlledApps:[]
+                });
+                for(let pkey in records) {
+                    if(records[pkey].PeerID == peer.ID) {
+                        connected[peer.ID].ControlledApps = records[pkey].ControlledApps;
+                    }
+                }
+            }
+        }
+    }
+    
+    ClientController.Dispatch({
+        type:Actions.SET_PEERS,
+        peers:connected
+    });
+};
+
+ClientController.HidePanels = async () => {
+    ClientController.Dispatch({
+        type:Actions.HIDE_PANELS
+    });
+};
+
+ClientController.SetRaffleTicketNumber = async (value:string) => {
+    ClientController.Dispatch({
+        type:Actions.SET_RAFFLE_NUMBER,
+        value:value
+    });
+};
+
+/**
+ * State listeners - to send state to the capture window
+ */
+
+ClientController.updateData = () => {
+    IPC.send({
+        type:'state',
+        app:DataController.Key,
+        state:{...DataController.GetState()}
+    });
+};
+
+ClientController.updateChat = async () => {
+    ClientController.Dispatch({
+        type:Actions.SET_UNREAD_MESSAGE_COUNT,
+        amount:ChatController.GetUnreadMessageCount()
+    });
+};
+
+ClientController.updateScoreboard = async () => {
+    let cstate = ScoreboardController.GetState();
+    IPC.send({
+        type:'state',
+        app:ScoreboardController.Key,
+        state:cstate
+    });
+
+    if(window && window.LocalServer) {
+        window.LocalServer.SendState(ScoreboardController.Key, Object.assign({}, cstate));
+    }
+};
+/*
+ClientController.updateCapture = async () => {
+
+    let state = CaptureController.GetState();
+    IPC.send({
+        type:'state',
+        app:CaptureController.Key,
+        state:state
+    });
+
+    if(window && window.LocalServer) {
+        window.LocalServer.SendState(CaptureController.Key, Object.assign({}, state));
+    }
+};
+*/
+ClientController.updateSlideshow = async () => {
+    let cstate = SlideshowController.GetState();
+    IPC.send({
+        type:'state',
+        app:SlideshowController.Key,
+        state:cstate
+    });
+
+    if(window && window.LocalServer) {
+        window.LocalServer.SendState(SlideshowController.Key, Object.assign({}, cstate));
+    }
+};
+ClientController.updateVideo = async () => {
+    
+    let state = VideoController.GetState();
+    IPC.send({
+        type:'state',
+        app:VideoController.Key,
+        state:state
+    });
+
+    if(window && window.LocalServer) {
+        window.LocalServer.SendState(VideoController.Key, Object.assign({}, state));
+    }
+};
+ClientController.updateRaffle = async () => {
+    
+    let cstate = RaffleController.GetState();
+    IPC.send({
+        type:'state',
+        app:RaffleController.Key,
+        state:cstate
+    });
+
+    if(window && window.LocalServer) {
+        window.LocalServer.SendState(RaffleController.Key, Object.assign({}, cstate));
+    }
+};
+
+ClientController.updateSponsor = async () => {
+    let cstate = SponsorController.GetState();
+    IPC.send({
+        type:'state',
+        app:SponsorController.Key,
+        state:cstate
+    });
+
+    if(window && window.LocalServer) {
+        window.LocalServer.SendState(SponsorController.Key, Object.assign({}, cstate));
+    }
+};
+ClientController.updatePenalty = async () => {
+    let cstate = PenaltyController.GetState();
+    IPC.send({
+        type:'state',
+        app:PenaltyController.Key,
+        state:cstate
+    });
+
+    if(window && window.LocalServer) {
+        window.LocalServer.SendState(PenaltyController.Key, Object.assign({}, cstate));
+    }
+};
+ClientController.updateScorekeeper = async () => {
+    let cstate = ScorekeeperController.GetState();
+    IPC.send({
+        type:'state',
+        app:ScorekeeperController.Key,
+        state:cstate
+    });
+
+    if(window && window.LocalServer) {
+        window.LocalServer.SendState(ScorekeeperController.Key, Object.assign({}, cstate));
+    }
+};
+ClientController.updateRoster = async () => {
+    let cstate = RosterController.GetState();
+    IPC.send({
+        type:'state',
+        app:RosterController.Key,
+        state:cstate
+    });
+
+    if(window && window.LocalServer) {
+        window.LocalServer.SendState(RosterController.Key, {...cstate});
+    }
+};
+
+ClientController.updateCamera = async () => {
+    IPC.send({
+        type:'state',
+        app:CameraController.Key,
+        state:CameraController.GetState()
+    });
+};
+
+ClientController.updateMediaQueue = () => {};
+
+ClientController.updateCaptureAnnouncer = async () => {
+    IPC.send({
+        type:'state',
+        app:AnnouncerCaptureController.Key,
+        state:AnnouncerCaptureController.GetState()
+    });
+};
+
+ClientController.updateCaptureAnthem = async () => {
+    IPC.send({
+        type:'state',
+        app:AnthemCaptureController.Key,
+        state:AnthemCaptureController.GetState()
+    });
+};
+
+ClientController.updateCaptureCamera = async () => {
+    IPC.send({
+        type:'state',
+        app:CameraCaptureController.Key,
+        state:CameraCaptureController.GetState()
+    });
+};
+
+ClientController.updateCapturePenalty = async () => {
+    IPC.send({
+        type:'state',
+        app:PenaltyCaptureController.Key,
+        state:PenaltyCaptureController.GetState()
+    });
+};
+
+ClientController.updateCaptureRaffle = async () => {
+    IPC.send({
+        type:'state',
+        app:RaffleCaptureController.Key,
+        state:RaffleCaptureController.GetState()
+    });
+};
+
+ClientController.updateCaptureRoster = async () => {
+    IPC.send({
+        type:'state',
+        app:RosterCaptureController.Key,
+        state:RosterCaptureController.GetState()
+    });
+};
+
+ClientController.updateCaptureSchedule = async () => {
+    IPC.send({
+        type:'state',
+        app:ScheduleCaptureController.Key,
+        state:ScheduleCaptureController.GetState()
+    });
+};
+
+ClientController.updateCaptureScoreboard = async () => {
+    IPC.send({
+        type:'state',
+        app:ScoreboardCaptureController.Key,
+        state:ScoreboardCaptureController.GetState()
+    });
+};
+
+ClientController.updateCaptureScorebanner = async () => {
+    IPC.send({
+        type:'state',
+        app:ScorebannerCaptureController.Key,
+        state:ScorebannerCaptureController.GetState()
+    });
+};
+
+ClientController.updateCaptureJamClock = async () => {
+    IPC.send({
+        type:'state',
+        app:JamClockCaptureController.Key,
+        state:JamClockCaptureController.GetState()
+    });
+};
+
+ClientController.updateCaptureJamCounter = async () => {
+    IPC.send({
+        type:'state',
+        app:JamCounterCaptureController.Key,
+        state:JamCounterCaptureController.GetState()
+    });
+};
+
+ClientController.updateCaptureScores = async () => {
+    IPC.send({
+        type:'state',
+        app:ScoresCaptureController.Key,
+        state:ScoresCaptureController.GetState()
+    });
+};
+
+ClientController.updateCaptureScorekeeper = async () => {
+    IPC.send({
+        type:'state',
+        app:ScorekeeperCaptureController.Key,
+        state:ScorekeeperCaptureController.GetState()
+    });
+};
+
+ClientController.updateCaptureSlideshow = async () => {
+    IPC.send({
+        type:'state',
+        app:SlideshowCaptureController.Key,
+        state:SlideshowCaptureController.GetState()
+    });
+};
+
+ClientController.updateCaptureSponsor = async () => {
+    IPC.send({
+        type:'state',
+        app:SponsorCaptureController.Key,
+        state:SponsorCaptureController.GetState()
+    });
+};
+
+ClientController.updateCaptureStandings = async () => {
+    IPC.send({
+        type:'state',
+        app:StandingsCaptureController.Key,
+        state:StandingsCaptureController.GetState()
+    });
+};
+
+ClientController.updateCaptureVideo = async () => {
+    IPC.send({
+        type:'state',
+        app:VideoCaptureController.Key,
+        state:VideoCaptureController.GetState()
+    });
+};
+
+ClientController.updateClocks = async () => {
+    IPC.send({
+        type:'state',
+        app:ClockController.Key,
+        state:ClockController.GetState()
+    });
+}
 
 export default ClientController;

@@ -208,6 +208,11 @@ export default class Clock extends React.Component<{
         }
     }
 
+    setTenths(amount:number) {
+        if(this.props.status != vars.Clock.Status.Running)
+            this.setState({tenths:amount});
+    }
+
     /**
      * Tick of the clock
      */
@@ -256,8 +261,8 @@ export default class Clock extends React.Component<{
                 return {tenths:tenths};
             });
             
-            //if(this.props.onTenths)
-                //setTimeout(this.props.onTenths, 10, hours, minutes, seconds, tenths);
+            if(this.props.onTenths)
+                setTimeout(this.props.onTenths, 1, hours, minutes, seconds, tenths);
         }
 
         if(this.Ticker === 0) {

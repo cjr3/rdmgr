@@ -1,11 +1,12 @@
 import React from 'react';
 import CaptureControlPanel, {PCaptureControlPanel} from './CaptureControlPanel';
-import CaptureController from 'controllers/CaptureController';
 import {
     IconButton,
     IconShown,
     IconHidden
 } from 'components/Elements';
+import ScoreboardCaptureController, { JamClockCaptureController, JamCounterCaptureController } from 'controllers/capture/Scoreboard';
+import { Unsubscribe } from 'redux';
 
 /**
  * Component for configuring the main slideshow.
@@ -26,15 +27,14 @@ export default class CaptureControlScoreboard extends React.PureComponent<PCaptu
 }> {
 
     readonly state = {
-        Shown:CaptureController.getState().Scoreboard.Shown,
-        JamClockShown:CaptureController.getState().Scoreboard.JamClockShown,
-        JamCounterShown:CaptureController.getState().Scoreboard.JamCounterShown
+        Shown:ScoreboardCaptureController.GetState().Shown,
+        JamClockShown:JamClockCaptureController.GetState().Shown,
+        JamCounterShown:JamCounterCaptureController.GetState().Shown
     }
 
-    /**
-     * Listener for capture controller
-     */
-    protected remoteCapture:Function|null = null;
+    protected remoteCapture?:Unsubscribe;
+    protected remoteJamClock?:Unsubscribe;
+    protected remoteJamCounter?:Unsubscribe;
 
     constructor(props) {
         super(props);
@@ -44,9 +44,21 @@ export default class CaptureControlScoreboard extends React.PureComponent<PCaptu
     /**
      * Updates the state to match the capture controller.
      */
-    updateCapture() {
+    protected updateCapture() {
         this.setState(() => {
-            return {Shown:CaptureController.getState().Scoreboard.Shown};
+            return {Shown:ScoreboardCaptureController.GetState().Scoreboard.Shown};
+        });
+    }
+
+    protected updateJamClock() {
+        this.setState({
+            JamClockShown:JamClockCaptureController.GetState().Shown
+        });
+    }
+
+    protected updateJamCounter() {
+        this.setState({
+            JamCounterShown:JamCounterCaptureController.GetState().Shown
         });
     }
 
@@ -54,15 +66,21 @@ export default class CaptureControlScoreboard extends React.PureComponent<PCaptu
      * Start listeners
      */
     componentDidMount() {
-        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
+        this.remoteCapture = ScoreboardCaptureController.Subscribe(this.updateCapture);
+        this.remoteJamClock = JamClockCaptureController.Subscribe(this.updateJamClock);
+        this.remoteJamCounter = JamCounterCaptureController.Subscribe(this.updateJamCounter);
     }
 
     /**
      * Close listeners
      */
     componentWillUnmount() {
-        if(this.remoteCapture !== null)
+        if(this.remoteCapture)
             this.remoteCapture();
+        if(this.remoteJamClock)
+            this.remoteJamClock();
+        if(this.remoteJamCounter)
+            this.remoteJamCounter();
     }
 
     /**
@@ -80,12 +98,12 @@ export default class CaptureControlScoreboard extends React.PureComponent<PCaptu
                     <div className="record-list">
                         <IconButton
                             src={(this.state.JamClockShown) ? IconShown : IconHidden}
-                            onClick={CaptureController.ToggleJamClock}
+                            onClick={JamClockCaptureController.Toggle}
                             active={this.state.JamClockShown}
                             >Jam Clock</IconButton>
                         <IconButton
                             src={(this.state.JamCounterShown) ? IconShown : IconHidden}
-                            onClick={CaptureController.ToggleJamCounter}
+                            onClick={JamCounterCaptureController.Toggle}
                             active={this.state.JamCounterShown}
                             >Jam Counter</IconButton>
                     </div>

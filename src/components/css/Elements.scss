@@ -76,6 +76,9 @@ button:focus {
         height: 32px;
         vertical-align: middle;
         margin-right: 3px;
+        &:only-child {
+            margin-right: 0px;
+        }
     }
 
     > img:hover {
@@ -141,6 +144,8 @@ button:focus {
     width: auto;
     height: auto;
     cursor: pointer;
+    border-radius: 6px;
+    transition: background-color 150ms;
 }
 
 @media screen and (min-width: 1600px) {

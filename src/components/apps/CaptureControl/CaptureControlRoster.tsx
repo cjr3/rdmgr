@@ -1,8 +1,6 @@
 import React from 'react';
 import RosterController, {Sides} from 'controllers/RosterController';
 import ScoreboardController from 'controllers/ScoreboardController';
-import CaptureController from 'controllers/CaptureController';
-import DataController from 'controllers/DataController';
 import CaptureControlPanel, {PCaptureControlPanel} from './CaptureControlPanel';
 
 import {
@@ -18,6 +16,8 @@ import {
 } from 'components/Elements';
 import { Unsubscribe } from 'redux';
 import vars, { SkaterRecord } from 'tools/vars';
+import RosterCaptureController from 'controllers/capture/Roster';
+import { Compare, AddMediaPath } from 'controllers/functions';
 
 /**
  * Component for configuring the roster.
@@ -29,7 +29,7 @@ export default class CaptureControlRoster extends React.PureComponent<PCaptureCo
     Shown:boolean;
 }> {
     readonly state = {
-        Shown:CaptureController.getState().Roster.Shown
+        Shown:RosterCaptureController.GetState().Shown
     }
 
     /**
@@ -51,7 +51,7 @@ export default class CaptureControlRoster extends React.PureComponent<PCaptureCo
      */
     protected async updateCapture() {
         this.setState({
-            Shown:CaptureController.getState().Roster.Shown
+            Shown:RosterCaptureController.GetState().Shown
         });
     }
 
@@ -59,7 +59,7 @@ export default class CaptureControlRoster extends React.PureComponent<PCaptureCo
      * Subscribe to controllers
      */
     componentDidMount() {
-        this.remoteCapture = RosterController.subscribe(this.updateCapture);
+        this.remoteCapture = RosterCaptureController.Subscribe(this.updateCapture);
     }
 
     /**
@@ -79,7 +79,7 @@ export default class CaptureControlRoster extends React.PureComponent<PCaptureCo
                 active={this.props.active}
                 name={'Intro'}
                 icon={IconTeam}
-                toggle={CaptureController.ToggleRoster}
+                toggle={RosterCaptureController.Toggle}
                 shown={this.state.Shown}
                 buttons={[<Buttons key="buttons"/>]}
                 onClick={this.props.onClick}>
@@ -97,8 +97,8 @@ class Buttons extends React.PureComponent<any, {
     shown:boolean;
 }> {
     readonly state = {
-        className:CaptureController.getState().Roster.className,
-        shown:CaptureController.getState().Roster.Shown
+        className:RosterCaptureController.GetState().className,
+        shown:RosterCaptureController.GetState().Shown
     }
 
     /**
@@ -120,8 +120,8 @@ class Buttons extends React.PureComponent<any, {
      */
     protected async updateCapture() {
         this.setState({
-            className:CaptureController.getState().Roster.className,
-            shown:CaptureController.getState().Roster.Shown
+            className:RosterCaptureController.GetState().className,
+            shown:RosterCaptureController.GetState().Shown
         });
     }
 
@@ -129,7 +129,7 @@ class Buttons extends React.PureComponent<any, {
      * Subscribe to controllers
      */
     componentDidMount() {
-        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
+        this.remoteCapture = RosterCaptureController.Subscribe(this.updateCapture);
     }
 
     /**
@@ -156,9 +156,9 @@ class Buttons extends React.PureComponent<any, {
                     active={(this.state.className === 'fullscreen')}
                     onClick={() => {
                         if(this.state.className === 'fullscreen')
-                            CaptureController.SetRosterClass('');
+                            RosterCaptureController.SetClass('');
                         else
-                            CaptureController.SetRosterClass('fullscreen');
+                            RosterCaptureController.SetClass('fullscreen');
                     }}
                     />
                 <IconButton
@@ -170,7 +170,7 @@ class Buttons extends React.PureComponent<any, {
                     active={this.state.shown}
                     title="Show/Hide"
                     src={(this.state.shown) ? IconShown : IconHidden}
-                    onClick={CaptureController.ToggleRoster}
+                    onClick={RosterCaptureController.Toggle}
                     />
                 <IconButton
                     src={IconLeft}
@@ -207,19 +207,19 @@ class Skaters extends React.PureComponent<any, {
     }
 }> {
     readonly state = {
-        CurrentTeam:RosterController.getState().CurrentTeam,
-        Index:RosterController.getState().SkaterIndex,
-        SkatersA:RosterController.getState().TeamA.Skaters,
-        SkatersB:RosterController.getState().TeamB.Skaters,
+        CurrentTeam:RosterController.GetState().CurrentTeam,
+        Index:RosterController.GetState().SkaterIndex,
+        SkatersA:RosterController.GetState().TeamA.Skaters,
+        SkatersB:RosterController.GetState().TeamB.Skaters,
         TeamA:{
-            ID:ScoreboardController.getState().TeamA.ID,
-            Name:ScoreboardController.getState().TeamA.Name,
-            Thumbnail:ScoreboardController.getState().TeamA.Thumbnail
+            ID:ScoreboardController.GetState().TeamA.ID,
+            Name:ScoreboardController.GetState().TeamA.Name,
+            Thumbnail:ScoreboardController.GetState().TeamA.Thumbnail
         },
         TeamB:{
-            ID:ScoreboardController.getState().TeamB.ID,
-            Name:ScoreboardController.getState().TeamB.Name,
-            Thumbnail:ScoreboardController.getState().TeamB.Thumbnail
+            ID:ScoreboardController.GetState().TeamB.ID,
+            Name:ScoreboardController.GetState().TeamB.Name,
+            Thumbnail:ScoreboardController.GetState().TeamB.Thumbnail
         }
     }
 
@@ -257,7 +257,7 @@ class Skaters extends React.PureComponent<any, {
      * Updates the state to match the RosterController
      */
     protected async updateRoster() {
-        let cstate = RosterController.getState();
+        let cstate = RosterController.GetState();
         let changes:any = {
             CurrentTeam:cstate.CurrentTeam,
             Index:cstate.SkaterIndex
@@ -265,9 +265,9 @@ class Skaters extends React.PureComponent<any, {
 
         let skatersA = cstate.TeamA.Skaters;
         let skatersB = cstate.TeamB.Skaters;
-        if(!DataController.compare(skatersA, this.state.SkatersA))
+        if(!Compare(skatersA, this.state.SkatersA))
             changes.SkatersA = skatersA;
-        if(!DataController.compare(skatersB, this.state.SkatersB))
+        if(!Compare(skatersB, this.state.SkatersB))
             changes.SkatersB = skatersB;
         this.setState(changes);
     }
@@ -276,7 +276,7 @@ class Skaters extends React.PureComponent<any, {
      * Update the state to match the ScoreboardController
      */
     protected async updateScoreboard() {
-        let cstate = ScoreboardController.getState();
+        let cstate = ScoreboardController.GetState();
         let teama:any = {
             ID:cstate.TeamA.ID,
             Name:cstate.TeamA.Name,
@@ -288,10 +288,10 @@ class Skaters extends React.PureComponent<any, {
             Thumbnail:cstate.TeamB.Thumbnail
         };
 
-        if(!DataController.compare(teama, this.state.TeamA))
+        if(!Compare(teama, this.state.TeamA))
             this.setState({TeamA:teama});
 
-        if(!DataController.compare(teamb, this.state.TeamB))
+        if(!Compare(teamb, this.state.TeamB))
             this.setState({TeamB:teamb});
     }
 
@@ -342,8 +342,8 @@ class Skaters extends React.PureComponent<any, {
      * Subscribe to controllers
      */
     componentDidMount() {
-        this.remoteRoster = RosterController.subscribe(this.updateRoster);
-        this.remoteScoreboard = ScoreboardController.subscribe(this.updateScoreboard);
+        this.remoteRoster = RosterController.Subscribe(this.updateRoster);
+        this.remoteScoreboard = ScoreboardController.Subscribe(this.updateScoreboard);
     }
 
     /**
@@ -490,7 +490,7 @@ class TeamItem extends React.PureComponent<{
                 >
                 <div ref={this.Item}>
                     <div className="num">
-                        <img src={DataController.mpath(this.props.src)} alt=""/>
+                        <img src={AddMediaPath(this.props.src)} alt=""/>
                     </div>
                     <div className="name">{this.props.name}</div>
                 </div>

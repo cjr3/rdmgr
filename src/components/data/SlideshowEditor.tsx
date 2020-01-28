@@ -1,6 +1,5 @@
 import React from 'react';
-import RecordEditor from './RecordEditor';
-import DataController from 'controllers/DataController';
+import RecordEditor, {PRecordEditor} from './RecordEditor';
 import vars, { SlideshowRecord } from 'tools/vars';
 import SortPanel from 'components/tools/SortPanel';
 import {
@@ -12,20 +11,20 @@ import {
     IconFolder
 } from 'components/Elements';
 import ClientController from 'controllers/ClientController';
+import {Unsubscribe} from 'redux';
+import SlideshowsController from 'controllers/SlideshowsController';
+import RecordList from './RecordList';
+import { FileExtension, Basename, LoadFolderFiles } from 'controllers/functions.io';
+import { MoveElement } from 'controllers/functions';
+
+interface props extends PRecordEditor {
+    record:SlideshowRecord|null
+};
 
 /**
  * Component for editing slideshow records.
  */
-export default class SlideshowEditor extends React.PureComponent<{
-    /**
-     * Record to edit
-     */
-    record:SlideshowRecord|null;
-    /**
-     * true to show, false to hide
-     */
-    opened:boolean;
-}, {
+export default class SlideshowEditor extends React.PureComponent<props, {
     Slides:Array<any>
 }> {
     readonly state = {
@@ -52,7 +51,7 @@ export default class SlideshowEditor extends React.PureComponent<{
             var slides = state.Slides.slice();
             slides.push({
                 RecordType:"IMG",
-                Name:DataController.basename(filename),
+                Name:Basename(filename),
                 Filename:filename
             });
             return {Slides:slides};
@@ -83,7 +82,7 @@ export default class SlideshowEditor extends React.PureComponent<{
             this.setState((state) => {
                 var slides = state.Slides.slice();
                 slides[index] = Object.assign({}, slides[index], {
-                    Name:DataController.basename(filename),
+                    Name:Basename(filename),
                     Filename:filename
                 });
                 return {Slides:slides};
@@ -99,7 +98,7 @@ export default class SlideshowEditor extends React.PureComponent<{
      */
     swapSlides(dropIndex, dragIndex, right) {
         var slides = this.state.Slides.slice();
-        DataController.MoveElement(slides, dropIndex, dragIndex, right);
+        MoveElement(slides, dropIndex, dragIndex, right);
         this.setState(() => {
             return {Slides:slides};
         });
@@ -134,31 +133,30 @@ export default class SlideshowEditor extends React.PureComponent<{
     onSelectFolder(path) {
         window.onSelectFolder = null;
         ClientController.ToggleFileBrowser(false);
-        let fs:any = DataController.FS;
-        if(fs !== null) {
-            fs.readdir(path, "utf8", (eer, files) => {
-                var slides:Array<any> = [];
-                for(var key in files) {
-                    switch(DataController.ext(files[key])) {
-                        case 'jpg' :
-                        case 'jpeg' :
-                        case 'gif' :
-                        case 'png' :
-                        case 'bmp' :
-                            slides.push({
-                                RecordType:"IMG",
-                                Name:DataController.basename(files[key]),
-                                Filename:path + "/" + files[key]
-                            });
-                        break;
-                        default : break;
-                    }
+        LoadFolderFiles(path).then((files) => {
+            let slides:Array<any> = [];
+            for(let key in files) {
+                switch(FileExtension(files[key])) {
+                    case 'jpg' :
+                    case 'jpeg' :
+                    case 'gif' :
+                    case 'png' :
+                    case 'bmp' :
+                        slides.push({
+                            RecordType:"IMG",
+                            Name:Basename(files[key]),
+                            Filename:path + "/" + files[key]
+                        });
+                    break;
+                    default : break;
                 }
-                this.setState(() => {
-                    return {Slides:slides};
-                });
+            }
+            this.setState(() => {
+                return {Slides:slides};
             });
-        }
+        }).catch((er) => {
+
+        });
     }
 
     /**
@@ -251,6 +249,51 @@ export default class SlideshowEditor extends React.PureComponent<{
                     </td>
                 </tr>
             </RecordEditor>
+        )
+    }
+}
+
+export class SlideshowRecordList extends React.PureComponent<{
+    shown:boolean;
+    record:SlideshowRecord|null;
+    onSelect:Function;
+    keywords?:string;
+}, {
+    Records:Array<SlideshowRecord>;
+}> {
+    readonly state = {
+        Records:SlideshowsController.Get()
+    }
+
+    protected remoteData?:Unsubscribe;
+
+    constructor(props) {
+        super(props);
+        this.updateData = this.updateData.bind(this);
+    }
+
+    protected updateData() {
+        this.setState({Records:SlideshowsController.Get()});
+    }
+
+    componentDidMount() {
+        this.remoteData = SlideshowsController.Subscribe(this.updateData);
+    }
+
+    componentWillUnmount() {
+        if(this.remoteData)
+            this.remoteData();
+    }
+
+    render() {
+        return (
+            <RecordList
+                keywords={this.props.keywords}
+                className={(this.props.shown) ? 'shown' : ''}
+                onSelect={this.props.onSelect}
+                recordid={(this.props.record) ? this.props.record.RecordID : 0}
+                records={this.state.Records}
+                />
         )
     }
 }

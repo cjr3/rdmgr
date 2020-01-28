@@ -1,8 +1,9 @@
 import React from 'react';
 import ScorekeeperController, { SScorekeeperTeam } from 'controllers/ScorekeeperController';
-import CaptureController from 'controllers/CaptureController';
-import DataController from 'controllers/DataController';
 import CaptureControlPanel, {PCaptureControlPanel} from './CaptureControlPanel';
+import ScorekeeperCaptureController from 'controllers/capture/Scorekeeper';
+import { Unsubscribe } from 'redux';
+import { AddMediaPath } from 'controllers/functions';
 
 /**
  * Component for configuring the scorekeeper elements.
@@ -23,19 +24,19 @@ export default class CaptureControlScorekeeper extends React.PureComponent<PCapt
 }> {
 
     readonly state = {
-        TeamA:ScorekeeperController.getState().TeamA,
-        TeamB:ScorekeeperController.getState().TeamB,
-        Shown:CaptureController.getState().Scorekeeper.Shown
+        TeamA:ScorekeeperController.GetState().TeamA,
+        TeamB:ScorekeeperController.GetState().TeamB,
+        Shown:ScorekeeperCaptureController.GetState().Shown
     }
 
     /**
      * Scorekeeper controller listener
      */
-    protected remoteState:Function|null = null;
+    protected remoteState?:Unsubscribe;
     /**
      * Capture controller listener
      */
-    protected remoteCapture:Function|null = null;
+    protected remoteCapture?:Unsubscribe;
 
     /**
      * Constructor
@@ -51,11 +52,11 @@ export default class CaptureControlScorekeeper extends React.PureComponent<PCapt
     /**
      * Updates the state to match the camera controller.
      */
-    updateState() {
+    protected updateState() {
         this.setState(() => {
             return {
-                TeamA:ScorekeeperController.getState().TeamA,
-                TeamB:ScorekeeperController.getState().TeamB
+                TeamA:ScorekeeperController.GetState().TeamA,
+                TeamB:ScorekeeperController.GetState().TeamB
             }
         });
     }
@@ -63,9 +64,9 @@ export default class CaptureControlScorekeeper extends React.PureComponent<PCapt
     /**
      * Updates the state to match the capture controller.
      */
-    updateCapture() {
+    protected updateCapture() {
         this.setState(() => {
-            return {Shown:CaptureController.getState().Scorekeeper.Shown};
+            return {Shown:ScorekeeperCaptureController.GetState().Shown};
         });
     }
 
@@ -73,17 +74,17 @@ export default class CaptureControlScorekeeper extends React.PureComponent<PCapt
      * Start listeners
      */
     componentDidMount() {
-        this.remoteState = ScorekeeperController.subscribe(this.updateState);
-        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
+        this.remoteState = ScorekeeperController.Subscribe(this.updateState);
+        this.remoteCapture = ScorekeeperCaptureController.Subscribe(this.updateCapture);
     }
 
     /**
      * Close listeners
      */
     componentWillUnmount() {
-        if(this.remoteState !== null)
+        if(this.remoteState)
             this.remoteState();
-        if(this.remoteCapture !== null)
+        if(this.remoteCapture)
             this.remoteCapture();
     }
 
@@ -104,11 +105,11 @@ export default class CaptureControlScorekeeper extends React.PureComponent<PCapt
                 onClick={this.props.onClick}>
                     <div className="stack-panel s2">
                         <div className="skater-preview">
-                            <img src={DataController.mpath(jammerA.Thumbnail, false)} alt=""/>
+                            <img src={AddMediaPath(jammerA.Thumbnail)} alt=""/>
                             <div className="name">{jammerA.Name}</div>
                         </div>
                         <div className="skater-preview">
-                            <img src={DataController.mpath(jammerB.Thumbnail, false)} alt=""/>
+                            <img src={AddMediaPath(jammerB.Thumbnail)} alt=""/>
                             <div className="name">{jammerB.Name}</div>
                         </div>
                     </div>

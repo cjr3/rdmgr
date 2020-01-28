@@ -1,35 +1,41 @@
 import React from 'react'
-import SlideshowController, {SSlideshowController} from 'controllers/SlideshowController'
-import DataController from 'controllers/DataController';
+import SlideshowController from 'controllers/SlideshowController'
 import cnames from 'classnames'
 import './css/CaptureSlideshow.scss';
-
-interface SCaptureSlideshow extends SSlideshowController {
-    CurrentSlide?:string
-}
+import SlideshowCaptureController from 'controllers/capture/Slideshow';
+import { AddMediaPath } from 'controllers/functions';
 
 /**
  * Component for displaying the current slideshow on the capture window
  */
-export default class CaptureSlideshow extends React.PureComponent<{
-    /**
-     * True to show, false to hide
-     */
-    shown:boolean;
-}, SCaptureSlideshow> {
-    readonly state:SCaptureSlideshow = SlideshowController.getState()
+export default class CaptureSlideshow extends React.PureComponent<any, {
+    Index:number;
+    Slides:Array<any>;
+    Shown:boolean;
+    className:string;
+    CurrentSlide:string;
+    SlideshowID:number;
+}> {
+    readonly state = {
+        Index:SlideshowController.GetState().Index,
+        Slides:SlideshowController.GetState().Slides,
+        SlideshowID:SlideshowController.GetState().SlideshowID,
+        Shown:SlideshowCaptureController.GetState().Shown,
+        className:SlideshowCaptureController.GetState().className,
+        CurrentSlide:'A'
+    };
+
     /**
      * Source of Slide A
      */
-    protected SourceA:string = ''
+    protected SourceA:string = '';
     /**
      * Source of slide B
      */
-    protected SourceB:string = ''
-    /**
-     * SlideshowController remote
-     */
-    protected remoteState:Function|null = null;
+    protected SourceB:string = '';
+    
+    protected remoteState?:Function;
+    protected remoteCapture?:Function;
 
     /**
      * Constructor
@@ -39,21 +45,34 @@ export default class CaptureSlideshow extends React.PureComponent<{
         super(props);
         this.state.CurrentSlide = 'A';
         this.updateState = this.updateState.bind(this);
+        this.updateCapture = this.updateCapture.bind(this);
     }
 
     /**
      * Updates the state to match the slideshow controller
      */
-    updateState() {
-        this.setState((state:SCaptureSlideshow) => {
-            var cstate = SlideshowController.getState();
-            if(cstate.SlideshowID !== state.SlideshowID) {
-                this.SourceA = '';
-                this.SourceB = '';
-            }
-            return Object.assign({}, cstate,{
-                CurrentSlide:(state.CurrentSlide === 'A') ? 'B' : 'A'
-            });
+    protected updateState() {
+        let changes:any = {
+            Index:SlideshowController.GetState().Index,
+            Slides:SlideshowController.GetState().Slides,
+            SlideshowID:SlideshowController.GetState().SlideshowID
+        };
+
+        if(changes.SlideshowID != this.state.SlideshowID) {
+            this.SourceA = '';
+            this.SourceB = '';
+            changes.CurrentSlide = 'A';
+        } else if(changes.Index != this.state.Index) {
+            changes.CurrentSlide = (this.state.CurrentSlide == 'A') ? 'B' : 'A';
+        }
+
+        this.setState(changes);
+    }
+
+    protected updateCapture() {
+        this.setState({
+            Shown:SlideshowCaptureController.GetState().Shown,
+            className:SlideshowCaptureController.GetState().className,
         });
     }
 
@@ -61,15 +80,18 @@ export default class CaptureSlideshow extends React.PureComponent<{
      * Start listeners
      */
     componentDidMount() {
-        this.remoteState = SlideshowController.subscribe(this.updateState);
+        this.remoteState = SlideshowController.Subscribe(this.updateState);
+        this.remoteCapture = SlideshowCaptureController.Subscribe(this.updateCapture);
     }
 
     /**
      * Close listeners
      */
     componentWillUnmount() {
-        if(this.remoteState !== null)
+        if(this.remoteState)
             this.remoteState();
+        if(this.remoteCapture)
+            this.remoteCapture();
     }
 
     /**
@@ -77,24 +99,22 @@ export default class CaptureSlideshow extends React.PureComponent<{
      */
     render() {
         let className:string = cnames('main-slideshow', {
-            shown:this.props.shown
+            shown:this.state.Shown
         });
 
-        let classA:string = cnames({
-            slide:true,
+        let classA:string = cnames('slide', {
             shown:(this.state.CurrentSlide === 'A')
         });
 
-        let classB:string = cnames({
-            slide:true,
+        let classB:string = cnames('slide', {
             shown:(this.state.CurrentSlide === 'B')
         });
 
         if(this.state.Slides && this.state.Slides.length && this.state.Slides[this.state.Index]) {
             if(this.state.CurrentSlide === 'A') {
-                this.SourceA = DataController.mpath(this.state.Slides[this.state.Index].Filename);
+                this.SourceA = AddMediaPath(this.state.Slides[this.state.Index].Filename);
             } else {
-                this.SourceB = DataController.mpath(this.state.Slides[this.state.Index].Filename);
+                this.SourceB = AddMediaPath(this.state.Slides[this.state.Index].Filename);
             }
         }
 

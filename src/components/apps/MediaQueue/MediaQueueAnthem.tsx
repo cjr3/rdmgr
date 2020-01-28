@@ -4,36 +4,48 @@ import vars, { SlideshowRecord, VideoRecord, AnthemRecord } from 'tools/vars';
 import MediaQueueController from 'controllers/MediaQueueController';
 import DataController from 'controllers/DataController';
 import { Unsubscribe } from 'redux';
+import { Compare, AddMediaPath } from 'controllers/functions';
 
 export default class MediaQueueAnthem extends React.PureComponent<any, {
     Record:SlideshowRecord | VideoRecord | AnthemRecord | undefined | null;
+    BackgroundImage:string;
 }> {
     readonly state = {
-        Record:MediaQueueController.getState().Record
+        Record:MediaQueueController.GetState().Record,
+        BackgroundImage:DataController.GetMiscRecord('NationalFlag')
     }
 
-    protected BackgroundImage:string = DataController.GetMiscRecord('NationalAnthemSinger').Background
-
-    protected remoteMedia:Unsubscribe|null = null;
+    protected remoteMedia?:Unsubscribe;
+    protected remoteData?:Unsubscribe;
 
     constructor(props) {
         super(props);
         this.updateMedia = this.updateMedia.bind(this);
+        this.updateData = this.updateData.bind(this);
     }
 
-    protected async updateMedia() {
-        let record = MediaQueueController.getState().Record;
-        if(!DataController.compare(record, this.state.Record))
-            this.setState({Record:record});
+    protected updateMedia() {
+        this.setState({
+            Record:MediaQueueController.GetState().Record
+        });
+    }
+
+    protected updateData() {
+        this.setState({
+            BackgroundImage:DataController.GetMiscRecord('NationalFlag')
+        });
     }
 
     componentDidMount() {
-        this.remoteMedia = MediaQueueController.subscribe(this.updateMedia)
+        this.remoteMedia = MediaQueueController.Subscribe(this.updateMedia);
+        this.remoteData = DataController.Subscribe(this.updateData);
     }
 
     componentWillUnmount() {
-        if(this.remoteMedia !== null)
+        if(this.remoteMedia)
             this.remoteMedia();
+        if(this.remoteData)
+            this.remoteData();
     }
 
     render() {
@@ -48,8 +60,8 @@ export default class MediaQueueAnthem extends React.PureComponent<any, {
             if(singer.Biography)
                 bio = singer.Biography;
         }
-        if(this.BackgroundImage)
-            style.backgroundImage = "url('" + DataController.mpath(this.BackgroundImage) + "')";
+        if(this.state.BackgroundImage)
+            style.backgroundImage = "url('" + AddMediaPath(this.state.BackgroundImage) + "')";
 
         return (
             <div 

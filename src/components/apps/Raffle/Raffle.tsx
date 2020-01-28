@@ -1,12 +1,11 @@
 import React from 'react';
-import RaffleController, {SRaffleController} from 'controllers/RaffleController';
-import CaptureController from 'controllers/CaptureController';
+import RaffleController from 'controllers/RaffleController';
 import Panel from 'components/Panel';
 import { IconButton, Button, IconDelete, IconCheck, IconShown, IconHidden } from 'components/Elements'
 import keycodes from 'tools/keycodes'
 import './css/Raffle.scss'
 import { Unsubscribe } from 'redux';
-import DataController from 'controllers/DataController';
+import RaffleCaptureController from 'controllers/capture/Raffle';
 
 /**
  * Component for managing the raffle tickets
@@ -18,7 +17,7 @@ export default class Raffle extends React.PureComponent<any, {
     Shown:boolean;
 }> {
     readonly state = {
-        Shown:CaptureController.getState().Raffle.Shown
+        Shown:RaffleCaptureController.GetState().Shown
     }
 
     /**
@@ -40,14 +39,14 @@ export default class Raffle extends React.PureComponent<any, {
      * Updates the capture state to match the controller.
      */
     protected async updateCapture() {
-        this.setState({Shown:CaptureController.getState().Raffle.Shown});
+        this.setState({Shown:RaffleCaptureController.GetState().Shown});
     }
 
     /**
      * Start listeners
      */
     componentDidMount() {
-        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
+        this.remoteCapture = RaffleCaptureController.Subscribe(this.updateCapture);
     }
 
     /**
@@ -69,13 +68,18 @@ export default class Raffle extends React.PureComponent<any, {
             <IconButton
                 src={icon}
                 active={this.state.Shown}
-                onClick={CaptureController.ToggleRaffle}
+                onClick={() => {
+                    RaffleCaptureController.Toggle();
+                    if(this.TicketItem && this.TicketItem.current) {
+                        this.TicketItem.current.focus();
+                    }
+                }}
                 key="btn-toggle"
             >{(this.state.Shown) ? 'Hide' : 'Show'}</IconButton>,
             <IconButton
                 src={IconDelete}
                 onClick={() => {
-                    CaptureController.SetRaffleVisibility(false);
+                    RaffleCaptureController.Hide();
                     RaffleController.Clear();
                 }}
                 key="btn-clear"
@@ -123,7 +127,7 @@ class RaffleTickets extends React.PureComponent<{
     Tickets:Array<string>;
 }> {
     readonly state = {
-        Tickets:RaffleController.getState().Tickets
+        Tickets:RaffleController.GetState().Tickets
     }
 
     protected remoteRaffle:Unsubscribe|null = null;
@@ -134,11 +138,11 @@ class RaffleTickets extends React.PureComponent<{
     }
 
     protected async updateRaffle() {
-        this.setState({Tickets:RaffleController.getState().Tickets.slice(0)});
+        this.setState({Tickets:RaffleController.GetState().Tickets.slice(0)});
     }
 
     componentDidMount() {
-        this.remoteRaffle = RaffleController.subscribe(this.updateRaffle);
+        this.remoteRaffle = RaffleController.Subscribe(this.updateRaffle);
     }
 
     componentWillUnmount() {
@@ -149,14 +153,16 @@ class RaffleTickets extends React.PureComponent<{
     render() {
         let tickets:Array<React.ReactElement> = new Array<React.ReactElement>();
         this.state.Tickets.forEach((ticket, index) => {
-            tickets.push(
-                <div className="ticket" key={"ticket-"+index}>
-                    <div
-                        className="ticket-number"
-                        onClick={() => {this.props.onClick(index)}}
-                        >{ticket}</div>
-                </div>
-            );
+            if(ticket) {
+                tickets.push(
+                    <div className="ticket" key={"ticket-"+index}>
+                        <div
+                            className="ticket-number"
+                            onClick={() => {this.props.onClick(index)}}
+                            >{ticket}</div>
+                    </div>
+                );
+            }
         });
 
         return (
@@ -178,12 +184,17 @@ class RaffleTicketEntry extends React.PureComponent<any, {
         super(props);
         this.onChangeTicketNumber = this.onChangeTicketNumber.bind(this);
         this.onKeyUpTicketNumber = this.onKeyUpTicketNumber.bind(this);
+        this.onFocusTicketNumber = this.onFocusTicketNumber.bind(this);
         this.sendTicket = this.sendTicket.bind(this);
     }
 
     protected onChangeTicketNumber(ev: React.ChangeEvent<HTMLInputElement>) {
         let value:string = ev.currentTarget.value;
         this.setState({value:value});
+    }
+
+    protected onFocusTicketNumber(ev: React.FocusEvent<HTMLInputElement>) {
+        ev.currentTarget.select();
     }
 
     protected onKeyUpTicketNumber(ev: React.KeyboardEvent<HTMLInputElement>) {
@@ -204,7 +215,7 @@ class RaffleTicketEntry extends React.PureComponent<any, {
             break;
 
             case keycodes.F12 :
-                CaptureController.ToggleRaffle();
+                RaffleCaptureController.Toggle();
             break;
 
             default :
@@ -283,6 +294,7 @@ class RaffleTicketEntry extends React.PureComponent<any, {
                     onChange={this.onChangeTicketNumber}
                     value={this.state.value}
                     onKeyUp={this.onKeyUpTicketNumber}
+                    onFocus={this.onFocusTicketNumber}
                     ref={this.TicketItem}
                     />
             </div>

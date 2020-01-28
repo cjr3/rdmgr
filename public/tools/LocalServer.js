@@ -154,7 +154,7 @@ class P2PServer {
             });
             this.Server.on('connection', (ws) => {
                 ws.on('pong', () => {
-                    console.log(`ws pong!`);
+                    //console.log(`ws pong!`);
                 });
 
                 ws.on('message', (msg) => {
@@ -164,12 +164,12 @@ class P2PServer {
                     } catch(er) {
 
                     } finally {
-                        console.log(j);
+                        //console.log(j);
                     }
                 });
 
                 ws.on('error', () => {
-                    console.log('socketed error!');
+                    //console.log('socketed error!');
                 })
             });
             this.ExpressApp.use(this.LocalPeer.Path, this.Server);
@@ -183,7 +183,7 @@ class P2PServer {
      * @param {String} id 
      */
     async onConnect(id) {
-        console.log(`${id} connected to server`);
+        //console.log(`${id} connected to server`);
         this.LocalPeer.receivePeer(id, true);
     }
 
@@ -192,7 +192,7 @@ class P2PServer {
      * @param {String} id 
      */
     async onDisconnect(id) {
-        console.log(`${id} disconnected from server.`)
+        //console.log(`${id} disconnected from server.`)
         //this.LocalPeer.disconnectPeer(id);
         //this.LocalPeer.receivePeer(id);
     }
@@ -203,7 +203,7 @@ class P2PServer {
     Init(controller) {
         this.controller = controller;
         if(this.controller) {
-            this.remoteController = this.controller.subscribe(this.updateData);
+            this.remoteController = this.controller.Subscribe(this.updateData);
         }
 
         const ExpressPeerServer = require('peer').ExpressPeerServer;
@@ -240,7 +240,7 @@ class P2PServer {
      * @param {Object} action 
      */
     reducer(state, action) {
-        console.log(`Updating server store`);
+        //console.log(`Updating server store`);
         if(typeof(state) !== "object")
             return Object.assign({}, this.InitState);
 
@@ -358,7 +358,7 @@ class P2PServer {
      */
     SendState(app, state) {
         if(this.controller) {
-            let peers = this.controller.getPeers(true);
+            let peers = this.controller.GetPeers(true);
             peers.forEach((peer) => {
                 if(peer.ReceiveApps && peer.ReceiveApps.indexOf(app) >= 0) {
                     this.LocalPeer.send(peer.PeerID, {
@@ -551,7 +551,7 @@ class P2PServer {
             return src;
         }
 
-        return "http://" + this.IPAddress + ":" + this.Port + "/api/image/" + this.controller.mpath(src, true);
+        return "http://" + this.IPAddress + ":" + this.Port + "/api/image/" + this.controller.RemoveMediaPath(src);
     }
 
     /**
@@ -569,7 +569,7 @@ class P2PServer {
             }
             return src;
         }
-        return prefix + this.controller.PATH.basename(src);
+        return prefix + this.controller.Basename(src);
     }
 
     /**

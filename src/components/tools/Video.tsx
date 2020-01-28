@@ -2,30 +2,6 @@ import React from 'react'
 import cnames from 'classnames'
 import vars from 'tools/vars'
 
-interface PVideo {
-    source:string,
-    width:number,
-    height:number,
-    currentTime?:number,
-    muted?:boolean,
-    rate?:number,
-    volume?:number,
-    status?:number,
-    autoplay?:boolean,
-    className?:string,
-    loop?:boolean,
-    onCanPlayThrough?:Function,
-    onDurationChange?:Function,
-    onEnded?:Function,
-    onError?:Function,
-    onPause?:Function,
-    onPlay?:Function,
-    onPlaying?:Function,
-    onRateChange?:Function,
-    onTimeUpdate?:Function,
-    onVolumeChange?:Function
-}
-
 /**
  * Component for displaying and controlling a video
  */

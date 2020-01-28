@@ -1,8 +1,6 @@
 import React from 'react';
-import DataController from 'controllers/DataController';
 import { 
     Icon,
-    IconCheck,
     IconLoop,
     IconSave
 } from 'components/Elements';
@@ -92,6 +90,7 @@ class MatchItem extends React.PureComponent<{
         this.setState(() => {
             return {saving:true};
         }, async () => {
+            /*
             DataController.putMatchScores(
                 this.props.record.RecordID,
                 this.state.ScoreA,
@@ -101,6 +100,7 @@ class MatchItem extends React.PureComponent<{
             }).catch((error) => {
                 this.setState({errorMessage:error,saving:false});
             });
+            */
         });
     }
 

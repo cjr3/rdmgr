@@ -1,22 +1,20 @@
 import React from 'react';
-import RecordEditor from './RecordEditor';
-import DataController from 'controllers/DataController';
+import RecordEditor, {PRecordEditor} from './RecordEditor';
 import {ToggleButton} from 'components/Elements';
 import vars, { SkaterTeamRecord, TeamRecord, SkaterRecord } from 'tools/vars';
+import SkatersController from 'controllers/SkatersController';
+import TeamsController from 'controllers/TeamsController';
+import { Unsubscribe } from 'redux';
+import RecordList from './RecordList';
+
+interface props extends PRecordEditor {
+    record:SkaterRecord|null;
+}
 
 /**
  * Component to edit a skater record.
  */
-export default class SkaterEditor extends React.PureComponent<{
-    /**
-     * Record to edit
-     */
-    record:SkaterRecord|null;
-    /**
-     * true to show, false to hide
-     */
-    opened:boolean;
-}, {
+export default class SkaterEditor extends React.PureComponent<props, {
     /**
      * Teams the skater is assigned to
      */
@@ -33,7 +31,7 @@ export default class SkaterEditor extends React.PureComponent<{
     readonly state = {
         SkaterTeams:new Array<SkaterTeamRecord>(),
         SkaterID:0,
-        Teams:DataController.getTeams(true)
+        Teams:TeamsController.Get()
     }
 
     /**
@@ -60,9 +58,7 @@ export default class SkaterEditor extends React.PureComponent<{
      * - Update teams
      */
     updateData() {
-        this.setState({
-            Teams:DataController.getTeams(true)
-        });
+        this.setState({Teams:TeamsController.Get()});
     }
 
     /**
@@ -70,10 +66,7 @@ export default class SkaterEditor extends React.PureComponent<{
      * @param {Number} id 
      */
     protected addTeam(id:number) {
-        let index:number = this.state.SkaterTeams.findIndex((team) => {
-            return (team.TeamID === id);
-        });
-
+        let index:number = this.state.SkaterTeams.findIndex(team => team.TeamID == id);
         if(index < 0) {
             this.setState((state) => {
                 let teams = state.SkaterTeams.slice();
@@ -99,9 +92,7 @@ export default class SkaterEditor extends React.PureComponent<{
      * @param {Number} id 
      */
     protected removeTeam(id:number) {
-        let index:number = this.state.SkaterTeams.findIndex((team) => {
-            return (team.TeamID === id);
-        })
+        let index:number = this.state.SkaterTeams.findIndex(team => team.TeamID == id);
 
         if(index >= 0) {
             this.setState((state) => {
@@ -181,7 +172,7 @@ export default class SkaterEditor extends React.PureComponent<{
      * Start listeners
      */
     componentDidMount() {
-        this.remoteData = DataController.subscribe(this.updateData);
+        this.remoteData = TeamsController.Subscribe(this.updateData);
     }
 
     /**
@@ -199,8 +190,7 @@ export default class SkaterEditor extends React.PureComponent<{
         let teams:Array<React.ReactElement> = [];
         if(this.state.Teams) {
             let items = Object.entries(this.state.Teams);
-            items.forEach((item) => {
-                let team:TeamRecord = item[1];
+            this.state.Teams.forEach((team) => {
                 let captain:boolean = false;
                 let cocaptain:boolean = false;
                 let coach:boolean = false;
@@ -239,7 +229,6 @@ export default class SkaterEditor extends React.PureComponent<{
             <RecordEditor 
                 recordType={vars.RecordType.Skater}
                 onSubmit={this.onSubmit}
-                opened={this.props.opened}
                 {...this.props}
                 >
                 <tr>
@@ -300,4 +289,49 @@ function SkaterTeam(props:PSkaterTeam) {
                 />
         </div>
     );
+}
+
+export class SkaterRecordList extends React.PureComponent<{
+    shown:boolean;
+    onSelect:Function;
+    record:SkaterRecord|null;
+    keywords?:string;
+}, {
+    Records:Array<SkaterRecord>
+}>{
+    readonly state = {
+        Records:SkatersController.Get()
+    }
+
+    protected remoteData?:Unsubscribe;
+
+    constructor(props) {
+        super(props);
+        this.updateData = this.updateData.bind(this);
+    }
+
+    protected updateData() {
+        this.setState({Records:SkatersController.Get()});
+    }
+
+    componentDidMount() {
+        this.remoteData = SkatersController.Subscribe(this.updateData);
+    }
+
+    componentWillUnmount() {
+        if(this.remoteData)
+            this.remoteData();
+    }
+
+    render() {
+        return (
+            <RecordList
+                className={(this.props.shown) ? 'shown' : ''}
+                records={this.state.Records}
+                onSelect={this.props.onSelect}
+                keywords={this.props.keywords}
+                recordid={(this.props.record) ? this.props.record.RecordID : 0}
+            />
+        )
+    }
 }

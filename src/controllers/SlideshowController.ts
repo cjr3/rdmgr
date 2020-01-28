@@ -3,19 +3,37 @@
  * - See SponsorController for the sponsor slideshow.
  * - See StreamIntroController for the stream intro slideshows.
  */
-import {createStore} from 'redux'
-import CaptureController from 'controllers/CaptureController';
-import DataController from 'controllers/DataController';
 import keycodes from 'tools/keycodes';
 import {SlideshowRecord} from 'tools/vars';
 
-const SET_STATE = 'SET_STATE';
-const NEXT_SLIDE = 'NEXT_SLIDE';
-const PREV_SLIDE = 'PREV_SLIDE';
-const SET_SLIDES = 'SET_SLIDES';
-const SET_LOOP = 'SET_LOOP';
-const SET_INDEX = 'SET_INDEX';
-const SWAP_SLIDES = 'SWAP_SLIDES';
+import {IController, Files} from './vars';
+import {CreateController, BaseReducer} from './functions.controllers';
+import SlideshowCaptureController from './capture/Slideshow';
+import SlideshowsController from './SlideshowsController';
+import { PrepareObjectForSending, MoveElement } from './functions';
+
+interface ISlideshowController extends IController {
+    Next:Function;
+    Prev:Function;
+    Display:{(index:number)};
+    Start:Function;
+    Show:Function;
+    Hide:Function;
+    Toggle:Function;
+    SetSlides:{(records:Array<any>,id:number,name:string)};
+    SetLoop:{(value:boolean)},
+    SwapSlides:{(a:number, b:number, right:boolean)};
+    onKeyUp:Function;
+}
+
+enum Actions {
+    NEXT_SLIDE = 'NEXT_SLIDE',
+    PREV_SLIDE = 'PREV_SLIDE',
+    SET_SLIDES = 'SET_SLIDES',
+    SET_LOOP = 'SET_LOOP',
+    SET_INDEX = 'SET_INDEX',
+    SWAP_SLIDES = 'SWAP_SLIDES'
+}
 
 export interface SSlideshowController {
     /**
@@ -71,7 +89,7 @@ export const InitState:SSlideshowController = {
  * @param {Number} len 
  * @param {Boolean} loop 
  */
-function getCorrectIndex(index, len, loop) {
+const getCorrectIndex = (index:number, len:number, loop:boolean = false) => {
     if(index < 0) {
         if(loop)
             return len - 1;
@@ -82,312 +100,267 @@ function getCorrectIndex(index, len, loop) {
         return len - 1;
     }
     return index;
-}
+};
+
+const NextSlide = (state:SSlideshowController) => {
+    return {
+        ...state,
+        Index:getCorrectIndex(state.Index + 1, state.Slides.length, state.Loop)
+    };
+};
+
+const PrevSlide = (state:SSlideshowController) => {
+    return {
+        ...state,
+        Index:getCorrectIndex(state.Index - 1, state.Slides.length, state.Loop)
+    };
+};
+
+const DisplaySlide = (state:SSlideshowController, index:number) => {
+    return {
+        ...state,
+        Index:getCorrectIndex(index, state.Slides.length, state.Loop)
+    };
+};
+
+const StartSlideshow = (state:SSlideshowController) => {
+    return {
+        ...state,
+        Index:0
+    };
+};
+
+const SetSlides = (state:SSlideshowController, records:Array<any>, id?:number, name?:string) => {
+    return {
+        ...state,
+        Index:0,
+        Slides:records,
+        SlideshowID:(id) ? id : 0,
+        Name:(name) ? name : ''
+    };
+};
+
+const SetSlideshowLoop = (state:SSlideshowController, value:boolean) => {
+    return {...state, Loop:value};
+};
+
+const SwapSlides = (state:SSlideshowController, a:number, b:number, right:boolean) => {
+    let slides:Array<any> = state.Slides.slice();
+    MoveElement(slides, a, b, right);
+    return {...state, Slides:slides};
+};
+
+const SetDelay = (state:SSlideshowController, delay:number) => {
+    return {
+        ...state,
+        Delay:delay
+    };
+};
 
 /**
  * Main reducer for the slideshow controller.
  * @param {Object} state 
  * @param {Object} action 
  */
-function SlideshowReducer(state = InitState, action)
-{
+const SlideshowReducer = (state = InitState, action) => {
     try {
         switch(action.type) {
-            case SET_STATE : {
-                return Object.assign({}, state, action.state);
-            }
-
-            case NEXT_SLIDE : {
-                return Object.assign({}, state, {
-                    Index:getCorrectIndex(state.Index + 1, state.Slides.length, state.Loop)
-                });
-            }
+            case Actions.NEXT_SLIDE :
+                return NextSlide(state);
 
             //shows the previous slide
-            case PREV_SLIDE : {
-                return Object.assign({}, state, {
-                    Index:getCorrectIndex(state.Index - 1, state.Slides.length, state.Loop)
-                });
-            }
+            case Actions.PREV_SLIDE :
+                return PrevSlide(state);
 
             //set slides and reset
-            case SET_SLIDES : {
-                return Object.assign({}, state, {
-                    Index:0,
-                    SlideshowID:action.id,
-                    Slides:action.records,
-                    Name:action.name
-                });
-            }
+            case Actions.SET_SLIDES :
+                return SetSlides(state, action.records, action.id, action.name);
 
             //update loop status
-            case SET_LOOP : {
-                return Object.assign({}, state, {Loop:action.value});
-            }
+            case Actions.SET_LOOP :
+                return SetSlideshowLoop(state, action.value);
 
             //sets the slide to show - within the bounds of # of slides
-            case SET_INDEX : {
-                return Object.assign({}, state, {
-                    Index:getCorrectIndex(action.index, state.Slides.length, state.Loop)
-                });
-            }
+            case Actions.SET_INDEX :
+                return DisplaySlide(state, action.index);
 
             //Swaps the slides
-            case SWAP_SLIDES : {
-                var slides = state.Slides.slice();
-                DataController.MoveElement(slides, action.indexA, action.indexB, action.right);
-                return Object.assign({}, state, {Slides:slides});
-            }
+            case Actions.SWAP_SLIDES :
+                return SwapSlides(state, action.indexA, action.indexB, action.right);
 
             default :
-                return state;
+                return BaseReducer(state, action);
         }
     } catch(er) {
         return state;
     }
 }
 
-const SlideshowStore = createStore(SlideshowReducer);
+//const SlideshowStore = createStore(SlideshowReducer);
 
-/**
- * Controller for manual slideshows.
- */
-const SlideshowController = {
-    Key:'SS',
-    /**
-     * Sets the state of the controller
-     * @param {Object} state 
-     */
-    SetState(state) {
-        SlideshowController.getStore().dispatch({
-            type:SET_STATE,
-            state:state
-        });
-    },
+const SlideshowController:ISlideshowController = CreateController('SLS', SlideshowReducer);
+SlideshowController.Next = async () => {
+    SlideshowController.Dispatch({
+        type:Actions.NEXT_SLIDE
+    });
+};
 
-    /**
-     * Shows the next slide.
-     */
-    Next() {
-        SlideshowController.getStore().dispatch({
-            type:NEXT_SLIDE
-        });
-    },
+SlideshowController.Prev = async () => {
+    SlideshowController.Dispatch({
+        type:Actions.PREV_SLIDE
+    });
+};
 
-    /**
-     * Shows the previous slide.
-     */
-    Prev() {
-        SlideshowController.getStore().dispatch({
-            type:PREV_SLIDE
-        });
-    },
+SlideshowController.Display = async (index:number) => {
+    SlideshowController.Dispatch({
+        type:Actions.SET_INDEX,
+        index:index
+    });
+};
 
-    /**
-     * Displays the given slide.
-     * @param {Number} index The numeric index of the slide.
-     */
-    Display(index) {
-        SlideshowController.getStore().dispatch({
-            type:SET_INDEX,
-            index:index
-        })
-    },
+SlideshowController.Start = async () => {
+    SlideshowController.Dispatch({
+        type:Actions.SET_INDEX,
+        index:0
+    });
+};
 
-    /**
-     * Starts the slideshow
-     */
-    Start() {
-        SlideshowController.getStore().dispatch({
-            type:SET_INDEX,
-            index:0
-        });
-        SlideshowController.Show();
-    },
+SlideshowController.Show = async () => {
+    SlideshowCaptureController.Show();
+};
 
-    /**
-     * Shows the slideshow
-     */
-    Show() {
-        CaptureController.SetMainSlideshowVisibility(true);
-    },
+SlideshowController.Hide = async () => {
+    SlideshowCaptureController.Hide();
+};
 
-    /**
-     * Hides the slideshow
-     */
-    Hide() {
-        CaptureController.SetMainSlideshowVisibility(false);
-    },
+SlideshowController.Toggle = async () => {
+    SlideshowCaptureController.Toggle();
+};
 
-    Toggle() {
-        CaptureController.ToggleSlideshow()
-    },
+SlideshowController.SetSlides = async (records:Array<any>, id?:number, name?:string) => {
+    SlideshowController.Dispatch({
+        type:Actions.SET_SLIDES,
+        records:records,
+        id:id,
+        name:name
+    });
+};
 
-    /**
-     * Sets the slide records.
-     * @param {Array} records Slideshow's Slides
-     * @param {Number} id Slideshow's RecordID
-     * @param {String} name Slideshow's name
-     */
-    SetSlides(records:Array<any>|undefined, id, name) {
-        SlideshowController.getStore().dispatch({
-            type:SET_SLIDES,
-            records:records,
-            id:id,
-            name:name
-        });
-    },
+SlideshowController.SetLoop = async (value:boolean) => {
+    SlideshowController.Dispatch({
+        type:Actions.SET_LOOP,
+        value:value
+    });
+};
 
-    /**
-     * Sets the loop value of the slideshow.
-     * True = Will loop, showing the first slide after the last slide.
-     * False = Will not loop.
-     * @param {Boolean} value 
-     */
-    SetLoop(value) {
-        SlideshowController.getStore().dispatch({
-            type:SET_LOOP,
-            value:value
-        });
-    },
+SlideshowController.SwapSlides = async (a:number, b:number, right:boolean = false) => {
+    SlideshowController.Dispatch({
+        type:Actions.SWAP_SLIDES,
+        indexA:a,
+        indexB:b,
+        right:right
+    });
+};
 
-    /**
-     * Swaps the slides at the given indexes, where a and b will be swapped.
-     * @param {Number} a Index of the slide to move
-     * @param {Number} b Index of where the slide should move to
-     * @param {Boolean} right
-     */
-    SwapSlides(a, b, right) {
-        SlideshowController.getStore().dispatch({
-            type:SWAP_SLIDES,
-            indexA:a,
-            indexB:b,
-            right:right
-        });
-    },
+SlideshowController.onKeyUp = (ev) => {
+    switch(ev.keyCode) {
+        //Next slide or hide
+        case keycodes.PAGEDOWN :
+        case keycodes.RIGHT :
+        case keycodes.SPACEBAR :
+        case keycodes.DOWN :
+            if(ev.ctrlKey) {
+                SlideshowController.Hide();
+            } else {
+                SlideshowController.Next();
+            }
+        break;
 
-    onKeyUp(ev) {
-        switch(ev.keyCode) {
-            //Next slide or hide
-            case keycodes.PAGEDOWN :
-            case keycodes.RIGHT :
-            case keycodes.SPACEBAR :
-            case keycodes.DOWN :
-                if(ev.ctrlKey) {
-                    SlideshowController.Hide();
-                } else {
-                    SlideshowController.Next();
-                }
+        //previous slide or start
+        case keycodes.LEFT :
+        case keycodes.PAGEUP :
+        case keycodes.UP :
+            if(ev.ctrlKey) {
+                SlideshowController.Start();
+            } else {
+                SlideshowController.Prev();
+            }
             break;
 
-            //previous slide or start
-            case keycodes.LEFT :
-            case keycodes.PAGEUP :
-            case keycodes.UP :
-                if(ev.ctrlKey) {
-                    SlideshowController.Start();
-                } else {
+        //start slideshow
+        case keycodes.ENTER :
+            SlideshowController.Start();
+        break;
+
+        //end slideshow
+        case keycodes.END :
+            SlideshowController.Hide();
+        break;
+
+        //show slideshow
+        case keycodes.HOME :
+            SlideshowController.Show();
+        break;
+
+        default :
+        break;
+    }
+};
+
+SlideshowController.BuildAPI = async () => {
+    let server = window.LocalServer;
+    let exp = server.ExpressApp;
+
+    //get full slideshow state
+    exp.get(/^\/api\/slideshow(\/?)$/i, (req, res) => {
+        res.send(server.PrepareObjectForSending(PrepareObjectForSending(SlideshowController.GetState())));
+        res.end();
+    });
+
+    exp.get(/^\/api\/slideshow\/([A-Z]{1,30})/i, (req, res) => {
+        //res.send(req.params[0]);
+        //res.end();
+        if(req.params[0]) {
+            switch(req.params[0].toString().toLowerCase()) {
+                case 'next' :
+                    SlideshowController.Next();
+                break;
+                case 'prev' :
                     SlideshowController.Prev();
-                }
+                break;
+                case 'start' :
+                    SlideshowController.Start();
+                break;
+                case 'show' :
+                    SlideshowController.Show();
+                break;
+                case 'hide' :
+                    SlideshowController.Hide();
                 break;
 
-            //start slideshow
-            case keycodes.ENTER :
-                SlideshowController.Start();
-            break;
-
-            //end slideshow
-            case keycodes.END :
-                SlideshowController.Hide();
-            break;
-
-            //show slideshow
-            case keycodes.HOME :
-                SlideshowController.Show();
-            break;
-
-            default :
-            break;
+                default :
+                    res.send(server.PrepareObjectForSending(PrepareObjectForSending(SlideshowController.GetState())));
+                break;
+            }
+        } else {
+            res.send(server.PrepareObjectForSending(PrepareObjectForSending(SlideshowController.GetState())));
         }
-    },
+        res.end();
+    });
 
-    /**
-     * Get the store.
-     */
-    getStore() {
-        return SlideshowStore;
-    },
-
-    /**
-     * Get the current state
-     */
-    getState() {
-        return SlideshowStore.getState();
-    },
-
-    /**
-     * Subscribe to changes in the store.
-     * @param {Function} f 
-     */
-    subscribe(f) {
-        return SlideshowStore.subscribe(f);
-    },
-
-    buildAPI() {
-        var server = window.LocalServer;
-        var exp = server.ExpressApp;
-
-        //get full slideshow state
-        exp.get(/^\/api\/slideshow(\/?)$/i, (req, res) => {
-            res.send(server.PrepareObjectForSending(DataController.PrepareObjectForSending(SlideshowController.getState())));
-            res.end();
-        });
-
-        exp.get(/^\/api\/slideshow\/([A-Z]{1,30})/i, (req, res) => {
-            //res.send(req.params[0]);
-            //res.end();
-            if(req.params[0]) {
-                switch(req.params[0].toString().toLowerCase()) {
-                    case 'next' :
-                        SlideshowController.Next();
-                    break;
-                    case 'prev' :
-                        SlideshowController.Prev();
-                    break;
-                    case 'start' :
-                        SlideshowController.Start();
-                    break;
-                    case 'show' :
-                        SlideshowController.Show();
-                    break;
-                    case 'hide' :
-                        SlideshowController.Hide();
-                    break;
-
-                    default :
-                        res.send(server.PrepareObjectForSending(DataController.PrepareObjectForSending(this.getState())));
-                    break;
-                }
-            } else {
-                res.send(server.PrepareObjectForSending(DataController.PrepareObjectForSending(this.getState())));
-            }
-            res.end();
-        });
-
-        //set slideshow based on index
-        exp.post(/^\/api\/slideshow\/(\d{1,10})/i, (req, res) => {
-            var show = DataController.getSlideshow(req.params[0]);
-            if(show) {
-                var slides:Array<any> = [];
-                for(var key in show.Records)
-                    slides.push(show.Records[key]);
-                SlideshowController.SetSlides(slides, show.RecordID, show.Name);
-                res.send("OK");
-            } else {
-                res.send("NONE");
-            }
-        });
-    }
+    //set slideshow based on index
+    exp.post(/^\/api\/slideshow\/:id(\d{1,10})/i, (req, res) => {
+        let record:SlideshowRecord = SlideshowsController.GetRecord(req.params.id);
+        if(record && record.Records && (record.Records instanceof Array)) {
+            let slides:Array<any> = [];
+            for(var key in record.Records)
+                slides.push(record.Records[key]);
+            SlideshowController.SetSlides(slides, record.RecordID, record.Name);
+            res.send("OK");
+        } else {
+            res.send("NONE");
+        }
+    });
 };
 
 export default SlideshowController;

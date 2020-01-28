@@ -1,10 +1,12 @@
 import React from 'react';
-import DataController from 'controllers/DataController';
 import CaptureControlPanel, {PCaptureControlPanel} from './CaptureControlPanel';
 import cnames from 'classnames';
 import { Unsubscribe } from 'redux';
 import { Icon, IconLoop, IconCheck, IconHidden, IconShown } from 'components/Elements';
-import CaptureController from 'controllers/CaptureController';
+import StandingsCaptureController from 'controllers/capture/Standings';
+import ScheduleCaptureController from 'controllers/capture/Schedule';
+import ScoresCaptureController from 'controllers/capture/Scores';
+import { Compare } from 'controllers/functions';
 
 /**
  * Component for misc records on the CaptureControl component
@@ -25,15 +27,18 @@ export default class CaptureControlMisc extends React.PureComponent<PCaptureCont
 }> {
 
     readonly state = {
-        StandingsShown:CaptureController.getState().Standings.Shown,
-        ScheduleShown:CaptureController.getState().Schedule.Shown,
-        ScoresShown:CaptureController.getState().Scores.Shown
+        StandingsShown:StandingsCaptureController.GetState().Shown,
+        ScheduleShown:ScheduleCaptureController.GetState().Shown,
+        ScoresShown:ScoresCaptureController.GetState().Shown
     }
 
     /**
      * CaptureController listener
      */
     protected remoteCapture?:Unsubscribe;
+    protected remoteSchedule?:Unsubscribe;
+    protected remoteScores?:Unsubscribe;
+    protected remoteStandings?:Unsubscribe;
 
     /**
      * Constructor
@@ -42,18 +47,21 @@ export default class CaptureControlMisc extends React.PureComponent<PCaptureCont
     constructor(props) {
         super(props);
         this.onToggle = this.onToggle.bind(this);
-        this.updateCapture = this.updateCapture.bind(this);
+        this.updateScheduleCapture = this.updateScheduleCapture.bind(this);
+        this.updateScoresCapture = this.updateScoresCapture.bind(this);
+        this.updateStandingsCapture = this.updateStandingsCapture.bind(this);
     }
 
-    /**
-     * Updates the state to match the CaptureController
-     */
-    protected async updateCapture() {
-        this.setState({
-            StandingsShown:CaptureController.getState().Standings.Shown,
-            ScheduleShown:CaptureController.getState().Schedule.Shown,
-            ScoresShown:CaptureController.getState().Scores.Shown
-        });
+    protected updateStandingsCapture() {
+        this.setState({StandingsShown:StandingsCaptureController.GetState().Shown});
+    }
+
+    protected updateScheduleCapture() {
+        this.setState({ScheduleShown:ScheduleCaptureController.GetState().Shown});
+    }
+
+    protected updateScoresCapture() {
+        this.setState({ScoresShown:ScoresCaptureController.GetState().Shown});
     }
 
     /**
@@ -62,28 +70,34 @@ export default class CaptureControlMisc extends React.PureComponent<PCaptureCont
      */
     protected async onToggle() {
         if(this.state.StandingsShown)
-            CaptureController.ToggleStandings();
+            StandingsCaptureController.Toggle();
 
         if(this.state.ScheduleShown)
-            CaptureController.ToggleSchedule();
+            ScheduleCaptureController.Toggle();
 
         if(this.state.ScoresShown)
-            CaptureController.ToggleScores();
+            ScoresCaptureController.Toggle();
     }
 
     /**
      * Listen to controllers
      */
     componentDidMount() {
-        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
+        this.remoteSchedule = ScheduleCaptureController.Subscribe(this.updateScheduleCapture);
+        this.remoteStandings = StandingsCaptureController.Subscribe(this.updateStandingsCapture);
+        this.remoteScores = ScoresCaptureController.Subscribe(this.updateScoresCapture);
     }
 
     /**
      * Close controller listeners
      */
     componentWillUnmount() {
-        if(this.remoteCapture)
-            this.remoteCapture();
+        if(this.remoteSchedule)
+            this.remoteSchedule();
+        if(this.remoteScores)
+            this.remoteScores();
+        if(this.remoteStandings)
+            this.remoteStandings();
     }
 
     /**
@@ -141,9 +155,9 @@ class Standings extends React.PureComponent<any, {
     className:string;
 }> {
     readonly state = {
-        Records:CaptureController.getState().Standings.Records,
-        Shown:CaptureController.getState().Standings.Shown,
-        className:CaptureController.getState().Standings.className,
+        Records:StandingsCaptureController.Get(),
+        Shown:StandingsCaptureController.GetState().Shown,
+        className:StandingsCaptureController.GetState().className,
         Loading:false,
         ErrorMessage:''
     }
@@ -167,15 +181,16 @@ class Standings extends React.PureComponent<any, {
      * Updates the state to match the CaptureController
      */
     protected async updateCapture() {
-        let cstate = CaptureController.getState().Standings;
+        let cstate = StandingsCaptureController.GetState();
         let changes:any = {
             Shown:cstate.Shown,
             className:cstate.className
         }
 
         let records:any = cstate.Records;
-        if(!DataController.compare(records, this.state.Records))
+        if(!Compare(records, this.state.Records)) {
             changes.Records = records;
+        }
         this.setState(changes);
     }
 
@@ -185,14 +200,14 @@ class Standings extends React.PureComponent<any, {
     protected async load() {
         if(!this.state.Loading) {
             this.setState({Loading:true}, () => {
-                DataController.loadStandings().then((records:any) => {
-                    if(records) {
-                        CaptureController.SetStandings(records);
-                    }
-                    this.setState({Loading:false,ErrorMessage:''});
-                }).catch((message) => {
-                    this.setState({Loading:false,ErrorMessage:message});
-                });
+                StandingsCaptureController.Load().then(() => {
+                    this.setState({Loading:false});
+                }).catch((er) => {
+                    this.setState({
+                        Loading:false,
+                        ErrorMessage:'Failed to load Standings!'
+                    })
+                })
             });
         }
     }
@@ -201,7 +216,7 @@ class Standings extends React.PureComponent<any, {
      * Subscribe to controllers
      */
     componentDidMount() {
-        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
+        this.remoteCapture = StandingsCaptureController.Subscribe(this.updateCapture);
     }
 
     /**
@@ -230,7 +245,7 @@ class Standings extends React.PureComponent<any, {
                 <Icon
                     src={iconShown}
                     active={(this.state.Shown)}
-                    onClick={CaptureController.ToggleStandings}
+                    onClick={StandingsCaptureController.Toggle}
                     />
                 <Icon 
                     src={iconLoad} 
@@ -270,9 +285,9 @@ class Schedule extends React.PureComponent<any, {
     className:string;
 }> {
     readonly state = {
-        Records:CaptureController.getState().Schedule.Records,
-        Shown:CaptureController.getState().Schedule.Shown,
-        className:CaptureController.getState().Schedule.className,
+        Records:ScheduleCaptureController.Get(),
+        Shown:ScheduleCaptureController.GetState().Shown,
+        className:ScheduleCaptureController.GetState().className,
         Loading:false,
         ErrorMessage:''
     }
@@ -296,15 +311,16 @@ class Schedule extends React.PureComponent<any, {
      * Updates the state to match the CaptureController
      */
     protected async updateCapture() {
-        let cstate = CaptureController.getState().Schedule;
+        let cstate = ScheduleCaptureController.GetState();
         let changes:any = {
             Shown:cstate.Shown,
             className:cstate.className
         }
 
         let records:any = cstate.Records;
-        if(!DataController.compare(records, this.state.Records))
+        if(!Compare(records, this.state.Records)) {
             changes.Records = records;
+        }
         this.setState(changes);
     }
 
@@ -314,14 +330,14 @@ class Schedule extends React.PureComponent<any, {
     protected async load() {
         if(!this.state.Loading) {
             this.setState({Loading:true}, () => {
-                DataController.loadSchedule().then((records:any) => {
-                    if(records) {
-                        CaptureController.SetSchedule(records);
-                    }
-                    this.setState({Loading:false,ErrorMessage:''});
-                }).catch((message) => {
-                    this.setState({Loading:false,ErrorMessage:message});
-                });
+                ScheduleCaptureController.Load().then(() => {
+                    this.setState({Loading:false});
+                }).catch((er) => {
+                    this.setState({
+                        Loading:false,
+                        ErrorMessage:'Failed to Schedule!'
+                    });
+                })
             });
         }
     }
@@ -330,7 +346,7 @@ class Schedule extends React.PureComponent<any, {
      * Subscribe to controllers
      */
     componentDidMount() {
-        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
+        this.remoteCapture = ScheduleCaptureController.Subscribe(this.updateCapture);
     }
 
     /**
@@ -359,7 +375,7 @@ class Schedule extends React.PureComponent<any, {
                 <Icon
                     src={iconShown}
                     active={(this.state.Shown)}
-                    onClick={CaptureController.ToggleSchedule}
+                    onClick={ScheduleCaptureController.Toggle}
                     />
                 <Icon 
                     src={iconLoad} 
@@ -399,9 +415,9 @@ class Scores extends React.PureComponent<any, {
     className:string;
 }> {
     readonly state = {
-        Records:CaptureController.getState().Scores.Records,
-        Shown:CaptureController.getState().Scores.Shown,
-        className:CaptureController.getState().Scores.className,
+        Records:ScoresCaptureController.Get(),
+        Shown:ScoresCaptureController.GetState().Shown,
+        className:ScoresCaptureController.GetState().className,
         Loading:false,
         ErrorMessage:''
     }
@@ -425,15 +441,16 @@ class Scores extends React.PureComponent<any, {
      * Updates the state to match the CaptureController
      */
     protected async updateCapture() {
-        let cstate = CaptureController.getState().Scores;
+        let cstate = ScoresCaptureController.GetState();
         let changes:any = {
             Shown:cstate.Shown,
             className:cstate.className
         }
 
         let records:any = cstate.Records;
-        if(!DataController.compare(records, this.state.Records))
+        if(!Compare(records, this.state.Records)) {
             changes.Records = records;
+        }
         this.setState(changes);
     }
 
@@ -443,14 +460,14 @@ class Scores extends React.PureComponent<any, {
     protected async load() {
         if(!this.state.Loading) {
             this.setState({Loading:true}, () => {
-                DataController.loadScores().then((records:any) => {
-                    if(records) {
-                        CaptureController.SetScores(records);
-                    }
-                    this.setState({Loading:false,ErrorMessage:''});
-                }).catch((message) => {
-                    this.setState({Loading:false,ErrorMessage:message});
-                });
+                ScoresCaptureController.Load().then(() => {
+                    this.setState({Loading:false});
+                }).catch((er) => {
+                    this.setState({
+                        Loading:false,
+                        ErrorMessage:'Failed to load Scores!'
+                    });
+                })
             });
         }
     }
@@ -459,7 +476,7 @@ class Scores extends React.PureComponent<any, {
      * Subscribe to controllers
      */
     componentDidMount() {
-        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
+        this.remoteCapture = ScoresCaptureController.Subscribe(this.updateCapture);
     }
 
     /**
@@ -488,7 +505,7 @@ class Scores extends React.PureComponent<any, {
                 <Icon
                     src={iconShown}
                     active={(this.state.Shown)}
-                    onClick={CaptureController.ToggleScores}
+                    onClick={ScoresCaptureController.Toggle}
                     />
                 <Icon 
                     src={iconLoad} 

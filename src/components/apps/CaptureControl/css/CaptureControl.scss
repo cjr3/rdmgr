@@ -16,10 +16,26 @@
             border: solid 1px #CCCCCC;
         }
 
-        > p {
-            font-size: 0.9rem;
-            font-style: italic;
-            color: #999999;
+        &:hover{
+            .notes{
+                transition: transform 150ms ease-in-out 3s;
+                transform: rotateX(0deg);
+            }
+        }
+
+        .notes {
+            position: absolute;
+            margin: auto;
+            transform: rotateX(90deg);
+            transform-origin: 50% 100%;
+            transition: transform 150ms ease-in-out 150ms;
+            background-color: #333333;
+            padding: 8px;
+            > p {
+                font-size: 0.9rem;
+                font-style: italic;
+                color: #999999;
+            }
         }
 
         .camera-styles {
@@ -45,311 +61,351 @@
         }
     }
 
-    .config-panels {
+    .scoreboard {
         position: absolute;
         margin: auto;
-        right: 0;
+        left: 0;
         top: 0;
         bottom: 0;
         width: 25%;
-        height: 100%;
-        display: flex;
-        flex-flow: column wrap;
 
-        > .config-panel {
-            flex: 0 0 48px;
-            overflow: hidden;
-            transition: flex 150ms;
-
-            > .buttons {
-                display: flex;
-                flex-flow: row wrap;
-                > button {
-                    flex: 1;
-                    text-align: left;
-                }
-
-                > .icon {
-                    flex: 0;
-                    border: solid 1px #CCCCCC;
-                    padding: 2px;
+        > .buttons {
+            background-color: transparent;
+            justify-content: flex-start;
+            > button {
+                background-color: $purple;
+            }
+        }
+        
+        .scorebanner {
+            .counter,
+            .clock
+            {
+                cursor: pointer;
+                text-align: center;
+                font-family: $base-font-display;
+                font-size: 36px;
+                padding: 6px;
+                &:hover{
+                    background-color: $black-faded;
                 }
             }
-            > .panel {
-                border: solid 1px #999999;
-                border-top: none;
-                position: initial;
-                opacity: 0;
-                max-height: calc(100% - 48px);
-                transition: opacity 150ms ease-in-out 150ms;
-                > .title {
+        
+            .team-score,
+            .jam-counter
+            {
+                .counter {
+                    font-size: 36px;
+                }
+                td:nth-child(3) {
                     display: none;
                 }
-                > .content {
-                    > div.text {
-                        padding: 6px;
+            }
+
+            .team {
+                .logo {
+                    text-align: center;
+                    > img {
+                        max-width: 100px;
+                        max-height: 100px;
+                    }
+                }
+                .score {
+                    font-size: 72px;
+                    padding: 8px;
+                    width: calc(100% - 6px);
+                    margin: 3px;
+                    border: solid 2px #ffffff;
+                    border-radius: 8px;
+                }
+
+                .team-controls {
+                    display: flex;
+                    justify-content: center;
+                    button {
+                        img {
+                            height: 36px;
+                        }
+                    }
+                    button:last-child {
+                        display: none;
+                    }
+                }
+            }
+
+            .panel.popup {
+                width: 100%;
+                height: 100%;
+                max-width: 100%;
+                max-height: 100%;
+            }
+
+            .phase-control {
+                position: fixed;
+                bottom: 102px;
+                left: 0;
+                right: 0;
+                top: initial;
+                margin: auto;
+                display: flex;
+                flex-flow: row wrap;
+                align-items: center;
+                justify-content: space-between;
+                .icon {
+                    height: 48px;
+                }
+                
+                input[type="number"] {
+                    max-width: 64px;
+                    font-size: 24px;
+                }
+            }
+
+            .phase {
+                position: fixed;
+                bottom: 148px;
+                left: 0;
+                right: 0;
+                margin: auto;
+                text-align: center;
+                font-size: 36px;
+                font-family: $base-font-display;
+            }
+
+            .board-status-controls {
+                text-align: center;
+                .icon {
+                    border: solid 1px #CCCCCC;
+                    height: 46px;
+                    padding: 3px;
+                }
+            }
+        
+            .phase-selection {
+                button {
+                    width: 100%;
+                    display: flex;
+                    flex-flow: row wrap;
+                    > div {
+                        flex:1;
+                        text-align: left;
+                    }
+                    > div:last-of-type {
+                        flex: 0;
+                    }
+                }
+            }
+
+            .team-panel {
+                .team-selection {
+                    text-align: center;
+                    select {
+                        width: 100%;
+                    }
+                    img {
+                        max-width: 150px;
+                        max-height: 150px;
+                        cursor: pointer;
                     }
                 }
 
-                > .buttons {
-                    padding: 2px 0px;
-                    > button {
-                        > span {
+                .buttons {
+                    height: 96px;
+                    .toggle-button {
+                        width: 50%;
+                        margin: 0px;
+                        font-size: 14px;
+                    }
+                }
+            }
+
+            .jam-controls {
+                display: flex;
+                flex-flow: row wrap;
+                position: absolute;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                margin: auto;
+                button {
+                    flex: 1;
+                    font-weight: bold;
+                    font-size: 36px;
+                }
+
+                .icon {
+                    flex: 0;
+                }
+            }
+
+            .scores-panel {
+                .match-item {
+                    table {
+                        width: 100%;
+                    }
+                    td {
+                        text-align: center;
+                    }
+
+                    td.match-team, td.match-score {
+                        width: 60px;
+                    }
+
+                    input[type="number"] {
+                        text-align: center;
+                        font-size: 32px;
+                        width: 100px;
+                    }
+
+                    .match-date {
+                        text-align: center;
+                        background-color: $purple;
+                        padding: 3px;
+                    }
+
+                    img {
+                        max-width: 75px;
+                        max-height: 75px;
+                    }
+
+                    .icon {
+                        width: 36px;
+                        height: 36px;
+                    }
+                }
+            }
+        }
+    }
+
+    .stream-panel {
+        position: absolute;
+        margin: auto;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 25%;
+        display: flex;
+        flex-flow: column wrap;
+        overflow: hidden;
+        > .panels {
+            flex: 1;
+            width: 100%;
+            position: relative;
+
+            .scorekeeper {
+                .positions {
+                    display: grid;
+                    grid-template-rows: auto;
+                    grid-template-columns: 50% 50%;
+                    .team {
+                        grid-area: 1 / 1;
+                        .skater {
                             display: none;
+                            &:first-of-type {
+                                display: grid;
+                            }
+                            grid-template-rows: 75px;
+                            grid-template-columns: 75px auto;
+                            .thumbnail {
+                                grid-area: 1 / 1 / 2 / 1;
+                            }
+
+                            .num {
+                                grid-area: 1 / 2 / 1 / 2;
+                                line-height: 75px;
+                                text-align: center;
+                                font-family: $base-font-display;
+                                font-size: 36px;
+                            }
+                            .name {
+                                display: none;
+                            }
+                        }
+                    }
+
+                    .team:nth-child(2) {
+                        grid-area: 1 / 2;
+                    }
+                }
+            }
+
+            .penalty-tracker {
+                .skaters {
+                    > div.stack-panel {
+                        font-family: $base-font-display;
+                        > div {
+                            padding: 6px;
+                            font-size: 24px;
+                            background-color: #222;
+                            border: solid 1px #000;
                         }
                     }
                 }
             }
         }
 
-        .config-panel.shown {
-            flex: 1;
-            > .panel {
-                opacity: 1;
-            }
-        }
-    }
-
-    .config-panels.stream {
-        right: initial;
-        left: 0;
-        .chat {
-            display: flex;
-            flex-flow: column wrap;
-            .messages {
-                flex: 1;
-                overflow: hidden scroll;
-                padding: 8px 0px;
-                .message {
-                    font-size: 16px;
-                    margin-bottom: 8px;
-                    padding: 0px 6px;
-                    .text {
-                        background-color: #333333;
-                        padding: 8px;
-                        border-radius: 16px;
-                    }
-
-                    .name {
-                        padding-left: 8px;
-                        font-style: italic;
-                    }
-                }
-            }
-
-            .message-input {
-                flex: 0;
-                display: flex;
-                flex-flow: row wrap;
-                background-color: $purple;
-                label {
-                    display: block;
-                    padding: 3px;
-                }
-
-                input[type="text"] {
-                    flex: 1;
-                }
-
-                .icon {
-                    width: 36px;
-                    height: 36px;
-                }
-            }
-        }
-    }
-
-    .roster-skaters {
-        > button {
-            border: none;
-            padding: 0px;
-            > div {
-                display: flex;
-                flex-flow: row wrap;
-                font-size: 18px;
-                border: solid 1px #999999;
-                border-bottom: none;
-                padding: 3px;
-                > .num {
-                    flex: 0 0 100px;
-                    > img {
-                        max-height: 48px;
-                    }
-                }
-                > .name {
-                    flex: 1;
-                }
-            }
-        }
-    }
-
-    .scorebanner {
-        .counter,
-        .clock
-        {
-            cursor: pointer;
-            font-family: $base-font-display;
-        }
-        .game-clock,
-        .jam-clock
-        {
-            font-size: 36px;
-            text-align: left;
-        }
-    
-        .team-score,
-        .jam-counter
-        {
-            .counter {
-                font-size: 36px;
-            }
-            td:nth-child(3) {
+        > .panel {
+            max-width: 100%;
+            max-height: calc(100% - 48px);
+            top: 0;
+            bottom: initial;
+            > .title {
                 display: none;
             }
-        }
-    
-        .team-score {
-            cursor: pointer;
-            font-family: $base-font-display;
-            text-align: center;
-            font-size: 72px;
-            padding: 8px;
-        }
-    
-        .phase-selection {
-            width: 100%;
-            height: 100%;
-            max-width: 100%;
-            max-height: 100%;
-            button {
-                width: 100%;
-                display: flex;
-                flex-flow: row wrap;
-                > div {
-                    flex:1;
-                    text-align: left;
-                }
-                > div:last-of-type {
-                    flex: 0;
-                }
+
+            > .content {
+                height: calc(100% - 48px);
+                top: 0px;
             }
-        }
-
-        .team-panel {
-            width: 100%;
-            height: 100%;
-            max-width: 100%;
-            max-height: 100%;
-            .team-selection {
-                text-align: center;
-                select {
-                    width: 100%;
-                }
-                img {
-                    max-width: 150px;
-                    max-height: 150px;
-                }
-            }
-
-            .buttons {
-                height: 96px;
-                .toggle-button {
-                    width: 50%;
-                    margin: 0px;
-                    font-size: 14px;
-                }
-                button {
-                    width: 100%;
-                }
-            }
-        }
-
-        .jam-controls {
-            display: flex;
-            flex-flow: row wrap;
-            button {
-                flex: 1;
-                font-weight: bold;
-                font-size: 36px;
-            }
-
-            .icon {
-                flex: 0;
-            }
-        }
-
-        .scores-panel {
-            width: 100%;
-            height: 100%;
-            max-width: 100%;
-            max-height: 100%;
-
-            .match-item {
-                table {
-                    width: 100%;
-                }
-                td {
-                    text-align: center;
-                }
-
-                td.match-team, td.match-score {
-                    width: 60px;
-                }
-
-                input[type="number"] {
-                    text-align: center;
-                    font-size: 32px;
-                    width: 100px;
-                }
-
-                .match-date {
-                    text-align: center;
-                    background-color: $purple;
-                    padding: 3px;
-                }
-
-                img {
-                    max-width: 75px;
-                    max-height: 75px;
-                }
-
-                .icon {
-                    width: 36px;
-                    height: 36px;
-                }
-            }
-        }
-    }
-
-    .record-list {
-        > select {
-            width: 100%;
-        }
-
-        &.misc-records {
-            .item {
-                display: flex;
-                flex-flow: row wrap;
-                border-bottom: solid 1px #666;
-                > .name {
-                    padding: 3px;
-                    flex: 1;
-                    line-height: 24px;
-                }
-
-                > .icon {
-                    flex: 0;
-                    width: 36px;
-                    height: 36px;
-                    border: solid 1px #666;
-                    padding: 3px;
-                    &.hidden {
-                        display: none;
+            
+            .roster {
+                .roster-skaters {
+                    > button {
+                        border: none;
+                        padding: 0px;
+                        > div {
+                            display: flex;
+                            flex-flow: row wrap;
+                            font-size: 18px;
+                            border: solid 1px #999999;
+                            border-bottom: none;
+                            padding: 3px;
+                            > .num {
+                                flex: 0 0 100px;
+                                > img {
+                                    max-height: 48px;
+                                }
+                            }
+                            > .name {
+                                flex: 1;
+                            }
+                        }
                     }
                 }
+            }
+        }
 
-                > .error-message {
-                    flex-basis: 100%;
+        > .toggle-icons {
+            display: flex; 
+            flex-flow: row wrap;
+            flex: 0;
+            > .icon {
+                max-height: 38px;
+            }
+        }
+
+        > .panel-icons
+        {
+            display: flex;
+            flex-flow: row wrap;
+            justify-content: flex-end;
+            text-align: right;
+            flex: 0 0 48px;
+            > button {
+                background-color: $purple;
+                padding: 3px 8px;
+                &.active {
+                    background-color: $green;
                 }
             }
         }
@@ -368,12 +424,6 @@
                 right: 0;
                 bottom: 116px;
             }
-            > p {
-                position: absolute;
-                right: 0;
-                width: 300px;
-                top: 100px;
-            }
 
             > p:nth-child(even) {
                 top: 120px;
@@ -391,12 +441,54 @@
                 top: 48px;
                 width: calc(100% - 640px);
             }
+
+            .toggle-icons {
+                position: absolute;
+                right: 0;
+                bottom: 220px;
+                width: calc(100% - 650px);
+                .icon {
+                    max-height: 36px;
+                }
+            }
         }
 
-        .config-panels {
-            width: 50%;
-            height: calc(100% - 380px);
+        .scoreboard {
             top: initial;
+            height: calc(100% - 380px);
+            width: 50%;
+            .scorebanner {
+                .phase-control {
+                    justify-content: center;
+                }
+
+                .jam-controls {
+                    justify-content: center;
+                    button {
+                        flex: 0 0 300px;
+                    }
+                }
+
+                .team-panel {
+                    .team-selector {
+                        display: grid;
+                        grid-template-columns: 50% 50%;
+                        grid-template-rows: auto;
+                        .team-selection {
+                            grid-area: 1/1;
+                            &:nth-child(even) {
+                                grid-area: 1/2;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        .stream-panel {
+            top: initial;
+            height: calc(100% - 380px);
+            width: 50%;
         }
     }
 }

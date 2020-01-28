@@ -1,13 +1,13 @@
 import React from 'react';
 import {Unsubscribe} from 'redux';
 import cnames from 'classnames';
-import vars, { TeamRecord, SkaterRecord } from 'tools/vars';
+import vars, { SkaterRecord } from 'tools/vars';
 import ScoreboardController from 'controllers/ScoreboardController';
-import DataController from 'controllers/DataController';
 import RosterController from 'controllers/RosterController';
 import SortPanel from 'components/tools/SortPanel';
 import { MediaThumbnail } from 'components/Elements';
 import MediaQueueController from 'controllers/MediaQueueController';
+import { Compare, AddMediaPath } from 'controllers/functions';
 
 export default class MediaQueueRoster extends React.PureComponent<any, {
     TeamA:{
@@ -34,26 +34,26 @@ export default class MediaQueueRoster extends React.PureComponent<any, {
 }> {
     readonly state = {
         TeamA:{
-            ID:ScoreboardController.getState().TeamA.ID,
-            Name:ScoreboardController.getState().TeamA.Name,
-            Color:ScoreboardController.getState().TeamA.Color,
-            Thumbnail:ScoreboardController.getState().TeamA.Thumbnail,
-            Slide:ScoreboardController.getState().TeamA.Slide,
-            Photo:ScoreboardController.getState().TeamA.Photo
+            ID:ScoreboardController.GetState().TeamA.ID,
+            Name:ScoreboardController.GetState().TeamA.Name,
+            Color:ScoreboardController.GetState().TeamA.Color,
+            Thumbnail:ScoreboardController.GetState().TeamA.Thumbnail,
+            Slide:ScoreboardController.GetState().TeamA.Slide,
+            Photo:ScoreboardController.GetState().TeamA.Photo
         },
         TeamB:{
-            ID:ScoreboardController.getState().TeamB.ID,
-            Name:ScoreboardController.getState().TeamB.Name,
-            Color:ScoreboardController.getState().TeamB.Color,
-            Thumbnail:ScoreboardController.getState().TeamB.Thumbnail,
-            Slide:ScoreboardController.getState().TeamB.Slide,
-            Photo:ScoreboardController.getState().TeamB.Photo
+            ID:ScoreboardController.GetState().TeamB.ID,
+            Name:ScoreboardController.GetState().TeamB.Name,
+            Color:ScoreboardController.GetState().TeamB.Color,
+            Thumbnail:ScoreboardController.GetState().TeamB.Thumbnail,
+            Slide:ScoreboardController.GetState().TeamB.Slide,
+            Photo:ScoreboardController.GetState().TeamB.Photo
         },
-        Index:RosterController.getState().SkaterIndex,
-        CurrentTeam:RosterController.getState().CurrentTeam,
-        SkatersA:RosterController.getState().TeamA.Skaters,
-        SkatersB:RosterController.getState().TeamB.Skaters,
-        Record:MediaQueueController.getState().Record
+        Index:RosterController.GetState().SkaterIndex,
+        CurrentTeam:RosterController.GetState().CurrentTeam,
+        SkatersA:RosterController.GetState().TeamA.Skaters,
+        SkatersB:RosterController.GetState().TeamB.Skaters,
+        Record:MediaQueueController.GetState().Record
     }
 
     protected remoteScoreboard:Unsubscribe|null = null;
@@ -68,7 +68,7 @@ export default class MediaQueueRoster extends React.PureComponent<any, {
     }
 
     protected async updateRoster() {
-        let cstate = RosterController.getState();
+        let cstate = RosterController.GetState();
         let changes:any = {
             CurrentTeam:cstate.CurrentTeam,
             Index:cstate.SkaterIndex
@@ -76,16 +76,16 @@ export default class MediaQueueRoster extends React.PureComponent<any, {
 
         let skatersA = cstate.TeamA.Skaters;
         let skatersB = cstate.TeamB.Skaters;
-        if(!DataController.compare(skatersA, this.state.SkatersA))
+        if(!Compare(skatersA, this.state.SkatersA))
             changes.SkatersA = skatersA;
-        if(!DataController.compare(skatersB, this.state.SkatersB))
+        if(!Compare(skatersB, this.state.SkatersB))
             changes.SkatersB = skatersB;
 
         this.setState(changes);
     }
 
     protected async updateScoreboard() {
-        let cstate = ScoreboardController.getState();
+        let cstate = ScoreboardController.GetState();
         let teama:any = {
             ID:cstate.TeamA.ID,
             Name:cstate.TeamA.Name,
@@ -103,23 +103,23 @@ export default class MediaQueueRoster extends React.PureComponent<any, {
             Photo:cstate.TeamB.Photo
         };
 
-        if(!DataController.compare(teama, this.state.TeamA))
+        if(!Compare(teama, this.state.TeamA))
             this.setState({TeamA:teama});
 
-        if(!DataController.compare(teamb, this.state.TeamB))
+        if(!Compare(teamb, this.state.TeamB))
             this.setState({TeamB:teamb});
     }
 
     protected async updateMedia() {
-        let cstate = MediaQueueController.getState();
-        if(!DataController.compare(cstate.Record, this.state.Record))
+        let cstate = MediaQueueController.GetState();
+        if(!Compare(cstate.Record, this.state.Record))
             this.setState({Record:cstate.Record});
     }
 
     componentDidMount() {
-        this.remoteScoreboard = ScoreboardController.subscribe(this.updateScoreboard);
-        this.remoteRoster = RosterController.subscribe(this.updateRoster);
-        this.remoteMedia = MediaQueueController.subscribe(this.updateMedia);
+        this.remoteScoreboard = ScoreboardController.Subscribe(this.updateScoreboard);
+        this.remoteRoster = RosterController.Subscribe(this.updateRoster);
+        this.remoteMedia = MediaQueueController.Subscribe(this.updateMedia);
     }
 
     componentWillUnmount() {
@@ -147,7 +147,7 @@ export default class MediaQueueRoster extends React.PureComponent<any, {
             skaters = this.state.SkatersB;
             src = '';
             id = this.state.TeamB.ID;
-            let name:string = this.state.TeamB.Name;
+            name = this.state.TeamB.Name;
             if(this.state.TeamB.Slide)
                 src = this.state.TeamB.Slide;
             else if(this.state.TeamB.Photo)
@@ -171,7 +171,7 @@ export default class MediaQueueRoster extends React.PureComponent<any, {
                 src = skater.Thumbnail;
             slides.push({
                 label:<React.Fragment key={`${skater.RecordType}-${skater.RecordID}`}>
-                    <MediaThumbnail src={DataController.mpath(src)}/>
+                    <MediaThumbnail src={AddMediaPath(src)}/>
                     <div className="slide-title">{skater.Name}</div>
                 </React.Fragment>
             });

@@ -2,9 +2,12 @@ import React from 'react';
 import { SkaterRecord } from 'tools/vars';
 import ScorekeeperController from 'controllers/ScorekeeperController';
 import { Unsubscribe } from 'redux';
-import DataController from 'controllers/DataController';
+import { Compare, AddMediaPath } from 'controllers/functions';
+import ScoreboardController from 'controllers/ScoreboardController';
 
 export default class Positions extends React.PureComponent<any,{
+    TeamAColor:string;
+    TeamBColor:string;
     TeamA:{
         Jammer:SkaterRecord|null;
         Pivot:SkaterRecord|null;
@@ -21,46 +24,58 @@ export default class Positions extends React.PureComponent<any,{
     }
 }> {
     readonly state = {
+        TeamAColor:ScoreboardController.GetState().TeamA.Color,
+        TeamBColor:ScoreboardController.GetState().TeamB.Color,
         TeamA:{
-            Jammer:ScorekeeperController.getState().TeamA.Track.Jammer,
-            Pivot:ScorekeeperController.getState().TeamA.Track.Pivot,
-            Blocker1:ScorekeeperController.getState().TeamA.Track.Blocker1,
-            Blocker2:ScorekeeperController.getState().TeamA.Track.Blocker2,
-            Blocker3:ScorekeeperController.getState().TeamA.Track.Blocker3,
+            Jammer:ScorekeeperController.GetState().TeamA.Track.Jammer,
+            Pivot:ScorekeeperController.GetState().TeamA.Track.Pivot,
+            Blocker1:ScorekeeperController.GetState().TeamA.Track.Blocker1,
+            Blocker2:ScorekeeperController.GetState().TeamA.Track.Blocker2,
+            Blocker3:ScorekeeperController.GetState().TeamA.Track.Blocker3,
         },
         TeamB:{
-            Jammer:ScorekeeperController.getState().TeamB.Track.Jammer,
-            Pivot:ScorekeeperController.getState().TeamB.Track.Pivot,
-            Blocker1:ScorekeeperController.getState().TeamB.Track.Blocker1,
-            Blocker2:ScorekeeperController.getState().TeamB.Track.Blocker2,
-            Blocker3:ScorekeeperController.getState().TeamB.Track.Blocker3
+            Jammer:ScorekeeperController.GetState().TeamB.Track.Jammer,
+            Pivot:ScorekeeperController.GetState().TeamB.Track.Pivot,
+            Blocker1:ScorekeeperController.GetState().TeamB.Track.Blocker1,
+            Blocker2:ScorekeeperController.GetState().TeamB.Track.Blocker2,
+            Blocker3:ScorekeeperController.GetState().TeamB.Track.Blocker3
         }
     };
 
-    protected remoteRoster:Unsubscribe|null = null;
+    protected remoteRoster?:Unsubscribe;
+    protected remoteScoreboard?:Unsubscribe;
 
     constructor(props) {
         super(props);
-        this.updateRoster = this.updateRoster.bind(this);
+        this.updateScorekeeper = this.updateScorekeeper.bind(this);
+        this.updateScoreboard = this.updateScoreboard.bind(this);
     }
 
-    protected async updateRoster() {
-        let skatersA = ScorekeeperController.getState().TeamA.Track;
-        let skatersB = ScorekeeperController.getState().TeamB.Track;
+    protected async updateScorekeeper() {
+        let skatersA = ScorekeeperController.GetState().TeamA.Track;
+        let skatersB = ScorekeeperController.GetState().TeamB.Track;
 
-        if(!DataController.compare(skatersA, this.state.TeamA))
+        if(!Compare(skatersA, this.state.TeamA))
             this.setState({TeamA:skatersA});
 
-        if(!DataController.compare(skatersB, this.state.TeamB))
+        if(!Compare(skatersB, this.state.TeamB))
             this.setState({TeamB:skatersB});
     }
 
+    protected updateScoreboard() {
+        this.setState({
+            TeamAColor:ScoreboardController.GetState().TeamA.Color,
+            TeamBColor:ScoreboardController.GetState().TeamB.Color
+        });
+    }
+
     componentDidMount() {
-        this.remoteRoster = ScorekeeperController.subscribe(this.updateRoster);
+        this.remoteRoster = ScorekeeperController.Subscribe(this.updateScorekeeper);
+        this.remoteScoreboard = ScoreboardController.Subscribe(this.updateScoreboard);
     }
 
     componentWillUnmount() {
-        if(this.remoteRoster !== null)
+        if(this.remoteRoster)
             this.remoteRoster();
     }
     
@@ -68,42 +83,39 @@ export default class Positions extends React.PureComponent<any,{
         return (
             <div className="positions">
                 <div className="team team-a">
-                    <SkaterItem skater={this.state.TeamA.Jammer}/>
-                    <SkaterItem skater={this.state.TeamA.Pivot}/>
-                    <SkaterItem skater={this.state.TeamA.Blocker1}/>
-                    <SkaterItem skater={this.state.TeamA.Blocker2}/>
-                    <SkaterItem skater={this.state.TeamA.Blocker3}/>
+                    <SkaterItem skater={this.state.TeamA.Jammer} color={this.state.TeamAColor}/>
+                    <SkaterItem skater={this.state.TeamA.Pivot} color={this.state.TeamAColor}/>
+                    <SkaterItem skater={this.state.TeamA.Blocker1} color={this.state.TeamAColor}/>
+                    <SkaterItem skater={this.state.TeamA.Blocker2} color={this.state.TeamAColor}/>
+                    <SkaterItem skater={this.state.TeamA.Blocker3} color={this.state.TeamAColor}/>
                 </div>
                 <div className="team team-b">
-                    <SkaterItem skater={this.state.TeamB.Jammer}/>
-                    <SkaterItem skater={this.state.TeamB.Pivot}/>
-                    <SkaterItem skater={this.state.TeamB.Blocker1}/>
-                    <SkaterItem skater={this.state.TeamB.Blocker2}/>
-                    <SkaterItem skater={this.state.TeamB.Blocker3}/>
+                    <SkaterItem skater={this.state.TeamB.Jammer} color={this.state.TeamBColor}/>
+                    <SkaterItem skater={this.state.TeamB.Pivot} color={this.state.TeamBColor}/>
+                    <SkaterItem skater={this.state.TeamB.Blocker1} color={this.state.TeamBColor}/>
+                    <SkaterItem skater={this.state.TeamB.Blocker2} color={this.state.TeamBColor}/>
+                    <SkaterItem skater={this.state.TeamB.Blocker3} color={this.state.TeamBColor}/>
                 </div>
             </div>
         );
     }
 }
 
-function SkaterItem(props:{skater:SkaterRecord|null}) {
+export function SkaterItem(props:{skater:SkaterRecord|null,color:string}) {
     let src:string = '';
     let num:string = '';
     let name:string = '';
-    let color:string = '#000';
 
-    if(props.skater !== null) {
+    if(props.skater) {
         name = props.skater.Name;
         if(props.skater.Number)
             num = '#' + props.skater.Number;
 
         if(props.skater.Thumbnail)
-            src = DataController.mpath(props.skater.Thumbnail);
+            src = AddMediaPath(props.skater.Thumbnail);
 
-        if(props.skater.Color)
-            color = props.skater.Color;
         return (
-            <div className="skater" style={{backgroundColor:color}}>
+            <div className="skater" style={{backgroundColor:props.color}}>
                 <div className="thumbnail">
                     <img src={src}/>
                 </div>

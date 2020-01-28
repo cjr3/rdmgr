@@ -1,7 +1,7 @@
 import React from 'react';
-import CaptureController from 'controllers/CaptureController';
 import CaptureControlScorebanner from './CaptureControlScorebanner';
 import {IconSkate} from 'components/Elements';
+import { ScorebannerCaptureController } from 'controllers/capture/Scoreboard';
 
 /**
  * Component for managing stream-related data
@@ -13,8 +13,8 @@ export default function CaptureStreamControls() {
             <CaptureControlScorebanner
                 icon={IconSkate}
                 active={true}
-                name="Scorebanner"
-                toggle={CaptureController.ToggleScorebanner}
+                name="Score Banner"
+                toggle={ScorebannerCaptureController.Toggle}
             />
         </div>
     )

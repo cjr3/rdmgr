@@ -157,10 +157,8 @@ const CaptureStatus = {
      * Subscribes a function to changes to the state.
      * @param f The function to receive the notification
      */
-    subscribe(f:any) : Unsubscribe|null {
-        if(typeof(f) === "function")
-            return CaptureStatusStore.subscribe( f );
-        return null;
+    subscribe(f:any) : Unsubscribe {
+        return CaptureStatusStore.subscribe( f );
     }
 };
 

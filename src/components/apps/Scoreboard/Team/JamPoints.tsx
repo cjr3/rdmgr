@@ -1,7 +1,8 @@
 import React from 'react'
 import Counter from 'components/tools/Counter'
-import {Icon, IconPlus} from 'components/Elements'
-import ScoreboardController, {SScoreboardTeam} from 'controllers/ScoreboardController'
+import {Icon, IconPlus, IconSubtract} from 'components/Elements'
+import ScoreboardController from 'controllers/ScoreboardController'
+import { Unsubscribe } from 'redux'
 
 /**
  * Component for team jam points entry.
@@ -26,7 +27,7 @@ export default class JamPoints extends React.PureComponent<{
     /**
      * ScoreboardController listener
      */
-    protected remoteScoreboard:Function|null = null;
+    protected remoteScoreboard?:Unsubscribe;
 
     /**
      * Constructor
@@ -43,11 +44,11 @@ export default class JamPoints extends React.PureComponent<{
     /**
      * Updates the state to match the controller.
      */
-    updateState() {
+    protected updateState() {
         this.setState(() => {
-            var amount = ScoreboardController.getState().TeamA.JamPoints;
+            var amount = ScoreboardController.GetState().TeamA.JamPoints;
             if(this.props.side === 'B')
-                amount = ScoreboardController.getState().TeamB.JamPoints;
+                amount = ScoreboardController.GetState().TeamB.JamPoints;
             if(this.CounterItem !== null && this.CounterItem.current !== null)
                 this.CounterItem.current.set(amount, false);
             return {amount:amount};
@@ -58,7 +59,7 @@ export default class JamPoints extends React.PureComponent<{
      * Triggered when the counter changes.
      * @param {Number} amount 
      */
-    onChange(amount) {
+    protected onChange(amount) {
         this.setState(() => {
             return {amount:amount}
         }, () => {
@@ -70,7 +71,7 @@ export default class JamPoints extends React.PureComponent<{
      * Triggered when the user adds jam points
      * @param amount number
      */
-    onAdd(amount) {
+    protected onAdd(amount) {
         ScoreboardController.IncreaseTeamJamPoints(this.props.side, amount);
     }
 
@@ -78,7 +79,7 @@ export default class JamPoints extends React.PureComponent<{
      * Triggered when the user subtracts jam points
      * @param amount number
      */
-    onSubtract(amount) {
+    protected onSubtract(amount) {
         ScoreboardController.DecreaseTeamJamPoints(this.props.side, amount);
     }
 
@@ -86,7 +87,7 @@ export default class JamPoints extends React.PureComponent<{
      * Triggered when the component mounts to the DOM.
      */
     componentDidMount() {
-        this.remoteScoreboard = ScoreboardController.subscribe(this.updateState);
+        this.remoteScoreboard = ScoreboardController.Subscribe(this.updateState);
         if(this.CounterItem !== null && this.CounterItem.current !== null) {
             this.CounterItem.current.set(this.state.amount, false);
         }
@@ -96,7 +97,7 @@ export default class JamPoints extends React.PureComponent<{
      * Close listeners
      */
     componentWillUnmount() {
-        if(this.remoteScoreboard !== null)
+        if(this.remoteScoreboard)
             this.remoteScoreboard();
     }
 
@@ -117,13 +118,16 @@ export default class JamPoints extends React.PureComponent<{
                         ref={this.CounterItem}
                     />
                 </div>
-                <div>
+                <div className="icons">
                     <Icon 
                         src={IconPlus}
                         onClick={() => {
                             ScoreboardController.IncreaseTeamJamPoints(this.props.side, 1);
                         }}
-                        onContextMenu={() => {
+                        />
+                    <Icon 
+                        src={IconSubtract}
+                        onClick={() => {
                             ScoreboardController.DecreaseTeamJamPoints(this.props.side, 1);
                         }}
                         />

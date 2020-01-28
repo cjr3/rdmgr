@@ -1,33 +1,28 @@
 import React from 'react';
-import ChatController, {SChatController, MessageRecord} from 'controllers/ChatController';
+import ChatController, {MessageRecord} from 'controllers/ChatController';
 import Panel from 'components/Panel';
 import {Icon, IconCheck, IconDelete} from 'components/Elements';
 import keycodes from 'tools/keycodes';
 import cnames from 'classnames';
 import './css/ChatForm.scss';
 import { Unsubscribe } from 'redux';
-import DataController from 'controllers/DataController';
 import UIController from 'controllers/UIController';
 
 /**
  * Component for displaying a chat room for peer connections.
  */
 export default class ChatForm extends React.PureComponent<any, {
-    opened:boolean;
-    Messages:Array<MessageRecord>;
+    Shown:boolean;
 }> {
 
     readonly state = {
-        opened:false,
-        Messages:ChatController.getState().Messages
+        Shown:UIController.GetState().Chat.Shown
     }
     
     /**
      * UIController listener
      */
-    protected remoteUI:Function|null = null;
-
-    protected remoteChat:Function|null = null;
+    protected remoteUI?:Unsubscribe;
 
     /**
      * Constructor
@@ -41,26 +36,20 @@ export default class ChatForm extends React.PureComponent<any, {
 
     protected async updateUI() {
         this.setState({
-            opened:UIController.getState().Chat.Shown
+            Shown:UIController.GetState().Chat.Shown
         });
     }
 
-    protected async updateChat() {
-        let records = ChatController.getState().Messages;
-        if(!DataController.compare(records, this.state.Messages))
-            this.setState({Messages:records});
-    }
-
     protected async onChatOpen() {
-        ChatController.ReadMesssages();
+        ChatController.ReadMessages();
     }
 
     componentDidMount() {
-        this.remoteUI = UIController.subscribe(this.updateUI);
+        this.remoteUI = UIController.Subscribe(this.updateUI);
     }
 
     componentWillUnmount() {
-        if(this.remoteUI !== null)
+        if(this.remoteUI)
             this.remoteUI();
     }
 
@@ -71,12 +60,12 @@ export default class ChatForm extends React.PureComponent<any, {
         return (
             <Panel
                 popup={true}
-                opened={this.state.opened}
+                opened={this.state.Shown}
                 className="CHT-app-panel"
                 contentName="CHT-app"
                 onClose={UIController.ToggleChat}
                 onOpen={this.onChatOpen}
-                buttons={[<ChatMessageEntry key="chat-entry" opened={this.state.opened}/>]}
+                buttons={[<ChatMessageEntry key="chat-entry" opened={this.state.Shown}/>]}
                 scrollBottom={true}
                 title="Chat - (All Users)"
                 >
@@ -90,12 +79,12 @@ class ChatMessages extends React.PureComponent<any, {
     Messages:Array<MessageRecord>;
 }> {
     readonly state = {
-        Messages:ChatController.getState().Messages
-    }
+        Messages:ChatController.Get()
+    };
 
     protected ScrollItem:React.RefObject<HTMLDivElement> = React.createRef();
 
-    protected remoteChat:Unsubscribe|null = null;
+    protected remoteChat?:Unsubscribe;
 
     constructor(props) {
         super(props);
@@ -103,9 +92,7 @@ class ChatMessages extends React.PureComponent<any, {
     }
 
     protected async updateChat() {
-        let records = ChatController.getState().Messages;
-        if(!DataController.compare(records, this.state.Messages))
-            this.setState({Messages:records})
+        this.setState({Messages:ChatController.Get()});
     }
 
     /**
@@ -117,11 +104,11 @@ class ChatMessages extends React.PureComponent<any, {
     }
 
     componentDidMount() {
-        this.remoteChat = ChatController.subscribe(this.updateChat);
+        this.remoteChat = ChatController.Subscribe(this.updateChat);
     }
 
     componentWillUnmount() {
-        if(this.remoteChat !== null)
+        if(this.remoteChat)
             this.remoteChat();
     }
 
@@ -190,7 +177,7 @@ class ChatMessageEntry extends React.PureComponent<{
      * Triggered when the user presses and releases a key in the chat box.
      * @param {KeyEvent} ev 
      */
-    onKeyUpMessage(ev) {
+    protected onKeyUpMessage(ev) {
         switch(ev.keyCode) {
             case keycodes.ENTER :
                 this.addMessage();
@@ -202,10 +189,7 @@ class ChatMessageEntry extends React.PureComponent<{
         }
     }
 
-    /**
-     * 
-     */
-    onClickClear() {
+    protected onClickClear() {
         this.setState(() => {
             return {MessageText:''}
         }, () => {
@@ -219,15 +203,15 @@ class ChatMessageEntry extends React.PureComponent<{
      * Triggered when the user types in the message box.
      * @param {Event} ev 
      */
-    onChangeMessage(ev) {
-        var value = ev.target.value;
+    protected onChangeMessage(ev: React.ChangeEvent<HTMLInputElement>) {
+        var value = ev.currentTarget.value;
         this.setState(() => {return {MessageText:value};});
     }
 
     /**
      * Adds a message to the chat room, sending it to all connected peers.
      */
-    addMessage() {
+    protected addMessage() {
         if(this.state.MessageText === undefined)
             return;
 

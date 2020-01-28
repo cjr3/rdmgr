@@ -1,22 +1,39 @@
 import React from 'react'
 import Video from 'components/tools/Video'
 import cnames from 'classnames'
-import VideoController, {SVideoController} from 'controllers/VideoController';
+import VideoController from 'controllers/VideoController';
 import vars from 'tools/vars';
 import CaptureStatus from 'tools/CaptureStatus';
 import './css/CaptureVideo.scss'
+import VideoCaptureController from 'controllers/capture/Video';
+import { Unsubscribe } from 'redux';
 
-export default class CaptureVideo extends React.PureComponent<{
-    /**
-     * true to show, false to hide
-     */
-    shown:boolean;
-    /**
-     * Additional class names
-     */
-    className?:string;
-}, SVideoController> {
-    readonly state:SVideoController = VideoController.getState();
+export default class CaptureVideo extends React.PureComponent<any,{
+    Status:number;
+    Loop:boolean;
+    AutoPlay:boolean;
+    Source:string;
+    Volume:number;
+    Rate:number;
+    Duration:number;
+    CurrentTime:number;
+    Muted:boolean;
+    Shown:boolean;
+    className:string;
+}> {
+    readonly state = {
+        Status:VideoController.GetState().Status,
+        Loop:VideoController.GetState().Loop,
+        AutoPlay:VideoController.GetState().AutoPlay,
+        Source:VideoController.GetState().Source,
+        Volume:VideoController.GetState().Volume,
+        Rate:VideoController.GetState().Rate,
+        Duration:VideoController.GetState().Duration,
+        CurrentTime:VideoController.GetState().CurrentTime,
+        Muted:VideoController.GetState().Muted,
+        Shown:VideoCaptureController.GetState().Shown,
+        className:VideoCaptureController.GetState().className
+    }
     /**
      * Video reference
      */
@@ -24,7 +41,8 @@ export default class CaptureVideo extends React.PureComponent<{
     /**
      * VideoController remote
      */
-    protected remoteState:Function|null = null;
+    protected remoteState?:Unsubscribe;
+    protected remoteCapture?:Unsubscribe;
 
     /**
      * Constructor
@@ -36,19 +54,37 @@ export default class CaptureVideo extends React.PureComponent<{
         this.onTimeUpdate = this.onTimeUpdate.bind(this);
         this.onPlay = this.onPlay.bind(this);
         this.updateState = this.updateState.bind(this);
+        this.updateCapture = this.updateCapture.bind(this);
     }
 
     /**
      * Updates the state to match the controller.
      */
-    updateState() {
-        this.setState(VideoController.getState());
+    protected updateState() {
+        this.setState({
+            Status:VideoController.GetState().Status,
+            Loop:VideoController.GetState().Loop,
+            AutoPlay:VideoController.GetState().AutoPlay,
+            Source:VideoController.GetState().Source,
+            Volume:VideoController.GetState().Volume,
+            Rate:VideoController.GetState().Rate,
+            Duration:VideoController.GetState().Duration,
+            CurrentTime:VideoController.GetState().CurrentTime,
+            Muted:VideoController.GetState().Muted
+        });
+    }
+
+    protected updateCapture() {
+        this.setState({
+            Shown:VideoCaptureController.GetState().Shown,
+            className:VideoCaptureController.GetState().className
+        });
     }
 
     /**
      * Triggered when the video ends.
      */
-    onEnded() {
+    protected onEnded() {
         this.setState({
             Source:'',
             CurrentTime:0,
@@ -62,7 +98,7 @@ export default class CaptureVideo extends React.PureComponent<{
      * Triggered when the video time elapses (usually every 1 second).
      * @param {HTMLVideoElement} video 
      */
-    onTimeUpdate(video) {
+    protected onTimeUpdate(video) {
         CaptureStatus.UpdateVideo(video.currentTime, video.duration);
         this.setState({
             CurrentTime:video.currentTime,
@@ -73,7 +109,7 @@ export default class CaptureVideo extends React.PureComponent<{
     /**
      * Triggered when the video plays.
      */
-    onPlay() {
+    protected onPlay() {
         CaptureStatus.UpdateVideoStatus(vars.Video.Status.Playing);
     }
 
@@ -81,22 +117,25 @@ export default class CaptureVideo extends React.PureComponent<{
      * Start listeners
      */
     componentDidMount() {
-        this.remoteState = VideoController.subscribe(this.updateState);
+        this.remoteState = VideoController.Subscribe(this.updateState);
+        this.remoteCapture = VideoCaptureController.Subscribe(this.updateCapture);
     }
 
     /**
      * Close listeners
      */
     componentWillUnmount() {
-        if(this.remoteState !== null)
+        if(this.remoteState)
             this.remoteState();
+        if(this.remoteCapture)
+            this.remoteCapture();
     }
 
     /**
      * Renders the component.
      */
     render() {
-        let classNames:string = cnames('main-video', {shown:(this.props.shown)}, this.props.className);
+        let classNames:string = cnames('main-video', {shown:(this.state.Shown)}, this.state.className);
         return (
             <Video
                 className={classNames}

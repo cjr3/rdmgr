@@ -1,10 +1,9 @@
 import React from 'react';
-import CaptureController from 'controllers/CaptureController';
 import cnames from 'classnames';
 import { Unsubscribe } from 'redux';
-import DataController from 'controllers/DataController';
 import './css/CaptureStandings.scss';
 import { IconLeague } from 'components/Elements';
+import StandingsCaptureController from 'controllers/capture/Standings';
 
 /**
  * Displays the standings
@@ -13,7 +12,7 @@ export default class CaptureStandings extends React.PureComponent<any, {
     /**
      * Determines if the component is shown or not
      */
-    shown:boolean;
+    Shown:boolean;
     /**
      * className of component
      */
@@ -21,12 +20,12 @@ export default class CaptureStandings extends React.PureComponent<any, {
     /**
      * Standing records
      */
-    records:Array<any>;
+    Records:Array<any>;
 }> {
     readonly state = {
-        shown:CaptureController.getState().Standings.Shown,
-        className:CaptureController.getState().Standings.className,
-        records:CaptureController.getState().Standings.Records
+        Shown:StandingsCaptureController.GetState().Shown,
+        className:StandingsCaptureController.GetState().className,
+        Records:StandingsCaptureController.Get()
     }
 
     /**
@@ -46,23 +45,19 @@ export default class CaptureStandings extends React.PureComponent<any, {
     /**
      * Updates the state to match the CaptureController
      */
-    protected async updateCapture() {
-        let changes:any = {
-            shown:CaptureController.getState().Standings.Shown,
-            className:CaptureController.getState().Standings.className
-        };
-
-        let records:Array<any>|undefined = CaptureController.getState().Standings.Records;
-        if(records && !DataController.compare(records, this.state.records))
-            changes.records = records;
-        this.setState(changes);
+    protected updateCapture() {
+        this.setState({
+            Shown:StandingsCaptureController.GetState().Shown,
+            className:StandingsCaptureController.GetState().className,
+            Records:StandingsCaptureController.Get()
+        });
     }
 
     /**
      * Listen to controllers
      */
     componentDidMount() {
-        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
+        this.remoteCapture = StandingsCaptureController.Subscribe(this.updateCapture);
     }
 
     /**
@@ -78,9 +73,11 @@ export default class CaptureStandings extends React.PureComponent<any, {
      */
     render() {
         let teams:Array<React.ReactElement> = new Array<React.ReactElement>();
-        if(this.state.records) {
+        let shown:boolean = false;
+        if(this.state.Records && this.state.Records.length >= 1) {
+            shown = this.state.Shown;
             let max:number = 8;
-            this.state.records.forEach((record, index) => {
+            this.state.Records.forEach((record, index) => {
                 if(index < max) {
                     teams.push(
                         <div className="team" key={`${record.RecordType}-${record.RecordID}`}>
@@ -97,9 +94,7 @@ export default class CaptureStandings extends React.PureComponent<any, {
         }
 
         return (
-            <div className={cnames('capture-standings', {
-                shown:(this.state.shown && this.state.records && this.state.records.length)
-            })}>
+            <div className={cnames('capture-standings', {shown:(shown)})}>
                 <h1>Standings</h1>
                 <div className="standings">
                     <div className="team" key="standings-header">

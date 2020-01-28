@@ -1,33 +1,22 @@
 import React from 'react';
-import RecordEditor from './RecordEditor';
-import DataController from 'controllers/DataController';
+import RecordEditor, {PRecordEditor} from './RecordEditor';
 import vars, {VideoRecord} from 'tools/vars';
 import {IconButton, IconFolder} from 'components/Elements';
 import ClientController from 'controllers/ClientController';
+import {Unsubscribe} from 'redux';
+import VideosController from 'controllers/VideosController';
+import RecordList from './RecordList';
+import { Basename } from 'controllers/functions.io';
+import { AddMediaPath } from 'controllers/functions';
 
-interface SVideoEditor {
-    source:string,
-    records:Array<VideoRecord>
-}
-
-interface PVideoEditor {
-    record:VideoRecord|null|undefined;
-    opened:boolean;
-}
+interface PVideoEditor extends PRecordEditor {
+    record:VideoRecord|null
+};
 
 /**
  * Component for editing a video record.
  */
-class VideoEditor extends React.PureComponent<{
-    /**
-     * Record ti edot
-     */
-    record:VideoRecord|null|undefined;
-    /**
-     * true to show, false to hide
-     */
-    opened:boolean;
-}, {
+export default class VideoEditor extends React.PureComponent<PVideoEditor, {
     /**
      * Selected video source (url/file location)
      */
@@ -50,7 +39,7 @@ class VideoEditor extends React.PureComponent<{
      */
     onSelectFile(filename) {
         this.setState(() => {
-            return {source:DataController.basename(filename)};
+            return {source:Basename(filename)};
         });
     }
 
@@ -100,7 +89,7 @@ class VideoEditor extends React.PureComponent<{
     render() {
         let src:string = this.state.source;
         if(src && src.length) {
-            src = DataController.mpath("videos/" + src);
+            src = AddMediaPath("videos/" + src);
         }
         
         let buttons:Array<React.ReactElement> = [
@@ -119,7 +108,6 @@ class VideoEditor extends React.PureComponent<{
                 recordType={vars.RecordType.Video}
                 buttons={buttons}
                 onSubmit={this.onSubmit}
-                opened={this.props.opened}
                 {...this.props}
                 >
                 <tr>
@@ -144,4 +132,48 @@ class VideoEditor extends React.PureComponent<{
     }
 }
 
-export default VideoEditor;
+
+export class VideoRecordList extends React.PureComponent<{
+    shown:boolean;
+    record:VideoRecord|null;
+    onSelect:Function;
+    keywords?:string;
+}, {
+    Records:Array<VideoRecord>;
+}> {
+    readonly state = {
+        Records:VideosController.Get()
+    }
+
+    protected remoteData?:Unsubscribe;
+
+    constructor(props) {
+        super(props);
+        this.updateData = this.updateData.bind(this);
+    }
+
+    protected updateData() {
+        this.setState({Records:VideosController.Get()});
+    }
+
+    componentDidMount() {
+        this.remoteData = VideosController.Subscribe(this.updateData);
+    }
+
+    componentWillUnmount() {
+        if(this.remoteData)
+            this.remoteData();
+    }
+
+    render() {
+        return (
+            <RecordList
+                keywords={this.props.keywords}
+                className={(this.props.shown) ? 'shown' : ''}
+                onSelect={this.props.onSelect}
+                recordid={(this.props.record) ? this.props.record.RecordID : 0}
+                records={this.state.Records}
+                />
+        )
+    }
+}

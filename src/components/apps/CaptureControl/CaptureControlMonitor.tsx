@@ -58,7 +58,7 @@ export default class CaptureControlMonitor extends React.PureComponent<any, {
     /**
      * Triggered when the user clicks the button to set the monitor.
      */
-    onClickSubmit() {
+    protected onClickSubmit() {
         this.state.Monitors.forEach((monitor:any) => {
             if(monitor.id === this.state.MonitorID) {
                 if(window && window.RDMGR && window.RDMGR.captureWindow) {
@@ -99,7 +99,7 @@ export default class CaptureControlMonitor extends React.PureComponent<any, {
      * Triggered when the user changes the monitor list.
      * @param {Event} ev 
      */
-    onChangeMonitor(ev:React.FormEvent<HTMLSelectElement>) {
+    protected onChangeMonitor(ev:React.FormEvent<HTMLSelectElement>) {
         var value = ev.currentTarget.value;
         this.setState(() => {
             return {MonitorID:value};
@@ -110,7 +110,7 @@ export default class CaptureControlMonitor extends React.PureComponent<any, {
      * Triggered when the user changes the window size list.
      * @param {Event} ev 
      */
-    onChangeSize(ev:React.FormEvent<HTMLSelectElement>) {
+    protected onChangeSize(ev:React.FormEvent<HTMLSelectElement>) {
         var value = parseInt( ev.currentTarget.value );
         this.setState(() => {
             var changes:any = {Width:value};

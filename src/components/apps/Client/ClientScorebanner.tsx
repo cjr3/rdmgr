@@ -9,7 +9,7 @@ import cnames from 'classnames';
  */
 export default class ClientScorebanner extends React.PureComponent<any, SScoreboardState> {
 
-    readonly state:SScoreboardState = ScoreboardController.getState()
+    readonly state:SScoreboardState = ScoreboardController.GetState()
 
     /**
      * ScoreboardController listener
@@ -29,14 +29,14 @@ export default class ClientScorebanner extends React.PureComponent<any, SScorebo
      * Updates the state to match the scoreboard controller.
      */
     updateState() {
-        this.setState(ScoreboardController.getState());
+        this.setState(ScoreboardController.GetState());
     }
 
     /**
      * Start listeners
      */
     componentDidMount() {
-        this.remoteState = ScoreboardController.subscribe(this.updateState);
+        this.remoteState = ScoreboardController.Subscribe(this.updateState);
     }
 
     /**

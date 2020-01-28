@@ -1,26 +1,73 @@
-import {createStore} from 'redux';
-import DataController from 'controllers/DataController';
 import ScoreboardController from 'controllers/ScoreboardController';
-import {SkaterRecord} from 'tools/vars';
-import { IGamepadButtonMap } from './GameController';
-import CaptureController from './CaptureController';
+import {SkaterRecord, TeamRecord, PenaltyRecord} from 'tools/vars';
 import keycodes from 'tools/keycodes';
+import {IController} from './vars';
+import {CreateController, BaseReducer} from './functions.controllers';
+import RosterCaptureController from './capture/Roster';
+import {SCaptureControllerState} from './capture/vars';
+import { PrepareObjectForSending, MoveElement } from './functions';
+import TeamsController from './TeamsController';
+import SkatersController from './SkatersController';
+import { Unsubscribe } from 'redux';
+import PenaltyController, { SPenaltyController } from './PenaltyController';
+import ScorekeeperController, { SScorekeeperState } from './ScorekeeperController';
 
-export enum Actions {
-    SET_STATE,
-    SET_TEAM,
-    SET_SKATERS,
-    ADD_SKATER,
-    REMOVE_SKATER,
-    SWAP_SKATERS,
-    SET_CURRENT_SKATER,
-    NEXT_SKATER,
-    PREV_SKATER
+interface IRosterController extends IController {
+    //Skater Records
+    AddSkater:{(side:Sides, record:SkaterRecord)};
+    RemoveSkater:{(side:Sides, id:number)};
+    SwapSkaters:{(side:Sides, a:number, b:number, right:boolean)};
+    SetSkaters:{(side:Sides,records:Array<SkaterRecord>)};
+    LoadSkaters:Function;
+
+    //Intro 
+    Next:Function;
+    Prev:Function;
+    SetSkater:{(side:Sides, id:number)};
+
+    //Roles
+    SetSkaterRole:{(side:Sides, id:number, role:Roles)};
+
+    //Penalties (Penalty Tracker)
+    updatePenaltyTracker:Unsubscribe;
+
+    //Positions (Scorekeeper)
+    updateScorekeeper:Unsubscribe;
+
+    //Skaters Controller
+    updateSkaters:Unsubscribe;
+
+    //misc
+    onKeyUp:Function;
+};
+
+enum Actions {
+    SET_TEAM = 'SET_TEAM',
+    SET_SKATERS = 'SET_SKATERS',
+    ADD_SKATER = 'ADD_SKATER',
+    REMOVE_SKATER = 'REMOVE_SKATER',
+    SWAP_SKATERS = 'SWAP_SKATERS',
+    SET_CURRENT_SKATER = 'SET_CURRENT_SKATER',
+    NEXT_SKATER = 'NEXT_SKATER',
+    PREV_SKATER = 'PREV_SKATER',
+    SET_ROLE = 'SET_ROLE',
+    UPDATE_PENALTY_TRACKER = 'UPDATE_PENALTY_TRACKER',
+    UPDATE_SCOREKEEPER = 'UPDATE_SCOREKEEPER',
+    UPDATE_SKATERS = 'UPDATE_SKATERS'
 };
 
 export type Sides = "A" | "B";
+export type Roles = '' | 'Coach' | 'Captain' | 'CoCaptain' | 'Penalty';
 
-export interface SRosterControllerTeam {
+export interface STeamRoles {
+    Coach:SkaterRecord|null;
+    Penalty:SkaterRecord|null;
+    Captain:SkaterRecord|null;
+    CoCaptain:SkaterRecord|null;
+}
+
+export interface SRosterTeam {
+    ID:number;
     /**
      * Side of the scoreboard
      */
@@ -37,13 +84,17 @@ export interface SRosterControllerTeam {
      * Skaters assigned to this team.
      */
     Skaters:Array<SkaterRecord>;
+    /**
+     * Roles (captain, coach, etc.)
+     */
+    Roles:STeamRoles;
 }
 
-export interface SRosterController {
+interface SRosterController {
     /**
      * Current team to show
      */
-    CurrentTeam:string;
+    CurrentTeam:Sides;
     /**
      * Current skater to show
      */
@@ -51,11 +102,11 @@ export interface SRosterController {
     /**
      * Left-side team
      */
-    TeamA:SRosterControllerTeam;
+    TeamA:SRosterTeam;
     /**
      * Right-side team
      */
-    TeamB:SRosterControllerTeam;
+    TeamB:SRosterTeam;
     /**
      * True if the remote peer that controls the roster
      * has it visible on their screen.
@@ -67,18 +118,343 @@ export const InitState:SRosterController = {
     CurrentTeam:'A',
     SkaterIndex:-1,
     TeamA:{
+        ID:0,
         Side:'A',
         Thumbnail:'',
         Slide:'',
-        Skaters:[]
+        Skaters:new Array<SkaterRecord>(),
+        Roles:{
+            Coach:null,
+            Penalty:null,
+            Captain:null,
+            CoCaptain:null
+        }
     },
     TeamB:{
+        ID:0,
         Side:'B',
         Thumbnail:'',
         Slide:'',
-        Skaters:[]
+        Skaters:new Array<SkaterRecord>(),
+        Roles:{
+            Coach:null,
+            Penalty:null,
+            Captain:null,
+            CoCaptain:null
+        }
     },
     RemoteShown:false
+};
+
+const GetSkaterIndex = (records:Array<SkaterRecord>, id:number) => {
+    return records.findIndex(r => r.RecordID == id);
+};
+
+const SetTeam = (state:SRosterController, side:Sides, team:TeamRecord) => {
+    if(side === 'A') {
+        return {
+            ...state, 
+            SkaterIndex:-1, 
+            TeamA:{
+                ...state.TeamA, 
+                ID:team.RecordID,
+                Thumbnail:team.Thumbnail,
+                Slide:team.Slide
+            }
+        };
+    } else {
+        return {
+            ...state, 
+            SkaterIndex:-1, 
+            TeamB:{
+                ...state.TeamB, 
+                ID:team.RecordID,
+                Thumbnail:team.Thumbnail,
+                Slide:team.Slide
+            }
+        };
+    }
+};
+
+const SetSkaters = (state:SRosterController, side:Sides, records:Array<SkaterRecord>) => {
+    let skaters:Array<SkaterRecord> = records.slice();
+    skaters.forEach((s) => {
+        s.Penalties = new Array<PenaltyRecord>();
+        s.Position = '';
+    });
+    if(side === 'A') {
+        return {...state, SkaterIndex:-1, TeamA:{
+            ...state.TeamA,
+            Skaters:skaters
+        }};
+    } else {
+        return {...state, SkaterIndex:-1, TeamB:{
+            ...state.TeamB,
+            Skaters:skaters
+        }};
+    }
+};
+
+const SetCurrentSkater = (state:SRosterController, side:Sides, index:number) => {
+    return {...state, CurrentTeam:side, SkaterIndex:index};
+};
+
+const AddSkater = (state:SRosterController, side:Sides, record:SkaterRecord) => {
+    if(GetSkaterIndex(state.TeamA.Skaters, record.RecordID) >= 0 || GetSkaterIndex(state.TeamB.Skaters, record.RecordID) >= 0)
+        return state;
+    if(side === 'A') {
+        let skaters:Array<SkaterRecord> = state.TeamA.Skaters.slice();
+        skaters.push(record);
+        return {...state, 
+            TeamA:{
+                ...state.TeamA,
+                Skaters:skaters
+            }
+        };
+    } else {
+        let skaters:Array<SkaterRecord> = state.TeamB.Skaters.slice();
+        skaters.push(record);
+        return {...state, 
+            TeamB:{
+                ...state.TeamB,
+                Skaters:skaters
+            }
+        };
+    }
+};
+
+const RemoveSkater = (state:SRosterController, side:Sides, record:SkaterRecord) => {
+    if(side == 'A') {
+        let index:number = GetSkaterIndex(state.TeamA.Skaters, record.RecordID);
+        if(index < 0)
+            return state;
+        return {...state, 
+            TeamA:{
+                ...state.TeamA,
+                Skaters:state.TeamA.Skaters.filter(r => r.RecordID != record.RecordID)
+            }
+        };
+    } else {
+        let index:number = GetSkaterIndex(state.TeamB.Skaters, record.RecordID);
+        if(index < 0)
+            return state;
+        return {...state, 
+            TeamB:{
+                ...state.TeamB,
+                Skaters:state.TeamB.Skaters.filter(r => r.RecordID != record.RecordID)
+            }
+        };
+    }
+};
+
+const SwapSakters = (state:SRosterController, side:Sides, a:number, b:number, right:boolean) => {
+    if(side === 'A') {
+        let skaters:Array<SkaterRecord> = state.TeamA.Skaters.slice();
+        MoveElement(skaters, a, b, right);
+        return {...state, TeamA:{
+            ...state.TeamA,
+            Skaters:skaters
+        }};
+    } else {
+        let skaters:Array<SkaterRecord> = state.TeamB.Skaters.slice();
+        MoveElement(skaters, a, b, right);
+        return {...state, TeamB:{
+            ...state.TeamB,
+            Skaters:skaters
+        }};
+    }
+};
+
+const NextSkater = (state:SRosterController) => {
+    let index:number = state.SkaterIndex + 1;
+    let side:Sides = state.CurrentTeam;
+    if(side == 'A') {
+        if(index >= state.TeamA.Skaters.length) {
+            index = -1;
+            side = 'B';
+        }
+    } else {
+        if(index >= state.TeamB.Skaters.length) {
+            index = -1;
+        }
+    }
+
+    return {...state, CurrentTeam:side, SkaterIndex:index};
+};
+
+const PreviousSkater = (state:SRosterController) => {
+    let index:number = state.SkaterIndex - 1;
+    let team:Sides = state.CurrentTeam;
+    if(team === 'B') {
+        if(index < -1) {
+            index = state.TeamA.Skaters.length - 1;
+            team = 'A';
+        }
+    }
+
+    if(index < -1) {
+        index = -1;
+    }
+
+    return {...state, CurrentTeam:team, SkaterIndex:index};
+};
+
+const UpdatePenaltyTracker = (state:SRosterController, pt:SPenaltyController) => {
+    let skatersA:Array<SkaterRecord> = state.TeamA.Skaters.slice();
+    let skatersB:Array<SkaterRecord> = state.TeamB.Skaters.slice();
+    skatersA.forEach((skater:SkaterRecord) => {
+        let pskater:SkaterRecord|undefined = pt.Skaters.find((r) => r.RecordID == skater.RecordID);
+        if(pskater) {
+            skater.Penalties = pskater.Penalties;
+        } else {
+            skater.Penalties = new Array<PenaltyRecord>();
+        }
+    });
+    skatersB.forEach((skater:SkaterRecord) => {
+        skater.Penalties = new Array<PenaltyRecord>();
+        let pskater:SkaterRecord|undefined = pt.Skaters.find((r) => r.RecordID == skater.RecordID);
+        if(pskater) {
+            skater.Penalties = pskater.Penalties;
+        } else {
+            skater.Penalties = new Array<PenaltyRecord>();
+        }
+    });
+    return {
+        ...state,
+        TeamA:{
+            ...state.TeamA,
+            Skaters:skatersA
+        },
+        TeamB:{
+            ...state.TeamB,
+            Skaters:skatersB
+        }
+    }
+};
+
+/**
+ * Updates the skater positions from the scorekeeper
+ * @param state 
+ * @param sk 
+ */
+const UpdateScorekeeper = (state:SRosterController, sk:SScorekeeperState) => {
+    
+    let skatersA:Array<SkaterRecord> = state.TeamA.Skaters.slice();
+    let skatersB:Array<SkaterRecord> = state.TeamB.Skaters.slice();
+    skatersA.forEach((skater:SkaterRecord) => {
+        if(skater.RecordID > 0) {
+            let position:string = '';
+            let deck:string = '';
+            for(let key in sk.TeamA.Track) {
+                let sskater:SkaterRecord = sk.TeamA.Track[key];
+                if(sskater && sskater.RecordID == skater.RecordID) {
+                    position = key;
+                    deck = 'Track';
+                    break;
+                }
+            }
+    
+            if(!position) {
+    
+                for(let key in sk.TeamA.Deck) {
+                    let sskater:SkaterRecord = sk.TeamA.Deck[key];
+                    if(sskater && sskater.RecordID == skater.RecordID) {
+                        position = key;
+                        deck = 'Deck';
+                        break;
+                    }
+                }
+            }
+    
+            skater.Position = position;
+            skater.Deck = deck;
+        }
+    });
+    skatersB.forEach((skater:SkaterRecord) => {
+        if(skater.RecordID > 0) {
+            let position:string = '';
+            let deck:string = '';
+            for(let key in sk.TeamB.Track) {
+                let sskater:SkaterRecord = sk.TeamB.Track[key];
+                if(sskater && sskater.RecordID == skater.RecordID) {
+                    position = key;
+                    deck = 'Track';
+                    break;
+                }
+            }
+            
+            if(!position) {
+    
+                for(let key in sk.TeamB.Deck) {
+                    let sskater:SkaterRecord = sk.TeamB.Deck[key];
+                    if(sskater && sskater.RecordID == skater.RecordID) {
+                        position = key;
+                        deck = 'Deck';
+                        break;
+                    }
+                }
+            }
+    
+            skater.Position = position;
+            skater.Deck = deck;
+        }
+    });
+
+    return {
+        ...state,
+        TeamA:{
+            ...state.TeamA,
+            Skaters:skatersA
+        },
+        TeamB:{
+            ...state.TeamB,
+            Skaters:skatersB
+        }
+    }
+};
+
+const UpdateSkaters = (state:SRosterController, records:Array<SkaterRecord>) => {
+    let skatersA:Array<SkaterRecord> = state.TeamA.Skaters.slice();
+    let skatersB:Array<SkaterRecord> = state.TeamB.Skaters.slice();
+    skatersA.forEach((skater, index) => {
+        if(skater.RecordID > 0) {
+            let record:SkaterRecord|undefined = records.find((r) => r.RecordID == skater.RecordID);
+            if(record) {
+                skatersA[index] = {
+                    ...skater,
+                    ...record,
+                    Penalties:skater.Penalties,
+                    Position:skater.Position
+                };
+            }
+        }
+    });
+    
+    skatersB.forEach((skater, index) => {
+        if(skater.RecordID > 0) {
+            let record:SkaterRecord|undefined = records.find((r) => r.RecordID == skater.RecordID);
+            if(record) {
+                skatersB[index] = {
+                    ...skater,
+                    ...record,
+                    Penalties:skater.Penalties,
+                    Position:skater.Position
+                };
+            }
+        }
+    });
+
+    return {
+        ...state,
+        TeamA:{
+            ...state.TeamA,
+            Skaters:skatersA
+        },
+        TeamB:{
+            ...state.TeamB,
+            Skaters:skatersB
+        }
+    };
 };
 
 /**
@@ -86,469 +462,261 @@ export const InitState:SRosterController = {
  * @param {Object} state 
  * @param {Object} action 
  */
-function RosterReducer(state:SRosterController = InitState, action) {
+const RosterReducer = (state:SRosterController = InitState, action) => {
     try {
-        var key = (action.team === 'A') ? 'TeamA' : 'TeamB';
-        var index = 0;
-        var skaters:Array<SkaterRecord> = [];
-        var team = state.CurrentTeam;
         switch(action.type) {
-            //set the state
-            case Actions.SET_STATE : {
-                return Object.assign({}, state, action.values);
-            }
-
             //update a team
-            case Actions.SET_TEAM : {
-                return Object.assign({}, state, {
-                    SkaterIndex:-1,
-                    [key]:Object.assign({}, state[key], {
-                        Thumbnail:action.record.Thumbnail,
-                        Slide:action.record.Slide
-                    })
-                });
-            }
+            case Actions.SET_TEAM :
+                return SetTeam(state, action.team, action.record);
 
             //set a team's skaters
-            case Actions.SET_SKATERS : {
-                action.records.forEach((s) => {
-                    s.Penalties = [];
-                    s.Position = null;
-                });
-                return Object.assign({}, state, {
-                    SkaterIndex:-1,
-                    [key]:Object.assign({}, state[key], {
-                        Skaters:action.records
-                    })
-                });
-            }
+            case Actions.SET_SKATERS :
+                return SetSkaters(state, action.team, action.records);
 
             //Sets the current skater to display from the roster
-            case Actions.SET_CURRENT_SKATER : {
-                return Object.assign({}, state, {
-                    CurrentTeam:action.team,
-                    SkaterIndex:action.index
-                });
-            }
+            case Actions.SET_CURRENT_SKATER :
+                return SetCurrentSkater(state, action.team, action.index);
 
             //add a skater to a team
-            case Actions.ADD_SKATER : {
-                skaters = state[key].Skaters.slice();
-                index = skaters.findIndex((s) => {
-                    return (s.RecordID === action.record.RecordID);
-                });
-                if(index >= 0) {
-                    skaters[index] = Object.assign({}, action.record);
-                } else {
-                    action.record.Penalties = [];
-                    action.record.Position = null;
-                    skaters.push(Object.assign({}, action.record));
-                }
-                return Object.assign({}, state, {
-                    SkaterIndex:-1,
-                    [key]:Object.assign({}, state[key], {
-                        Skaters:skaters
-                    })
-                });
-            }
+            case Actions.ADD_SKATER :
+                return AddSkater(state, action.team, action.record);
 
             //remove a skater from a team
-            case Actions.REMOVE_SKATER : {
-                skaters = state[key].Skaters.slice();
-                index = skaters.findIndex((s) => {
-                    return (s.RecordID === action.record.RecordID);
-                });
-                if(index < 0)
-                    return state;
-                skaters.splice(index, 1);
-                return Object.assign({}, state, {
-                    SkaterIndex:-1,
-                    [key]:Object.assign({}, state[key], {
-                        Skaters:skaters
-                    })
-                });
-            }
+            case Actions.REMOVE_SKATER :
+                return RemoveSkater(state, action.team, action.record);
 
             //Swaps skaters on a given team
-            case Actions.SWAP_SKATERS : {
-                skaters = state[key].Skaters.slice();
-                DataController.MoveElement(skaters, action.indexA, action.indexB, action.right);
-                return Object.assign({}, state, {
-                    SkaterIndex:-1,
-                    [key]:Object.assign({}, state[key], {
-                        Skaters:skaters
-                    })
-                });
-            }
+            case Actions.SWAP_SKATERS :
+                return SwapSakters(state, action.side, action.a, action.b, action.right);
 
-            case Actions.NEXT_SKATER : {
-                index = state.SkaterIndex + 1;
-                team = state.CurrentTeam;
-                if(team === 'A') {
-                    if(index >= state.TeamA.Skaters.length) {
-                        index = -1;
-                        team = 'B';
-                    }
-                } else {
-                    if(index >= state.TeamB.Skaters.length) {
-                        index = -1;
-                    }
-                }
+            case Actions.NEXT_SKATER :
+                return NextSkater(state);
 
-                return Object.assign({}, state, {
-                    CurrentTeam:team,
-                    SkaterIndex:index
-                });
-            }
+            case Actions.PREV_SKATER :
+                return PreviousSkater(state);
 
-            case Actions.PREV_SKATER : {
-                index = state.SkaterIndex - 1;
-                team = state.CurrentTeam;
-                if(team === 'B') {
-                    if(index < -1) {
-                        index = state.TeamA.Skaters.length - 1;
-                        team = 'A';
-                    }
-                }
+            case Actions.UPDATE_PENALTY_TRACKER :
+                return UpdatePenaltyTracker(state, action.state);
 
-                if(index < -1) {
-                    index = -1;
-                }
+            case Actions.UPDATE_SCOREKEEPER :
+                return UpdateScorekeeper(state, action.state);
 
-                return Object.assign({}, state, {
-                    CurrentTeam:team,
-                    SkaterIndex:index
-                });
-            }
+            case Actions.UPDATE_SKATERS :
+                return UpdateSkaters(state, action.records);
+            
             default :
-                return state;
+                return BaseReducer(state, action);
         }
     } catch(er) {
         return state;
     }
-}
+};
 
-const RosterStore = createStore(RosterReducer);
+const RosterController:IRosterController = CreateController('ROS', RosterReducer);
 
-/**
- * Controller for the roster, to set which skaters appear
- * on the scorekeeper, penalty tracker, and intros.
- */
-const RosterController = {
-    Key:'ROS',
-    /**
-     * Sets the state of the roster.
-     * @param {Object} values 
-     */
-    SetState(values) {
-        RosterController.getStore().dispatch({
-            type:Actions.SET_STATE,
-            values:values
-        });
-    },
+RosterController.AddSkater = async (side:Sides, record:SkaterRecord) => {
+    RosterController.Dispatch({
+        type:Actions.ADD_SKATER,
+        side:side,
+        record:record
+    });
+};
 
-    /**
-     * Adds the skater to the given team.
-     * @param {String} team 
-     * @param {Object} skater 
-     */
-    AddSkater(team, skater) {
-        RosterController.getStore().dispatch({
-            type:Actions.ADD_SKATER,
-            team:team,
-            record:skater
-        });
-    },
+RosterController.RemoveSkater = async (side:Sides, id:number) => {
+    RosterController.Dispatch({
+        type:Actions.REMOVE_SKATER,
+        side:side,
+        id:id
+    });
+};
 
-    /**
-     * Removes a skater from the given team.
-     * @param {String} team 
-     * @param {Object} skater 
-     */
-    RemoveSkater(team, skater) {
-        RosterController.getStore().dispatch({
-            type:Actions.REMOVE_SKATER,
-            team:team,
-            record:skater
-        });
-    },
+RosterController.SwapSkaters = async (side:Sides, a:number, b:number, right:boolean = false) => {
+    RosterController.Dispatch({
+        type:Actions.SWAP_SKATERS,
+        side:side,
+        a:a,
+        b:b,
+        right:right
+    });
+};
 
-    /**
-     * Swaps skaters in the roster.
-     * @param {String} team 
-     * @param {Number} indexA 
-     * @param {Number} indexB 
-     * @param {Boolean} right
-     */
-    SwapSkaters(team, indexA, indexB, right = false) {
-        RosterController.getStore().dispatch({
-            type:Actions.SWAP_SKATERS,
-            team:team,
-            indexA:indexA,
-            indexB:indexB,
-            right:right
-        });
-    },
+RosterController.SetSkaters = async (team:Sides, records:Array<SkaterRecord>) => {
+    RosterController.Dispatch({
+        type:Actions.SET_SKATERS,
+        team:team,
+        records:records
+    })
+};
 
-    /**
-     * Sets the skaters for the given team.
-     * @param {String} team 
-     * @param {Array} skaters 
-     */
-    SetSkaters(team, skaters) {
-        RosterController.getStore().dispatch({
-            type:Actions.SET_SKATERS,
-            team:team,
-            records:skaters
-        });
-    },
+RosterController.LoadSkaters = async () => {
+    RosterController.SetSkaters('A', TeamsController.GetTeamSkaters(ScoreboardController.GetState().TeamA.ID, true));
+    RosterController.SetSkaters('B', TeamsController.GetTeamSkaters(ScoreboardController.GetState().TeamB.ID, true));
+};
 
-    /**
-     * Loads the skaters for both teams, based on the scoreboard.
-     */
-    async LoadSkaters() {
-        RosterController.SetSkaters('A', DataController.getTeamSkaters(ScoreboardController.getState().TeamA.ID));
-        RosterController.SetSkaters('B', DataController.getTeamSkaters(ScoreboardController.getState().TeamB.ID));
-    },
+RosterController.Next = async () => {
+    
+    let state:SRosterController = RosterController.GetState();
+    let capture:SCaptureControllerState = RosterCaptureController.GetState();
+    let team = state.CurrentTeam;
+    let index = state.SkaterIndex;
 
-    /**
-     * Shows the next skater
-     */
-    Next() {
-        let state = RosterController.getState();
-        let capture = CaptureController.getState().Roster;
-        let team = state.CurrentTeam;
-        let index = state.SkaterIndex;
+    //starting from the beginning
+    if(!capture.Shown && team === 'A' && index < 0) {
+        RosterCaptureController.Toggle();
+        return;
+    }
 
-        //starting from the beginning
-        if(!capture.Shown && team === 'A' && index < 0) {
-            CaptureController.ToggleRoster();
-            return;
+    //reached the end of both teams skaters
+    if(!capture.Shown && team === 'B' && (index+1) >= state.TeamB.Skaters.length) {
+         RosterController.SetSkater('A', -1);
+         return;
+    }
+
+    if(team === 'A' && (index+1) >= state.TeamA.Skaters.length) {
+        if(!capture.Shown) {
+            RosterController.Dispatch({
+                type:Actions.NEXT_SKATER
+            });
         }
-
-        //reached the end of both teams skaters
-        if(!capture.Shown && team === 'B' && (index+1) >= state.TeamB.Skaters.length) {
-             RosterController.SetSkater('A', -1);
-             return;
-        }
-
-        if(team === 'A' && (index+1) >= state.TeamA.Skaters.length) {
-            if(capture.Shown) {
-                //hide for the next team
-                CaptureController.ToggleRoster();
+        RosterCaptureController.Toggle();
+    } else {
+        if(capture.Shown) {
+            if(team === 'B' && (index+1) >= state.TeamB.Skaters.length) {
+                RosterCaptureController.Toggle();
             } else {
-                RosterController.getStore().dispatch({
+                RosterController.Dispatch({
                     type:Actions.NEXT_SKATER
                 });
-                CaptureController.ToggleRoster();
             }
         } else {
-            if(capture.Shown) {
-                if(team === 'B' && (index+1) >= state.TeamB.Skaters.length) {
-                    CaptureController.ToggleRoster();
-                } else {
-                    RosterController.getStore().dispatch({
-                        type:Actions.NEXT_SKATER
-                    });
-                }
-            } else {
-                CaptureController.ToggleRoster();
-            }
+            RosterCaptureController.Toggle();
         }
-        //RosterController.getStore().dispatch({
-        //    type:NEXT_SKATER
-        //});
-    },
-
-    /**
-     * Shows the previous skater
-     */
-    Prev() {
-        let state = RosterController.getState();
-        let capture = CaptureController.getState().Roster;
-        let team = state.CurrentTeam;
-        let index = state.SkaterIndex;
-        if(team === 'A' && index < 0) {
-            CaptureController.ToggleRoster();
-            return;
-        }
-        
-        if((index - 1) === -1) {
-            RosterController.getStore().dispatch({
-                type:Actions.PREV_SKATER
-            });
-            return;
-        }
-
-        // if(team === 'B' && (index-1) === -1) {
-        //     RosterController.getStore().dispatch({
-        //         type:Actions.PREV_SKATER
-        //     });
-        //     return;
-        // }
-        
-        if(team === 'B' && (index-1) < 0) {
-            if(capture.Shown) {
-                CaptureController.ToggleRoster();
-            } else {
-                RosterController.getStore().dispatch({
-                    type:Actions.PREV_SKATER
-                });
-                CaptureController.ToggleRoster();
-            }
-        } else {
-            if(capture.Shown) {
-                RosterController.getStore().dispatch({
-                    type:Actions.PREV_SKATER
-                });
-            } else {
-                CaptureController.ToggleRoster();
-            }
-        }
-    },
-
-    /**
-     * Sets the current skater.
-     * @param {String} team 
-     * @param {Number} index 
-     */
-    SetSkater(team, index) {
-        RosterController.getStore().dispatch({
-            type:Actions.SET_CURRENT_SKATER,
-            team:team,
-            index:index
-        })
-    },
-
-    /**
-     * Triggered when the user presses a key on the keyboard
-     * @param ev KeyEvent
-     */
-    onKeyUp(ev) {
-        switch(ev.keyCode) {
-            case keycodes.ENTER :
-            case keycodes.SPACEBAR :
-            case keycodes.RIGHT :
-            case keycodes.DOWN :
-                RosterController.Next();
-            break;
-            case keycodes.UP :
-            case keycodes.LEFT :
-                RosterController.Prev();
-            break;
-            case keycodes.V :
-                CaptureController.ToggleRoster();
-            break;
-        }
-    },
-
-    /**
-     * Triggered when the user presses a button on the game controller
-     * @param buttons IGamepadButtonMap
-     */
-    onGamepadButtonPress(buttons:IGamepadButtonMap) {
-        //LEFT
-        if(buttons.LEFT.pressed || buttons.UP.pressed || buttons.L1.pressed) {
-            if(buttons.R2.pressed) {
-                RosterController.SetSkater('A', -1);
-                CaptureController.SetRosterVisibility(false);
-            } else {
-                RosterController.Prev();
-            }
-            return;
-        }
-
-        //RIGHT
-        if(buttons.RIGHT.pressed || buttons.DOWN.pressed || buttons.R1.pressed) {
-            RosterController.Next();
-            return;
-        }
-
-        //Y
-        if(buttons.Y.pressed) {
-            CaptureController.ToggleRoster();
-            return;
-        }
-    },
-
-    /**
-     * Triggered when the user holds a button on the game controller
-     * @param buttons IGamepadButtonMap
-     */
-    onGamepadButtonDown(buttons:IGamepadButtonMap) {
-        if(buttons.LEFT.pressed) {
-
-        }
-    },
-
-    /**
-     * Gets the current state.
-     */
-    getState() {
-        return RosterStore.getState();
-    },
-
-    /**
-     * Gets the redux store.
-     */
-    getStore() {
-        return RosterStore;
-    },
-
-    /**
-     * Adds a clojure for state changes.
-     * @param {Function} f 
-     */
-    subscribe(f) {
-        return RosterStore.subscribe( f );
-    },
-
-    /**
-     * Builds the REST API for this controller.
-     */
-    buildAPI() {
-        const server = window.LocalServer;
-        const exp = server.ExpressApp;
-
-        //get state
-        exp.get(/^\/api\/roster(\/?)$/i, (req, res) => {
-            res.send(server.PrepareObjectForSending(DataController.PrepareObjectForSending(RosterController.getState())));
-            res.end();
-        });
-
-        //add skater
-        exp.post(/^\/api\/roster\/skater(\/?)$/i, (req, res) => {
-            if(req.body && req.body.team && req.body.id) {
-                var skater = DataController.getSkater(req.body.id);
-                if(skater) {
-                    RosterController.AddSkater(req.body.team, skater);
-                }
-            }
-            res.end();
-        });
-
-        //remove skater from team
-        exp.delete(/^\/api\/roster\/skater(\/?)$/i, (req, res) => {
-            if(req.body && req.body.team && req.body.id) {
-                var skater = DataController.getSkater(req.body.id);
-                if(skater) {
-                    RosterController.RemoveSkater(req.body.team, skater);
-                }
-            }
-            res.end();
-        });
-
-        //reload roster
-        exp.purge(/^\/api\/roster(\/?)$/i, (req, res) => {
-            RosterController.LoadSkaters();
-            res.end();
-        });
     }
 };
 
+RosterController.Prev = async () => {
+    
+    let state:SRosterController = RosterController.GetState();
+    let capture:SCaptureControllerState = RosterCaptureController.GetState();
+    let team = state.CurrentTeam;
+    let index = state.SkaterIndex;
+    if(team === 'A' && index < 0) {
+        RosterCaptureController.Toggle();
+        return;
+    }
+    
+    if((index - 1) === -1) {
+        RosterController.Dispatch({
+            type:Actions.PREV_SKATER
+        });
+        return;
+    }
+    
+    if(team === 'B' && (index-1) < 0) {
+        if(!capture.Shown) {
+            RosterController.Dispatch({
+                type:Actions.PREV_SKATER
+            });
+        }
+        RosterCaptureController.Toggle();
+    } else {
+        if(capture.Shown) {
+            RosterController.Dispatch({
+                type:Actions.PREV_SKATER
+            });
+        } else {
+            RosterCaptureController.Toggle();
+        }
+    }
+};
+
+RosterController.SetSkater = async (side:Sides, index:number) => {
+    RosterController.Dispatch({
+        type:Actions.SET_CURRENT_SKATER,
+        team:side,
+        index:index
+    });
+};
+
+RosterController.updatePenaltyTracker = PenaltyController.Subscribe(() => {
+    RosterController.Dispatch({
+        type:Actions.UPDATE_PENALTY_TRACKER,
+        state:PenaltyController.GetState()
+    });
+});
+
+RosterController.updateScorekeeper = ScorekeeperController.Subscribe(() => {
+    RosterController.Dispatch({
+        type:Actions.UPDATE_SCOREKEEPER,
+        state:ScorekeeperController.GetState()
+    });
+});
+
+RosterController.updateSkaters = SkatersController.Subscribe(() => {
+    RosterController.Dispatch({
+        type:Actions.UPDATE_SKATERS,
+        records:SkatersController.Get()
+    });
+});
+
+RosterController.onKeyUp = (ev) => {
+    switch(ev.keyCode) {
+        case keycodes.ENTER :
+        case keycodes.SPACEBAR :
+        case keycodes.RIGHT :
+        case keycodes.DOWN :
+            RosterController.Next();
+        break;
+        case keycodes.UP :
+        case keycodes.LEFT :
+            RosterController.Prev();
+        break;
+        case keycodes.V :
+            RosterCaptureController.Toggle();
+        break;
+    }
+};
+
+RosterController.BuildAPI = async () => {
+    const server = window.LocalServer;
+    const exp = server.ExpressApp;
+
+    //get state
+    exp.get(/^\/api\/v1\/roster(\/?)$/i, (req, res) => {
+        res.send(server.PrepareObjectForSending(PrepareObjectForSending(RosterController.GetState())));
+        res.end();
+    });
+
+    //add skater
+    exp.post(/^\/api\/v1\/roster\/skater(\/?)$/i, (req, res) => {
+        if(req.body && req.body.team && req.body.id) {
+            let skater:SkaterRecord = SkatersController.GetRecord(req.body.id);
+            if(skater) {
+                RosterController.AddSkater(req.body.team, skater);
+            }
+        }
+        res.end();
+    });
+
+    //remove skater from team
+    exp.delete(/^\/api\/v1\/roster\/skater(\/?)$/i, (req, res) => {
+        if(req.body && req.body.team && req.body.id)
+            RosterController.RemoveSkater(req.body.team, req.body.id);
+        res.end();
+    });
+
+    //reload roster
+    exp.purge(/^\/api\/v1\/roster(\/?)$/i, (req, res) => {
+        RosterController.LoadSkaters();
+        res.end();
+    });
+};
+
+/*
 const remoteCapture = CaptureController.subscribe(() => {
     if(window && window.remoteApps && !window.remoteApps.ROS)
         RosterController.SetState({RemoteShown:CaptureController.getState().Roster.Shown});
 });
+*/
 
 export default RosterController;

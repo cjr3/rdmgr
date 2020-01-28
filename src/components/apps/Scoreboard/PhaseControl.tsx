@@ -1,25 +1,29 @@
 import React from 'react';
-import {Icon, IconCheck, IconFastForward, IconStopwatch} from 'components/Elements'
+import {Icon, IconFastForward, IconStopwatch} from 'components/Elements'
 import ScoreboardController from 'controllers/ScoreboardController'
+import vars from 'tools/vars';
+import { Unsubscribe } from 'redux';
 
 /**
  * Component for setting phase / game clock time
  */
 export default class PhaseControl extends React.PureComponent<any, {
+    PhaseHour:number;
     PhaseMinute:number;
     PhaseSecond:number;
-    PhaseHour:number;
+    GameState:number;
 }> {
     readonly state = {
-        PhaseHour:ScoreboardController.getState().PhaseHour,
-        PhaseMinute:ScoreboardController.getState().PhaseMinute,
-        PhaseSecond:ScoreboardController.getState().PhaseSecond
+        PhaseHour:ScoreboardController.GetState().PhaseHour,
+        PhaseMinute:ScoreboardController.GetState().PhaseMinute,
+        PhaseSecond:ScoreboardController.GetState().PhaseSecond,
+        GameState:ScoreboardController.GetState().GameState
     }
 
     /**
      * ScoreboardController listener
      */
-    protected remoteScore:Function|null = null;
+    protected remoteScore?:Unsubscribe;
 
     /**
      * Constructor
@@ -38,13 +42,12 @@ export default class PhaseControl extends React.PureComponent<any, {
     /**
      * Updates the state to match the scoreboard controller
      */
-    updateState() {
-        this.setState(() => {
-            return {
-                PhaseHour:ScoreboardController.getState().PhaseHour,
-                PhaseMinute:ScoreboardController.getState().PhaseMinute,
-                PhaseSecond:ScoreboardController.getState().PhaseSecond
-            };
+    protected updateState() {
+        this.setState({
+            //PhaseHour:ScoreboardController.GetState().PhaseHour,
+            //PhaseMinute:ScoreboardController.GetState().PhaseMinute,
+            //PhaseSecond:ScoreboardController.GetState().PhaseSecond,
+            GameState:ScoreboardController.GetState().GameState
         });
     }
 
@@ -52,49 +55,44 @@ export default class PhaseControl extends React.PureComponent<any, {
      * Triggered when the user changes the phase minute.
      * @param {KeyEvent} ev 
      */
-    onChangeMinute(ev) {
-        var value = ev.target.value;
-        ScoreboardController.SetPhaseTime(this.state.PhaseHour, value, this.state.PhaseSecond);
+    protected onChangeMinute(ev: React.ChangeEvent<HTMLInputElement>) {
+        let value:number = parseInt( ev.currentTarget.value );
+        this.setState({PhaseMinute:value});
     }
 
     /**
      * Triggered when the user changes the phase second.
-     * @param {KeyEvent} ev 
      */
-    onChangeSecond(ev) {
-        var value = ev.target.value;
-        ScoreboardController.SetPhaseTime(this.state.PhaseHour, this.state.PhaseMinute, value);
+    protected onChangeSecond(ev: React.ChangeEvent<HTMLInputElement>) {
+        let value:number = parseInt( ev.currentTarget.value );
+        this.setState({PhaseSecond:value});
     }
 
     /**
      * Triggered when the user changes the phase hour.
      * @param {KeyEvent} ev 
      */
-    onChangeHour(ev) {
-        var value = ev.target.value;
-        ScoreboardController.SetPhaseTime(value, this.state.PhaseMinute, this.state.PhaseSecond);
+    protected onChangeHour(ev: React.ChangeEvent<HTMLInputElement>) {
+        let value:number = parseInt( ev.currentTarget.value );
+        this.setState({PhaseHour:value});
     }
 
     /**
      * Triggered when the user sets the game clock time.
      */
-    onSetGameTime() {
-        ScoreboardController.SetGameTime(this.state.PhaseHour, this.state.PhaseMinute, this.state.PhaseSecond);
+    protected onSetGameTime() {
+        if(this.state.GameState != vars.Clock.Status.Running)
+            ScoreboardController.SetGameTime(this.state.PhaseHour, this.state.PhaseMinute, this.state.PhaseSecond);
     }
 
     /**
      * Triggered when the user copies the game clock time.
-     * @param {MouseEvent} ev 
      */
-    onCopyGameTime(ev) {
-        this.setState(() => {
-            return {
-                PhaseHour:ScoreboardController.getState().GameHour,
-                PhaseMinute:ScoreboardController.getState().GameMinute,
-                PhaseSecond:ScoreboardController.getState().GameSecond
-            }
-        }, () => {
-            ScoreboardController.SetPhaseTime(this.state.PhaseHour, this.state.PhaseMinute, this.state.PhaseSecond);
+    protected onCopyGameTime() {
+        this.setState({
+            PhaseHour:ScoreboardController.GetState().GameHour,
+            PhaseMinute:ScoreboardController.GetState().GameMinute,
+            PhaseSecond:ScoreboardController.GetState().GameSecond
         });
     }
 
@@ -102,14 +100,14 @@ export default class PhaseControl extends React.PureComponent<any, {
      * Start listeners
      */
     componentDidMount() {
-        this.remoteScore = ScoreboardController.subscribe(this.updateState);
+        this.remoteScore = ScoreboardController.Subscribe(this.updateState);
     }
 
     /**
      * Close listeners
      */
     componentWillUnmount() {
-        if(this.remoteScore !== null)
+        if(this.remoteScore)
             this.remoteScore();
     }
 
@@ -119,12 +117,6 @@ export default class PhaseControl extends React.PureComponent<any, {
     render() {
         return (
             <div className="phase-control">
-                <Icon
-                    src={IconFastForward}
-                    title="Change Phase ( P )"
-                    onClick={ScoreboardController.IncreasePhase}
-                    onContextMenu={ScoreboardController.DecreasePhase}
-                    />
                 <input type="number" onChange={this.onChangeHour} value={this.state.PhaseHour} max={23} min={0}/>
                 {":"}
                 <input type="number" onChange={this.onChangeMinute} value={this.state.PhaseMinute} max={59} min={0}/>

@@ -1,13 +1,23 @@
-import {createStore} from 'redux';
-import DataController from 'controllers/DataController';
+import {IController, Files} from './vars';
+import {CreateController, BaseReducer} from './functions.controllers';
+import { PrepareObjectForSending } from './functions';
+import keycodes from 'tools/keycodes';
 
-const ADD_TICKET = 'ADD_TICKET';
-const REMOVE_TICKET = 'REMOVE_TICKET';
-const CLEAR_TICKETS = 'CLEAR_TICKETS';
-const SET_STATE = 'SET_STATE';
+interface IRaffleController extends IController {
+    Add:Function;
+    Remove:Function;
+    Clear:Function;
+    onKeyUp:Function;
+}
 
-export interface SRaffleController {
-    Tickets:Array<string>
+enum Actions {
+    ADD = 'ADD',
+    REMOVE = 'REMOVE',
+    CLEAR = 'CLEAR'
+}
+
+interface SRaffleController {
+    Tickets:Array<string>;
 }
 
 //Initial state
@@ -15,170 +25,135 @@ export const InitState:SRaffleController = {
     Tickets:[]
 };
 
+const AddTicket = (state:SRaffleController, ticket:string) => {
+    let tickets:Array<string> = state.Tickets.slice();
+    if(tickets.length >= 3) {
+        tickets.shift();
+    }
+    tickets.push(ticket);
+    return {...state, Tickets:tickets.filter(t => (t != ''))};
+};
+
+const RemoveTicket = (state:SRaffleController, index?:number) => {
+    if(state.Tickets.length <= 0)
+        return state;
+
+    if(index === undefined) {
+        let tickets:Array<string> = state.Tickets.slice();
+        tickets.shift();
+        return {...state, Tickets:tickets}
+    }
+    
+    if(state.Tickets[index] === undefined)
+        return state;
+    return {...state, Tickets:state.Tickets.filter((t, i) => (i != index && t != ''))};
+};
+
+const RemoveLastTicket = (state:SRaffleController) => {
+    if(state.Tickets.length <= 0)
+        return state;
+    //let tickets:Array<string> = state.Tickets.slice(0, state.Tickets.length - 1);
+    return {...state, Tickets:state.Tickets.slice(0, state.Tickets.length - 1)};
+};
+
+const ClearTickets = (state:SRaffleController) => {
+    return {...state, Tickets:new Array<string>()};
+};
+
 /**
  * Reducer for the raffle controller.
  * @param {Object} state 
  * @param {Object} action 
  */
-function RaffleReducer(state:SRaffleController = InitState, action) {
-    var tickets:Array<string> = [];
-    switch(action.type) {
-        case SET_STATE :
-            return Object.assign({}, state, action.values);
-
-        //Adds a ticket
-        case ADD_TICKET :
-            tickets = state.Tickets;
-            if(tickets.length >= 3) {
-                [tickets[0], tickets[1]] = [tickets[1], tickets[2]]
-                tickets[2] = action.value;
-            } else {
-                tickets.push(action.value);
-            }
-            return Object.assign({}, state, {Tickets:tickets});
-
-        //Remove a ticket
-        case REMOVE_TICKET :
-            if(state.Tickets.length <= 0)
-                return state;
-            tickets = state.Tickets;
-            if(!Number.isNaN(action.index)) {
-                if(tickets[action.index]) {
-                    tickets.splice(action.index, 1);
-                } else {
-                    return state;
-                }
-            } else {
-                //remove the last ticket
-                tickets.pop();
-            }
-            return Object.assign({}, state, {Tickets:tickets});
-
-        //Clear all tickets
-        case CLEAR_TICKETS :
-            return Object.assign({}, state, {Tickets:[]});
-
-        default :
-            return state;
+const RaffleReducer = (state:SRaffleController = InitState, action) => {
+    try {
+        switch(action.type) {
+            //Adds a ticket
+            case Actions.ADD :
+                return AddTicket(state, action.ticket);
+    
+            //Remove a ticket
+            case Actions.REMOVE :
+                if(!Number.isNaN(action.index))
+                    return RemoveTicket(state, action.index);
+                return RemoveLastTicket(state);
+    
+            //Clear all tickets
+            case Actions.CLEAR :
+                return ClearTickets(state);
+    
+            default :
+                return BaseReducer(state, action);
+        }
+    } catch(er) {
+        return state;
     }
-}
+};
 
-//main store
-const RaffleStore = createStore(RaffleReducer);
+const RaffleController:IRaffleController = CreateController('RAF', RaffleReducer);
 
-/**
- * Controller for raffle tickets.
- */
-const RaffleController = {
-    Key:'RAF',
-    /**
-     * Sets the state of the raffle.
-     * @param {Object} state 
-     */
-    SetState(state) {
-        RaffleController.getStore().dispatch({
-            type:SET_STATE,
-            values:state
-        });
-    },
+RaffleController.Get = () : Array<string> => {
+    return RaffleController.GetState().Tickets;
+};
 
-    /**
-     * Adds a ticket.
-     * @param {String} value 
-     */
-    Add(value) {
-        RaffleController.getStore().dispatch({
-            type:ADD_TICKET,
-            value:value
-        });
-    },
+RaffleController.Add = (ticket:string) => {
+    RaffleController.Dispatch({
+        type:Actions.ADD,
+        ticket:ticket
+    });
+};
 
-    /**
-     * Removes the given ticket. If index is not provided, the last ticket added is removed.
-     * @param {Number} index 
-     */
-    Remove(index:number = 0) {
-        RaffleController.getStore().dispatch({
-            type:REMOVE_TICKET,
-            index:index
-        });
-    },
+RaffleController.Remove = (index?:number) => {
+    RaffleController.Dispatch({
+        type:Actions.REMOVE,
+        index:index
+    });
+};
 
-    /**
-     * Clears all tickets.
-     */
-    Clear() {
-        RaffleController.getStore().dispatch({
-            type:CLEAR_TICKETS
-        });
-    },
+RaffleController.Clear = () => {
+    RaffleController.Dispatch({
+        type:Actions.CLEAR
+    });
+};
 
-    /**
-     * Gets the current state.
-     * @return {Object}
-     */
-    getState() {
-        return RaffleStore.getState();
-    },
+RaffleController.BuildAPI = async () => {
+    const server = window.LocalServer;
+    const exp = server.ExpressApp;
 
-    /**
-     * Gets the store.
-     * @return {Object}
-     */
-    getStore() {
-        return RaffleStore;
-    },
+    //get state
+    exp.get(/^\/api\/raffle(\/?)$/i, (req, res) => {
+        res.send(server.PrepareObjectForSending(PrepareObjectForSending(RaffleController.GetState())));
+        res.end();
+    });
 
-    /**
-     * Subscribes to state changes.
-     * @param {Function} f A function to call when the state changes
-     */
-    subscribe(f) {
-        return RaffleStore.subscribe(f);
-    },
-
-    /**
-     * Builds the API for the RaffleController
-     */
-    buildAPI() {
-        const server = window.LocalServer;
-        const exp = server.ExpressApp;
-
-        //get state
-        exp.get(/^\/api\/raffle(\/?)$/i, (req, res) => {
-            res.send(server.PrepareObjectForSending(DataController.PrepareObjectForSending(RaffleController.getState())));
-            res.end();
-        });
-
-        //add ticket
-        exp.post(/^\/api\/raffle(\/?)$/i, (req, res) => {
-            if(req.body && req.body.ticket) {
-                RaffleController.Add(req.body.ticket);
-                res.send("OK");
-            } else {
-                res.send("Please provide a ticket number.");
-            }
-            res.end();
-        });
-
-        //remove ticket
-        exp.delete(/^\/api\/raffle\/([0-9]?)$/i, (req, res) => {
-            if(req.params && typeof(req.params[0]) !== 'undefined' && !Number.isNaN(req.params[0])) {
-                RaffleController.Remove(parseInt( req.params[0] ) );
-            } else {
-                RaffleController.Remove(0);
-            }
+    //add ticket
+    exp.post(/^\/api\/raffle(\/?)$/i, (req, res) => {
+        if(req.body && req.body.ticket) {
+            RaffleController.Add(req.body.ticket);
             res.send("OK");
-            res.end();
-        });
+        } else {
+            res.send("Please provide a ticket number.");
+        }
+        res.end();
+    });
 
-        //clear all
-        exp.purge(/^\/api\/raffle(\/?)$/i, (req, res) => {
-            RaffleController.Clear();
-            res.send("OK");
-            res.end();
-        });
-    }
-}
+    //remove ticket
+    exp.delete(/^\/api\/raffle\/([0-9]?)$/i, (req, res) => {
+        if(req.params && typeof(req.params[0]) !== 'undefined' && !Number.isNaN(req.params[0])) {
+            RaffleController.Remove(parseInt( req.params[0] ) );
+        } else {
+            RaffleController.Remove(0);
+        }
+        res.send("OK");
+        res.end();
+    });
+
+    //clear all
+    exp.purge(/^\/api\/raffle(\/?)$/i, (req, res) => {
+        RaffleController.Clear();
+        res.send("OK");
+        res.end();
+    });
+};
 
 export default RaffleController;

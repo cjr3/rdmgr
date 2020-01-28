@@ -1,6 +1,5 @@
 import React from 'react';
 import CameraController from 'controllers/CameraController';
-import CaptureController from 'controllers/CaptureController';
 import CaptureControlPanel, {PCaptureControlPanel} from './CaptureControlPanel';
 import {
     Button,
@@ -8,6 +7,7 @@ import {
     IconCheck,
     IconLoop
 } from 'components/Elements';
+import CameraCaptureController from 'controllers/capture/Camera';
 
 /**
  * Component for configuring the main camera.
@@ -27,9 +27,9 @@ export default class CaptureControlCamera extends React.PureComponent<PCaptureCo
     Shown:boolean;
 }> {
     readonly state = {
-        Cameras:CameraController.getState().Cameras,
-        DeviceID:CameraController.getState().DeviceID,
-        Shown:CaptureController.getState().MainCamera.Shown
+        Cameras:CameraController.GetState().Cameras,
+        DeviceID:CameraController.GetState().DeviceID,
+        Shown:CameraCaptureController.GetState().Shown
     }
 
     /**
@@ -55,11 +55,10 @@ export default class CaptureControlCamera extends React.PureComponent<PCaptureCo
     /**
      * Updates the state to match the camera controller.
      */
-    updateState() {
+    protected updateState() {
         this.setState(() => {
             return {
-                Cameras:CameraController.getState().Cameras,
-                DeviceID:CameraController.getState().DeviceID
+                Cameras:CameraController.GetState().Cameras
             }
         });
     }
@@ -67,23 +66,23 @@ export default class CaptureControlCamera extends React.PureComponent<PCaptureCo
     /**
      * Updates the state to match the capture controller.
      */
-    updateCapture() {
+    protected updateCapture() {
         this.setState(() => {
-            return {Shown:CaptureController.getState().MainCamera.Shown};
+            return {Shown:CameraCaptureController.GetState().Shown};
         });
     }
 
     /**
      * Triggered when the user clicks the submit button.
      */
-    onClickSubmit() {
-        CameraController.SetDeviceID(this.state.DeviceID);
+    protected async onClickSubmit() {
+        let response = await CameraController.Set(this.state.DeviceID);
     }
 
     /**
      * Triggered when the user clicks the no camera button
      */
-    onClickNoCamera() {
+    protected onClickNoCamera() {
         this.setState({DeviceID:''});
     }
 
@@ -93,9 +92,9 @@ export default class CaptureControlCamera extends React.PureComponent<PCaptureCo
      * - Start listeners
      */
     componentDidMount() {
-        this.remoteState = CameraController.subscribe(this.updateState);
-        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
-        CameraController.LoadCameras();
+        this.remoteState = CameraController.Subscribe(this.updateState);
+        this.remoteCapture = CameraCaptureController.Subscribe(this.updateCapture);
+        CameraController.Load();
     }
 
     /**
@@ -122,7 +121,7 @@ export default class CaptureControlCamera extends React.PureComponent<PCaptureCo
                             return {DeviceID:state.Cameras[0].deviceId}
                         return null;
                     }, () => {
-                        CameraController.SetDeviceID(this.state.DeviceID);
+                        CameraController.Set(this.state.DeviceID);
                     });
                 }
             }
@@ -160,7 +159,7 @@ export default class CaptureControlCamera extends React.PureComponent<PCaptureCo
             <IconButton
                 src={IconLoop}
                 key="btn-load"
-                onClick={CameraController.LoadCameras}>Load</IconButton>,
+                onClick={CameraController.Load}>Load</IconButton>,
             <IconButton
                 key="btn-submit"
                 src={IconCheck}

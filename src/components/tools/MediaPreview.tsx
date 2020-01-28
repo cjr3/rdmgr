@@ -1,9 +1,10 @@
 import React from 'react';
 import cnames from 'classnames';
 import { Icon, IconDelete, IconFolder, IconLoop } from 'components/Elements';
-import DataController from 'controllers/DataController';
 import './css/MediaPreview.scss';
 import ClientController from 'controllers/ClientController';
+import { GetAspectSize, RemoveMediaPath, AddMediaPath, ShowOpenDialog } from 'controllers/functions';
+import { UploadFile } from 'controllers/functions.io';
 
 /**
  * Component for previewing and changing a media element, such as an Image or video
@@ -56,7 +57,7 @@ export default class MediaPreview extends React.PureComponent<{
     private async paint() {
         if(this.Brush !== null && this.CanvasItem !== null && this.CanvasItem.current !== null) {
             this.clear();
-            var size = DataController.aspectSize(this.CanvasItem.current.width, this.CanvasItem.current.height, this.CurrentImage.width, this.CurrentImage.height);
+            var size = GetAspectSize(this.CanvasItem.current.width, this.CanvasItem.current.height, this.CurrentImage.width, this.CurrentImage.height);
             this.Brush.drawImage(this.CurrentImage, size.x, size.y, size.width, size.height);
         }
     }
@@ -100,16 +101,16 @@ export default class MediaPreview extends React.PureComponent<{
      * Triggered when the user clicks the replace icon
      */
     private onClickReplace() {
-        DataController.showOpenDialog({
+        ShowOpenDialog({
             filters:[{name:'Images', extensions:['jpg', 'png', 'gif', 'jpeg']}],
         }).then((files:Array<string>|undefined) => {
             if(files !== undefined && files instanceof Array && files.length >= 1) {
-                DataController.uploadFile(files[0])
+                UploadFile(files[0])
                     .then((destination:string|boolean) => {
                         if(typeof(destination) === 'string') {
                             this.CurrentImage.src = destination;
                             if(this.props.onChange)
-                                this.props.onChange(DataController.mpath(destination, true));
+                                this.props.onChange(RemoveMediaPath(destination));
                         }
                     }).catch(() => {
 
@@ -127,7 +128,7 @@ export default class MediaPreview extends React.PureComponent<{
         if(this.CanvasItem !== null && this.CanvasItem.current !== null)
             this.Brush = this.CanvasItem.current.getContext('2d');
         if(this.props.src !== null && this.props.src !== '')
-            this.CurrentImage.src = DataController.mpath(this.props.src);
+            this.CurrentImage.src = AddMediaPath(this.props.src);
     }
 
     /**
@@ -140,7 +141,7 @@ export default class MediaPreview extends React.PureComponent<{
             this.clear();
             if(this.props.src !== null && this.props.src !== '') {
                 this.CurrentImage.src = '';
-                this.CurrentImage.src = DataController.mpath(this.props.src);
+                this.CurrentImage.src = AddMediaPath(this.props.src);
             }
         }
     }

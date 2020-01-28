@@ -2,15 +2,16 @@ import React from 'react'
 import {ToggleButton} from 'components/Elements';
 import Panel from 'components/Panel'
 import CaptureWatcher from './CaptureWatcher'
-import CaptureDisplayControls from './CaptureDisplayControls';
-import CaptureStreamControls from './CaptureStreamControls';
+//import CaptureDisplayControls from './CaptureDisplayControls';
+//import CaptureStreamControls from './CaptureStreamControls';
 import CaptureControlMonitor from './CaptureControlMonitor';
 import CaptureCameraStyleButtons from './CaptureCameraStyleButtons';
 import CaptureVideoStyleButtons from './CaptureVideoStyleButtons';
 import './css/CaptureControl.scss'
-import CaptureCameraPeerButtons from './CaptureCameraPeerButtons copy';
 import UIController from 'controllers/UIController';
 import { Unsubscribe } from 'redux';
+import StreamPanel, {ToggleIcons} from './Panels/StreamPanel';
+import ScoreboardPanel from './Panels/Scoreboard';
 
 /**
  * Component for determining what is displayed on the capture window.
@@ -23,10 +24,10 @@ export default class CaptureControl extends React.PureComponent<any, {
 }> {
 
     readonly state = {
-        opened:UIController.getState().CaptureControl.Shown
+        opened:UIController.GetState().CaptureControl.Shown
     }
 
-    protected remoteUI:Unsubscribe|null = null;
+    protected remoteUI?:Unsubscribe;
 
     constructor(props) {
         super(props);
@@ -34,15 +35,15 @@ export default class CaptureControl extends React.PureComponent<any, {
     }
 
     protected async updateUI() {
-        this.setState({opened:UIController.getState().CaptureControl.Shown});
+        this.setState({opened:UIController.GetState().CaptureControl.Shown});
     }
 
     componentDidMount() {
-        this.remoteUI = UIController.subscribe(this.updateUI);
+        this.remoteUI = UIController.Subscribe(this.updateUI);
     }
 
     componentWillUnmount() {
-        if(this.remoteUI !== null)
+        if(this.remoteUI)
             this.remoteUI();
     }
 
@@ -53,8 +54,8 @@ export default class CaptureControl extends React.PureComponent<any, {
         return (
             <Panel opened={this.state.opened} contentName="CC-app">
                 <CaptureControlPreview/>
-                <CaptureDisplayControls/>
-                <CaptureStreamControls/>
+                <ScoreboardPanel/>
+                <StreamPanel/>
             </Panel>
         );
     }
@@ -68,8 +69,7 @@ function CaptureControlPreview() {
         <div className="capture-preview">
             <CaptureControlMonitor/>
             <CaptureControlWatcher/>
-            <p>Watching the capture window may degrade performance when streaming.</p>
-            <p><b>Please do not record while streaming.</b></p>
+            <ToggleIcons/>
             <div className="camera-styles">
                 <CaptureCameraStyleButtons/>
                 <CaptureVideoStyleButtons/>

@@ -1,10 +1,11 @@
 import React from 'react';
-import vars, { SkaterRecord, SkaterTeamRecord, PenaltyRecord } from 'tools/vars';
-import DataController from 'controllers/DataController';
+import { SkaterRecord } from 'tools/vars';
 import { Unsubscribe } from 'redux';
 import keycodes from 'tools/keycodes';
 import { Icon, IconLeft, IconRight, IconX } from 'components/Elements';
-import RosterController from 'controllers/RosterController';
+import RosterController, { Sides } from 'controllers/RosterController';
+import SkatersController from 'controllers/SkatersController';
+import { CompareAsync } from 'controllers/functions';
 
 type TRosterPosition = {
     value:string;
@@ -26,15 +27,15 @@ export default class RosterSkaterList extends React.PureComponent<any, {
         JerseyNumber:'',
         SkaterName:'',
         SkaterPosition:'',
-        Skaters:DataController.getSkaters(true),
-        TeamASkaters:RosterController.getState().TeamA.Skaters,
-        TeamBSkaters:RosterController.getState().TeamB.Skaters
+        Skaters:SkatersController.Get(),
+        TeamASkaters:RosterController.GetState().TeamA.Skaters,
+        TeamBSkaters:RosterController.GetState().TeamB.Skaters
     }
 
     /**
      * Listener for DataController
      */
-    protected remoteData:Unsubscribe|null = null;
+    protected remoteData?:Unsubscribe;
 
     /**
      * Listener for RosterController
@@ -140,25 +141,21 @@ export default class RosterSkaterList extends React.PureComponent<any, {
      * Updates the state to match the DataController
      */
     protected async updateData() {
-        let skaters:Array<SkaterRecord> = DataController.getSkaters(true);
-        let same:boolean = await DataController.compareAsync(skaters, this.state.Skaters);
-        if(!same) {
-            this.setState({Skaters:skaters});
-        }
+        this.setState({Skaters:SkatersController.Get()});
     }
 
     /**
      * Updates the state to match the RosterController
      */
     protected async updateRoster() {
-        let skatersA = RosterController.getState().TeamA.Skaters;
-        let skatersB = RosterController.getState().TeamB.Skaters;
-        let same:boolean = await DataController.compareAsync(skatersA, this.state.TeamASkaters);
+        let skatersA = RosterController.GetState().TeamA.Skaters;
+        let skatersB = RosterController.GetState().TeamB.Skaters;
+        let same:boolean = await CompareAsync(skatersA, this.state.TeamASkaters);
         if(!same) {
             this.setState({TeamASkaters:skatersA});
         }
 
-        same = await DataController.compareAsync(skatersB, this.state.TeamBSkaters);
+        same = await CompareAsync(skatersB, this.state.TeamBSkaters);
         if(!same) {
             this.setState({TeamBSkaters:skatersB});
         }
@@ -193,7 +190,7 @@ export default class RosterSkaterList extends React.PureComponent<any, {
      * - Ignores if no team name is chosen
      * @param side 
      */
-    protected async addSkater(side:string) {
+    protected async addSkater(side:Sides) {
         let num:string = this.state.JerseyNumber;
         let name:string = this.state.SkaterName;
         let pos:string = this.state.SkaterPosition;
@@ -224,7 +221,7 @@ export default class RosterSkaterList extends React.PureComponent<any, {
         if(!found) {
             if(!name || name.length <= 0)
                 return;
-            let record:SkaterRecord = DataController.getNewRecord(vars.RecordType.Skater);
+            let record:SkaterRecord = SkatersController.NewRecord();
             record.Name = name;
             record.Number = num;
             //position ???
@@ -242,15 +239,15 @@ export default class RosterSkaterList extends React.PureComponent<any, {
      * Subscribe to the DataController
      */
     componentDidMount() {
-        this.remoteData = DataController.subscribe(this.updateData);
-        this.remoteRoster = RosterController.subscribe(this.updateRoster);
+        this.remoteData = SkatersController.Subscribe(this.updateData);
+        this.remoteRoster = RosterController.Subscribe(this.updateRoster);
     }
 
     /**
-     * Unsubscribe from the DataController
+     * Close listeners
      */
     componentWillUnmount() {
-        if(this.remoteData !== null)
+        if(this.remoteData)
             this.remoteData();
         if(this.remoteRoster !== null)
             this.remoteRoster();
@@ -326,7 +323,6 @@ export default class RosterSkaterList extends React.PureComponent<any, {
                 <option 
                     value={pos.value}
                     key={`${pos.value}-${index}`}
-                    //selected={(pos.value == this.state.SkaterPosition)}
                 >{pos.name}</option>
             );
         });

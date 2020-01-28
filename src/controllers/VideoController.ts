@@ -1,39 +1,62 @@
-import {createStore} from 'redux';
-import DataController from 'controllers/DataController';
-import CaptureController from 'controllers/CaptureController';
 import keycodes from 'tools/keycodes';
 import vars from 'tools/vars';
 
-const SET_STATE = 'SET_STATE';
-const SET_SOURCE = 'SET_SOURCE';
-const SET_VOLUME = 'SET_VOLUME';
-const SET_RATE = 'SET_RATE'; //playback rate
-const SET_FRAMESPEED = 'SET_FRAMESPEED'; //how far to advance the frame when paused
-const SET_STATUS = 'SET_STATUS';
-const SET_TIME = 'SET_TIME';
-const SET_MUTE = 'SET_MUTE';
-const SET_UNMUTE = 'SET_UNMUTE';
-const SET_START_END = 'SET_START_END';
-const SET_DEFAULT = 'SET_DEFAULT';
-const SET_DURATION = 'SET_DURATION';
-const SET_BRIGHTNESS = 'SET_BRIGHTNESS';
-const SET_CONTRAST = 'SET_CONTRAST';
-const SET_GRAYSCALE = 'SET_GRAYSCALE';
-const SET_INVERSION = 'SET_INVERSION';
-const SET_SATURATION = 'SET_SATURATION';
-const SET_SEPIA = 'SET_SEPIA';
-const SET_BLUR = 'SET_BLUR';
+import {IController, Files} from './vars';
+import {CreateController, BaseReducer} from './functions.controllers';
+import VideoCaptureController from './capture/Video';
+import { RemoveMediaPath, AddMediaPath, PrepareObjectForSending } from './functions';
 
-const ADJUST_VOLUME = 'ADJUST_VOLUME';
-const ADJUST_RATE = 'ADJUST_RATE';
+interface IVideoController extends IController {
+    SetSource:{(source?:string|null)};
+    SetVolume:{(volume:number)};
+    SetRate:{(rate:number)};
+    SetDuration:{(duration:number)};
+    SetTime:{(time:number)};
+    PlayNow:{(source:string, muted:boolean)};
+    Play:Function;
+    Stop:Function;
+    Pause:Function;
+    Mute:Function;
+    UnMute:Function;
+    SetStartEnd:{(start:number, end:number)};
+    SetFrameSpeed:{(speed:number)};
+    ToggleMute:Function;
+    TogglePlayPause:Function;
+    ToggleLoop:Function;
+    ToggleAuto:Function;
+    NextFrame:Function;
+    PrevFrame:Function;
+    IncreaseVolume:{(amount:number)};
+    DecreaseVolume:{(amount:number)};
+    IncreaseRate:{(amount:number)};
+    DecreaseRate:{(amount:number)};
+    onKeyUp:Function;
+    PrepareStateForSending:Function;
+};
 
-const NEXT_FRAME = 'NEXT_FRAME';
-const PREV_FRAME = 'PREV_FRAME';
-
-const TOGGLE_PLAY_PAUSE = 'TOGGLE_PLAY_PAUSE';
-const TOGGLE_MUTE = 'TOGGLE_MUTE';
-const TOGGLE_LOOP = 'TOGGLE_LOOP';
-const TOGGLE_AUTO = 'TOGGLE_AUTO';
+enum Actions {
+    SET_SOURCE,
+    SET_VOLUME,
+    SET_RATE,
+    SET_FRAMESPEED,
+    SET_STATUS,
+    SET_TIME,
+    SET_MUTE,
+    SET_UNMUTE,
+    SET_START_END,
+    SET_DEFAULT,
+    SET_DURATION,
+    ADJUST_VOLUME,
+    ADJUST_RATE,
+    NEXT_FRAME,
+    PREV_FRAME,
+    TOGGLE_PLAY_PAUSE,
+    TOGGLE_MUTE,
+    TOGGLE_LOOP,
+    TOGGLE_AUTO,
+    PLAY_NOW,
+    STOP
+};
 
 export interface SVideoController {
     /**
@@ -103,513 +126,428 @@ export const InitState:SVideoController = {
     FrameSpeed:0.05
 };
 
-function VideoReducer(state:SVideoController = InitState, action) : SVideoController {
-    switch(action.type) {
-        case SET_STATE :
-            return Object.assign({}, state, action.values);
+const SetSource = (state:SVideoController, source?:string|null) => {
+    return {...state, Source:source};
+};
 
-        case SET_DEFAULT :
-            return Object.assign({}, state, InitState);
+const AdjustVolume = (state:SVideoController, amount:number) => {
+    return SetVolumne(state, state.Volume + amount);
+};
 
-        case SET_FRAMESPEED :
-            return Object.assign({}, state, {FrameSpeed:action.value});
+const SetVolumne = (state:SVideoController, volume:number) => {
+    return {...state, Volume:Math.max(Math.min(volume, 1), 0)};
+};
 
-        case SET_MUTE :
-            return Object.assign({}, state, {Muted:true});
+const AdjustRate = (state:SVideoController, amount:number) => {
+    return SetVolumne(state, state.Rate + amount);
+};
 
-        case SET_DURATION :
-            return Object.assign({}, state, {Duration:action.value});
+const SetRate = (state:SVideoController, rate:number) => {
+    return {...state, Rate:Math.max(Math.min(rate, 3), 0.25)};
+};
 
-        case SET_UNMUTE :
-            return Object.assign({}, state, {Muted:false});
+const SetDuration = (state:SVideoController, duration:number) => {
+    return {...state, Duration:duration};
+};
 
-        case SET_TIME :
-            return Object.assign({}, state, {CurrentTime:action.value});
+const SetTime = (state:SVideoController, time:number) => {
+    return {...state, CurrentTime:Math.max(Math.min(time, state.Duration), 0)};
+};
 
-        case SET_SOURCE :
-            return Object.assign({}, state, {Source:action.value});
-            
-        case SET_VOLUME :
-            return Object.assign({}, state, {Volume:action.value});
-            
-        case SET_STATUS :
-            return Object.assign({}, state, {Status:action.value});
+const PlayNow = (state:SVideoController, source:string, muted:boolean = false) => {
+    return {
+        ...state,
+        Status:vars.Video.Status.Playing,
+        Source:source,
+        CurrentTime:0,
+        Muted:muted,
+        Start:0,
+        End:0
+    };
+};
 
-        case SET_RATE :
-            return Object.assign({}, state, {Rate:action.value});
+const Play = (state:SVideoController) => {
+    return {...state, Status:vars.Video.Status.Playing};
+};
 
-        case SET_START_END :
-            return Object.assign({}, state, {Start:action.start,End:action.end});
+const Stop = (state:SVideoController) => {
+    return {...state, Status:vars.Video.Status.Stopped, CurrentTime:0};
+};
 
-        case SET_BRIGHTNESS :
-            return Object.assign({}, state, {Brightness:action.value});
+const Pause = (state:SVideoController) => {
+    return {...state, Status:vars.Video.Status.Paused};
+};
 
-        case SET_CONTRAST :
-            return Object.assign({}, state, {Contrast:action.value});
+const Mute = (state:SVideoController) => {
+    return {...state, Muted:true};
+};
 
-        case SET_GRAYSCALE :
-            return Object.assign({}, state, {Grayscale:action.value});
+const UnMute = (state:SVideoController) => {
+    return {...state, Muted:false};
+};
 
-        case SET_INVERSION :
-            return Object.assign({}, state, {Inversion:action.value});
+const SetStartEnd = (state:SVideoController, start:number, end:number) => {
+    return {...state, Start:start, End:end};
+};
 
-        case SET_SATURATION :
-            return Object.assign({}, state, {Saturation:action.value});
+const SetFrameSpeed = (state:SVideoController, speed:number) => {
+    return {...state, FrameSpeed:Math.max(Math.min(speed, 1), 0.05)};
+};
 
-        case SET_SEPIA :
-            return Object.assign({}, state, {Sepia:action.value});
+const ToggleMute = (state:SVideoController) => {
+    return {...state, Muted:!state.Muted};
+};
 
-        case SET_BLUR :
-            return Object.assign({}, state, {Blur:action.value});
+const TogglePlayPause = (state:SVideoController) => {
+    if(!state.Source)
+        return state;
+    if(state.Status != vars.Video.Status.Playing)
+        return {...state, Status:vars.Video.Status.Playing};
+    return {...state, Status:vars.Video.Status.Paused};
+};
 
-        case TOGGLE_MUTE :
-            return Object.assign({}, state, {Muted:!state.Muted});
+const ToggleLoop = (state:SVideoController) => {
+    return {...state, Loop:!state.Loop};
+};
 
-        case TOGGLE_PLAY_PAUSE :
-            if(state.Source === null || state.Source === '')
-                return state;
-            if(state.Status !== vars.Video.Status.Playing)
-                return Object.assign({}, state, {Status:vars.Video.Status.Playing});
-            return Object.assign({}, state, {Status:vars.Video.Status.Paused});
+const ToggleAuto = (state:SVideoController) => {
+    return {...state, AutoPlay:!state.AutoPlay};
+};
 
-        case TOGGLE_LOOP :
-            return Object.assign({}, state, {Loop:!state.Loop});
+const NextFrame = (state:SVideoController) => {
+    if(state.Status == vars.Video.Status.Playing)
+        return state;
+    if(state.CurrentTime >= state.Duration)
+        return state;
+    return SetTime(state, state.CurrentTime + state.FrameSpeed);
+};
 
-        case TOGGLE_AUTO :
-            return Object.assign({}, state, {AutoPlay:!state.AutoPlay});
-        
-        case NEXT_FRAME :
-            if(state.Status === vars.Video.Status.Playing)
-                return state;
-            if(state.CurrentTime < state.Duration) {
-                let time = state.CurrentTime + state.FrameSpeed;
-                if(time > state.Duration)
-                    time = state.Duration;
-                return Object.assign({}, state, {CurrentTime:time});
-            } else {
-                return state;
-            }
+const PrevFrame = (state:SVideoController) => {
+    if(state.Status == vars.Video.Status.Playing || state.CurrentTime <= 0)
+        return state;
+    return SetTime(state, state.CurrentTime - state.FrameSpeed);
+};
 
-        case PREV_FRAME :
-            if(state.CurrentTime <= 0 || state.Status === vars.Video.Status.Playing)
-                return state;
-            let time = state.CurrentTime - state.FrameSpeed;
-            if(time < 0)
-                time = 0;
-            return Object.assign({}, state, {CurrentTime:time});
+const IncreaseVolume = (state:SVideoController, amount:number) => {
+    return SetVolumne(state, state.Volume + amount);
+};
 
-        case ADJUST_VOLUME : {
-            let amount = state.Volume + action.value;
-            if(amount < 0)
-                amount = 0;
-            else if(amount > 1)
-                amount = 1;
-            return Object.assign({}, state, {Volume:amount});
+const DecreaseVolume = (state:SVideoController, amount:number) => {
+    return SetVolumne(state, state.Volume - amount);
+};
+
+const IncreaseRate = (state:SVideoController, amount:number) => {
+    return SetRate(state, state.Rate + amount);
+};
+
+const DecreaseRate = (state:SVideoController, amount:number) => {
+    return SetRate(state, state.Rate - amount);
+};
+
+const SetStatus = (state:SVideoController, status:number) => {
+    return {...state, Status:status};
+};
+
+const VideoReducer = (state:SVideoController = InitState, action) => {
+    try {
+        switch(action.type) {
+            case Actions.SET_FRAMESPEED :
+                return SetFrameSpeed(state, action.value);
+            case Actions.SET_MUTE :
+                return Mute(state);
+            case Actions.SET_UNMUTE :
+                return UnMute(state);
+            case Actions.SET_DURATION :
+                return SetDuration(state, action.value);
+            case Actions.SET_TIME :
+                return SetTime(state, action.value);
+            case Actions.SET_SOURCE :
+                return SetSource(state, action.value);
+            case Actions.SET_VOLUME :
+                return SetVolumne(state, action.value);
+            case Actions.SET_STATUS :
+                return SetStatus(state, action.value);
+            case Actions.SET_RATE :
+                return SetRate(state, action.value);
+            case Actions.SET_START_END :
+                return SetStartEnd(state, action.start, action.end);
+            case Actions.TOGGLE_MUTE :
+                return ToggleMute(state);
+            case Actions.TOGGLE_PLAY_PAUSE :
+                return TogglePlayPause(state);
+            case Actions.TOGGLE_LOOP :
+                return ToggleLoop(state);
+            case Actions.TOGGLE_AUTO :
+                return ToggleAuto(state);
+            case Actions.NEXT_FRAME :
+                return NextFrame(state);
+            case Actions.PREV_FRAME :
+                return PrevFrame(state);
+            case Actions.ADJUST_VOLUME :
+                return AdjustVolume(state, action.value);
+            case Actions.ADJUST_RATE :
+                return AdjustRate(state, action.value);
+            case Actions.PLAY_NOW :
+                return PlayNow(state, action.source, action.muted);
+            case Actions.STOP :
+                return Stop(state);
+            default :
+                return BaseReducer(state, action);
         }
-
-        case ADJUST_RATE : {
-            let amount = state.Rate + action.value;
-            if(amount < 0.1)
-                amount = 0.1;
-            else if(amount > 3)
-                amount = 3;
-            return Object.assign({}, state, {Rate:amount});
-        }
-            
-        default :
-            return state;
+    } catch(er) {
+        return state;
     }
 }
 
-const VideoStore = createStore(VideoReducer);
+const VideoController:IVideoController = CreateController('VID', VideoReducer);
+VideoController.SetSource = async (source?:string|null) => {
+    VideoController.Dispatch({
+        type:Actions.SET_SOURCE,
+        value:source
+    });
+};
+VideoController.SetVolume = async (volume:number) => {
+    VideoController.Dispatch({
+        type:Actions.SET_VOLUME,
+        value:volume
+    });
+};
+VideoController.SetRate = async (rate:number) => {
+    VideoController.Dispatch({
+        type:Actions.SET_RATE,
+        value:rate
+    });
+};
+VideoController.SetDuration = async (duration:number) => {
+    VideoController.Dispatch({
+        type:Actions.SET_DURATION,
+        value:duration
+    });
+};
+VideoController.SetTime = async (time:number) => {
+    VideoController.Dispatch({
+        type:Actions.SET_TIME,
+        value:time
+    });
+};
+VideoController.PlayNow = async (source:string, muted:boolean = false) => {
+    VideoController.Dispatch({
+        type:Actions.PLAY_NOW,
+        source:source,
+        muted:muted
+    });
+    VideoCaptureController.Show();
+};
+VideoController.Play = async () => {
+    VideoController.Dispatch({
+        type:Actions.SET_STATUS,
+        value:vars.Video.Status.Playing
+    });
+    VideoCaptureController.Show();
+};
+VideoController.Stop = async () => {
+    VideoController.Dispatch({
+        type:Actions.STOP
+    });
+};
+VideoController.Pause = async () => {
+    VideoController.Dispatch({
+        type:Actions.SET_STATUS,
+        value:vars.Video.Status.Paused
+    });
+};
+VideoController.Mute = async () => {
+    VideoController.Dispatch({
+        type:Actions.SET_MUTE
+    });
+};
+VideoController.UnMute = async () => {
+    VideoController.Dispatch({
+        type:Actions.SET_UNMUTE
+    });
+};
+VideoController.SetStartEnd = async (start:number, end:number) => {
+    VideoController.Dispatch({
+        type:Actions.SET_START_END,
+        start:start,
+        end:end
+    });
+};
+VideoController.SetFrameSpeed = async (speed:number) => {
+    VideoController.Dispatch({
+        type:Actions.SET_FRAMESPEED,
+        value:speed
+    });
+};
+VideoController.ToggleMute = async () => {
+    VideoController.Dispatch({
+        type:Actions.TOGGLE_MUTE
+    });
+};
+VideoController.TogglePlayPause = async () => {
+    VideoController.Dispatch({
+        type:Actions.TOGGLE_PLAY_PAUSE
+    });
+};
+VideoController.ToggleLoop = async () => {
+    VideoController.Dispatch({
+        type:Actions.TOGGLE_LOOP
+    });
+};
+VideoController.ToggleAuto = async () => {
+    VideoController.Dispatch({
+        type:Actions.TOGGLE_AUTO
+    });
+};
+VideoController.NextFrame = async () => {
+    VideoController.Dispatch({
+        type:Actions.NEXT_FRAME
+    });
+};
+VideoController.PrevFrame = async () => {
+    VideoController.Dispatch({
+        type:Actions.PREV_FRAME
+    });
+};
+VideoController.IncreaseVolume = async (amount:number) => {
+    VideoController.Dispatch({
+        type:Actions.ADJUST_VOLUME,
+        value:Math.abs(amount)
+    });
+};
+VideoController.DecreaseVolume = async (amount:number) => {
+    VideoController.Dispatch({
+        type:Actions.ADJUST_VOLUME,
+        value:Math.abs(amount)*-1
+    });
+};
+VideoController.IncreaseRate = async (amount:number) => {
+    VideoController.Dispatch({
+        type:Actions.ADJUST_RATE,
+        value:Math.abs(amount)
+    });
+};
+VideoController.DecreaseRate = async (amount:number) => {
+    VideoController.Dispatch({
+        type:Actions.ADJUST_RATE,
+        value:Math.abs(amount)*-1
+    });
+};
+VideoController.onKeyUp = async (ev) => {
+    switch(ev.keyCode) {
+        case keycodes.SPACEBAR :
+        case keycodes.ENTER :
+        case keycodes.P :
+            VideoController.TogglePlayPause();
+        break;
 
-const VideoController = {
-    Key:'VID',
+        case keycodes.RIGHT :
+            VideoController.NextFrame();
+        break;
 
-    SetState(state) {
-        VideoController.getStore().dispatch({
-            type:SET_STATE,
-            values:state
-        });
-    },
+        case keycodes.LEFT :
+            VideoController.PrevFrame();
+        break;
 
-    SetSource(value) {
-        VideoController.getStore().dispatch({
-            type:SET_SOURCE,
-            value:value
-        });
-    },
+        case keycodes.M :
+            VideoController.ToggleMute();
+        break;
 
-    SetVolume(value) {
-        VideoController.getStore().dispatch({
-            type:SET_VOLUME,
-            value:value
-        });
-    },
+        case keycodes.UP :
+            VideoController.IncreaseVolume(0.05);
+        break;
 
-    SetRate(value) {
-        VideoController.getStore().dispatch({
-            type:SET_RATE,
-            value:value
-        });
-    },
+        case keycodes.DOWN :
+            VideoController.DecreaseVolume(0.05);
+        break;
+    }
+};
 
-    SetDuration(value) {
-        VideoController.getStore().dispatch({
-            type:SET_DURATION,
-            value:value
-        });
-    },
+VideoController.PrepareStateForSending = () => {
+    let cstate:SVideoController = VideoController.GetState();
+    cstate.Source = RemoveMediaPath(cstate.Source);
+    cstate.AutoPlay = true;
+    if(window && window.LocalServer) {
+        cstate.Source = window.LocalServer.getVideoURL(cstate.Source);
+    }
+    return cstate;
+};
 
-    SetValues(values) {
-        VideoController.getStore().dispatch({
-            type:SET_STATE,
-            values:values
-        });
-    },
+VideoController.BuildAPI = async () => {
 
-    SetTime(value) {
-        VideoController.getStore().dispatch({
-            type:SET_TIME,
-            value:value
-        });
-    },
+    const server = window.LocalServer;
+    const exp = server.ExpressApp;
 
-    PlayNow(source, muted) {
-        VideoController.getStore().dispatch({
-            type:SET_STATE,
-            values:{
-                Status:vars.Video.Status.Playing,
-                Source:source,
-                CurrentTime:0,
-                Shown:true,
-                Muted:muted
+    //get state
+    exp.get(/^\/api\/video(\/?)$/i, (req, res) => {
+        res.send(server.PrepareObjectForSending(PrepareObjectForSending(VideoController.GetState())));
+        res.end();
+    });
+
+    //video instructions
+    exp.post(/^\/api\/video(\/?)$/i, (req, res) => {
+        if(req.body && req.body.action) {
+            switch(req.body.action.toString().toLowerCase()) {
+                case 'play' :
+                    VideoController.Play();
+                break;
+                case 'pause' :
+                    VideoController.Pause();
+                break;
+                case 'stop' :
+                    VideoController.Stop();
+                break;
+                //set video source and play video
+                case 'play-now' :
+                    VideoController.PlayNow(
+                        AddMediaPath('videos/' + req.body.src),
+                        (req.body.muted === true) ? true : false
+                    );
+                break;
             }
-        });
-        CaptureController.SetMainVideoVisibility(true);
-    },
+        }
+        res.end();
+    });
 
-    Play() {
-        VideoController.getStore().dispatch({
-            type:SET_STATUS,
-            value:vars.Video.Status.Playing
-        });
-        CaptureController.SetMainVideoVisibility(true);
-    },
-
-    Stop() {
-        VideoController.getStore().dispatch({
-            type:SET_STATE,
-            values:{
-                Status:vars.Video.Status.Stopped,
-                Shown:false,
-                Source:''
+    //stream a video
+    exp.get(/^\/api\/video\/(.*?)\.{1}(mp4|wmv|webm){1}/i, (req, res) => {
+        var file = AddMediaPath("videos/" + req.params[0] + "." + req.params[1]);
+        let fs = require('fs');
+        fs.stat(file, function(err, stats) {
+          if (err) {
+            if (err.code === 'ENOENT') {
+              // 404 Error if file not found
+              return res.sendStatus(404);
             }
-        });
-        CaptureController.SetMainVideoVisibility(false);
-    },
-
-    Pause() {
-        VideoController.getStore().dispatch({
-            type:SET_STATUS,
-            value:vars.Video.Status.Paused
-        });
-    },
-
-    Mute() {
-        VideoController.getStore().dispatch({
-            type:SET_MUTE
-        });
-    },
-
-    UnMute() {
-        VideoController.getStore().dispatch({
-            type:SET_UNMUTE
-        });
-    },
-
-    SetStartEnd(start, end) {
-        VideoController.getStore().dispatch({
-            type:SET_START_END,
-            Start:start,
-            End:end
-        });
-    },
-
-    SetFrameSpeed(value) {
-        VideoController.getStore().dispatch({
-            type:SET_FRAMESPEED,
-            value:value
-        })
-    },
-
-    SetBrightness(value) {
-        VideoController.getStore().dispatch({
-            type:SET_BRIGHTNESS,
-            value:value
-        });
-    },
-
-    SetContrast(value) {
-        VideoController.getStore().dispatch({
-            type:SET_CONTRAST,
-            value:value
-        });
-    },
-
-    SetGrayscale(value) {
-        VideoController.getStore().dispatch({
-            type:SET_GRAYSCALE,
-            value:value
-        });
-    },
-
-    SetInversion(value) {
-        VideoController.getStore().dispatch({
-            type:SET_INVERSION,
-            value:value
-        });
-    },
-
-    SetSaturation(value) {
-        VideoController.getStore().dispatch({
-            type:SET_SATURATION,
-            value:value
-        });
-    },
-
-    SetSepia(value) {
-        VideoController.getStore().dispatch({
-            type:SET_SEPIA,
-            value:value
-        });
-    },
-
-    SetBlur(value) {
-        VideoController.getStore().dispatch({
-            type:SET_BLUR,
-            value:value
-        });
-    },
-
-    ToggleMute() {
-        VideoController.getStore().dispatch({
-            type:TOGGLE_MUTE
-        });
-    },
-
-    TogglePlayPause() {
-        VideoController.getStore().dispatch({
-            type:TOGGLE_PLAY_PAUSE
-        });
-    },
-
-    ToggleLoop() {
-        VideoController.getStore().dispatch({
-            type:TOGGLE_LOOP
-        });
-    },
-
-    ToggleAuto() {
-        VideoController.getStore().dispatch({
-            type:TOGGLE_AUTO
-        });
-    },
-
-    NextFrame() {
-        VideoController.getStore().dispatch({
-            type:NEXT_FRAME
-        });
-    },
-
-    PrevFrame() {
-        VideoController.getStore().dispatch({
-            type:PREV_FRAME
-        });
-    },
-
-    IncreaseVolume(amount) {
-        VideoController.getStore().dispatch({
-            type:ADJUST_VOLUME,
-            value:Math.abs(amount)
-        });
-    },
-
-    DecreaseVolume(amount) {
-        VideoController.getStore().dispatch({
-            type:ADJUST_VOLUME,
-            value:Math.abs(amount)*-1
-        });
-    },
-
-    IncreaseRate(amount) {
-        VideoController.getStore().dispatch({
-            type:ADJUST_RATE,
-            value:Math.abs(amount)
-        });
-    },
-
-    DecreaseRate(amount) {
-        VideoController.getStore().dispatch({
-            type:ADJUST_RATE,
-            value:Math.abs(amount)*-1
-        });
-    },
+            res.end(err);
+          }
+          var range = req.headers.range;
+          if (!range) {
+           // 416 Wrong range
+           //return res.sendStatus(416);
+           range = "bytes=0-10";
+          }
+          var positions = range.replace(/bytes=/, "").split("-");
+          var start = parseInt(positions[0], 10);
+          var total = stats.size;
+          var end = positions[1] ? parseInt(positions[1], 10) : total - 1;
+          var chunksize = (end - start) + 1;
     
-    /**
-     * Handles keyboard commands for the VideoPlayer app.
-     * @param {KeyEvent} ev 
-     */
-    onKeyUp(ev) {
-        switch(ev.keyCode) {
-            case keycodes.SPACEBAR :
-            case keycodes.ENTER :
-            case keycodes.P :
-                VideoController.TogglePlayPause();
-            break;
-
-            case keycodes.RIGHT :
-                //VideoController.IncreaseRate(0.1);
-                VideoController.NextFrame();
-            break;
-
-            case keycodes.LEFT :
-                //VideoController.DecreaseRate(0.1);
-                VideoController.PrevFrame();
-            break;
-
-            case keycodes.M :
-                VideoController.ToggleMute();
-            break;
-
-            case keycodes.UP :
-                VideoController.IncreaseVolume(0.05);
-            break;
-
-            case keycodes.DOWN :
-                VideoController.DecreaseVolume(0.05);
-            break;
-
-            //case keycodes.OPENBRACKET :
-                //VideoController.PrevFrame();
-            //break;
-
-            //case keycodes.CLOSEBRACKET :
-                //VideoController.NextFrame();
-            //break;
-        }
-    },
-
-    /**
-     * Gets the state of the capture controller
-     */
-    getState() {
-        return VideoStore.getState();
-    },
-
-    /**
-     * Gets the capture controller store
-     */
-    getStore() {
-        return VideoStore;
-    },
-
-    /**
-     * Subscribes to the capture controller
-     * @param {Function} f 
-     */
-    subscribe(f) {
-        return VideoStore.subscribe(f);
-    },
-
-    prepareStateForSending(state) {
-        let cstate = Object.assign({}, state);
-        cstate.Source = DataController.mpath(cstate.Source, true);
-        cstate.AutoPlay = true;
-        if(window && window.LocalServer) {
-            cstate.Source = window.LocalServer.getVideoURL(cstate.Source);
-        }
-        return cstate;
-    },
-
-    /**
-     * Builds the REST API for the Video Controller
-     */
-    buildAPI() {
-        const server = window.LocalServer;
-        const exp = server.ExpressApp;
-
-        //get state
-        exp.get(/^\/api\/video(\/?)$/i, (req, res) => {
-            res.send(server.PrepareObjectForSending(DataController.PrepareObjectForSending(VideoController.getState())));
-            res.end();
-        });
-
-        //video instructions
-        exp.post(/^\/api\/video(\/?)$/i, (req, res) => {
-            if(req.body && req.body.action) {
-                switch(req.body.action.toString().toLowerCase()) {
-                    case 'play' :
-                        VideoController.Play();
-                    break;
-                    case 'pause' :
-                        VideoController.Pause();
-                    break;
-                    case 'stop' :
-                        VideoController.Stop();
-                    break;
-                    //set video source and play video
-                    case 'play-now' :
-                        VideoController.PlayNow(
-                            DataController.mpath('videos/' + req.body.src, false),
-                            (req.body.muted === true) ? true : false
-                        );
-                    break;
-                }
-            }
-            res.end();
-        });
-
-        //stream a video
-        exp.get(/^\/api\/video\/(.*?)\.{1}(mp4|wmv|webm){1}/i, (req, res) => {
-            var file = DataController.mpath("videos/" + req.params[0] + "." + req.params[1], false);
-            let fs:any = DataController.FS;
-            fs.stat(file, function(err, stats) {
-              if (err) {
-                if (err.code === 'ENOENT') {
-                  // 404 Error if file not found
-                  return res.sendStatus(404);
-                }
-                res.end(err);
-              }
-              var range = req.headers.range;
-              if (!range) {
-               // 416 Wrong range
-               //return res.sendStatus(416);
-               range = "bytes=0-10";
-              }
-              var positions = range.replace(/bytes=/, "").split("-");
-              var start = parseInt(positions[0], 10);
-              var total = stats.size;
-              var end = positions[1] ? parseInt(positions[1], 10) : total - 1;
-              var chunksize = (end - start) + 1;
-        
-              res.writeHead(206, {
-                "Content-Range": "bytes " + start + "-" + end + "/" + total,
-                "Accept-Ranges": "bytes",
-                "Content-Length": chunksize,
-                "Content-Type": "video/mp4"
-              });
-        
-              var stream = fs.createReadStream(file, { start: start, end: end, autoClose:true })
-                .on("open", function() {
-                  stream.pipe(res);
-                }).on("error", function(err) {
-                  res.end(err);
-                });
+          res.writeHead(206, {
+            "Content-Range": "bytes " + start + "-" + end + "/" + total,
+            "Accept-Ranges": "bytes",
+            "Content-Length": chunksize,
+            "Content-Type": "video/mp4"
+          });
+    
+          var stream = fs.createReadStream(file, { start: start, end: end, autoClose:true })
+            .on("open", function() {
+              stream.pipe(res);
+            }).on("error", function(err) {
+              res.end(err);
             });
         });
-    }
+    });
 };
 
 export default VideoController;

@@ -1,23 +1,24 @@
 import React from 'react';
 import Camera from 'components/tools/Camera';
-import CameraController, {CameraControllerState} from 'controllers/CameraController';
+import CameraController from 'controllers/CameraController';
 import cnames from 'classnames';
 import './css/CaptureCamera.scss';
+import CameraCaptureController from 'controllers/capture/Camera';
+import { Unsubscribe } from 'redux';
 
 /**
  * Component for displaying the camera on the capture window.
  */
-export default class CaptureCamera extends React.PureComponent<{
-    /**
-     * Determines if the camera is shown or not
-     */
-    shown:boolean;
-    /**
-     * Determines how the camera is shown
-     */
+export default class CaptureCamera extends React.PureComponent<any, {
+    Shown:boolean;
     className:string;
-}, CameraControllerState> {
-    readonly state:CameraControllerState = CameraController.getState()
+    DeviceID:string;
+}> {
+    readonly state = {
+        Shown:CameraCaptureController.GetState().Shown,
+        className:CameraCaptureController.GetState().className,
+        DeviceID:CameraController.GetState().DeviceID
+    }
 
     /**
      * Camera reference
@@ -26,7 +27,8 @@ export default class CaptureCamera extends React.PureComponent<{
     /**
      * CameraController remote
      */
-    protected remoteState:Function|null = null;
+    protected remoteState?:Unsubscribe;
+    protected remoteCamera?:Unsubscribe;
 
     /**
      * Constructor
@@ -37,23 +39,29 @@ export default class CaptureCamera extends React.PureComponent<{
         this.CameraItem = React.createRef();
         this.onStream = this.onStream.bind(this);
         this.updateState = this.updateState.bind(this);
+        this.updateCamera = this.updateCamera.bind(this);
     }
 
-    /**
-     * 
-     */
-    updateState() {
-        this.setState(CameraController.getState());
+    protected updateState() {
+        this.setState({
+            Shown:CameraCaptureController.GetState().Shown,
+            className:CameraCaptureController.GetState().className
+        });
+    }
+
+    protected updateCamera() {
+        this.setState({
+            DeviceID:CameraController.GetState().DeviceID
+        });
     }
 
     /**
      * Triggered when the camera starts streaming to a peer.
      * @param {MediaStream} stream
      */
-    onStream(stream:MediaStream) {
+    protected onStream(stream:MediaStream) {
         if(window && window.LocalServer) {
-            window.LocalServer.LocalPeer.setStream(stream);
-            //window.LocalServer.LocalPeer.play();
+            //window.LocalServer.LocalPeer.setStream(stream);
         }
     }
 
@@ -61,14 +69,15 @@ export default class CaptureCamera extends React.PureComponent<{
      * Start listeners
      */
     componentWillMount() {
-        this.remoteState = CameraController.subscribe(this.updateState);
+        this.remoteCamera = CameraController.Subscribe(this.updateCamera);
+        this.remoteState = CameraCaptureController.Subscribe(this.updateState);
     }
 
     /**
      * Close listeners
      */
     componentWillUnmount() {
-        if(this.remoteState !== null)
+        if(this.remoteState)
             this.remoteState();
     }
 
@@ -76,7 +85,9 @@ export default class CaptureCamera extends React.PureComponent<{
      * Renders the component.
      */
     render() {
-        var className = cnames('main-camera', {shown:this.props.shown}, this.props.className);
+        let className:string = cnames('main-camera', this.state.className, {
+            shown:this.state.Shown
+        });
         return (
             <Camera
                 deviceId={this.state.DeviceID}

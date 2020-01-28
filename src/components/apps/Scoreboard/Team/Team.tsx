@@ -5,24 +5,19 @@ import JamPoints from './JamPoints'
 import Timeouts from './Timeouts'
 import Challenges from './Challenges'
 import {Icon, IconPlus, IconBolt, IconNo, IconFlag} from 'components/Elements'
-import NameInput from './NameInput'
-import ColorInput from './ColorInput'
 import Status from './Status'
 import vars from 'tools/vars'
-import ScoreboardController, {SScoreboardTeam} from 'controllers/ScoreboardController';
-import DataController from 'controllers/DataController';
-
-import './css/Team.scss'
+import ScoreboardController from 'controllers/ScoreboardController';
 import { Unsubscribe } from 'redux'
+import { AddMediaPath } from 'controllers/functions'
+import './css/Team.scss';
 
-export default function Team(props:{side:string}) {
+export default function Team(props:{side:'A'|'B'}) {
     return (
         <div className={cnames('team', 'side-' + props.side.toLowerCase())}>
             <Score side={props.side}/>
             <TeamLogo side={props.side}/>
             <div className="values">
-                <NameInput side={props.side}/>
-                <ColorInput side={props.side}/>
                 <JamPoints side={props.side}/>
                 <Timeouts side={props.side}/>
                 <Challenges side={props.side}/>
@@ -39,7 +34,7 @@ class TeamLogo extends React.PureComponent<{
     src:string;
 }> {
     readonly state = {
-        src:''
+        src:ScoreboardController.GetState().TeamA.Thumbnail
     }
 
     protected remoteScoreboard:Unsubscribe|null = null;
@@ -47,17 +42,19 @@ class TeamLogo extends React.PureComponent<{
     constructor(props) {
         super(props);
         this.updateScoreboard = this.updateScoreboard.bind(this);
+        if(this.props.side === 'B')
+            this.state.src = ScoreboardController.GetState().TeamB.Thumbnail;
     }
 
     protected async updateScoreboard() {
-        let src = ScoreboardController.getState().TeamA.Thumbnail;
+        let src = ScoreboardController.GetState().TeamA.Thumbnail;
         if(this.props.side === 'B')
-            src = ScoreboardController.getState().TeamB.Thumbnail;
+            src = ScoreboardController.GetState().TeamB.Thumbnail;
         this.setState({src:src});
     }
 
     componentDidMount() {
-        this.remoteScoreboard = ScoreboardController.subscribe(this.updateScoreboard);
+        this.remoteScoreboard = ScoreboardController.Subscribe(this.updateScoreboard);
     }
 
     componentWillUnmount() {
@@ -66,11 +63,8 @@ class TeamLogo extends React.PureComponent<{
     }
     
     render() {
-        let src:string = '';
-        if(this.state.src !== '')
-            src = DataController.mpath(this.state.src);
         return (
-            <img src={src} alt="" className="logo"/>
+            <img src={AddMediaPath(this.state.src)} alt="" className="logo"/>
         );
     }
 }
@@ -93,14 +87,14 @@ class TeamControlButtons extends React.PureComponent<{
     }
 
     protected async updateScoreboard() {
-        let status:number = ScoreboardController.getState().TeamA.Status;
+        let status:number = ScoreboardController.GetState().TeamA.Status;
         if(this.props.side === 'B')
-            status = ScoreboardController.getState().TeamB.Status;
+            status = ScoreboardController.GetState().TeamB.Status;
         this.setState({status:status});
     }
 
     componentDidMount() {
-        this.remoteScoreboard = ScoreboardController.subscribe(this.updateScoreboard);
+        this.remoteScoreboard = ScoreboardController.Subscribe(this.updateScoreboard);
     }
 
     componentWillUnmount() {

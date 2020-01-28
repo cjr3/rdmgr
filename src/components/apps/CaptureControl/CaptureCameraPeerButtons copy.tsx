@@ -1,9 +1,7 @@
 import React from 'react';
-import CaptureController from 'controllers/CaptureController';
 import CaptureStatus from 'tools/CaptureStatus';
 import {
     Icon,
-    IconStreamOff,
     IconCameraDefault,
     IconCamera2080,
     IconCamera5050,
@@ -12,6 +10,9 @@ import {
     IconDisconnected,
     IconConnected
 } from 'components/Elements';
+
+import {PeerCameraCaptureController} from 'controllers/capture/Camera';
+import CameraCaptureController from 'controllers/capture/Camera';
 
 /**
  * Buttons for setting the style of the main camera
@@ -40,8 +41,8 @@ export default class CaptureCameraPeerButtons extends React.PureComponent<any, {
      * State
      */
     readonly state = {
-        Shown:CaptureController.getState().PeerCamera.Shown,
-        className:CaptureController.getState().PeerCamera.className,
+        Shown:PeerCameraCaptureController.GetState().Shown,
+        className:PeerCameraCaptureController.GetState().className,
         PeerID:'',
         Connected:false
     }
@@ -69,10 +70,10 @@ export default class CaptureCameraPeerButtons extends React.PureComponent<any, {
     /**
      * Updates the state to match the capture controller.
      */
-    updateState() {
+    protected updateState() {
         this.setState({
-            Shown:CaptureController.getState().PeerCamera.Shown,
-            className:CaptureController.getState().PeerCamera.className
+            Shown:PeerCameraCaptureController.GetState().Shown,
+            className:PeerCameraCaptureController.GetState().className
         });
     }
 
@@ -87,7 +88,7 @@ export default class CaptureCameraPeerButtons extends React.PureComponent<any, {
      * Triggered when the component mounts to the DOM
      */
     componentDidMount() {
-        this.remoteState = CaptureController.subscribe(this.updateState);
+        this.remoteState = PeerCameraCaptureController.Subscribe(this.updateState);
         this.remoteStatus = CaptureStatus.subscribe(this.updateStatus);
     }
 
@@ -114,45 +115,45 @@ export default class CaptureCameraPeerButtons extends React.PureComponent<any, {
                 <Icon 
                     src={icon}
                     active={this.state.Shown}
-                    onClick={CaptureController.TogglePeerCamera}
+                    onClick={PeerCameraCaptureController.Toggle}
                     />
                 <Icon
                     src={IconCameraDefault}
                     active={(this.state.className === 'video-def')}
                     onClick={() => {
-                        CaptureController.SetPeerCameraClass('video-def');
+                        PeerCameraCaptureController.SetClass('video-def');
                     }}
                     />
                 <Icon
                     src={IconCamera5050}
                     active={(this.state.className === 'video-5050')}
                     onClick={() => {
-                        CaptureController.SetPeerCameraClass('video-5050');
-                        CaptureController.SetMainCameraClass('video-5050');
+                        PeerCameraCaptureController.SetClass('video-5050');
+                        CameraCaptureController.SetClass('video-5050');
                     }}
                     />
                 <Icon
                     src={IconCamera2080}
                     active={(this.state.className === 'video-2080'  || this.state.className === 'video-8020')}
                     onClick={() => {
-                        CaptureController.SetPeerCameraClass('video-8020');
-                        CaptureController.SetMainCameraClass('video-2080');
+                        PeerCameraCaptureController.SetClass('video-8020');
+                        CameraCaptureController.SetClass('video-2080');
                     }}
                     />
                 <Icon
                     src={IconCameraLeftThird}
                     active={(this.state.className === 'video-lt')}
                     onClick={() => {
-                        CaptureController.SetPeerCameraClass('video-lt');
-                        CaptureController.SetMainCameraClass('video-def');
+                        PeerCameraCaptureController.SetClass('video-lt');
+                        CameraCaptureController.SetClass('video-def');
                     }}
                     />
                 <Icon
                     src={IconCameraRightThird}
                     active={(this.state.className === 'video-lr')}
                     onClick={() => {
-                        CaptureController.SetPeerCameraClass('video-lr');
-                        CaptureController.SetMainCameraClass('video-def');
+                        PeerCameraCaptureController.SetClass('video-lr');
+                        CameraCaptureController.SetClass('video-def');
                     }}
                     />
             </div>

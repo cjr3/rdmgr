@@ -1,29 +1,25 @@
 import React from 'react';
 import ScoreboardController from 'controllers/ScoreboardController';
 import cnames from 'classnames';
+import { JamCounterCaptureController } from 'controllers/capture/Scoreboard';
+import { Unsubscribe } from 'redux';
 
 /**
  * Component for displaying a large jam counter on the CaptureForm
  */
-export default class CaptureJamCounter extends React.PureComponent<{
-    /**
-     * True to show, false to hide
-     */
-    shown:boolean;
-}, {
-    /**
-     * Current jam number
-     */
+export default class CaptureJamCounter extends React.PureComponent<any, {
     JamCounter:number;
+    Shown:boolean;
+    className:string;
 }> {
     readonly state = {
-        JamCounter:ScoreboardController.getState().JamCounter
+        JamCounter:ScoreboardController.GetState().JamCounter,
+        Shown:JamCounterCaptureController.GetState().Shown,
+        className:JamCounterCaptureController.GetState().className
     }
 
-    /**
-     * ScoreboardController remote
-     */
-    protected remoteScoreboard:Function|null = null;
+    protected remoteScoreboard?:Unsubscribe;
+    protected remoteCapture?:Unsubscribe;
 
     /**
      * Constructor
@@ -32,14 +28,22 @@ export default class CaptureJamCounter extends React.PureComponent<{
     constructor(props) {
         super(props);
         this.updateState = this.updateState.bind(this);
+        this.updateCapture = this.updateCapture.bind(this);
     }
 
     /**
      * Updates the state to match the Scoreboard Controller
      */
-    updateState() {
+    protected updateState() {
         this.setState({
-            JamCounter:ScoreboardController.getState().JamCounter
+            JamCounter:ScoreboardController.GetState().JamCounter
+        });
+    }
+
+    protected updateCapture() {
+        this.setState({
+            Shown:JamCounterCaptureController.GetState().Shown,
+            className:JamCounterCaptureController.GetState().className
         });
     }
 
@@ -47,15 +51,18 @@ export default class CaptureJamCounter extends React.PureComponent<{
      * Start listeners
      */
     componentDidMount() {
-        this.remoteScoreboard = ScoreboardController.subscribe(this.updateState);
+        this.remoteScoreboard = ScoreboardController.Subscribe(this.updateState);
+        this.remoteCapture = JamCounterCaptureController.Subscribe(this.updateCapture);
     }
 
     /**
      * Close listeners
      */
     componentWillUnmount() {
-        if(this.remoteScoreboard !== null)
+        if(this.remoteScoreboard)
             this.remoteScoreboard();
+        if(this.remoteCapture)
+            this.remoteCapture();
     }
 
     /**

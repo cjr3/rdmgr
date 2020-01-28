@@ -13,7 +13,7 @@ export default class JamCounter extends React.PureComponent<any, {
     amount:number;
 }> {
     readonly state = {
-        amount:ScoreboardController.getState().JamCounter
+        amount:ScoreboardController.GetState().JamCounter
     }
 
     /**
@@ -42,7 +42,7 @@ export default class JamCounter extends React.PureComponent<any, {
      */
     updateState() {
         this.setState(() => {
-            return {amount:ScoreboardController.getState().JamCounter}
+            return {amount:ScoreboardController.GetState().JamCounter}
         }, () => {
             if(this.CounterItem !== null && this.CounterItem.current !== null) {
                 this.CounterItem.current.set(this.state.amount, false);
@@ -82,7 +82,7 @@ export default class JamCounter extends React.PureComponent<any, {
      * Start listeners
      */
     componentDidMount() {
-        this.remoteScore = ScoreboardController.subscribe(this.updateState);
+        this.remoteScore = ScoreboardController.Subscribe(this.updateState);
     }
 
     /**

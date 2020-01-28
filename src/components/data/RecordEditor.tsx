@@ -27,7 +27,7 @@ interface SRecordEditor {
     keywords:string
 }
 
-interface PRecordEditor {
+export interface PRecordEditor {
     record?:any,
     records?:Array<any>|null,
     onCancel?:Function,
@@ -59,7 +59,6 @@ class RecordEditor extends React.PureComponent<PRecordEditor, SRecordEditor> {
         
         this.onSelect = this.onSelect.bind(this);
         this.onSubmit = this.onSubmit.bind(this);
-        this.onNew = this.onNew.bind(this);
         this.onCancel = this.onCancel.bind(this);
         this.onChangeKeywords = this.onChangeKeywords.bind(this);
 
@@ -222,28 +221,19 @@ class RecordEditor extends React.PureComponent<PRecordEditor, SRecordEditor> {
     }
 
     /**
-     * Triggered when the user clicks the 'new' button.
-     */
-    onNew() {
-        this.setState((state) => {
-            var record = DataController.getNewRecord(this.props.recordType);
-            if(this.props.onSelect)
-                this.props.onSelect( record );
-            return {record:record};
-        });
-    }
-
-    /**
      * Triggered when the user clicks the submit button.
      */
     async onSubmit() {
         let record = Object.assign({}, this.state.record);
         if(this.props.onSubmit)
             record = this.props.onSubmit(record);
-        await DataController.SaveRecord(record);
-        this.setState({record:null}, () => {
-            if(this.props.onCancel)
-                this.props.onCancel();
+        DataController.SaveRecord(record).then(() => {
+            this.setState({record:null}, () => {
+                if(this.props.onCancel)
+                    this.props.onCancel();
+            });
+        }).catch((er) => {
+            console.log(er.message);
         });
     }
 

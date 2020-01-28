@@ -1,9 +1,9 @@
 import React from 'react';
 import TeamSelection from 'components/tools/TeamSelection';
 import ScoreboardController from 'controllers/ScoreboardController';
-import DataController from 'controllers/DataController';
 import Panel from 'components/Panel';
 import { Button, ToggleButton } from 'components/Elements';
+import TeamsController from 'controllers/TeamsController';
 
 /**
  * Component for the scoreboard to pick the teams.
@@ -42,8 +42,8 @@ export default class TeamPicker extends React.PureComponent<{
     readonly state = {
         resetChecked:false,
         resetRosterChecked:false,
-        TeamAID:ScoreboardController.getState().TeamA.ID,
-        TeamBID:ScoreboardController.getState().TeamB.ID
+        TeamAID:ScoreboardController.GetState().TeamA.ID,
+        TeamBID:ScoreboardController.GetState().TeamB.ID
     }
 
     constructor(props) {
@@ -78,8 +78,8 @@ export default class TeamPicker extends React.PureComponent<{
      */
     onSubmit() {
         ScoreboardController.SetTeams(
-            DataController.getTeam(this.state.TeamAID),
-            DataController.getTeam(this.state.TeamBID),
+            TeamsController.GetRecord(this.state.TeamAID),
+            TeamsController.GetRecord(this.state.TeamBID),
             this.state.resetChecked, 
             this.state.resetRosterChecked
         );

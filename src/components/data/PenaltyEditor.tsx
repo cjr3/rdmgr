@@ -1,20 +1,18 @@
 import React from 'react';
-import RecordEditor from './RecordEditor';
+import RecordEditor, {PRecordEditor} from './RecordEditor';
 import vars, { PenaltyRecord } from 'tools/vars';
+import PenaltiesController from 'controllers/PenaltiesController';
+import { Unsubscribe } from 'redux';
+import RecordList from './RecordList';
+
+interface props extends PRecordEditor {
+    record:PenaltyRecord|null
+};
 
 /**
  * Component for editing penalty records.
  */
-export default class PenaltyEditor extends React.PureComponent<{
-    /**
-     * Record to edit
-     */
-    record:PenaltyRecord|null;
-    /**
-     * true to show, false to hide
-     */
-    opened:boolean;
-}, {
+export default class PenaltyEditor extends React.PureComponent<props, {
     /**
      * Description of the penalty record
      */
@@ -88,7 +86,6 @@ export default class PenaltyEditor extends React.PureComponent<{
             <RecordEditor 
                 recordType={vars.RecordType.Penalty}
                 onSubmit={this.onSubmit}
-                opened={this.props.opened}
                 {...this.props}
                 >
                 <tr>
@@ -101,6 +98,51 @@ export default class PenaltyEditor extends React.PureComponent<{
                     </td>
                 </tr>
             </RecordEditor>
+        )
+    }
+}
+
+export class PenaltyRecordList extends React.PureComponent<{
+    shown:boolean;
+    record:PenaltyRecord|null;
+    onSelect:Function;
+    keywords?:string;
+}, {
+    Records:Array<PenaltyRecord>;
+}> {
+    readonly state = {
+        Records:PenaltiesController.Get()
+    }
+
+    protected remoteData?:Unsubscribe;
+
+    constructor(props) {
+        super(props);
+        this.updateData = this.updateData.bind(this);
+    }
+
+    protected updateData() {
+        this.setState({Records:PenaltiesController.Get()});
+    }
+
+    componentDidMount() {
+        this.remoteData = PenaltiesController.Subscribe(this.updateData);
+    }
+
+    componentWillUnmount() {
+        if(this.remoteData)
+            this.remoteData();
+    }
+
+    render() {
+        return (
+            <RecordList
+                keywords={this.props.keywords}
+                className={(this.props.shown) ? 'shown' : ''}
+                onSelect={this.props.onSelect}
+                recordid={(this.props.record) ? this.props.record.RecordID : 0}
+                records={this.state.Records}
+                />
         )
     }
 }

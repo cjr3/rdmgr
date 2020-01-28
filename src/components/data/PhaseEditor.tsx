@@ -1,20 +1,18 @@
 import React from 'react';
-import RecordEditor from './RecordEditor';
+import RecordEditor, {PRecordEditor} from './RecordEditor';
 import vars, { PhaseRecord } from 'tools/vars';
+import {Unsubscribe} from 'redux';
+import PhasesController from 'controllers/PhasesController';
+import RecordList from './RecordList';
+
+interface props extends PRecordEditor {
+    record:PhaseRecord|null;
+};
 
 /**
  * Component for editing a Phase record.
  */
-export default class PhaseEditor extends React.PureComponent<{
-    /**
-     * Record to edit
-     */
-    record:PhaseRecord|null;
-    /**
-     * true to show, false to hide
-     */
-    opened:boolean;
-}, {
+export default class PhaseEditor extends React.PureComponent<props, {
     /**
      * Hours of the phase
      */
@@ -54,7 +52,7 @@ export default class PhaseEditor extends React.PureComponent<{
      * Triggered when the value for the hour textbox changes.
      * @param {Event} ev 
      */
-    onChangeHour(ev:React.ChangeEvent<HTMLInputElement>) {
+    protected onChangeHour(ev:React.ChangeEvent<HTMLInputElement>) {
         let value:number = parseInt(ev.currentTarget.value);
         this.setState(() => {
             return {hour:value};
@@ -65,7 +63,7 @@ export default class PhaseEditor extends React.PureComponent<{
      * Triggered when the value for the minute textbox changes.
      * @param {Event} ev 
      */
-    onChangeMinute(ev:React.ChangeEvent<HTMLInputElement>) {
+    protected onChangeMinute(ev:React.ChangeEvent<HTMLInputElement>) {
         let value:number = parseInt(ev.currentTarget.value);
         this.setState(() => {
             return {minute:value};
@@ -75,7 +73,7 @@ export default class PhaseEditor extends React.PureComponent<{
      * Triggered when the value for the second textbox changes.
      * @param {Event} ev 
      */
-    onChangeSecond(ev:React.ChangeEvent<HTMLInputElement>) {
+    protected onChangeSecond(ev:React.ChangeEvent<HTMLInputElement>) {
         let value:number = parseInt(ev.currentTarget.value);
         this.setState(() => {
             return {second:value};
@@ -86,7 +84,7 @@ export default class PhaseEditor extends React.PureComponent<{
      * Triggered when the user changes the value of the quarter for this phase.
      * @param {Event} ev 
      */
-    onChangeQuarter(ev:React.ChangeEvent<HTMLSelectElement>) {
+    protected onChangeQuarter(ev:React.ChangeEvent<HTMLSelectElement>) {
         let value:number = parseInt( ev.currentTarget.value );
         this.setState(() => {
             return {quarter:value};
@@ -97,7 +95,7 @@ export default class PhaseEditor extends React.PureComponent<{
      * Triggered when the user selects a record to edit.
      * @param {Object} record 
      */
-    onSelect(record) {
+    protected onSelect(record) {
         let duration:Array<number> = [0,0,0];
         if(record && record.Duration)
             duration = record.Duration.slice();
@@ -113,7 +111,7 @@ export default class PhaseEditor extends React.PureComponent<{
      * Triggered when the user clicks the submit button.
      * @param {Object} record 
      */
-    onSubmit(record) {
+    protected onSubmit(record) {
         let duration:Array<number> = [this.state.hour, this.state.minute, this.state.second];
         return Object.assign({}, record, {
             Duration:duration,
@@ -146,7 +144,6 @@ export default class PhaseEditor extends React.PureComponent<{
         return (
             <RecordEditor 
                 recordType={vars.RecordType.Phase}
-                opened={this.props.opened}
                 {...this.props}
                 >
                 <tr>
@@ -188,6 +185,52 @@ export default class PhaseEditor extends React.PureComponent<{
                     </td>
                 </tr>
             </RecordEditor>
+        )
+    }
+}
+
+
+export class PhaseRecordList extends React.PureComponent<{
+    shown:boolean;
+    record:PhaseRecord|null;
+    onSelect:Function;
+    keywords?:string;
+}, {
+    Records:Array<PhaseRecord>;
+}> {
+    readonly state = {
+        Records:PhasesController.Get()
+    }
+
+    protected remoteData?:Unsubscribe;
+
+    constructor(props) {
+        super(props);
+        this.updateData = this.updateData.bind(this);
+    }
+
+    protected updateData() {
+        this.setState({Records:PhasesController.Get()});
+    }
+
+    componentDidMount() {
+        this.remoteData = PhasesController.Subscribe(this.updateData);
+    }
+
+    componentWillUnmount() {
+        if(this.remoteData)
+            this.remoteData();
+    }
+
+    render() {
+        return (
+            <RecordList
+                keywords={this.props.keywords}
+                className={(this.props.shown) ? 'shown' : ''}
+                onSelect={this.props.onSelect}
+                recordid={(this.props.record) ? this.props.record.RecordID : 0}
+                records={this.state.Records}
+                />
         )
     }
 }

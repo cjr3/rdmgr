@@ -40,31 +40,25 @@
             right: 16px;
             font-size: 18px;
             text-transform: uppercase;
-        }
+            > div {
+                margin-bottom: 8px;
+                display: flex;
+                flex-flow: row wrap;
+                height: 50px;
+                :first-child {
+                    flex: 0 0 35%;
+                    line-height: 50px;
+                }
 
-        .values > div {
-            margin-bottom: 8px;
-            display: flex;
-            flex-flow: row wrap;
-            height: 50px;
-        }
+                :nth-child(2) {
+                    flex: 1;
+                    line-height: 50px;
+                }
+            }
 
-        .values > div > div:first-child {
-            flex: 0 0 35%;
-            line-height: 50px;
-        }
-
-        .values > div > div:nth-child(2) {
-            flex: 1;
-            line-height: 50px;
-        }
-
-        .values > div > div:last-child {
-            flex: 0 0 75px;
-        }
-
-        .values .counter {
-            font-size: 48px;
+            .counter {
+                font-size: 48px;
+            }
         }
 
         .controls {
@@ -133,12 +127,21 @@
             flex-flow: row-reverse;
         }
 
-        .values > div > div:first-child {
-            padding-right: 16px;
-        }
-        
-        .values > div > div {
-            text-align: right;
+        .values {
+            > div {
+                > div {
+                    text-align: right;
+                    &:first-child {
+                        padding-right: 16px;
+                    }
+                }
+
+                &.icons {
+                    flex: 1;
+                    display: flex;
+                    flex-flow: row wrap;
+                }
+            }
         }
     }
 

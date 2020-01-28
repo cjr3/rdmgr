@@ -12,17 +12,20 @@
     align-items: center;
     z-index: 130;
     opacity: 0;
-    transition: all 150ms linear;
+    transition: all 150ms linear 500ms;
     background-size: cover;
     background-repeat: no-repeat;
+
+    &.shown {
+        opacity: 1;
+    }
+    
 
     > .ticket {
         width: 720px;
         height: 180px;
         color: #003366;
-        background-size: contain;
-        background-repeat: no-repeat;
-        background-position: center center;
+        background: #FFFF00 none center center contain;
         padding: 16px 16px 16px 32px;
         font-family: $base-font-display;
         font-size: 128px;
@@ -31,19 +34,58 @@
         margin: 16px;
         font-weight: bold;
         text-shadow: 3px 3px 5px rgba(150,0,0,0.5);
-        transition: all 350ms linear 250ms;
-        transform: scaleY(0);
-        opacity: 0;
-    }
+        animation: aniRaffleTicketHidden 500ms forwards;
+        transform-origin: 100% 50%;
+        &.shown {
+            animation: aniRaffleTicketShown 500ms forwards;
+        }
 
-    > .ticket.shown {
-        opacity: 1;
-        transform: scaleY(1);
-    }
-}
+        @keyframes aniRaffleTicketHidden {
+            0% {
+                transform: translateX(0px) rotateX(0deg);
+                filter: grayscale(0);
+                font-size: 128px;
+                transform-origin: 100% 50%;
+            }
 
-.capture-raffle.shown {
-    opacity: 1;
+            50% {
+                transform: translateX(0px) rotateX(75deg);
+                filter: grayscale(1);
+                font-size: 64px;
+                transform-origin: 100% 50%;
+            }
+
+            100% {
+                transform: translateX(-2480px) rotateX(75deg);
+                filter: grayscale(1);
+                font-size: 64px;
+                transform-origin: 100% 50%;
+            }
+        }
+
+        @keyframes aniRaffleTicketShown {
+            0% {
+                transform: translateX(-2480px) rotateX(75deg);
+                filter: grayscale(1);
+                font-size: 64px;
+                transform-origin: 100% 50%;
+            }
+
+            50% {
+                transform: translateX(0px) rotateX(75deg);
+                filter: grayscale(1);
+                font-size: 64px;
+                transform-origin: 100% 50%;
+            }
+
+            100% {
+                transform: translateX(0px) rotateX(0deg);
+                filter: grayscale(0);
+                font-size: 128px;
+                transform-origin: 100% 50%;
+            }
+        }
+    }
 }
 
 @media screen and (max-height: 576px) {

@@ -34,6 +34,24 @@
                 font-family: $base-font-display;
                 font-size: 36px;
                 font-weight: bold;
+                background-position: calc(100% - 4px) 4px;
+                background-size: 16px;
+                background-repeat: no-repeat;
+                &.penalized {
+                    background-color: $blood;
+                }
+
+                &.ondeck {
+                    background-color: $purple-light;
+                }
+
+                &.jammer {
+                    background-image: url('~images/icons/star.png');
+                }
+
+                &.pivot {
+                    background-image: url('~images/icons/diagstripe.png');
+                }
             }
         }
 
@@ -116,9 +134,8 @@
         margin: auto;
         top: 0;
         right: 0;
-        bottom: 0;
         width: 33.3333%;
-        height: 100%;
+        height: 80%;
         background-color: #111111;
         .team {
             position: absolute;
@@ -144,7 +161,7 @@
                 .num {
                     font-family: $base-font-display;
                     font-size: 36px;
-                    line-height: 75px;
+                    line-height: 55px;
                     text-align: center;
                     grid-area: 1 / 2;
                     padding: 3px;
@@ -169,6 +186,30 @@
             right:0;
         }
     }
+
+    .penalties {
+        position: absolute;
+        overflow: hidden;
+        position: absolute;
+        margin: auto;
+        right: 0;
+        bottom: 0;
+        width: 33.3333%;
+        height: 20%;
+        background-color: #111111;
+        display: flex;
+        flex-flow: row wrap;
+        > .team-A, 
+        > .team-B {
+            flex: 0 0 50%;
+            height: 100%;
+            > .skater {
+                font-size: 16px;
+                padding: 3px;
+                border: solid 1px #000000;
+            }
+        }
+    }
 }
 
 @media screen and (max-width:960px) and (min-height: 1080px) { 
@@ -184,23 +225,39 @@
             left: 50%;
         }
 
+        .penalties {
+            bottom: 150px;
+            height: 125px;
+            width: 100%;
+        }
+
         .positions {
             top: initial;
+            bottom: 0;
             left: 0;
             width: 100%;
-            height: 200px;
+            height: 150px;
             .team {
                 display: flex;
                 flex-flow: row wrap;
-                height: 200px;
+                height: 150px;
                 .skater {
                     flex: 0 0 20%;
-                    height: 200px;
+                    height: 150px;
                     border-right: solid 1px #333333;
-                    .num {
-                        left: 0;
+                    display: block;
+                    .thumbnail {
+                        height: 100px;
                         text-align: center;
-                        height: 48px;
+                    }
+                    .name {
+                        display: none;
+                    }
+                    .num {
+                        text-align: center;
+                        height: 50px;
+                        font-size: 28px;
+                        line-height: 26px;
                     }
                 }
             }

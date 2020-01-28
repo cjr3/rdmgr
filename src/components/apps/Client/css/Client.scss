@@ -228,6 +228,7 @@
             padding: 3px;
             overflow: visible;
             transition: background-color 150ms ease-in-out;
+            border-radius: 0px;
         }
         > img.icon.active {
             background-color: $purple;

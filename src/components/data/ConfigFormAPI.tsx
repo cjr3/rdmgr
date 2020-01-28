@@ -2,6 +2,7 @@ import React from 'react';
 import DataController from 'controllers/DataController';
 import Panel from 'components/Panel';
 import { IconButton, IconSave, IconNo } from 'components/Elements';
+import { SetEndpoint, SetAuthEndpoint, SetValidateEndpoint } from 'controllers/api/functions';
 
 /**
  * Component for configuring endpoints for API access
@@ -54,6 +55,9 @@ export default class ConfirgFormAPI extends React.PureComponent<{
         await DataController.SaveMiscRecord('APIEndpoint', this.state.APIEndpoint);
         await DataController.SaveMiscRecord('APIAuthEndpoint', this.state.APIAuthEndpoint);
         await DataController.SaveMiscRecord('APIValidateEndpoint', this.state.APIValidateEndpoint);
+        SetEndpoint(this.state.APIEndpoint);
+        SetAuthEndpoint(this.state.APIAuthEndpoint);
+        SetValidateEndpoint(this.state.APIValidateEndpoint);
         if(this.props.onSubmit)
             this.props.onSubmit();
     }

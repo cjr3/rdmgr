@@ -4,6 +4,8 @@ import 'index.scss';
 import ViewManager from './ViewManager';
 import * as serviceWorker from './serviceWorker';
 import DataController from './controllers/DataController';
+import PeersController from 'controllers/PeersController';
+import UIController from 'controllers/UIController';
 
 declare global {
     interface Window{
@@ -29,9 +31,10 @@ declare global {
 }
 
 DataController.Init().then(() => {
-    DataController.loadConfig().then(() => {
-        DataController.loadPeers().then(() => {
-            DataController.loadFiles().then(() => {
+    //console.log('Initialized...')
+    DataController.LoadConfig().then(() => {
+        PeersController.Load().then(() => {
+            DataController.Load().then(() => {
                 DataController.RegisterSaveStates();
                 window.remoteApps = {
                     SB:false,
@@ -39,10 +42,17 @@ DataController.Init().then(() => {
                 };
                 window.ReactEntryPoint = ReactDOM.render(<ViewManager />, document.getElementById('root'));
                 serviceWorker.unregister();
-                DataController.loadAPIRecords();
-            });
+                //DataController.loadAPIRecords();
+            }).catch((er) => {
+                //console.log(er);
+            })
+        }).catch((er) => {
+            //console.log('failed to load peers');
         });
-    });
+    }).catch((er) => {
+        //console.log(er);
+    })
 }).catch(() => {
     //error !? ??!  ?!! !??
+    //console.log('Failed to initialize DataController');
 });

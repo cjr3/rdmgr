@@ -1,9 +1,8 @@
 import React from 'react';
-import CaptureController from 'controllers/CaptureController';
 import cnames from 'classnames';
 import { Unsubscribe } from 'redux';
-import DataController from 'controllers/DataController';
 import './css/CaptureScores.scss';
+import ScoresCaptureController from 'controllers/capture/Scores';
 
 /**
  * Displays a list of scores.
@@ -12,7 +11,7 @@ export default class CaptureScores extends React.PureComponent<any, {
     /**
      * Determines if the component is shown or not
      */
-    shown:boolean;
+    Shown:boolean;
     /**
      * The className of the component
      */
@@ -20,12 +19,12 @@ export default class CaptureScores extends React.PureComponent<any, {
     /**
      * Score records
      */
-    records:Array<any>;
+    Records:Array<any>;
 }> {
     readonly state = {
-        shown:CaptureController.getState().Scores.Shown,
-        className:CaptureController.getState().Scores.className,
-        records:CaptureController.getState().Scores.Records
+        Shown:ScoresCaptureController.GetState().Shown,
+        className:ScoresCaptureController.GetState().className,
+        Records:ScoresCaptureController.Get()
     }
 
     /**
@@ -45,23 +44,19 @@ export default class CaptureScores extends React.PureComponent<any, {
     /**
      * Updates the state to match the controller
      */
-    protected async updateCapture() {
-        let changes:any = {
-            shown:CaptureController.getState().Scores.Shown,
-            className:CaptureController.getState().Scores.className
-        };
-
-        let records:Array<any>|undefined = CaptureController.getState().Scores.Records;
-        if(records && !DataController.compare(records, this.state.records))
-            changes.records = records;
-        this.setState(changes);
+    protected updateCapture() {
+        this.setState({
+            Shown:ScoresCaptureController.GetState().Shown,
+            className:ScoresCaptureController.GetState().className,
+            Records:ScoresCaptureController.Get()
+        });
     }
 
     /**
      * Listen to controllers
      */
     componentDidMount() {
-        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
+        this.remoteCapture = ScoresCaptureController.Subscribe(this.updateCapture);
     }
 
     /**
@@ -77,9 +72,11 @@ export default class CaptureScores extends React.PureComponent<any, {
      */
     render() {
         let matches:Array<React.ReactElement> = new Array<React.ReactElement>();
-        if(this.state.records) {
+        let shown:boolean = false;
+        if(this.state.Records && this.state.Records.length >= 1) {
             let max:number = 4;
-            this.state.records.forEach((record, index) => {
+            shown = this.state.Shown;
+            this.state.Records.forEach((record, index) => {
                 if(index < max) {
                     matches.push(
                         <div className="match" key={`${record.RecordType}-${record.RecordID}`}>
@@ -102,9 +99,7 @@ export default class CaptureScores extends React.PureComponent<any, {
         }
 
         return (
-            <div className={cnames('capture-scores', {
-                shown:(this.state.shown && this.state.records && this.state.records.length)
-            })}>
+            <div className={cnames('capture-scores', {shown:(shown)})}>
                 <h1>Latest Scores</h1>
                 <div className="matches">
                     {matches}

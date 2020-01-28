@@ -23,7 +23,7 @@ export default class Status extends React.PureComponent<{
     }
 
     updateScoreboard() {
-        let cstate = ScoreboardController.getState();
+        let cstate = ScoreboardController.GetState();
         let status = cstate.TeamA.Status;
         if(this.props.side == cstate.TeamB.Side)
             status = cstate.TeamB.Status;
@@ -33,7 +33,7 @@ export default class Status extends React.PureComponent<{
     }
 
     componentDidMount() {
-        this.remoteScoreboard = ScoreboardController.subscribe(this.updateScoreboard);
+        this.remoteScoreboard = ScoreboardController.Subscribe(this.updateScoreboard);
     }
 
     componentWillUnmount() {

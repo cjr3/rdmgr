@@ -1,5 +1,4 @@
 import React from 'react';
-import CaptureController from 'controllers/CaptureController';
 import {
     Icon,
     IconStreamOff,
@@ -9,6 +8,8 @@ import {
     IconCameraLeftThird,
     IconCameraRightThird
 } from 'components/Elements';
+import CameraCaptureController, { PeerCameraCaptureController } from 'controllers/capture/Camera';
+import VideoCaptureController from 'controllers/capture/Video';
 
 /**
  * Buttons for setting the style of the main camera
@@ -28,8 +29,8 @@ export default class CaptureCameraStyleButtons extends React.PureComponent<any, 
      * State
      */
     readonly state = {
-        Shown:CaptureController.getState().MainCamera.Shown,
-        className:CaptureController.getState().MainCamera.className
+        Shown:CameraCaptureController.GetState().Shown,
+        className:CameraCaptureController.GetState().className
     }
 
     /**
@@ -49,10 +50,10 @@ export default class CaptureCameraStyleButtons extends React.PureComponent<any, 
     /**
      * Updates the state to match the capture controller.
      */
-    updateState() {
+    protected updateState() {
         this.setState({
-            Shown:CaptureController.getState().MainCamera.Shown,
-            className:CaptureController.getState().MainCamera.className
+            Shown:CameraCaptureController.GetState().Shown,
+            className:CameraCaptureController.GetState().className
         });
     }
 
@@ -60,7 +61,7 @@ export default class CaptureCameraStyleButtons extends React.PureComponent<any, 
      * Triggered when the component mounts to the DOM
      */
     componentDidMount() {
-        this.remoteState = CaptureController.subscribe(this.updateState);
+        this.remoteState = CameraCaptureController.Subscribe(this.updateState);
     }
 
     /**
@@ -81,49 +82,49 @@ export default class CaptureCameraStyleButtons extends React.PureComponent<any, 
                 <Icon 
                     src={IconStreamOff}
                     active={this.state.Shown}
-                    onClick={CaptureController.ToggleMainCamera}
+                    onClick={CameraCaptureController.Toggle}
                     />
                 <Icon
                     src={IconCameraDefault}
                     active={(this.state.className === 'video-def')}
                     onClick={() => {
-                        CaptureController.SetMainCameraClass('video-def');
+                        CameraCaptureController.SetClass('video-def');
                     }}
                     />
                 <Icon
                     src={IconCamera5050}
                     active={(this.state.className === 'video-5050')}
                     onClick={() => {
-                        CaptureController.SetMainCameraClass('video-5050');
-                        CaptureController.SetMainVideoClass('video-5050');
-                        CaptureController.SetPeerCameraClass('video-5050');
+                        CameraCaptureController.SetClass('video-5050');
+                        VideoCaptureController.SetClass('video-5050');
+                        PeerCameraCaptureController.SetClass('video-5050');
                     }}
                     />
                 <Icon
                     src={IconCamera2080}
                     active={(this.state.className === 'video-2080'  || this.state.className === 'video-8020')}
                     onClick={() => {
-                        CaptureController.SetMainCameraClass('video-8020');
-                        CaptureController.SetMainVideoClass('video-2080');
-                        CaptureController.SetPeerCameraClass('video-2080');
+                        CameraCaptureController.SetClass('video-8020');
+                        VideoCaptureController.SetClass('video-2080');
+                        PeerCameraCaptureController.SetClass('video-2080');
                     }}
                     />
                 <Icon
                     src={IconCameraLeftThird}
                     active={(this.state.className === 'video-lt')}
                     onClick={() => {
-                        CaptureController.SetMainCameraClass('video-lt');
-                        CaptureController.SetMainVideoClass('video-def');
-                        CaptureController.SetPeerCameraClass('video-def');
+                        CameraCaptureController.SetClass('video-lt');
+                        VideoCaptureController.SetClass('video-def');
+                        PeerCameraCaptureController.SetClass('video-def');
                     }}
                     />
                 <Icon
                     src={IconCameraRightThird}
                     active={(this.state.className === 'video-lr')}
                     onClick={() => {
-                        CaptureController.SetMainCameraClass('video-lr');
-                        CaptureController.SetMainVideoClass('video-def');
-                        CaptureController.SetPeerCameraClass('video-def');
+                        CameraCaptureController.SetClass('video-lr');
+                        VideoCaptureController.SetClass('video-def');
+                        PeerCameraCaptureController.SetClass('video-def');
                     }}
                     />
             </div>

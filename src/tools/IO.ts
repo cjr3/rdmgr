@@ -1,9 +1,10 @@
-import DataController, {Files} from 'controllers/DataController';
-import ScoreboardController from 'controllers/ScoreboardController';
-import RosterController from 'controllers/RosterController';
-import ChatController from 'controllers/ChatController';
-import CaptureController from 'controllers/CaptureController';
-import UIController from 'controllers/UIController';
+import {Files} from 'controllers/vars';
+//import ScoreboardController from 'controllers/ScoreboardController';
+//import RosterController from 'controllers/RosterController';
+//import ChatController from 'controllers/ChatController';
+//import CaptureController from 'controllers/CaptureController';
+//import UIController from 'controllers/UIController';
+import { FileExtension } from 'controllers/functions.io';
 
 /**
  * Class used for queuing and saving state updates from the controllers
@@ -41,11 +42,11 @@ class IO {
      * - Capture
      */
     Init() {
-        this.StateRecords.push(new IOController(ScoreboardController, Files.Scoreboard));
-        this.StateRecords.push(new IOController(ChatController, Files.Chat));
-        this.StateRecords.push(new IOController(RosterController, Files.Roster));
-        this.StateRecords.push(new IOController(CaptureController, Files.Capture));
-        this.StateRecords.push(new IOController(UIController, Files.UI));
+        //this.StateRecords.push(new IOController(ScoreboardController, Files.Scoreboard));
+        //this.StateRecords.push(new IOController(ChatController, Files.Chat));
+        //this.StateRecords.push(new IOController(RosterController, Files.Roster));
+        //this.StateRecords.push(new IOController(CaptureController, Files.Capture));
+        //this.StateRecords.push(new IOController(UIController, Files.UI));
     }
 
     /**
@@ -138,7 +139,7 @@ class IOController {
         this.Start = this.Start.bind(this);
         this.Pause = this.Pause.bind(this);
         this.SaveNext = this.SaveNext.bind(this);
-        this.Remote = controller.subscribe(this.onUpdate);
+        this.Remote = controller.Subscribe(this.onUpdate);
         if(window && window.require)
             this.FS = window.require('fs');
         else
@@ -180,9 +181,9 @@ class IOController {
     async onUpdate() {
         if(!this.Paused) {
             if(this.States[0])
-                this.States.push(this.Controller.getState());
+                this.States.push(this.Controller.GetState());
             else
-                this.States[0] = this.Controller.getState();
+                this.States[0] = this.Controller.GetState();
         }
     }
 
@@ -217,7 +218,7 @@ class IOFileQueue
     /**
      * Absolute path to file to save
      */
-    protected FileName:string
+    FileName:string
     /**
      * Extension of file
      */
@@ -249,7 +250,7 @@ class IOFileQueue
      */
     constructor(filename:string) {
         this.FileName = filename;
-        this.Extension = DataController.ext(this.FileName);
+        this.Extension = FileExtension(this.FileName);
         this.Start = this.Start.bind(this);
         this.Pause = this.Pause.bind(this);
         this.SaveNext = this.SaveNext.bind(this);
@@ -324,6 +325,7 @@ class IOFileQueue
                     res(true);
                 }
             } catch(er) {
+                this.Saving = false;
                 res(false);
             }
         });

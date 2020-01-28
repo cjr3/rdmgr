@@ -17,6 +17,9 @@
         color 500ms ease-in-out
         ;
     backface-visibility: hidden;
+    &.shown {
+        opacity: 1;
+    }
 
     .jamclock {
         position: absolute;
@@ -26,15 +29,16 @@
         right: 0;
         width: 360px;
         height: 310px;
-        font-size: 360px;
+        font-size: 300px;
         line-height: 270px;
-        padding-left: 16px;
+        padding-left: 36px;
         text-align: center;
     }
 
     .jamclock.longjam {
         font-size: 160px;
         line-height: 200px;
+        padding-left: 0px;
     }
 
     .jamclock.running {
@@ -74,9 +78,25 @@
         bottom: 76px;
     }
 
+    .league-logo {
+        position: absolute;
+        z-index: 2;
+        margin: auto;
+        right: 150px;
+        bottom: 90px;
+        width: 150px;
+        max-height: 150px;
+        opacity: 0;
+        transition: 150ms opacity 150ms ease-in-out;
+        &.shown {
+            opacity: 1;
+        }
+    }
+
     .breakclock,
     .board-status {
         left: initial;
+        z-index: 3;
         right: 50px;
         height: 130px;
         bottom: 76px;
@@ -86,31 +106,34 @@
         transition: transform 150ms linear, background-color 150ms linear;
     }
 
-    .board-status.shown {
-        transform: rotateY(0deg);
-    }
+    .board-status {
+        z-index: 3;
+        &.shown {
+            transform: rotateY(0deg);
+        }
 
-    .board-status.timeout,
-    .board-status.review
-    {
-        background-color: $blood;
-    }
-
-    .board-status.injury {
-        background-color: $blue;
-    }
-
-    .board-status.upheld {
-        background-color: $grey;
-        color: $black;
-        line-height: 120px;
-        font-size: 82px;
-    }
+        &.timeout,
+        &.review
+        {
+            background-color: $blood;
+        }
     
-    .board-status.overturned {
-        background-color: $green;
-        line-height: 120px;
-        font-size: 64px;
+        &.injury {
+            background-color: $blue;
+        }
+    
+        &.upheld {
+            background-color: $grey;
+            color: $black;
+            line-height: 120px;
+            font-size: 82px;
+        }
+        
+        &.overturned {
+            background-color: $green;
+            line-height: 120px;
+            font-size: 64px;
+        }
     }
 
     .breakclock {
@@ -177,6 +200,7 @@
         width: 360px;
         height: 450px;
         overflow: visible;
+        z-index: 3;
 
         .logo {
             position: absolute;
@@ -196,7 +220,7 @@
             top: 200px;
             left: 0;
             right: 0;
-            font-size: 200px;
+            font-size: 160px;
             text-align: center;
             background-color: #222222;
             text-align: center;
@@ -207,11 +231,13 @@
             border-radius: 16px;
             border: solid 6px #FFFFFF;
             z-index: 3;
+            /*
             transition: 
                 background-color 150ms ease-in-out 250ms,
                 color 150ms ease-in-out,
                 border 150ms ease-in-out 250ms
                 ;
+            */
         }
 
         .status {
@@ -287,7 +313,7 @@
         }
     }
 
-    .team.team-a {
+    .team.team-A {
         left: 50px;
         .jampoints {
             right: 0;
@@ -300,7 +326,7 @@
         }
     }
 
-    .team.team-b {
+    .team.team-B {
         right: 50px;
         .jampoints {
             left: 0;
@@ -396,14 +422,11 @@
 .capture-SB.jamming {
     .phase,
     .jam-counter,
+    .league-logo,
     .team .timeouts,
     .team .challenges {
         opacity: 0.4;
     }
-}
-
-.capture-SB.shown {
-    opacity: 1;
 }
 
 .capture-SB.light {
@@ -416,6 +439,10 @@
         color 150ms ease-in-out 250ms
         ;
     /*transform: rotateY(360deg);*/
+
+    .league-logo {
+        filter: invert(1.0);
+    }
 
     .jamclock.running {
         transition: color 150ms ease-in-out 250ms;
@@ -467,10 +494,14 @@
         color: $white;
     }
 
+    .phase, .jam-counter {
+        font-weight: 700;
+    }
+
     .team {
         .score {
-            color: #111111;
-            background-color: #FFFFFF !important;
+            color: #FFFFFF !important;
+            background-color: #222222 !important;
             border: solid 6px #111111;
             transition: 
                 background-color 150ms ease-in-out 250ms,

@@ -1,9 +1,8 @@
 import React from 'react';
-import CaptureController from 'controllers/CaptureController';
 import cnames from 'classnames';
 import { Unsubscribe } from 'redux';
-import DataController from 'controllers/DataController';
 import './css/CaptureSchedule.scss';
+import ScheduleCaptureController from 'controllers/capture/Schedule';
 
 /**
  * Component for displaying the bout schedule
@@ -12,7 +11,7 @@ export default class CaptureSchedule extends React.PureComponent<any, {
     /**
      * Determines if this component is shown or not
      */
-    shown:boolean;
+    Shown:boolean;
     /**
      * Class Name of the component
      */
@@ -20,12 +19,12 @@ export default class CaptureSchedule extends React.PureComponent<any, {
     /**
      * Schedule records
      */
-    records:Array<any>;
+    Records:Array<any>;
 }> {
     readonly state = {
-        shown:CaptureController.getState().Schedule.Shown,
-        className:CaptureController.getState().Schedule.className,
-        records:CaptureController.getState().Schedule.Records
+        Shown:ScheduleCaptureController.GetState().Shown,
+        className:ScheduleCaptureController.GetState().className,
+        Records:ScheduleCaptureController.Get()
     }
 
     /**
@@ -45,23 +44,19 @@ export default class CaptureSchedule extends React.PureComponent<any, {
     /**
      * Updates the state to match the capture controller
      */
-    protected async updateCapture() {
-        let changes:any = {
-            shown:CaptureController.getState().Schedule.Shown,
-            className:CaptureController.getState().Schedule.className
-        };
-
-        let records:Array<any>|undefined = CaptureController.getState().Schedule.Records;
-        if(records && !DataController.compare(records, this.state.records))
-            changes.records = records;
-        this.setState(changes);
+    protected updateCapture() {
+        this.setState({
+            Shown:ScheduleCaptureController.GetState().Shown,
+            className:ScheduleCaptureController.GetState().className,
+            Records:ScheduleCaptureController.Get()
+        });
     }
 
     /**
      * Listen to controllers
      */
     componentDidMount() {
-        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
+        this.remoteCapture = ScheduleCaptureController.Subscribe(this.updateCapture);
     }
 
     /**
@@ -77,9 +72,11 @@ export default class CaptureSchedule extends React.PureComponent<any, {
      */
     render() {
         let matches:Array<React.ReactElement> = new Array<React.ReactElement>();
-        if(this.state.records) {
+        let shown:boolean = false;
+        if(this.state.Records && this.state.Records.length >= 1) {
+            shown = this.state.Shown;
             let max:number = 8;
-            this.state.records.forEach((record, index) => {
+            this.state.Records.forEach((record, index) => {
                 if(index < max) {
                     let tdate = new Date(Date.parse(record.BoutDate));
                     let sdate:string = tdate.toLocaleDateString('en-us', {
@@ -104,9 +101,7 @@ export default class CaptureSchedule extends React.PureComponent<any, {
         }
 
         return (
-            <div className={cnames('capture-schedule', {
-                shown:(this.state.shown && this.state.records && this.state.records.length)
-            })}>
+            <div className={cnames('capture-schedule', {shown:(shown)})}>
                 <h1>Schedule</h1>
                 <div className="matches">
                     {matches}

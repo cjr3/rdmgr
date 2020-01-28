@@ -1,10 +1,22 @@
-import {createStore, Unsubscribe} from 'redux';
+import {IController, Files} from './vars';
+import {CreateController, BaseReducer} from './functions.controllers';
 
-const SET_STATE = 'SET_STATE';
-const SET_INDEX = 'SET_INDEX';
-const SET_TEMPORARY = 'SET_TEMPORARY';
-const SET_SLIDES = 'SET_SLIDES';
-const NEXT_SLIDE = 'NEXT_SLIDE';
+interface ISponsorController extends IController {
+    SetIndex:{(index:number)},
+    SetSlides:{(slides:Array<any>, recordid:number)},
+    Next:Function;
+    Start:Function;
+    Stop:Function;
+    ForceNext:Function;
+}
+
+enum Actions {
+    SET_INDEX = 'SET_INDEX',
+    SET_SLIDES = 'SET_SLIDES',
+    NEXT = 'NEXT'
+}
+
+let Timer:any = 0;
 
 export interface SSponsorController {
     /**
@@ -24,11 +36,6 @@ export interface SSponsorController {
      */
     Transition:string;
     /**
-     * Filename of temporary slide.
-     */
-    TemporarySlide:string;
-
-    /**
      * RecordID of current sponsor slideshow
      */
     RecordID:number;
@@ -39,89 +46,87 @@ export const InitState:SSponsorController = {
     Index:0,
     SlideDuration:1000 * 10, //10 seconds
     Transition:"fade",
-    TemporarySlide:'',
     RecordID:0
 }
 
-function SponsorReducer(state:SSponsorController = InitState, action) {
-    switch(action.type) {
-        case SET_STATE :
-            return Object.assign({}, state, action.values);
+const SetIndex = (state:SSponsorController, index:number) => {
+    if(index < 0)
+        index = state.Slides.length - 1;
+    else if(index >= state.Slides.length)
+        index = 0;
+    return {...state, Index:index};
+};
 
-        case SET_INDEX :
-            return Object.assign({}, state, {Index:action.value});
+const SetSlides = (state:SSponsorController, slides:Array<any>) => {
+    return {
+        ...state,
+        Index:0,
+        Slides:slides.slice()
+    };
+};
 
-        case SET_TEMPORARY :
-            return Object.assign({}, state, {TemporarySlide:action.value});
+const NextSlide = (state:SSponsorController) => {
+    return SetIndex(state, state.Index+1);
+};
 
-        case SET_SLIDES :
-            return Object.assign({}, state, {
-                Slides:action.values,
-                Index:0,
-                RecordID:action.RecordID
-            });
+const SponsorReducer = (state:SSponsorController = InitState, action) => {
+    try {
+        switch(action.type) {
+            case Actions.SET_INDEX :
+                return SetIndex(state, action.index);
 
-        case NEXT_SLIDE :
-            var index = state.Index + 1;
-            if(index >= state.Slides.length)
-                index = 0;
-            return Object.assign({}, state, {Index:index});
+            case Actions.SET_SLIDES :
+                return SetSlides(state, action.records);
+            
+            case Actions.NEXT :
+                return NextSlide(state);
 
-        default :
-            return state;
+            default :
+                return BaseReducer(state, action);
+        }
+    } catch(er) {
+        return state;
     }
-}
+};
 
-const SponsorStore = createStore( SponsorReducer );
+const SponsorController:ISponsorController = CreateController('SPN', SponsorReducer);
+SponsorController.SetIndex = async (index:number) => {
+    SponsorController.Dispatch({
+        type:Actions.SET_INDEX,
+        index:index
+    });
+};
 
-const SponsorController = {
-    Key:'SPN',
-    async SetState(values) {
-        SponsorController.getStore().dispatch({
-            type:SET_STATE,
-            values:values
-        });
-    },
+SponsorController.SetSlides = async (records:Array<any>) => {
+    SponsorController.Dispatch({
+        type:Actions.SET_SLIDES,
+        records:records
+    });
+};
 
-    async SetIndex(index) {
-        SponsorController.getStore().dispatch({
-            type:SET_INDEX,
-            value:index
-        });
-    },
+SponsorController.Next = async () => {
+    SponsorController.Dispatch({
+        type:Actions.NEXT
+    });
+};
 
-    async SetTemporarySlide(value) {
-        SponsorController.getStore().dispatch({
-            type:SET_TEMPORARY,
-            value:value
-        });
-    },
+SponsorController.Start = async () => {
+    SponsorController.Stop();
+    Timer = setInterval(() => {
+        SponsorController.Next();
+    }, 10000);
+};
 
-    async SetSlides(slides:Array<any>|undefined, recordid:number = 0) {
-        SponsorController.getStore().dispatch({
-            type:SET_SLIDES,
-            values:slides,
-            RecordID:recordid
-        });
-    },
+SponsorController.Stop = async () => {
+    try {clearTimeout(Timer);} catch(er) {}
+};
 
-    async Next() {
-        SponsorController.getStore().dispatch({
-            type:NEXT_SLIDE
-        })
-    },
-
-    getState() {
-        return SponsorStore.getState();
-    },
-
-    getStore() {
-        return SponsorStore;
-    },
-
-    subscribe(f) : Unsubscribe {
-        return SponsorStore.subscribe(f);
-    }
+SponsorController.ForceNext = async () => {
+    SponsorController.Stop();
+    SponsorController.Next();
+    Timer = setInterval(() => {
+        SponsorController.Next();
+    }, 10000);
 };
 
 export default SponsorController;

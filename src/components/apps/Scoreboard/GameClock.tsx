@@ -2,7 +2,6 @@ import React from 'react'
 import Clock from 'components/tools/Clock'
 import vars from 'tools/vars'
 import ScoreboardController from 'controllers/ScoreboardController'
-import ClientController from 'controllers/ClientController'
 
 /**
  * Game Clock component for the Scoreboard.
@@ -28,13 +27,15 @@ export default class GameClock extends React.PureComponent<any, {
      * Status (playing, stopped, ready)
      */
     status:number;
+    tenths:number;
 }> {
     readonly state = {
         status:vars.Clock.Status.Ready,
         showTenths:false,
         hour:0,
         minute:15,
-        second:0
+        second:0,
+        tenths:0
     }
 
     /**
@@ -62,9 +63,17 @@ export default class GameClock extends React.PureComponent<any, {
     /**
      * Updates the state to match the controller.
      */
-    updateState() {
+    protected updateState() {
+        let setTenths:boolean = false;
         this.setState(() => {
-            var cstate = ScoreboardController.getState();
+            var cstate = ScoreboardController.GetState();
+            if(cstate.GameState != vars.Clock.Status.Running
+                && cstate.GameHour == cstate.PhaseHour
+                && cstate.GameMinute == cstate.PhaseMinute
+                && cstate.GameSecond == cstate.PhaseSecond
+                ) {
+                setTenths = true;
+            }
             return {
                 status:cstate.GameState,
                 hour:cstate.GameHour,
@@ -79,6 +88,10 @@ export default class GameClock extends React.PureComponent<any, {
                     this.state.second,
                     0
                 );
+
+                if(setTenths) {
+                    this.ClockItem.current.setTenths(0);
+                }
             }
         });
     }
@@ -87,13 +100,13 @@ export default class GameClock extends React.PureComponent<any, {
      * Triggered when the user clicks on the game clock.
      * @param {MouseEvent} ev 
      */
-    onClick(ev) {
+    protected onClick(ev) {
         ev.stopPropagation();
         ev.preventDefault();
         ScoreboardController.ToggleGameClock();
     }
 
-    onContextMenu(ev) {
+    protected onContextMenu(ev) {
         ev.stopPropagation();
         ev.preventDefault();
         this.setState((state) => {
@@ -107,16 +120,20 @@ export default class GameClock extends React.PureComponent<any, {
      * @param {Number} minute 
      * @param {Number} second 
      */
-    async onTick(hour, minute, second) {
+    protected async onTick(hour, minute, second) {
         if(!window.remoteApps.SB)
             ScoreboardController.SetGameTime(hour, minute, second);
+    }
+
+    protected async onTenths(hour, minute, second, tenths) {
+        this.setState({tenths:tenths});
     }
 
     /**
      * Start listeners
      */
     componentDidMount() {
-        this.remoteScore = ScoreboardController.subscribe(this.updateState);
+        this.remoteScore = ScoreboardController.Subscribe(this.updateState);
     }
 
     /**

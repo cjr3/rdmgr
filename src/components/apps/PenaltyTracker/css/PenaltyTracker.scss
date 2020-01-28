@@ -27,6 +27,24 @@
                 font-weight: bold;
                 font-family: $base-font-display;
                 padding: 6px;
+                background-position: calc(100% - 4px) 4px;
+                background-size: 16px;
+                background-repeat: no-repeat;
+                &.penalized {
+                    background-color: $blood;
+                }
+
+                &.active.penalized {
+                    background-color: $purple-light;
+                }
+
+                &.jammer {
+                    background-image: url('~images/icons/star.png');
+                }
+
+                &.pivot {
+                    background-image: url('~images/icons/diagstripe.png');
+                }
             }
         }
     }
@@ -53,6 +71,7 @@
             height: 34px;
             font-weight: normal;
             margin: 0;
+            text-align: center;
         }
 
         > button {

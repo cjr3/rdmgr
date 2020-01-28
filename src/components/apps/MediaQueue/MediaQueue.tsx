@@ -1,6 +1,5 @@
 import React from 'react';
 import VideoController from 'controllers/VideoController';
-import CaptureController from 'controllers/CaptureController';
 import MediaQueueController from 'controllers/MediaQueueController';
 import UIController from 'controllers/UIController';
 import {
@@ -26,6 +25,11 @@ import MediaQueueRecordSets from './MediaQueueRecordSets';
 import './css/MediaQueue.scss';
 import { Unsubscribe } from 'redux';
 import MediaQueueRoster from './MediaQueueRoster';
+import VideoCaptureController from 'controllers/capture/Video';
+import SlideshowCaptureController from 'controllers/capture/Slideshow';
+import RosterCaptureController from 'controllers/capture/Roster';
+import AnthemCaptureController from 'controllers/capture/Anthem';
+import Raffle from 'components/apps/Raffle/Raffle';
 
 /**
  * Component for media to be queued to the capture window,
@@ -36,7 +40,7 @@ export default class MediaQueue extends React.PureComponent<any, {
 }> {
 
     readonly state = {
-        opened:UIController.getState().MediaQueue.Shown
+        opened:UIController.GetState().MediaQueue.Shown
     }
 
     protected remoteUI:Unsubscribe|null = null;
@@ -48,12 +52,12 @@ export default class MediaQueue extends React.PureComponent<any, {
 
     protected async updateUI() {
         this.setState({
-            opened:UIController.getState().MediaQueue.Shown
+            opened:UIController.GetState().MediaQueue.Shown
         });
     }
 
     componentDidMount() {
-        this.remoteUI = UIController.subscribe(this.updateUI);
+        this.remoteUI = UIController.Subscribe(this.updateUI);
     }
 
     componentWillUnmount() {
@@ -66,21 +70,31 @@ export default class MediaQueue extends React.PureComponent<any, {
      * Renders the component.
      */
     render() {
+
+        let raffleName:string = cnames('MEQ-raffle', {
+            shown:(this.state.opened)
+        });
+
         return (
-            <Panel
-                opened={this.state.opened}
-                buttons={[<MediaQueueButtons key="buttons"/>]}
-                contentName="MEQ-app"
-                className="MEQ-panel">
-                <MediaQueueItems/>
-                <div className="current-record">
-                    <MediaQueueVideo/>
-                    <MediaQueueSlideshow/>
-                    <MediaQueueAnthem/>
-                    <MediaQueueRoster/>
+            <React.Fragment>
+                <Panel
+                    opened={this.state.opened}
+                    buttons={[<MediaQueueButtons key="buttons"/>]}
+                    contentName="MEQ-app"
+                    className="MEQ-panel">
+                    <MediaQueueItems/>
+                    <div className="current-record">
+                        <MediaQueueVideo/>
+                        <MediaQueueSlideshow/>
+                        <MediaQueueAnthem/>
+                        <MediaQueueRoster/>
+                    </div>
+                    <MediaQueueRecordSets/>
+                </Panel>
+                <div className={raffleName}>
+                    <Raffle opened={true}/>
                 </div>
-                <MediaQueueRecordSets/>
-            </Panel>
+            </React.Fragment>
         )
     }
 }
@@ -97,30 +111,34 @@ class MediaQueueButtons extends React.PureComponent<any, {
 }> {
 
     readonly state = {
-        VideoShown:CaptureController.getState().MainVideo.Shown,
-        SlideshowShown:CaptureController.getState().MainSlideshow.Shown,
-        AnthemShown:CaptureController.getState().NationalAnthem.Shown,
-        RosterShown:CaptureController.getState().Roster.Shown,
-        Loop:MediaQueueController.getState().Loop,
-        Index:MediaQueueController.getState().Index,
-        Muted:VideoController.getState().Muted,
-        Volume:VideoController.getState().Volume
+        VideoShown:VideoCaptureController.GetState().Shown,
+        SlideshowShown:SlideshowCaptureController.GetState().Shown,
+        AnthemShown:SlideshowCaptureController.GetState().Shown,
+        RosterShown:RosterCaptureController.GetState().Showm,
+        Loop:MediaQueueController.GetState().Loop,
+        Index:MediaQueueController.GetState().Index,
+        Muted:VideoController.GetState().Muted,
+        Volume:VideoController.GetState().Volume
     }
 
     /**
      * CaptureController remote
      */
-    protected remoteCapture:Unsubscribe|null = null;
+    protected remoteCapture?:Unsubscribe;
+    protected remoteVideoCapture?:Unsubscribe;
+    protected remoteSlideshowCapture?:Unsubscribe;
+    protected remoteAnthemCapture?:Unsubscribe;
+    protected remoteRosterCapture?:Unsubscribe;
 
     /**
      * MediaQueueController subscriber
      */
-    protected remoteMedia:Unsubscribe|null = null;
+    protected remoteMedia?:Unsubscribe;
 
     /**
      * VideoController subscriber
      */
-    protected remoteVideo:Unsubscribe|null = null;
+    protected remoteVideo?:Unsubscribe;
 
     /**
      * Constructs the component.
@@ -128,22 +146,12 @@ class MediaQueueButtons extends React.PureComponent<any, {
      */
     constructor(props) {
         super(props);
-        this.updateCapture = this.updateCapture.bind(this);
         this.updateMedia = this.updateMedia.bind(this);
         this.updateVideo = this.updateVideo.bind(this);
-    }
-
-    /**
-     * Updates the capture state to match the CaptureController
-     */
-    protected async updateCapture() {
-        var cstate = CaptureController.getState();
-        this.setState({
-            VideoShown:cstate.MainVideo.Shown,
-            SlideshowShown:cstate.MainSlideshow.Shown,
-            AnthemShown:cstate.NationalAnthem.Shown,
-            RosterShown:cstate.Roster.Shown
-        });
+        this.updateVideoCapture = this.updateVideoCapture.bind(this);
+        this.updateSlideshowCapture = this.updateSlideshowCapture.bind(this);
+        this.updateAnthemCapture = this.updateAnthemCapture.bind(this);
+        this.updateRosterCapture = this.updateRosterCapture.bind(this);
     }
 
     /**
@@ -151,8 +159,8 @@ class MediaQueueButtons extends React.PureComponent<any, {
      */
     protected async updateMedia() {
         this.setState({
-            Loop:MediaQueueController.getState().Loop,
-            Index:MediaQueueController.getState().Index
+            Loop:MediaQueueController.GetState().Loop,
+            Index:MediaQueueController.GetState().Index
         });
     }
 
@@ -161,8 +169,32 @@ class MediaQueueButtons extends React.PureComponent<any, {
      */
     protected async updateVideo() {
         this.setState({
-            Muted:VideoController.getState().Muted,
-            Volume:VideoController.getState().Volume
+            Muted:VideoController.GetState().Muted,
+            Volume:VideoController.GetState().Volume
+        });
+    }
+
+    protected updateVideoCapture() {
+        this.setState({
+            VideoShown:VideoCaptureController.GetState().Shown
+        });
+    }
+
+    protected updateSlideshowCapture() {
+        this.setState({
+            SlideshowShown:SlideshowCaptureController.GetState().Shown
+        });
+    }
+
+    protected updateAnthemCapture() {
+        this.setState({
+            AnthemShown:AnthemCaptureController.GetState().Shown
+        });
+    }
+
+    protected updateRosterCapture() {
+        this.setState({
+            RosterShown:RosterCaptureController.GetState().Shown
         });
     }
 
@@ -170,21 +202,30 @@ class MediaQueueButtons extends React.PureComponent<any, {
      * Start listeners
      */
     componentDidMount() {
-        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
-        this.remoteMedia = MediaQueueController.subscribe(this.updateMedia);
-        this.remoteVideo = VideoController.subscribe(this.updateVideo);
+        this.remoteMedia = MediaQueueController.Subscribe(this.updateMedia);
+        this.remoteVideo = VideoController.Subscribe(this.updateVideo);
+        this.remoteAnthemCapture = AnthemCaptureController.Subscribe(this.updateAnthemCapture);
+        this.remoteRosterCapture = RosterCaptureController.Subscribe(this.updateRosterCapture);
+        this.remoteSlideshowCapture = SlideshowCaptureController.Subscribe(this.updateSlideshowCapture);
+        this.remoteVideoCapture = VideoCaptureController.Subscribe(this.updateVideoCapture);
     }
 
     /**
      * Close listeners
      */
     componentWillUnmount() {
-        if(this.remoteCapture !== null)
-            this.remoteCapture();
-        if(this.remoteMedia !== null)
+        if(this.remoteMedia)
             this.remoteMedia();
-        if(this.remoteVideo !== null)
+        if(this.remoteVideo)
             this.remoteVideo();
+        if(this.remoteAnthemCapture)
+            this.remoteAnthemCapture();
+        if(this.remoteRosterCapture)
+            this.remoteRosterCapture();
+        if(this.remoteSlideshowCapture)
+            this.remoteSlideshowCapture();
+        if(this.remoteVideoCapture)
+            this.remoteVideoCapture();
     }
 
     render() {
@@ -227,7 +268,8 @@ class MediaQueueButtons extends React.PureComponent<any, {
                         //valueLabelFormat={x => ((x*100).toFixed(0).toString() + "%")}
                         //valueLabelDisplay="auto"
                         onChangeCommitted={(o, value) => {
-                            VideoController.SetVolume(value);
+                            if(typeof(value) === 'number')
+                                VideoController.SetVolume(value);
                         }}
                         onContextMenu={(ev) => {
                             ev.preventDefault();

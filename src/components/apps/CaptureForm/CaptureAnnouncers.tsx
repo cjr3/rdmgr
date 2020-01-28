@@ -1,23 +1,29 @@
 import React from 'react';
 import cnames from 'classnames';
-import CaptureController, {CaptureStateAnnouncer} from 'controllers/CaptureController';
 import {IconMic, Icon} from 'components/Elements';
 import './css/CaptureAnnouncer.scss';
+import AnnouncerCaptureController from 'controllers/capture/Announcer';
+import { Unsubscribe } from 'redux';
 
 /**
  * Component for displaying the announcer names on the capture window.
  */
-export default class CaptureAnnouncers extends React.PureComponent<{
-    /**
-     * Show/Hide the announcers
-     */
-    shown:boolean;
-}, CaptureStateAnnouncer> {
-    readonly state:CaptureStateAnnouncer = CaptureController.getState().Announcers;
+export default class CaptureAnnouncers extends React.PureComponent<any, {
+    Shown:boolean;
+    className:string;
+    Announcer1:string;
+    Announcer2:string;
+}> {
+    readonly state = {
+        Shown:AnnouncerCaptureController.GetState().Shown,
+        className:AnnouncerCaptureController.GetState().className,
+        Announcer1:AnnouncerCaptureController.GetState().Announcer1,
+        Announcer2:AnnouncerCaptureController.GetState().Announcer2
+    }
     /**
      * CaptureController remote
      */
-    protected remoteState:Function|null = null;
+    protected remoteState?:Unsubscribe;
 
     /**
      * 
@@ -31,22 +37,27 @@ export default class CaptureAnnouncers extends React.PureComponent<{
     /**
      * Updates the state to match the capture controller.
      */
-    updateState() {
-        this.setState(CaptureController.getState().Announcers);
+    protected updateState() {
+        this.setState({
+            Shown:AnnouncerCaptureController.GetState().Shown,
+            className:AnnouncerCaptureController.GetState().className,
+            Announcer1:AnnouncerCaptureController.GetState().Announcer1,
+            Announcer2:AnnouncerCaptureController.GetState().Announcer2
+        });
     }
 
     /**
      * Starts listeners
      */
     componentDidMount() {
-        this.remoteState = CaptureController.subscribe(this.updateState);
+        this.remoteState = AnnouncerCaptureController.Subscribe(this.updateState);
     }
 
     /**
      * Closes listeners
      */
     componentWillUnmount() {
-        if(this.remoteState !== null)
+        if(this.remoteState)
             this.remoteState();
     }
 
@@ -55,9 +66,7 @@ export default class CaptureAnnouncers extends React.PureComponent<{
      */
     render() {
         return (
-            <div className={cnames('capture-announcers', this.state.className, {
-                shown:this.props.shown
-            })}>
+            <div className={cnames('capture-announcers', this.state.className, {shown:this.state.Shown})}>
                 <h1>
                     <Icon src={IconMic}/>
                     Announcers

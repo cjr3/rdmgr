@@ -10,41 +10,40 @@
         bottom: 0;
         width: 300px;
         height: 100%;
-        overflow: hidden;
         display: flex;
         flex-flow: column wrap;
 
-        > .section {
-            flex: 0 0 42px;
-            overflow: hidden;
-            transition: flex 150ms;
-            > .section-header {
-                display: flex;
-                flex-flow: row wrap;
-                > .button-icon {
-                    flex: 1;
-                    height: 42px;
-                    text-align: left;
-                }
-                > .icon {
-                    flex: 0 0 42px;
-                    max-width: 42px;
-                    max-height: 42px;
-                    border: solid 1px #CCCCCC;
-                }
+        .title {
+            flex: 0;
+            background-color: $purple;
+            display: flex;
+            flex-flow: row wrap;
+            .text {
+                padding: 6px;
+                flex: 1;
             }
 
-            > .record-list {
-                overflow: hidden scroll;
-                height: calc(100% - 42px);
-                > button {
-                    font-size: 20px;
-                }
+            .icon {
+                flex: 0;
             }
         }
 
-        > .section.shown {
+        .icons {
+            flex: 0;
+            img {
+                padding: 3px;
+            }
+        }
+
+        .lists {
             flex: 1;
+            overflow: hidden visible;
+            .record-list {
+                display: none;
+                &.shown {
+                    display: block;
+                }
+            }
         }
     }
 

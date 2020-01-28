@@ -2,15 +2,6 @@
  * Main Startup script for application.
  */
 
-const {app, BrowserWindow} = require('electron');
-const path = require('path');
-const url = require('url');
-const fs = require('fs');
-const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const os = require('os');
-
 /**
  * Class for starting up electron.
  */
@@ -25,25 +16,12 @@ class ElectronStartup {
         this.DevMode = (typeof(process.defaultApp) == "boolean") ? process.defaultApp : false;
         this.ShowCaptureWindow = true;
         this.FullScreen = false;
-
-        let path = 'c:/ProgramData/RDMGR/files/rdmgr.config.json';
-        if(fs.existsSync(path)) {
-            let data = fs.readFileSync(path);
-            if(data) {
-                try {
-                    this.Config = JSON.parse(data);
-                    if(this.Config && this.Config.UR) {
-                        this.ShowCaptureWindow = this.Config.UR.Capture;
-                        this.FullScreen = this.Config.UR.FullScreen;
-                    }
-                } catch(er) {
-    
-                }
-            }
-        }
+        
+        this.App = require('electron').app;
+        this.BW = require('electron').BrowserWindow;
 
         //start
-        app.on('ready', () => {
+        this.App.on('ready', () => {
 
             this.createWindows();
 
@@ -55,13 +33,13 @@ class ElectronStartup {
 
         });
         
-        app.on('window-all-closed', () => {
+        this.App.on('window-all-closed', () => {
             if (process.platform !== 'darwin') {
                 app.quit();
             }
         });
 
-        app.on('activate', () => {
+        this.App.on('activate', () => {
             if (this.MainWindow === null) {
                 this.createControlWindow();
             }
@@ -81,7 +59,7 @@ class ElectronStartup {
                     break;
 
                 default :
-                    console.log(er)
+                    //console.log(er)
                     break;
             }
         });
@@ -100,7 +78,7 @@ class ElectronStartup {
      * Creates the control window, the user interface.
      */
     createControlWindow() {
-        this.MainWindow = new BrowserWindow({
+        this.MainWindow = new this.BW({
             width: this.Width, 
             height: this.Height,
             backgroundColor: this.BackgroundColor,
@@ -124,7 +102,7 @@ class ElectronStartup {
 
                 }
             }
-            app.quit();
+            this.App.quit();
         });
 
         if(this.DevMode) {
@@ -143,7 +121,7 @@ class ElectronStartup {
      * the result of the control window to viewers.
      */
     createCaptureWindow() {
-        this.CaptureWindow = new BrowserWindow({
+        this.CaptureWindow = new this.BW({
             width:this.Width,
             height:this.Height,
             backgroundColor: this.BackgroundColor,

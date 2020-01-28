@@ -6,7 +6,7 @@ import { IconButton, IconSave, IconNo, ToggleButton } from 'components/Elements'
 /**
  * Component for Scoreboard settings
  */
-export default class ConfirmFormScoreboard extends React.PureComponent<{
+export default class ConfigFormScoreboard extends React.PureComponent<{
     opened:boolean;
     onSubmit?:Function;
     onCancel?:Function;

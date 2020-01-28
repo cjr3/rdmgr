@@ -1,5 +1,5 @@
 import React from 'react';
-import RecordEditor from './RecordEditor';
+import RecordEditor, {PRecordEditor} from './RecordEditor';
 import vars, { PeerRecord } from 'tools/vars';
 import { 
     ToggleButton, 
@@ -9,7 +9,7 @@ import {
     IconCheck,
     IconNo
 } from 'components/Elements';
-import CaptureController from 'controllers/CaptureController';
+//import CaptureController from 'controllers/CaptureController';
 import PenaltyController from 'controllers/PenaltyController';
 import RaffleController from 'controllers/RaffleController';
 import RosterController from 'controllers/RosterController';
@@ -20,27 +20,26 @@ import SponsorController from 'controllers/SponsorController';
 import MediaQueueController from 'controllers/MediaQueueController';
 import VideoController from 'controllers/VideoController';
 import Panel from 'components/Panel';
-import DataController from 'controllers/DataController';
 import ClientController from 'controllers/ClientController';
+
+import PeersController from 'controllers/PeersController';
+import { Unsubscribe } from 'redux';
+import RecordList from './RecordList';
+import { Compare } from 'controllers/functions';
 
 type PeerControlRecord = {
     name:string;
     controller:any;
 }
 
+interface props extends PRecordEditor {
+    record:PeerRecord|null
+};
+
 /**
  * Component for editing team records.
  */
-export default class PeerEditor extends React.PureComponent<{
-    /**
-     * The record to edit
-     */
-    record:PeerRecord|null;
-    /**
-     * true to show, false to hide
-     */
-    opened:boolean;
-}, {
+export default class PeerEditor extends React.PureComponent<props, {
     /**
      * Peer's Host, in IPV4 format
      */
@@ -87,7 +86,7 @@ export default class PeerEditor extends React.PureComponent<{
     }
 
     protected Controllers:Array<PeerControlRecord> = [
-        {name:"Capture", controller:CaptureController},
+        //{name:"Capture", controller:CaptureController},
         {name:"Media Queue", controller:MediaQueueController},
         {name:"Penalty Tracker", controller:PenaltyController},
         {name:"Scoreboard", controller:ScoreboardController},
@@ -378,7 +377,6 @@ export default class PeerEditor extends React.PureComponent<{
                     recordType={vars.RecordType.Peer}
                     onSubmit={this.onSubmit}
                     buttons={buttons}
-                    opened={this.props.opened}
                     {...this.props}
                     >
                     <tr>
@@ -535,7 +533,7 @@ export class PeerRecordRequest extends React.PureComponent<PPeerRecordRequest, S
      * Triggered when the component updates.
      */
     componentDidUpdate(prevProps, prevState) {
-        if(!DataController.compare(prevProps.types, this.props.types)) {
+        if(!Compare(prevProps.types, this.props.types)) {
             let changes:SPeerRecordRequest = {
                 AnthemSingers:this.state.AnthemSingers,
                 Penalties:this.state.Penalties,
@@ -559,7 +557,7 @@ export class PeerRecordRequest extends React.PureComponent<PPeerRecordRequest, S
             if(this.props.types[vars.RecordType.Skater])
                 changes.Skaters = true;
 
-            if(!DataController.compare(prevState, changes)) {
+            if(!Compare(prevState, changes)) {
                 this.setState(() => {return changes;});
             }
         }
@@ -632,5 +630,50 @@ export class PeerRecordRequest extends React.PureComponent<PPeerRecordRequest, S
                 </div>
             </Panel>
         );
+    }
+}
+
+export class PeerRecordList extends React.PureComponent<{
+    shown:boolean;
+    record:PeerRecord|null;
+    onSelect:Function;
+    keywords?:string;
+}, {
+    Records:Array<PeerRecord>;
+}> {
+    readonly state = {
+        Records:PeersController.Get()
+    }
+
+    protected remoteData?:Unsubscribe;
+
+    constructor(props) {
+        super(props);
+        this.updateData = this.updateData.bind(this);
+    }
+
+    protected updateData() {
+        this.setState({Records:PeersController.Get()});
+    }
+
+    componentDidMount() {
+        this.remoteData = PeersController.Subscribe(this.updateData);
+    }
+
+    componentWillUnmount() {
+        if(this.remoteData)
+            this.remoteData();
+    }
+
+    render() {
+        return (
+            <RecordList
+                keywords={this.props.keywords}
+                className={(this.props.shown) ? 'shown' : ''}
+                onSelect={this.props.onSelect}
+                recordid={(this.props.record) ? this.props.record.RecordID : 0}
+                records={this.state.Records}
+                />
+        )
     }
 }

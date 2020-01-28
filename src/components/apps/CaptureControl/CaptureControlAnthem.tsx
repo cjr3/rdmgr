@@ -1,12 +1,15 @@
 import React from 'react';
-import DataController from 'controllers/DataController';
-import CaptureController from 'controllers/CaptureController';
 import CaptureControlPanel, {PCaptureControlPanel} from './CaptureControlPanel';
 import  {
     IconX,
     IconCheck,
     IconButton
 } from 'components/Elements';
+import AnthemsController from 'controllers/AnthemsController';
+import { AnthemRecord } from 'tools/vars';
+import keycodes from 'tools/keycodes';
+
+import AnthemCaptureController from 'controllers/capture/Anthem';
 
 /**
  * Component for configuring the national anthem singer.
@@ -15,7 +18,7 @@ export default class CaptureControlAnthem extends React.PureComponent<PCaptureCo
     /**
      * Collection of national anthem singer records
      */
-    Records:Array<any>;
+    Records:Array<AnthemRecord>;
     /**
      * Record ID of current national anthem singer
      */
@@ -28,12 +31,18 @@ export default class CaptureControlAnthem extends React.PureComponent<PCaptureCo
      * The className that determines how the national anthem is shown
      */
     className:string;
+
+    /**
+     * Name of anthem singer
+     */
+    Name:string;
 }> {
     readonly state = {
-        Records:DataController.getAnthemSingers(true),
-        RecordID:CaptureController.getState().NationalAnthem.Record.RecordID,
-        Shown:CaptureController.getState().NationalAnthem.Shown,
-        className:CaptureController.getState().NationalAnthem.className
+        Records:AnthemsController.Get(),
+        RecordID:AnthemCaptureController.GetState().Record.RecordID,
+        Shown:AnthemCaptureController.GetState().Shown,
+        className:AnthemCaptureController.GetState().className,
+        Name:AnthemCaptureController.GetState().Record.Name
     }
 
     /**
@@ -52,6 +61,8 @@ export default class CaptureControlAnthem extends React.PureComponent<PCaptureCo
     constructor(props:PCaptureControlPanel) {
         super(props);
         this.onChangeSinger = this.onChangeSinger.bind(this);
+        this.onChangeName = this.onChangeName.bind(this);
+        this.onKeyUpName = this.onKeyUpName.bind(this);
         this.updateData = this.updateData.bind(this);
         this.updateCapture = this.updateCapture.bind(this);
     }
@@ -59,12 +70,12 @@ export default class CaptureControlAnthem extends React.PureComponent<PCaptureCo
     /**
      * Updates the state to match the capture controller.
      */
-    updateCapture() {
+    protected updateCapture() {
         this.setState(() => {
             return {
-                Shown:CaptureController.getState().NationalAnthem.Shown,
-                className:CaptureController.getState().NationalAnthem.className,
-                RecordID:CaptureController.getState().NationalAnthem.Record.RecordID
+                Shown:AnthemCaptureController.GetState().Shown,
+                className:AnthemCaptureController.GetState().className,
+                RecordID:AnthemCaptureController.GetState().Record.RecordID
             }
         });
     }
@@ -72,9 +83,14 @@ export default class CaptureControlAnthem extends React.PureComponent<PCaptureCo
     /**
      * Updates the state to match the data controller.
      */
-    updateData() {
+    protected updateData() {
         this.setState(() => {
-            return {Records:DataController.getAnthemSingers(true)};
+            return {Records:AnthemsController.Get()};
+        }, () => {
+            let singer:AnthemRecord = AnthemsController.GetRecord(this.state.RecordID);
+            if(singer) {
+                AnthemCaptureController.SetRecord(singer);
+            }
         });
     }
 
@@ -82,26 +98,38 @@ export default class CaptureControlAnthem extends React.PureComponent<PCaptureCo
      * Triggered when the user changes the default national anthem singer.
      * @param {Event} ev 
      */
-    onChangeSinger(ev) {
-        var id = parseInt(ev.target.value);
-        var singer = DataController.getAnthemSinger(id);
-        if(singer === null) {
-            singer = {
-                RecordID:0,
-                Name:'National Anthem',
-                Biography:''
-            };
+    protected onChangeSinger(ev: React.ChangeEvent<HTMLSelectElement>) {
+        let id:number = parseInt(ev.target.value);
+        let singer:AnthemRecord = AnthemsController.GetRecord(id);
+        if(!singer) {
+            singer = AnthemsController.NewRecord();
+            singer.Name = "National Anthem";
         }
+        AnthemCaptureController.SetRecord( singer );
+        this.setState({Name:singer.Name});
+    }
 
-        CaptureController.SetNationalAnthemSinger( singer );
+    protected onChangeName(ev: React.ChangeEvent<HTMLInputElement>) {
+        let value:string = ev.currentTarget.value;
+        this.setState({Name:value});
+    }
+
+    protected onKeyUpName(ev: React.KeyboardEvent<HTMLInputElement>) {
+        switch(ev.keyCode) {
+            case keycodes.ENTER :
+                let singer:AnthemRecord = {...AnthemCaptureController.GetState().Record};
+                singer.Name = this.state.Name;
+                AnthemCaptureController.SetRecord(singer);
+            break;
+        }
     }
 
     /**
      * Start listeners
      */
     componentDidMount() {
-        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
-        this.remoteData = DataController.subscribe(this.updateData);
+        this.remoteCapture = AnthemCaptureController.Subscribe(this.updateCapture);
+        this.remoteData = AnthemsController.Subscribe(this.updateData);
     }
 
     /**
@@ -144,14 +172,14 @@ export default class CaptureControlAnthem extends React.PureComponent<PCaptureCo
                             src={(this.state.className === 'banner') ? IconCheck : IconX}
                             active={(this.state.className === 'banner')}
                             onClick={() => {
-                                CaptureController.SetNationalAnthemClass('banner');
+                                AnthemCaptureController.SetClass('banner');
                             }}
                             >Banner</IconButton>
                         <IconButton
                             src={(this.state.className === '') ? IconCheck : IconX}
                             active={(this.state.className === '')}
                             onClick={() => {
-                                CaptureController.SetNationalAnthemClass('');
+                                AnthemCaptureController.SetClass('');
                             }}
                             >Full Screen</IconButton>
                     </div>
@@ -160,6 +188,17 @@ export default class CaptureControlAnthem extends React.PureComponent<PCaptureCo
                         onChange={this.onChangeSinger}
                         style={{width:"100%"}}
                         >{singers}</select>
+                    <p>Name</p>
+                    <p>
+                        <input
+                            type="text"
+                            size={30}
+                            maxLength={30}
+                            value={this.state.Name}
+                            onChange={this.onChangeName}
+                            onKeyUp={this.onKeyUpName}
+                            />
+                    </p>
                 </CaptureControlPanel>
         );
     }

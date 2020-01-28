@@ -15,7 +15,6 @@ import {
     IconSettings
 } from 'components/Elements';
 import ScoreboardController from 'controllers/ScoreboardController';
-import CaptureController from 'controllers/CaptureController';
 import PenaltyController from 'controllers/PenaltyController';
 import ScorekeeperController from 'controllers/ScorekeeperController';
 import RosterController from 'controllers/RosterController';
@@ -23,30 +22,72 @@ import MediaQueueController from 'controllers/MediaQueueController';
 import ClientController from 'controllers/ClientController';
 import ClientCaptureStatus from './ClientCaptureStatus';
 import UIController from 'controllers/UIController';
-import ChatController from 'controllers/ChatController';
+import { Unsubscribe } from 'redux';
+
+interface ClientBarApplication {
+    Key:string;
+    Name:string;
+    Icon:string;
+}
 
 export default class ClientBar extends React.PureComponent<any, {
     PeerApplications:Array<string>;
     CurrentApplication:string;
     ConnectedPeers:number;
     UnreadMessageCount:number;
+    Applications:{
+        Scoreboard:ClientBarApplication;
+        CaptureControl:ClientBarApplication;
+        PenaltyTracker:ClientBarApplication;
+        Scorekeeper:ClientBarApplication;
+        Roster:ClientBarApplication;
+        MediaQueue:ClientBarApplication;
+    }
 }> {
     readonly state = {
         PeerApplications:[],
-        CurrentApplication:'',
+        CurrentApplication:ClientController.GetState().CurrentApplication,
         ConnectedPeers:0,
-        UnreadMessageCount:0
+        UnreadMessageCount:0,
+        Applications:{
+            Scoreboard:{
+                Key:ScoreboardController.Key,
+                Name:"Scoreboard",
+                Icon:IconSkate
+            },
+            CaptureControl:{
+                Key:'CC',
+                Name:"Capture Control",
+                Icon:IconMonitor
+            },
+            PenaltyTracker:{
+                Key:PenaltyController.Key,
+                Name:"Penalty Tracker",
+                Icon:IconWhistle
+            },
+            Scorekeeper:{
+                Key:ScorekeeperController.Key,
+                Name:"Scorekeeper",
+                Icon:IconClipboard
+            },
+            Roster:{
+                Key:RosterController.Key,
+                Name:"Roster",
+                Icon:IconTeam
+            },
+            MediaQueue:{
+                Key:MediaQueueController.Key,
+                Name:"Media Queue",
+                Icon:IconAV
+            }
+        }
     };
-
-    /**
-     * 
-     */
-    protected Applications:any;
 
     /**
      * Subscriber for ClientController
      */
-    protected remoteClient:Function|null = null;
+    protected remoteClient?:Unsubscribe;
+    protected remoteUI?:Unsubscribe;
 
     /**
      * Constructor
@@ -54,48 +95,14 @@ export default class ClientBar extends React.PureComponent<any, {
      */
     constructor(props) {
         super(props);
-        
-        this.Applications = {
-            [ScoreboardController.Key]:{
-                name:"Scoreboard",
-                icon:IconSkate,
-                remote:''
-            },
-            [CaptureController.Key]:{
-                name:"Capture Control",
-                icon:IconMonitor,
-                remote:''
-            },
-            [PenaltyController.Key]:{
-                name:'Penalty Tracker',
-                icon:IconWhistle,
-                remote:''
-            },
-            [ScorekeeperController.Key]:{
-                name:'Scorekeeper',
-                icon:IconClipboard,
-                remote:''
-            },
-            [RosterController.Key]:{
-                name:'Roster',
-                icon:IconTeam,
-                remote:''
-            },
-            [MediaQueueController.Key]:{
-                name:'Media Queue',
-                icon:IconAV,
-                remote:''
-            }
-        };
-
         this.updateClient = this.updateClient.bind(this);
     }
 
     /**
      * Updates the state to match the ClientController
      */
-    updateClient() {
-        let state = ClientController.getState();
+    protected async updateClient() {
+        let state = ClientController.GetState();
         this.setState({
             PeerApplications:state.PeerApplications,
             CurrentApplication:state.CurrentApplication,
@@ -104,18 +111,23 @@ export default class ClientBar extends React.PureComponent<any, {
         });
     }
 
+    protected async updateUI() {
+        let state = UIController.GetState();
+        
+    }
+
     /**
      * Triggered when the component mounts to the DOM
      */
     componentDidMount() {
-        this.remoteClient = ClientController.subscribe(this.updateClient);
+        this.remoteClient = ClientController.Subscribe(this.updateClient);
     }
 
     /**
      * Triggered when the component will unmount from the DOM
      */
     componentWillUnmount() {
-        if(this.remoteClient !== null) {
+        if(this.remoteClient) {
             this.remoteClient();
         }
     }
@@ -125,28 +137,27 @@ export default class ClientBar extends React.PureComponent<any, {
      */
     render() {
         const icons:Array<React.ReactElement> = [];
-        for(let key in this.Applications) {
-            let app = this.Applications[key];
-            let remote = '';
-            let title:string = app.name;
-            if(this.state.PeerApplications && this.state.PeerApplications[key]) {
-                remote = this.state.PeerApplications[key];
-                title = `${app.name} (${remote})`;
+        Object.keys(this.state.Applications).forEach((key:string, index) => {
+            let app = this.state.Applications[key];
+            let title:string = app.Name;
+            
+            if(this.state.PeerApplications && this.state.PeerApplications[app.Key]) {
+                title = `${app.Name} (${this.state.PeerApplications[app.Key]})`;
             }
             
             icons.push(
                 <Icon
-                    src={app.icon}
-                    key={`${key}-app`}
-                    className={cnames({active:(key === this.state.CurrentApplication)})}
+                    src={app.Icon}
+                    key={`${app.Key}-app`}
+                    className={cnames({active:(app.Key === this.state.CurrentApplication)})}
                     title={title}
                     onClick={() => {
-                        ClientController.SetApplication(key);
-                        ClientController.ToggleConfiguration(false);
+                        ClientController.SetApplication(app.Key);
+                        ClientController.HidePanels();
                     }}
                     />
             );
-        }
+        });
 
         let iconConnection = IconOffline;
         if(this.state.ConnectedPeers > 0)

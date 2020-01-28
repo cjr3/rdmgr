@@ -1,34 +1,28 @@
 import React from 'react';
 import ScoreboardController from 'controllers/ScoreboardController';
 import cnames from 'classnames';
+import { JamClockCaptureController } from 'controllers/capture/Scoreboard';
+import { Unsubscribe } from 'redux';
+import vars from 'tools/vars';
 
 /**
  * Component for displaying a large jam clock on the capture window
  */
-export default class CaptureJamClock extends React.PureComponent<{
-    /**
-     * True to show, false to hide
-     */
-    shown:boolean;
-}, {
-    /**
-     * Seconds on the jam clock
-     */
+export default class CaptureJamClock extends React.PureComponent<any, {
     JamSecond:number;
-    /**
-     * Maximum jam seconds
-     */
+    JamState:number;
     MaxJamSeconds:number;
+    Shown:boolean;
 }> {
     readonly state = {
-        JamSecond:ScoreboardController.getState().JamSecond,
-        MaxJamSeconds:ScoreboardController.getState().MaxJamSeconds
+        JamSecond:ScoreboardController.GetState().JamSecond,
+        MaxJamSeconds:ScoreboardController.GetState().MaxJamSeconds,
+        JamState:ScoreboardController.GetState().JamState,
+        Shown:JamClockCaptureController.GetState().Shown
     }
 
-    /**
-     * ScoreboardController remote
-     */
-    protected remoteScoreboard:Function|null = null;
+    protected remoteScoreboard?:Unsubscribe;
+    protected remoteJamClock?:Unsubscribe;
 
     /**
      * 
@@ -36,16 +30,24 @@ export default class CaptureJamClock extends React.PureComponent<{
      */
     constructor(props) {
         super(props);
-        this.updateState = this.updateState.bind(this);
+        this.updateScoreboard = this.updateScoreboard.bind(this);
+        this.updateCapture = this.updateCapture.bind(this);
     }
 
     /**
      * Updates the state to match the ScoreboardController
      */
-    async updateState() {
+    protected updateScoreboard() {
         this.setState({
-            JamSecond:ScoreboardController.getState().JamSecond,
-            MaxJamSeconds:ScoreboardController.getState().MaxJamSeconds
+            JamSecond:ScoreboardController.GetState().JamSecond,
+            JamState:ScoreboardController.GetState().JamState,
+            MaxJamSeconds:ScoreboardController.GetState().MaxJamSeconds
+        });
+    }
+
+    protected updateCapture() {
+        this.setState({
+            Shown:JamClockCaptureController.GetState().Shown
         });
     }
 
@@ -53,15 +55,18 @@ export default class CaptureJamClock extends React.PureComponent<{
      * Start listeners
      */
     componentDidMount() {
-        this.remoteScoreboard = ScoreboardController.subscribe(this.updateState);
+        this.remoteScoreboard = ScoreboardController.Subscribe(this.updateScoreboard);
+        this.remoteJamClock = JamClockCaptureController.Subscribe(this.updateCapture);
     }
 
     /**
      * Close listeners
      */
     componentWillUnmount() {
-        if(this.remoteScoreboard !== null)
+        if(this.remoteScoreboard)
             this.remoteScoreboard();
+        if(this.remoteJamClock)
+            this.remoteJamClock();
     }
 
     /**
@@ -69,12 +74,13 @@ export default class CaptureJamClock extends React.PureComponent<{
      */
     render() {
         let className:string = cnames('capture-jam-clock', {
-            shown:this.props.shown,
-            warning:(this.state.JamSecond <= 10),
-            danger:(this.state.JamSecond <= 5)
+            shown:(this.state.Shown && this.state.JamState == vars.Clock.Status.Running),
+            warning:(this.state.JamSecond <= vars.Clock.Warning),
+            danger:(this.state.JamSecond <= vars.Clock.Danger)
         });
 
         let text:string = this.state.JamSecond.toString().padStart(2,'0');
+
         if(this.state.JamSecond > 60 || this.state.MaxJamSeconds > 60) {
             let seconds:number = this.state.JamSecond;
             let minutes:number = 0;

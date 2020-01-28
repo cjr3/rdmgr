@@ -1,9 +1,11 @@
 import React from 'react';
-import DataController from 'controllers/DataController';
 import {Icon, Button, IconButton, IconCheck, IconAttachment, ProgressBar, IconLoop, IconShown} from 'components/Elements';
 import './css/FileBrowser.scss';
 import Panel from 'components/Panel';
 import ClientController from 'controllers/ClientController';
+import { FileExtension, Basename, LoadFolder, LoadFolderFiles, UploadFile } from 'controllers/functions.io';
+import { GetAspectSize, ShowOpenDialog } from 'controllers/functions';
+import {Folders} from 'controllers/vars';
 
 /**
  * A component for browsing media files.
@@ -32,7 +34,7 @@ export default class FileBrowser extends React.PureComponent<{
     previewSrc:string;
 }> {
     readonly state = {
-        path:DataController.MediaFolder,
+        path:Folders.Media,
         previewSrc:''
     }
 
@@ -94,8 +96,8 @@ export default class FileBrowser extends React.PureComponent<{
         ];
 
         let previewItem:React.ReactElement|null = null;
-        if(this.state.previewSrc !== '' && DataController.PATH)  {
-            switch(DataController.ext(this.state.previewSrc)) {
+        if(this.state.previewSrc !== '')  {
+            switch(FileExtension(this.state.previewSrc)) {
                 case 'jpeg': 
                 case 'jpg': 
                 case 'gif': 
@@ -213,19 +215,19 @@ class FileBrowserFolderList extends React.PureComponent<{
         super( props );
         this.onClickLoad = this.onClickLoad.bind(this);
         this.onClickUpload = this.onClickUpload.bind(this);
-        this.loadFolders = this.loadFolders.bind(this);
+        this.loadMediaFolders = this.loadMediaFolders.bind(this);
     }
 
     /**
      * Reloeads the media folders.
      */
-    loadFolders() {
-        DataController.loadFolder().then((folders) => {
+    loadMediaFolders() {
+        LoadFolder().then((folders) => {
             if(folders) {
                 this.setState({folders:folders});
             }
         }).catch(() => {
-            //show error?
+
         });
     }
 
@@ -233,7 +235,7 @@ class FileBrowserFolderList extends React.PureComponent<{
      * Triggered when the user clicks the button to reload folders.
      */
     onClickLoad() {
-        this.loadFolders();
+        this.loadMediaFolders();
     }
 
     /**
@@ -241,7 +243,7 @@ class FileBrowserFolderList extends React.PureComponent<{
      * - Open file dialog (async ???)
      */
     onClickUpload() {
-        DataController.showOpenDialog({
+        ShowOpenDialog({
             properties:['openFile', 'multiSelections']
         }).then(async (files) => {
             //console.log(files);
@@ -250,7 +252,7 @@ class FileBrowserFolderList extends React.PureComponent<{
                     return {uploadedFiles:0,filesToUpload:files.length};
                 }, async () => {
                     for(var key in files) {
-                        await DataController.uploadFile(files[key])
+                        await UploadFile(files[key])
                             .then(() => {
                                 this.setState({uploadedFiles:this.state.uploadedFiles+1})
                             })
@@ -258,7 +260,7 @@ class FileBrowserFolderList extends React.PureComponent<{
                                 //console.log("FAILED TO UPLOAD!");
                             });
                     }
-                    this.loadFolders();
+                    this.loadMediaFolders();
                     try {clearTimeout(this.UploadTimer);} catch(er) {}
                     this.UploadTimer = window.setTimeout(() => {
                         this.setState({uploadedFiles:0,filesToUpload:0});
@@ -276,7 +278,7 @@ class FileBrowserFolderList extends React.PureComponent<{
     componentDidMount() {
         var timer = setInterval(() => {
             if(window && window.LocalServer) {
-                this.loadFolders();
+                this.loadMediaFolders();
                 clearInterval(timer);
             }
         }, 1000);
@@ -374,7 +376,7 @@ class FileBrowserFolder extends React.PureComponent<{
                     onClick={() => {
                         this.props.onClick(this.props.folder.path);
                     }}
-                >{DataController.basename(this.props.folder.path)}</Button>
+                >{Basename(this.props.folder.path)}</Button>
                 {folders}
             </div>
         );
@@ -414,7 +416,7 @@ class FileBrowserList extends React.PureComponent<{
         this.setState(() => {
             return {files:[]}
         }, () => {
-            DataController.loadFolderFiles(this.props.path).then((files) => {
+            LoadFolderFiles(this.props.path).then((files) => {
                 this.setState({files:files});
             }).catch((er) => {
                 //console.log(er);
@@ -519,13 +521,13 @@ class FileBrowserFile extends React.PureComponent<{
      */
     paint() {
         if(this.Brush && this.CanvasItem.current) {
-            switch(DataController.ext(this.props.file)) {
+            switch(FileExtension(this.props.file)) {
                 case 'jpg' :
                 case 'gif' :
                 case 'jpeg' :
                 case 'png' :
                 case 'bmp' :
-                    var size = DataController.aspectSize(this.CanvasItem.current.width, this.CanvasItem.current.height, this.ImageItem.width, this.ImageItem.height);
+                    var size = GetAspectSize(this.CanvasItem.current.width, this.CanvasItem.current.height, this.ImageItem.width, this.ImageItem.height);
                     this.Brush.clearRect(0, 0, this.CanvasItem.current.width, this.CanvasItem.current.height);
                     this.Brush.drawImage(this.ImageItem, size.x, size.y, size.width, size.height);
                     this.ImageItem.src = null;
@@ -551,7 +553,7 @@ class FileBrowserFile extends React.PureComponent<{
      * Loads the attached file
      */
     loadFile() {
-        switch(DataController.ext(this.props.file)) {
+        switch(FileExtension(this.props.file)) {
             case 'jpg' :
             case 'gif' :
             case 'jpeg' :
@@ -604,7 +606,7 @@ class FileBrowserFile extends React.PureComponent<{
                             this.props.onSelect(this.props.file);
                         }
                     }}
-                >{DataController.basename(this.props.file)}</div>
+                >{Basename(this.props.file)}</div>
                 <div className="buttons">
                     <Icon
                         src={IconShown}

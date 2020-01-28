@@ -4,45 +4,12 @@
 
 import React from 'react'
 import Panel from 'components/Panel'
-import {
-    Icon, 
-    IconSkate,
-    IconAV,
-    IconWhistle,
-    IconClipboard,
-    IconTeam,
-    IconChat,
-    IconMonitor,
-    IconSettings,
-    IconShown,
-    IconCapture,
-    IconController,
-    IconOffline,
-    IconOnline
-} from 'components/Elements';
 import ClientScorebanner from './ClientScorebanner';
-import cnames from 'classnames'
 
 //controllers
 import ClientController from 'controllers/ClientController';
-import CameraController from 'controllers/CameraController';
-import CaptureController from 'controllers/CaptureController';
-import ChatController from 'controllers/ChatController';
-import DataController from 'controllers/DataController';
-import MediaQueueController from 'controllers/MediaQueueController';
-import PenaltyController from 'controllers/PenaltyController';
-import RaffleController from 'controllers/RaffleController';
-import RosterController from 'controllers/RosterController';
-import ScoreboardController from 'controllers/ScoreboardController';
-import ScorekeeperController from 'controllers/ScorekeeperController';
-import SlideshowController from 'controllers/SlideshowController';
-import SponsorController from 'controllers/SponsorController';
-import VideoController from 'controllers/VideoController';
-
+//import CaptureController from 'controllers/CaptureController';
 import GameController from 'controllers/GameController';
-
-//inter-process communication
-import IPCX from 'controllers/IPCX';
 
 //components
 import CaptureControl from 'components/apps/CaptureControl/CaptureControl';
@@ -53,8 +20,6 @@ import PenaltyTracker from 'components/apps/PenaltyTracker/PenaltyTracker';
 import Roster from 'components/apps/Roster/Roster';
 import Scoreboard from 'components/apps/Scoreboard/Scoreboard';
 import Scorekeeper from 'components/apps/Scorekeeper/Scorekeeper';
-import ClientCaptureStatus from './ClientCaptureStatus';
-import ClientDialog from './ClientDialog';
 import CaptureDisplayButtons from 'components/apps/CaptureControl/CaptureDisplayButtons';
 import ClientBar from './ClientBar';
 
@@ -64,12 +29,9 @@ import './css/Client.scss';
 //utilities
 import FileBrowser from 'components/tools/FileBrowser';
 import {PeerRecordRequest} from 'components/data/PeerEditor';
-import vars from 'tools/vars';
-import keycodes from 'tools/keycodes';
 import { Unsubscribe } from 'redux';
 import Login from 'components/data/api/Login';
 import UIController from 'controllers/UIController';
-
 
 /**
  * Component for the client control form.
@@ -133,7 +95,7 @@ export default class Client extends React.PureComponent<any, {
 
         //Show the component
         this.setState({shown:true}, () => {
-            CaptureController.Init();
+            //CaptureController.Init();
             GameController.Init();
         });
     }
@@ -197,14 +159,14 @@ class ClientRecordRequest extends React.PureComponent<any, {
 
     protected async updateClient() {
         this.setState({
-            RecordUpdatePeerID:ClientController.getState().RecordUpdatePeerID,
-            RecordUpdateTypes:ClientController.getState().RecordUpdateTypes,
-            shown:ClientController.getState().RecordUpdateShown
+            RecordUpdatePeerID:ClientController.GetState().RecordUpdatePeerID,
+            RecordUpdateTypes:ClientController.GetState().RecordUpdateTypes,
+            shown:ClientController.GetState().RecordUpdateShown
         });
     }
 
     componentDidMount() {
-        this.remoteClient = ClientController.subscribe(this.updateClient);
+        this.remoteClient = ClientController.Subscribe(this.updateClient);
     }
 
     componentWillUnmount() {
@@ -245,14 +207,14 @@ class ClientConfigPanel extends React.PureComponent<any, {
     }
 
     updateClient() {
-        let shown = ClientController.getState().ConfigShown;
+        let shown = ClientController.GetState().ConfigShown;
         if(shown !== this.state.shown) {
             this.setState({shown:shown});
         }
     }
 
     componentDidMount() {
-        this.remoteClient = ClientController.subscribe(this.updateClient);
+        this.remoteClient = ClientController.Subscribe(this.updateClient);
     }
 
     componentWillUnmount() {
@@ -285,14 +247,14 @@ class ClientDisplayPanel extends React.PureComponent<any, {
     }
 
     updateClient() {
-        let shown = ClientController.getState().DisplayShown;
+        let shown = ClientController.GetState().DisplayShown;
         if(shown !== this.state.shown) {
             this.setState({shown:shown});
         }
     }
 
     componentDidMount() {
-        this.remoteClient = ClientController.subscribe(this.updateClient);
+        this.remoteClient = ClientController.Subscribe(this.updateClient);
     }
 
     componentWillUnmount() {
@@ -351,7 +313,7 @@ class ClientFileBrowser extends React.PureComponent<any, {
      */
     updateClient() {
         this.setState({
-            opened:ClientController.getState().FileBrowserShown
+            opened:ClientController.GetState().FileBrowserShown
         });
     }
 
@@ -359,7 +321,7 @@ class ClientFileBrowser extends React.PureComponent<any, {
      * Subscribe to ClientController
      */
     componentDidMount() {
-        this.remoteClient = ClientController.subscribe(this.updateClient);
+        this.remoteClient = ClientController.Subscribe(this.updateClient);
     }
 
     /**
@@ -401,7 +363,7 @@ class ClientLogin extends React.PureComponent<any, {
     opened:boolean;
 }> {
     readonly state = {
-        opened:UIController.getState().APILogin.Shown
+        opened:UIController.GetState().APILogin.Shown
     };
 
     protected remoteUI:Unsubscribe|undefined;
@@ -415,7 +377,7 @@ class ClientLogin extends React.PureComponent<any, {
     }
 
     protected updateUI() {
-        this.setState({opened:UIController.getState().APILogin.Shown});
+        this.setState({opened:UIController.GetState().APILogin.Shown});
     }
 
     protected onLoginClose() {
@@ -431,7 +393,7 @@ class ClientLogin extends React.PureComponent<any, {
     }
 
     componentDidMount() {
-        this.remoteUI = UIController.subscribe(this.updateUI);
+        this.remoteUI = UIController.Subscribe(this.updateUI);
     }
 
     componentWillUnmount() {

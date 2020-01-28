@@ -3,15 +3,10 @@ import Clock from 'components/tools/Clock'
 import {Icon, IconStopwatch, Icon2x} from 'components/Elements'
 import ScoreboardController from 'controllers/ScoreboardController';
 import vars from 'tools/vars';
-import ClientController from 'controllers/ClientController';
 
 interface SBreakClock {
     status:number,
     second:number
-}
-
-interface PBreakClock {
-    remote?:string
 }
 
 /**
@@ -61,8 +56,8 @@ export default class BreakClock extends React.PureComponent<any, {
     updateState() {
         this.setState(() => {
             return {
-                status:ScoreboardController.getState().BreakState,
-                second:ScoreboardController.getState().BreakSecond
+                status:ScoreboardController.GetState().BreakState,
+                second:ScoreboardController.GetState().BreakSecond
             };
         }, () => {
             if(!window.remoteApps.SB && this.ClockItem !== null && this.ClockItem.current !== null) {
@@ -90,8 +85,8 @@ export default class BreakClock extends React.PureComponent<any, {
      * Sets the break clock time to 60 seconds
      */
     onClickSixty() {
-        if(ScoreboardController.getState().JamState !== vars.Clock.Status.Running) {
-            let maxSeconds = ScoreboardController.getState().MaxBreakSeconds;
+        if(ScoreboardController.GetState().JamState !== vars.Clock.Status.Running) {
+            let maxSeconds = ScoreboardController.GetState().MaxBreakSeconds;
             let max2 = maxSeconds * 2;
             if(this.state.status !== vars.Clock.Status.Running && this.state.second === max2) {
                 ScoreboardController.SetState({
@@ -127,7 +122,7 @@ export default class BreakClock extends React.PureComponent<any, {
      * Start listeners
      */
     componentDidMount() {
-        this.remoteScore = ScoreboardController.subscribe(this.updateState);
+        this.remoteScore = ScoreboardController.Subscribe(this.updateState);
     }
 
     /**

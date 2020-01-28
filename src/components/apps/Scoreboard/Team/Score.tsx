@@ -1,6 +1,6 @@
 import React, { CSSProperties } from 'react';
 import Counter from 'components/tools/Counter';
-import ScoreboardController, {SScoreboardTeam} from 'controllers/ScoreboardController';
+import ScoreboardController from 'controllers/ScoreboardController';
 
 /**
  * Score component for team score on the scoreboard control.
@@ -41,7 +41,7 @@ export default class Score extends React.PureComponent<{
      * Updates the state to match the controller.
      */
     updateState() {
-        let state = ScoreboardController.getState();
+        let state = ScoreboardController.GetState();
         let score = state.TeamA.Score;
         let color = state.TeamA.Color;
         if(this.props.side === 'B') {
@@ -91,7 +91,7 @@ export default class Score extends React.PureComponent<{
      * Triggered when the component mounts to the DOM.
      */
     componentDidMount() {
-        this.remoteScore = ScoreboardController.subscribe(this.updateState);
+        this.remoteScore = ScoreboardController.Subscribe(this.updateState);
         this.updateState();
         if(this.CounterItem !== null && this.CounterItem.current !== null) {
             this.CounterItem.current.set(this.state.amount, false);

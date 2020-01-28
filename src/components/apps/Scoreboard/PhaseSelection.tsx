@@ -2,9 +2,9 @@ import React from 'react'
 import Panel from 'components/Panel'
 import vars, { PhaseRecord } from 'tools/vars';
 import ScoreboardController from 'controllers/ScoreboardController'
-import DataController from 'controllers/DataController'
 import { Button } from 'components/Elements';
 import UIController from 'controllers/UIController';
+import PhasesController from 'controllers/PhasesController';
 
 export interface PPhaseSelection {
     /**
@@ -56,8 +56,8 @@ export default class PhaseSelection extends React.PureComponent<{
     PhaseID:number;
 }> {
     readonly state = {
-        Phases:DataController.getPhases(),
-        PhaseID:ScoreboardController.getState().PhaseID
+        Phases:PhasesController.Get(),
+        PhaseID:ScoreboardController.GetState().PhaseID
     }
 
     /**
@@ -85,20 +85,14 @@ export default class PhaseSelection extends React.PureComponent<{
      * Updates the state to match the controller.
      */
     updateState() {
-        DataController.compareAsync(DataController.getPhases(), this.state.Phases).then((response) => {
-            if(!response) {
-                this.setState(() => {
-                    return {Phases:DataController.getPhases()}
-                });
-            }
-        });
+        this.setState({Phases:PhasesController.Get()});
     }
 
     /**
      * Updates the state to match the controller.
      */
     protected async updateScore() {
-        let id:number = ScoreboardController.getState().PhaseID;
+        let id:number = ScoreboardController.GetState().PhaseID;
         if(id !== this.state.PhaseID)
             this.setState({PhaseID:id});
     }
@@ -110,14 +104,12 @@ export default class PhaseSelection extends React.PureComponent<{
     protected async onSelect(index:number) {
         ScoreboardController.SetPhase(index);
         UIController.SetScoreboardPanel('');
-        if(ScoreboardController.getState().GameState !== vars.Clock.Status.Running) {
-            let Phases = DataController.getState().Phases;
-            if(Phases[index]) {
-                ScoreboardController.SetGameTime(
-                    Phases[index].Duration[0],
-                    Phases[index].Duration[1],
-                    Phases[index].Duration[2]
-                );
+        if(ScoreboardController.GetState().GameState !== vars.Clock.Status.Running) {
+            if(this.state.Phases[index]) {
+                let duration:any = this.state.Phases[index].Duration;
+                if(duration) {
+                    ScoreboardController.SetGameTime(duration[0], duration[1], duration[2]);
+                }
             }
         }
 
@@ -129,8 +121,8 @@ export default class PhaseSelection extends React.PureComponent<{
      * Start listeners
      */
     componentDidMount() {
-        this.remoteData = DataController.subscribe(this.updateState);
-        this.remoteScore = ScoreboardController.subscribe(this.updateScore);
+        this.remoteData = PhasesController.Subscribe(this.updateState);
+        this.remoteScore = ScoreboardController.Subscribe(this.updateScore);
     }
 
     /**
@@ -151,6 +143,12 @@ export default class PhaseSelection extends React.PureComponent<{
         const phases:Array<React.ReactElement> = [];
 
         this.state.Phases.forEach((phase, i) => {
+            let time:string = '00:00:00';
+            if(phase.Duration) {
+                time = phase.Duration[0].toString().padStart(2,'0') + ":" +
+                    phase.Duration[1].toString().padStart(2,'0') + ":" +
+                    phase.Duration[2].toString().padStart(2,'0');
+            }
             phases.push(
                 <Button
                 key={`${phase.RecordType}-${phase.RecordID}`}
@@ -158,11 +156,7 @@ export default class PhaseSelection extends React.PureComponent<{
                 active={(this.state.PhaseID == phase.RecordID)}
                 >
                     <div>{phase.Name}</div>
-                    <div>{
-                        phase.Duration[0].toString().padStart(2,'0') + ":" +
-                        phase.Duration[1].toString().padStart(2,'0') + ":" +
-                        phase.Duration[2].toString().padStart(2,'0')
-                        }</div>
+                    <div>{time}</div>
                 </Button>
             );
         });

@@ -3,6 +3,7 @@ import DataController from 'controllers/DataController';
 import Panel from 'components/Panel';
 import cnames from 'classnames';
 import { IconButton, IconCheck, IconNo } from 'components/Elements';
+import { LoadToken } from 'controllers/api/functions';
 
 
 export default class Login extends React.PureComponent<{
@@ -67,7 +68,7 @@ export default class Login extends React.PureComponent<{
             return;
 
         this.setState({processing:true, error:'', loggedIn:false}, () => {
-            DataController.loadAPIToken(this.state.username, this.state.password).then(() => {
+            LoadToken(this.state.username, this.state.password).then(() => {
                 DataController.SaveMiscRecord('APIUsername', this.state.username);
                 this.setState({processing:false,loggedIn:true,error:'',password:''});
                 if(this.props.onSuccess)
@@ -82,6 +83,9 @@ export default class Login extends React.PureComponent<{
 
     render() {
         let title:string = "Login";
+        let username:string = '';
+        if(this.state.username)
+            username = this.state.username;
         if(this.state.processing)
             title = "Logging in...";
         else if(this.state.loggedIn)
@@ -119,7 +123,7 @@ export default class Login extends React.PureComponent<{
                                     type="text"
                                     size={20}
                                     maxLength={50}
-                                    value={this.state.username}
+                                    value={username}
                                     onChange={this.onChangeUsername}
                                     ref={this.UsernameItem}
                                     />

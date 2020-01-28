@@ -1,40 +1,101 @@
 /**
  * Scoreboard Controller
  */
-
-import {createStore, Unsubscribe} from 'redux';
 import DataController from 'controllers/DataController'
-import vars, { PhaseRecord } from 'tools/vars'
+import vars, { PhaseRecord, TeamRecord } from 'tools/vars'
 import keycodes from 'tools/keycodes'
 import RosterController from './RosterController';
 import { IGamepadButtonMap, IGamepadAxes } from './GameController';
+import PhasesController from 'controllers/PhasesController';
+
+import {IController, Files} from './vars';
+import {CreateController, BaseReducer} from './functions.controllers';
+import TeamsController from './TeamsController';
+import { PrepareObjectForSending, Compare } from './functions';
+
+export type Sides = 'A' | 'B';
+
+interface IScoreboardController extends IController {
+    ToggleJamClock:Function;
+    StartJamClock:Function;
+    StopJamClock:Function;
+    ToggleGameClock:Function;
+    StartGameClock:Function;
+    StopGameClock:Function;
+    StopBreakGameClock:Function;
+    ToggleBreakClock:Function;
+    StartBreakClock:Function;
+    StopBreakClock:Function;
+    ToggleConfirm:Function;
+    Reset:Function;
+    SetGameTime:Function;
+    CopyGameTime:Function;
+    SetBreakTime:Function;
+    SetJamTime:Function;
+    SetBoardStatus:Function;
+    SetPhase:Function;
+    SetPhaseTime:Function;
+    IncreasePhase:Function;
+    DecreasePhase:Function;
+    SetJamCounter:Function;
+    IncreaseJamCounter:Function;
+    DecreaseJamCounter:Function;
+    SetTeam:Function;
+    SetTeams:Function;
+    SetTeamScore:Function;
+    SetTeamTimeouts:Function;
+    SetTeamChallenges:Function;
+    SetTeamJamPoints:Function;
+    SetTeamStatus:Function;
+    SetTeamName:Function;
+    SetTeamColor:Function;
+    IncreaseTeamScore:Function;
+    DecreaseTeamScore:Function;
+    IncreaseTeamJamPoints:Function;
+    DecreaseTeamJamPoints:Function;
+    IncreaseTeamChallenges:Function;
+    DecreaseTeamChallenges:Function;
+    IncreaseTeamTimeouts:Function;
+    DecreaseTeamTimeouts:Function;
+    OfficialTimeout:Function;
+    InjuryTimeout:Function;
+    ResetJam:Function;
+    ApplyConfig:Function;
+    onKeyUp:Function;
+    onGamepadButtonPress:Function;
+    onGamepadButtonDown:Function;
+    onGamepadButtonUp:Function;
+    onGamepadAxis:Function;
+    getConfig:Function;
+    saveConfig:Function;
+}
 
 export enum Actions {
-    SET_STATE,
-    RESET_STATE,
-    RESET_JAM,
-    TOGGLE_JAM_CLOCK,
-    TOGGLE_GAME_CLOCK,
-    TOGGLE_BREAK_CLOCK,
-    TOGGLE_CONFIRM,
-    SET_BOARD_STATUS,
-    SET_OFFICIAL_TIMEOUT,
-    SET_INJURY_TIMEOUT,
-    SET_PHASES,
-    SET_PHASE,
-    SET_PHASE_TIME,
-    SET_JAM_COUNTER,
-    SET_GAME_TIME,
-    COPY_PHASE_TIME,
-    SET_TEAM,
-    SET_TEAMS,
-    SET_TEAM_COLOR,
-    SET_TEAM_CHALLENGES,
-    SET_TEAM_JAMPOINTS,
-    SET_TEAM_SCORE,
-    SET_TEAM_TIMEOUTS,
-    SET_TEAM_NAME,
-    SET_TEAM_STATUS
+    SET_STATE = 'SET_STATE',
+    RESET_STATE = 'RESET_STATE',
+    RESET_JAM = 'RESET_JAM',
+    TOGGLE_JAM_CLOCK = 'TOGGLE_JAM_CLOCK',
+    TOGGLE_GAME_CLOCK = 'TOGGLE_GAME_CLOCK',
+    TOGGLE_BREAK_CLOCK = 'TOGGLE_BREAK_CLOCK',
+    TOGGLE_CONFIRM = 'TOGGLE_CONFIRM',
+    SET_BOARD_STATUS = 'SET_BOARD_STATUS',
+    SET_OFFICIAL_TIMEOUT = 'SET_OFFICIAL_TIMEOUT',
+    SET_INJURY_TIMEOUT = 'SET_INJURY_TIMEOUT',
+    SET_PHASES = 'SET_PHASES',
+    SET_PHASE = 'SET_PHASE',
+    SET_PHASE_TIME = 'SET_PHASE_TIME',
+    SET_JAM_COUNTER = 'SET_JAM_COUNTER',
+    SET_GAME_TIME = 'SET_GAME_TIME',
+    COPY_PHASE_TIME = 'COPY_PHASE_TIME',
+    SET_TEAM = 'SET_TEAM',
+    SET_TEAMS = 'SET_TEAMS',
+    SET_TEAM_COLOR = 'SET_TEAM_COLOR',
+    SET_TEAM_CHALLENGES = 'SET_TEAM_CHALLENGES',
+    SET_TEAM_JAMPOINTS = 'SET_TEAM_JAMPOINTS',
+    SET_TEAM_SCORE = 'SET_TEAM_SCORE',
+    SET_TEAM_TIMEOUTS = 'SET_TEAM_TIMEOUTS',
+    SET_TEAM_NAME = 'SET_TEAM_NAME',
+    SET_TEAM_STATUS = 'SET_TEAM_STATUS'
 }
 
 export interface SScoreboardTeam {
@@ -85,8 +146,8 @@ export interface SScoreboardTeam {
     /**
      * Full-screen slide
      */
-    Slide:string|undefined;
-    Photo:string|undefined;
+    Slide?:string;
+    Photo?:string;
 }
 
 export interface SScoreboardState {
@@ -297,648 +358,689 @@ export const InitState:SScoreboardState = {
     JamChangeMode:false
 }
 
+const SetState = (state:SScoreboardState, values) => {
+    let maxTimeouts:number = state.MaxTimeouts;
+    let maxChallenges:number = state.MaxChallenges;
+
+    let obj:SScoreboardState = {...state, ...values};
+    if(values.TeamA) {
+        obj.TeamA = {...state.TeamA, ...values.TeamA};
+    }
+
+    if(values.TeamB) {
+        obj.TeamB = {...state.TeamB, ...values.TeamB};
+    }
+
+    if(!Number.isNaN(values.MaxTimeouts))
+        maxTimeouts = values.MaxTimeouts;
+
+    if(!Number.isNaN(values.MaxChallenges))
+        maxChallenges = values.MaxChallenges;
+
+    if(state.JamState == vars.Clock.Status.Ready) {
+        obj.JamSecond = obj.MaxJamSeconds;
+    }
+
+    if(obj.TeamA.Timeouts > maxTimeouts)
+        obj.TeamA.Timeouts = maxTimeouts;
+
+    if(obj.TeamA.Challenges > maxChallenges)
+        obj.TeamA.Challenges = maxChallenges;
+
+    if(obj.TeamB.Timeouts > maxTimeouts)
+        obj.TeamB.Timeouts = maxTimeouts;
+
+    if(obj.TeamB.Challenges > maxChallenges)
+        obj.TeamB.Challenges = maxChallenges;
+
+    return obj;
+};
+
+const ResetState = (state:SScoreboardState, values) => {
+    //ignore reset if game/jam clock is running
+    if(state.JamState === vars.Clock.Status.Running || state.GameState === vars.Clock.Status.Running)
+        return state;
+
+    let phases:Array<PhaseRecord> = PhasesController.Get();
+    let phase:any = {
+        PhaseID:0,
+        PhaseName:"DERBY!",
+        PhaseIndex:0,
+        PhaseHour:0,
+        PhaseMinute:0,
+        PhaseSecond:0
+    };
+    let index:number = phases.findIndex((p) => {
+        return (p.PhaseQtr && p.PhaseQtr >= 1);
+    });
+
+    let maxJamSeconds:number = state.MaxJamSeconds;
+    if(values.MaxJamSeconds && !Number.isNaN(values.MaxJamSeconds))
+        maxJamSeconds = values.MaxJamSeconds;
+
+    if(index >= 0) {
+        phase.PhaseIndex = index;
+        phase.PhaseID = phases[index].RecordID;
+        if(typeof(phases[index].Name) === "string")
+            phase.PhaseName = phases[index].Name;
+        if(phases[index].Duration) {
+            let duration:any = phases[index].Duration;
+            if(duration) {
+                phase.PhaseHour = duration[0];
+                phase.PhaseMinute = duration[1];
+                phase.PhaseSecond = duration[2];
+            }
+        }
+    }
+
+    return {
+        ...InitState,
+        JamSecond:maxJamSeconds,
+        MaxJamSeconds:maxJamSeconds,
+        MaxBreakSeconds:state.MaxBreakSeconds,
+        MaxTimeouts:state.MaxTimeouts,
+        MaxChallenges:state.MaxChallenges,
+        MaxTimeoutSeconds:state.MaxTimeoutSeconds,
+        MaxChallengeSeconds:state.MaxChallengeSeconds,
+        StartGameHour:0,
+        StartGameMinute:0,
+        StartGameSecond:0,
+        PhaseID:phase.PhaseID,
+        PhaseIndex:phase.PhaseIndex,
+        PhaseName:phase.PhaseName,
+        PhaseHour:phase.PhaseHour,
+        PhaseMinute:phase.PhaseMinute,
+        PhaseSecond:phase.PhaseSecond,
+        TeamA:{
+            ...state.TeamA,
+            Score:0,
+            Timeouts:state.MaxTimeouts,
+            Challenges:state.MaxChallenges,
+            JamPoints:0,
+            Status:0
+        },
+        TeamB:{
+            ...state.TeamB,
+            Score:0,
+            Timeouts:state.MaxTimeouts,
+            Challenges:state.MaxChallenges,
+            JamPoints:0,
+            Status:0
+        }
+    };
+};
+
+const OfficialTimeout = (state:SScoreboardState) => {
+    if(state.BoardStatus === vars.Scoreboard.Status.Timeout) {
+        return {...state, BoardStatus:vars.Scoreboard.Status.Normal};
+    } else {
+        return {...state,
+            JamState:vars.Clock.Status.Stopped,
+            GameState:vars.Clock.Status.Stopped,
+            BreakState:vars.Clock.Status.Ready,
+            BoardStatus:vars.Scoreboard.Status.Timeout,
+            TeamA:{...state.TeamA, Status:vars.Team.Status.Normal},
+            TeamB:{...state.TeamB, Status:vars.Team.Status.Normal}
+        };
+    }
+};
+
+const InjuryTimeout = (state:SScoreboardState) => {
+    if(state.BoardStatus === vars.Scoreboard.Status.Injury) {
+        return {...state, BoardStatus:vars.Scoreboard.Status.Normal};
+    } else {
+        return {...state,
+            JamState:vars.Clock.Status.Stopped,
+            GameState:vars.Clock.Status.Stopped,
+            BreakState:vars.Clock.Status.Ready,
+            BoardStatus:vars.Scoreboard.Status.Injury,
+            TeamA:{...state.TeamA, Status:vars.Team.Status.Normal},
+            TeamB:{...state.TeamB, Status:vars.Team.Status.Normal}
+        };
+    }
+};
+
+const ToggleJamClock = (state:SScoreboardState) => {
+    let teamAStatus = state.TeamA.Status;
+    let teamBStatus = state.TeamB.Status;
+
+    if(teamAStatus !== vars.Team.Status.PowerJam)
+        teamAStatus = vars.Team.Status.Normal;
+
+    if(teamBStatus !== vars.Team.Status.PowerJam)
+        teamBStatus = vars.Team.Status.Normal;
+        
+    if(state.JamChangeMode) {
+        switch(state.JamState) {
+            case vars.Clock.Status.Ready :
+
+                if(teamAStatus !== vars.Team.Status.PowerJam)
+                    teamAStatus = vars.Team.Status.Normal;
+
+                if(teamBStatus !== vars.Team.Status.PowerJam)
+                    teamBStatus = vars.Team.Status.Normal;
+
+                return {...state, 
+                    JamCounter:state.JamCounter+1,
+                    JamSecond:state.MaxJamSeconds,
+                    JamState:vars.Clock.Status.Running,
+                    GameState:vars.Clock.Status.Running,
+                    BreakState:vars.Clock.Status.Ready,
+                    BoardStatus:vars.Scoreboard.Status.Normal,
+                    BreakSecond:state.MaxBreakSeconds,
+                    //Record game time for jam reset
+                    StartGameHour:state.GameHour,
+                    StartGameMinute:state.GameMinute,
+                    StartGameSecond:state.GameSecond,
+                    ConfirmStatus:0,
+                    TeamA:{...state.TeamA, 
+                        Status:teamAStatus,
+                        JamPoints:0
+                    },
+                    TeamB:{...state.TeamB, 
+                        Status:teamAStatus,
+                        JamPoints:0
+                    }
+                };
+
+            //stop jam clock, start break clock
+            case vars.Clock.Status.Running :
+                return {...state, 
+                    JamState:vars.Clock.Status.Stopped,
+                    BreakState:vars.Clock.Status.Running,
+                    BreakSecond:state.MaxBreakSeconds
+                };
+
+            //reset jam clock, board status, and team status
+            case vars.Clock.Status.Stopped :
+                return {...state, 
+                    JamState:vars.Clock.Status.Ready,
+                    JamSecond:state.MaxJamSeconds,
+                    BoardStatus:vars.Scoreboard.Status.Normal,
+                    TeamA:{...state.TeamA, Status:vars.Team.Status.Normal},
+                    TeamB:{...state.TeamB, Status:vars.Team.Status.Normal}
+                };
+
+            default :
+                return state;
+        }
+    } else {
+        switch(state.JamState) {
+            case vars.Clock.Status.Ready :;
+
+                if(teamAStatus !== vars.Team.Status.PowerJam)
+                    teamAStatus = vars.Team.Status.Normal;
+
+                if(teamBStatus !== vars.Team.Status.PowerJam)
+                    teamBStatus = vars.Team.Status.Normal;
+
+                return {...state, 
+                    JamCounter:state.JamCounter+1,
+                    JamState:vars.Clock.Status.Running,
+                    JamSecond:state.MaxJamSeconds,
+                    GameState:vars.Clock.Status.Running,
+                    BreakState:vars.Clock.Status.Ready,
+                    BoardStatus:vars.Scoreboard.Status.Normal,
+                    BreakSecond:state.MaxBreakSeconds,
+                    //Record game time for jam reset
+                    StartGameHour:state.GameHour,
+                    StartGameMinute:state.GameMinute,
+                    StartGameSecond:state.GameSecond,
+                    ConfirmStatus:0,
+                    TeamA:{...state.TeamA, 
+                        Status:teamAStatus,
+                        JamPoints:0
+                    },
+                    TeamB:{...state.TeamB, 
+                        Status:teamAStatus,
+                        JamPoints:0
+                    }
+                };
+
+            //stop jam clock, start break clock
+            case vars.Clock.Status.Running :
+            case vars.Clock.Status.Stopped :
+                return {...state,
+                    JamState:vars.Clock.Status.Ready,
+                    JamSecond:state.MaxJamSeconds,
+                    BreakState:vars.Clock.Status.Running,
+                    BreakSecond:state.MaxBreakSeconds,
+                    BoardStatus:vars.Scoreboard.Status.Normal,
+                    TeamA:{...state.TeamA, Status:vars.Team.Status.Normal},
+                    TeamB:{...state.TeamB, Status:vars.Team.Status.Normal}
+                }
+
+            default :
+                return state;
+        }
+    }
+};
+
+const ToggleGameClock = (state:SScoreboardState) => {
+    //ignore if jam clock is running
+    if(state.JamState === vars.Clock.Status.Running)
+        return state;
+    switch(state.GameState) {
+        case vars.Clock.Status.Stopped :
+        case vars.Clock.Status.Ready :
+            return {...state, GameState:vars.Clock.Status.Running};
+        case vars.Clock.Status.Running :
+            return {...state, GameState:vars.Clock.Status.Stopped};
+        default :
+            return state;
+    }
+};
+
+const ToggleBreakClock = (state:SScoreboardState) => {
+    if(state.JamState === vars.Clock.Status.Running)
+        return state;
+    switch(state.BreakState) {
+        case vars.Clock.Status.Stopped :
+            return {...state, 
+                BreakState:vars.Clock.Status.Ready,
+                BreakSecond:state.MaxBreakSeconds
+            };
+        case vars.Clock.Status.Ready :
+            return {...state,
+                BreakState:vars.Clock.Status.Running
+            };
+        case vars.Clock.Status.Running :
+            return {...state, 
+                BreakState:vars.Clock.Status.Ready,
+                BreakSecond:state.MaxBreakSeconds
+            };
+        default :
+            return state;
+    }
+};
+
+const SetGameTime = (state:SScoreboardState, hour:number, minute:number, second:number) => {
+    return {...state, 
+        GameHour:hour,
+        GameMinute:minute,
+        GameSecond:second
+    };
+};
+
+const CopyPhaseToGameClock = (state:SScoreboardState) => {
+    //ignore if the game or jam clock are running
+    if(state.GameState === vars.Clock.Status.Running || state.JamState === vars.Clock.Status.Running)
+            return state;
+    return {...state,
+        GameHour:state.PhaseHour,
+        GameMinute:state.PhaseMinute,
+        GameSecond:state.PhaseSecond
+    };
+};
+
+const SetBoardStatus = (state:SScoreboardState, status:number) => {
+    //if the jam clock is running or status is the same, set to Normal
+    if(state.JamState === vars.Clock.Status.Running || state.BoardStatus === status) {
+        return {...state, BoardStatus:vars.Scoreboard.Status.Normal};
+    }
+
+    let clockStatus = state.GameState;
+    let breakState = state.BreakState;
+
+    if(status === vars.Scoreboard.Status.Timeout || status === vars.Scoreboard.Status.Injury) {
+        clockStatus = vars.Clock.Status.Stopped;
+        breakState = vars.Clock.Status.Ready;
+    }
+
+    return {...state, 
+        BoardStatus:status,
+        GameState:clockStatus,
+        BreakState:breakState
+    };
+};
+
+const ToggleConfirm = (state:SScoreboardState) => {
+    return {...state, ConfirmStatus:(state.ConfirmStatus) ? 0 : 1};
+};
+
+const SetPhase = (state:SScoreboardState, index:number) => {
+    let duration:Array<number> = [0,0,0];
+    let name:any = "";
+    let id:number = 0;
+    let Phases:Array<PhaseRecord> = PhasesController.Get();
+    if(Phases[index]) {
+        if(Phases[index].Duration !== undefined) {
+            let d:any = duration;
+            duration = d;
+        }
+        name = Phases[index].Name;
+        id = Phases[index].RecordID;
+    }
+
+    if(typeof(duration[0]) === "string")
+        duration[0] = parseInt(duration[0]);
+
+    if(typeof(duration[1]) === "string")
+        duration[1] = parseInt(duration[1]);
+
+    if(typeof(duration[2]) === "string")
+        duration[2] = parseInt(duration[2]);
+
+    return {...state,
+        PhaseIndex:index,
+        PhaseID:id,
+        PhaseName:name,
+        PhaseHour:duration[0],
+        PhaseMinute:duration[1],
+        PhaseSecond:duration[2]
+    };
+};
+
+const SetPhaseTime = (state:SScoreboardState, hour:number, minute:number, second:number) => {
+    
+    if(hour > 23)
+        hour = 23;
+    else if(hour < 0)
+        hour = 0;
+
+    if(minute > 59)
+        minute = 59;
+    else if(minute < 0)
+        minute = 0;
+
+    if(second > 59)
+        second = 59;
+    else if(second < 0)
+        second = 0;
+
+    return {...state, PhaseHour:hour, PhaseMinute:minute, PhaseSecond:second};
+};
+
+const SetJamCounter = (state:SScoreboardState, amount:number) => {
+    if(amount <= 0)
+        return {...state, JamCounter:0};
+    return {...state, JamCounter:amount};
+};
+
+const SetTeam = (state:SScoreboardState, side:Sides, team:TeamRecord) => {
+
+    if(side === 'A') {
+        return {...state,
+            TeamA:{
+                ...state.TeamA,
+                ID:team.RecordID,
+                Name:team.Name,
+                Color:team.Color,
+                Thumbnail:team.Thumbnail,
+                ScoreboardThumbnail:team.ScoreboardThumbnail,
+                Slide:team.Slide
+            }
+        };
+    } else if(side === 'B') {
+        return {...state,
+            TeamB:{
+                ...state.TeamB,
+                ID:team.RecordID,
+                Name:team.Name,
+                Color:team.Color,
+                Thumbnail:team.Thumbnail,
+                ScoreboardThumbnail:team.ScoreboardThumbnail,
+                Slide:team.Slide
+            }
+        };
+    } else {
+        return state;
+    }
+};
+
+const SetTeams = (state:SScoreboardState, TeamA:TeamRecord, TeamB:TeamRecord) => {
+    return {...state,
+        TeamA:{...state.TeamA,
+            ID:TeamA.RecordID,
+            Name:TeamA.Name,
+            Color:TeamA.Color,
+            Thumbnail:TeamA.Thumbnail,
+            ScoreboardThumbnail:TeamA.ScoreboardThumbnail,
+            Slide:TeamA.Slide,
+            Photo:TeamA.Photo
+        },
+        TeamB:{...state.TeamB,
+            ID:TeamB.RecordID,
+            Name:TeamB.Name,
+            Color:TeamB.Color,
+            Thumbnail:TeamB.Thumbnail,
+            ScoreboardThumbnail:TeamB.ScoreboardThumbnail,
+            Slide:TeamB.Slide,
+            Photo:TeamB.Photo
+        }
+    };
+};
+
+const SetTeamColor = (state:SScoreboardState, side:Sides, color:string) => {
+    if(side === 'A') {
+        return {...state, TeamA:{...state.TeamA, Color:color}};
+    } else {
+        return {...state, TeamB:{...state.TeamB, Color:color}};
+    }
+};
+
+const SetTeamName = (state:SScoreboardState, side:Sides, name:string) => {
+    if(side === 'A') {
+        return {...state, TeamA:{...state.TeamA, Name:name}};
+    } else {
+        return {...state, TeamB:{...state.TeamB, Name:name}};
+    }
+};
+
+const SetTeamScore = (state:SScoreboardState, side:Sides, score:number, jpoints?:number) => {
+    if(score > 999)
+        score = 999;
+    else if(score < 0)
+        score = 0;
+    if(side === 'A') {
+        let jampoints = state.TeamA.JamPoints;
+        if(typeof(jpoints) === 'number')
+            jampoints += jpoints;
+        return {...state, TeamA:{
+            ...state.TeamA,
+            Score:score,
+            JamPoints:jampoints
+        }};
+    } else {
+        let jampoints = state.TeamB.JamPoints;
+        if(typeof(jpoints) === 'number')
+            jampoints += jpoints;
+        return {...state, TeamB:{
+            ...state.TeamB,
+            Score:score,
+            JamPoints:jampoints
+        }};
+    }
+};
+
+const SetTeamJamPoints = (state:SScoreboardState, side:Sides, amount:number) => {
+    if(side == 'A') {
+        return {...state, TeamA:{...state.TeamA, JamPoints:amount}};
+    } else {
+        return {...state, TeamB:{...state.TeamB, JamPoints:amount}};
+    }
+};
+
+const SetTeamTimeouts = (state:SScoreboardState, side:Sides, amount:number) => {
+    if(amount > state.MaxTimeouts)
+        amount = state.MaxTimeouts;
+    if(amount < 0)
+        amount = 0;
+    if(side === 'A') {
+        return {...state, TeamA:{...state.TeamA, Timeouts:amount}};
+    } else {
+        return {...state, TeamB:{...state.TeamB, Timeouts:amount}};
+    }
+};
+
+
+const SetTeamChallenges = (state:SScoreboardState, side:Sides, amount:number) => {
+    if(amount > state.MaxChallenges)
+        amount = state.MaxChallenges;
+    if(amount < 0)
+        amount = 0;
+    if(side === 'A') {
+        return {...state, TeamA:{...state.TeamA, Challenges:amount}};
+    } else {
+        return {...state, TeamB:{...state.TeamB, Challenges:amount}};
+    }
+};
+
+const SetTeamStatus = (state:SScoreboardState, side:Sides, status:number) => {
+    //when the jam clock is running, ignore any status
+    //other than power jam and lead jammer
+    if(state.JamState === vars.Clock.Status.Running) {
+        if(status !== vars.Team.Status.PowerJam 
+            && status !== vars.Team.Status.LeadJammer) {
+            return state;
+        }
+    }
+    
+    let bseconds = state.MaxBreakSeconds;
+
+    if(side === 'A') {
+        if(status == state.TeamA.Status)
+            status = vars.Team.Status.Normal;
+            
+        if(status == vars.Team.Status.Timeout || status == vars.Team.Status.Challenge)
+            bseconds = state.MaxTimeoutSeconds;
+
+        return {...state, 
+            BreakSeconds:bseconds,
+            TeamA:{...state.TeamA, Status:status},
+            TeamB:{...state.TeamB, Status:vars.Team.Status.Normal}
+        };
+    } else {
+        if(status == state.TeamB.Status)
+            status = vars.Team.Status.Normal;
+
+        if(status == vars.Team.Status.Timeout || status == vars.Team.Status.Challenge)
+            bseconds = state.MaxTimeoutSeconds;
+
+        return {...state, 
+            BreakSeconds:bseconds,
+            TeamA:{...state.TeamA, Status:vars.Team.Status.Normal},
+            TeamB:{...state.TeamB, Status:status}
+        };
+    }
+};
+
+const ResetJam = (state:SScoreboardState) => {
+    return {...state,
+        GameHour:state.StartGameHour,
+        GameMinute:state.StartGameMinute,
+        GameSecond:state.StartGameSecond,
+        GameState:vars.Clock.Status.Stopped,
+        JamState:vars.Clock.Status.Ready,
+        BreakState:vars.Clock.Status.Ready,
+        JamHour:InitState.JamHour,
+        JamMinute:InitState.JamMinute,
+        JamSecond:state.MaxJamSeconds
+    };
+};
+
 /**
  * Reducer for the scoreboard ScoreboardController.
  * @param {Object} state 
  * @param {object} action 
  */
-function ControllerReducer(state:SScoreboardState = InitState, action) {
-    switch(action.type) {
-        case Actions.SET_STATE : {
-            let maxTimeouts:number = state.MaxTimeouts;
-            let maxChallenges:number = state.MaxChallenges;
+const ScoreboardReducer = (state:SScoreboardState = InitState, action) => {
+    try {
+        switch(action.type) {
+            case Actions.SET_STATE :
+                return SetState(state, action.state);
+            case Actions.RESET_STATE :
+                return ResetState(state, action.values);
 
-            let obj:SScoreboardState = Object.assign({}, state, action.state, {
-                TeamA:Object.assign({}, state.TeamA),
-                TeamB:Object.assign({}, state.TeamB)
-            });
-
-            if(!Number.isNaN(action.state.MaxTimeouts))
-                maxTimeouts = action.state.MaxTimeouts;
-
-            if(!Number.isNaN(action.state.MaxChallenges))
-                maxChallenges = action.state.MaxChallenges;
-
-            if(state.JamState == vars.Clock.Status.Ready) {
-                obj.JamSecond = obj.MaxJamSeconds;
-            }
-
-            if(action.state.TeamA)
-                obj.TeamA = Object.assign(obj.TeamA, action.state.TeamA);
-            if(action.state.TeamB)
-                obj.TeamB = Object.assign(obj.TeamB, action.state.TeamB);
-
-            if(obj.TeamA.Timeouts > maxTimeouts)
-                obj.TeamA.Timeouts = maxTimeouts;
-
-            if(obj.TeamA.Challenges > maxChallenges)
-                obj.TeamA.Challenges = maxChallenges;
-
-            if(obj.TeamB.Timeouts > maxTimeouts)
-                obj.TeamB.Timeouts = maxTimeouts;
-
-            if(obj.TeamB.Challenges > maxChallenges)
-                obj.TeamB.Challenges = maxChallenges;
-
-            return obj;
-        }
-
-        //reset the state
-        case Actions.RESET_STATE : {
-            //ignore reset if game/jam clock is running
-            if(state.JamState === vars.Clock.Status.Running || state.GameState === vars.Clock.Status.Running)
-                return state;
-
-            let phases:Array<PhaseRecord> = DataController.getPhases();
-            let phase:any = {
-                PhaseID:0,
-                PhaseName:"DERBY!",
-                PhaseIndex:0,
-                PhaseHour:0,
-                PhaseMinute:0,
-                PhaseSecond:0
-            };
-            let index:number = phases.findIndex((p) => {
-                return (p.PhaseQtr >= 1);
-            });
-
-            let maxJamSeconds:number = state.MaxJamSeconds;
-            if(action.MaxJamSeconds && !Number.isNaN(action.MaxJamSeconds))
-                maxJamSeconds = action.MaxJamSeconds;
-
-            if(index >= 0) {
-                phase.PhaseIndex = index;
-                phase.PhaseID = phases[index].RecordID;
-                if(typeof(phases[index].Name) === "string")
-                    phase.PhaseName = phases[index].Name;
-                phase.PhaseHour = phases[index].Duration[0];
-                phase.PhaseMinute = phases[index].Duration[1];
-                phase.PhaseSecond = phases[index].Duration[2];
-            }
-
-            //copy initial state, keep team identification and phases
-            return Object.assign({}, InitState, {
-                JamSecond:maxJamSeconds,
-                MaxJamSeconds:maxJamSeconds,
-                MaxBreakSeconds:state.MaxBreakSeconds,
-                MaxTimeouts:state.MaxTimeouts,
-                MaxChallenges:state.MaxChallenges,
-                MaxTimeoutSeconds:state.MaxTimeoutSeconds,
-                MaxChallengeSeconds:state.MaxChallengeSeconds,
-                StartGameHour:0,
-                StartGameMinute:0,
-                StartGameSecond:0,
-                PhaseID:phase.PhaseID,
-                PhaseIndex:phase.PhaseIndex,
-                PhaseName:phase.PhaseName,
-                PhaseHour:phase.PhaseHour,
-                PhaseMinute:phase.PhaseMinute,
-                PhaseSecond:phase.PhaseSecond,
-                TeamA:Object.assign({}, state.TeamA, {
-                    Score:0,
-                    Timeouts:state.MaxTimeouts,
-                    Challenges:state.MaxChallenges,
-                    JamPoints:0,
-                    Status:0
-                }),
-                TeamB:Object.assign({}, state.TeamB, {
-                    Score:0,
-                    Timeouts:state.MaxTimeouts,
-                    Challenges:state.MaxChallenges,
-                    JamPoints:0,
-                    Status:0
-                })
-            });
-        }
-        break;
-
-        //calls an official timeout
-        case Actions.SET_OFFICIAL_TIMEOUT :
-            if(state.BoardStatus === vars.Scoreboard.Status.Timeout) {
-                return Object.assign({}, state, {
-                    BoardStatus:vars.Scoreboard.Status.Normal
-                });
-            } else {
-                return Object.assign({}, state, {
-                    JamState:vars.Clock.Status.Stopped,
-                    GameState:vars.Clock.Status.Stopped,
-                    BreakState:vars.Clock.Status.Ready,
-                    BoardStatus:vars.Scoreboard.Status.Timeout,
-                    TeamA:Object.assign({}, state.TeamA, {
-                        Status:vars.Team.Status.Normal
-                    }),
-                    TeamB:Object.assign({}, state.TeamB, {
-                        Status:vars.Team.Status.Normal
-                    })
-                });
-            }
-            
-        //calls an injury timeout
-        case Actions.SET_INJURY_TIMEOUT :
-            if(state.BoardStatus === vars.Scoreboard.Status.Injury) {
-                return Object.assign({}, state, {
-                    BoardStatus:vars.Scoreboard.Status.Normal
-                });
-            } else {
-                return Object.assign({}, state, {
-                    JamState:vars.Clock.Status.Stopped,
-                    GameState:vars.Clock.Status.Stopped,
-                    BreakState:vars.Clock.Status.Ready,
-                    BoardStatus:vars.Scoreboard.Status.Injury,
-                    TeamA:Object.assign({}, state.TeamA, {
-                        Status:vars.Team.Status.Normal
-                    }),
-                    TeamB:Object.assign({}, state.TeamB, {
-                        Status:vars.Team.Status.Normal
-                    })
-                });
-            }
-
-        //toggle the jam clock
-        case Actions.TOGGLE_JAM_CLOCK : {
-            if(state.JamChangeMode) {
-
-                switch(state.JamState) {
-                    case vars.Clock.Status.Ready :
-                        var teamAStatus = state.TeamA.Status;
-                        var teamBStatus = state.TeamB.Status;
-    
-                        if(teamAStatus !== vars.Team.Status.PowerJam)
-                            teamAStatus = vars.Team.Status.Normal;
-    
-                        if(teamBStatus !== vars.Team.Status.PowerJam)
-                            teamBStatus = vars.Team.Status.Normal;
-    
-                        return Object.assign({}, state, {
-                            JamCounter:state.JamCounter+1,
-                            JamSecond:state.MaxJamSeconds,
-                            JamState:vars.Clock.Status.Running,
-                            GameState:vars.Clock.Status.Running,
-                            BreakState:vars.Clock.Status.Ready,
-                            BoardStatus:vars.Scoreboard.Status.Normal,
-                            BreakSecond:state.MaxBreakSeconds,
-                            //Record game time for jam reset
-                            StartGameHour:state.GameHour,
-                            StartGameMinute:state.GameMinute,
-                            StartGameSecond:state.GameSecond,
-                            ConfirmStatus:0,
-                            TeamA:Object.assign({}, state.TeamA, {
-                                Status:teamAStatus,
-                                JamPoints:0
-                            }),
-                            TeamB:Object.assign({}, state.TeamB, {
-                                Status:teamBStatus,
-                                JamPoints:0
-                            })
-                        });
-    
-                    //stop jam clock, start break clock
-                    case vars.Clock.Status.Running :
-                        return Object.assign({}, state, {
-                            JamState:vars.Clock.Status.Stopped,
-                            BreakState:vars.Clock.Status.Running,
-                            BreakSecond:state.MaxBreakSeconds
-                        });
-    
-                    //reset jam clock, board status, and team status
-                    case vars.Clock.Status.Stopped :
-                        return Object.assign({}, state, {
-                            JamState:vars.Clock.Status.Ready,
-                            JamSecond:state.MaxJamSeconds,
-                            BoardStatus:vars.Scoreboard.Status.Normal,
-                            TeamA:Object.assign({}, state.TeamA,{
-                                Status:vars.Team.Status.Normal
-                            }),
-                            TeamB:Object.assign({}, state.TeamB, {
-                                Status:vars.Team.Status.Normal
-                            })
-                        });
-    
-                    default :
-                        return state;
-                }
-            } else {
-
-                switch(state.JamState) {
-                    case vars.Clock.Status.Ready :
-                        var teamAStatus = state.TeamA.Status;
-                        var teamBStatus = state.TeamB.Status;
-    
-                        if(teamAStatus !== vars.Team.Status.PowerJam)
-                            teamAStatus = vars.Team.Status.Normal;
-    
-                        if(teamBStatus !== vars.Team.Status.PowerJam)
-                            teamBStatus = vars.Team.Status.Normal;
-    
-                        return Object.assign({}, state, {
-                            JamCounter:state.JamCounter+1,
-                            JamState:vars.Clock.Status.Running,
-                            JamSecond:state.MaxJamSeconds,
-                            GameState:vars.Clock.Status.Running,
-                            BreakState:vars.Clock.Status.Ready,
-                            BoardStatus:vars.Scoreboard.Status.Normal,
-                            BreakSecond:state.MaxBreakSeconds,
-                            //Record game time for jam reset
-                            StartGameHour:state.GameHour,
-                            StartGameMinute:state.GameMinute,
-                            StartGameSecond:state.GameSecond,
-                            ConfirmStatus:0,
-                            TeamA:Object.assign({}, state.TeamA, {
-                                Status:teamAStatus,
-                                JamPoints:0
-                            }),
-                            TeamB:Object.assign({}, state.TeamB, {
-                                Status:teamBStatus,
-                                JamPoints:0
-                            })
-                        });
-    
-                    //stop jam clock, start break clock
-                    case vars.Clock.Status.Running :
-                    case vars.Clock.Status.Stopped :
-                        return Object.assign({}, state, {
-                            JamState:vars.Clock.Status.Ready,
-                            JamSecond:state.MaxJamSeconds,
-                            BreakState:vars.Clock.Status.Running,
-                            BreakSecond:state.MaxBreakSeconds,
-                            BoardStatus:vars.Scoreboard.Status.Normal,
-                            TeamA:Object.assign({}, state.TeamA,{
-                                Status:vars.Team.Status.Normal
-                            }),
-                            TeamB:Object.assign({}, state.TeamB, {
-                                Status:vars.Team.Status.Normal
-                            })
-                        });
-    
-                    default :
-                        return state;
-                }
-            }
-        } //end toggle_jam_clock
-
-        //toggles the game clock
-        case Actions.TOGGLE_GAME_CLOCK :
-            //ignore if jam clock is running
-            if(state.JamState === vars.Clock.Status.Running)
-                return state;
-            switch(state.GameState) {
-                case vars.Clock.Status.Stopped :
-                case vars.Clock.Status.Ready :
-                    return Object.assign({}, state, {
-                        GameState:vars.Clock.Status.Running
-                    });
-                case vars.Clock.Status.Running :
-                    return Object.assign({}, state, {
-                        GameState:vars.Clock.Status.Stopped
-                    });
-                default :
-                    return state;
-            }
-
-        case Actions.TOGGLE_BREAK_CLOCK :
-            if(state.JamState === vars.Clock.Status.Running)
-                return state;
-            switch(state.BreakState) {
-                case vars.Clock.Status.Stopped :
-                    return Object.assign({}, state, {
-                        BreakState:vars.Clock.Status.Ready,
-                        BreakSecond:state.MaxBreakSeconds
-                    });
-                case vars.Clock.Status.Ready :
-                    return Object.assign({}, state, {
-                        BreakState:vars.Clock.Status.Running
-                    });
-                case vars.Clock.Status.Running :
-                    return Object.assign({}, state, {
-                        BreakState:vars.Clock.Status.Ready,
-                        BreakSecond:state.MaxBreakSeconds
-                    });
-                default :
-                    return state;
-            }
-
-        //sets the game clock time
-        case Actions.SET_GAME_TIME : {
-            return Object.assign({}, state, {
-                GameHour:action.hour,
-                GameMinute:action.minute,
-                GameSecond:action.second
-            });
-        }
-
-        //sets the game clock time to match the phase time
-        case Actions.COPY_PHASE_TIME :
-            if(state.GameState === vars.Clock.Status.Running || state.JamState === vars.Clock.Status.Running)
-                return state;
-
-            return Object.assign({}, state, {
-                GameHour:state.PhaseHour,
-                GameMinute:state.PhaseMinute,
-                GameSecond:state.PhaseSecond
-            });
-            
-        case Actions.SET_BOARD_STATUS :
-            if(state.JamState === vars.Clock.Status.Running || state.BoardStatus === action.BoardStatus) {
-                return Object.assign({}, state, {
-                    BoardStatus:vars.Scoreboard.Status.Normal
-                });
-            }
-
-            var clockStatus = state.GameState;
-            var breakState = state.BreakState;
-
-            if(action.BoardStatus === vars.Scoreboard.Status.Timeout
-                || action.BoardStatus === vars.Scoreboard.Status.Injury) {
-                    clockStatus = vars.Clock.Status.Stopped;
-                    breakState = vars.Clock.Status.Ready;
-                }
-
-            return Object.assign({}, state, {
-                BoardStatus:action.BoardStatus,
-                GameState:clockStatus,
-                BreakState:breakState
-            });
-
-        case Actions.TOGGLE_CONFIRM :
-            return Object.assign({}, state, {
-                ConfirmStatus:(state.ConfirmStatus) ? 0 : 1
-            });
-
-        case Actions.SET_PHASE :
-            var duration = [0,0,0];
-            var name:any = "";
-            var id:any = 0;
-            var Phases = DataController.getState().Phases;
-            if(Phases[action.index]) {
-                duration = Phases[action.index].Duration;
-                name = Phases[action.index].Name;
-                id = Phases[action.index].RecordID;
-            }
-
-            if(typeof(duration[0]) === "string")
-                duration[0] = parseInt(duration[0]);
-
-            if(typeof(duration[1]) === "string")
-                duration[1] = parseInt(duration[1]);
-
-            if(typeof(duration[2]) === "string")
-                duration[2] = parseInt(duration[2]);
+            //calls an official timeout
+            case Actions.SET_OFFICIAL_TIMEOUT :
+                return OfficialTimeout(state);
                 
-            return Object.assign({}, state, {
-                PhaseIndex:action.index,
-                PhaseID:id,
-                PhaseName:name,
-                PhaseHour:duration[0],
-                PhaseMinute:duration[1],
-                PhaseSecond:duration[2]
-            });
+            //calls an injury timeout
+            case Actions.SET_INJURY_TIMEOUT :
+                return InjuryTimeout(state);
 
-        case Actions.SET_PHASE_TIME :
-            return Object.assign({}, state, {
-                PhaseHour:parseInt(action.hour),
-                PhaseMinute:parseInt(action.minute),
-                PhaseSecond:parseInt(action.second)
-            });
+            //toggle the jam clock
+            case Actions.TOGGLE_JAM_CLOCK :
+                return ToggleJamClock(state);
 
-        case Actions.SET_PHASES :
-            return Object.assign({}, state, {
-                Phases:action.records
-            });
+            //toggles the game clock
+            case Actions.TOGGLE_GAME_CLOCK :
+                return ToggleGameClock(state);
 
-        case Actions.SET_JAM_COUNTER :
-            var amount = action.amount;
-            if(amount < 0)
-                amount = 0;
-            return Object.assign({}, state, {
-                JamCounter:amount
-            });
+            case Actions.TOGGLE_BREAK_CLOCK :
+                return ToggleBreakClock(state);
 
-        /* Team Actions */
-        case Actions.SET_TEAM :
-            if(Object.is(action.currentTeam, state.TeamA)) {
-                return Object.assign({}, state, {
-                    TeamA:Object.assign({}, state.TeamA, {
-                        ID:action.nextTeam.RecordID,
-                        Name:action.nextTeam.Name,
-                        Color:action.nextTeam.Color,
-                        Thumbnail:action.nextTeam.Thumbnail,
-                        ScoreboardThumbnail:action.nextTeam.ScoreboardThumbnail,
-                        Slide:action.nextTeam.Slide
-                    })
-                });
-            } else {
-                return Object.assign({}, state, {
-                    TeamB:Object.assign({}, state.TeamB, {
-                        ID:action.nextTeam.RecordID,
-                        Name:action.nextTeam.Name,
-                        Color:action.nextTeam.Color,
-                        Thumbnail:action.nextTeam.Thumbnail,
-                        ScoreboardThumbnail:action.nextTeam.ScoreboardThumbnail,
-                        Slide:action.nextTeam.Slide
-                    })
-                });
-            }
+            //sets the game clock time
+            case Actions.SET_GAME_TIME :
+                return SetGameTime(state, action.hour, action.minute, action.second);
 
-        //set both teams
-        case Actions.SET_TEAMS :
-            return Object.assign({}, state, {
-                TeamA:Object.assign({}, state.TeamA, {
-                    ID:action.TeamA.RecordID,
-                    Name:action.TeamA.Name,
-                    Color:action.TeamA.Color,
-                    Thumbnail:action.TeamA.Thumbnail,
-                    ScoreboardThumbnail:action.TeamA.ScoreboardThumbnail,
-                    Slide:action.TeamA.Slide,
-                    Photo:action.TeamA.Photo
-                }),
-                TeamB:Object.assign({}, state.TeamB, {
-                    ID:action.TeamB.RecordID,
-                    Name:action.TeamB.Name,
-                    Color:action.TeamB.Color,
-                    Thumbnail:action.TeamB.Thumbnail,
-                    ScoreboardThumbnail:action.TeamB.ScoreboardThumbnail,
-                    Slide:action.TeamB.Slide,
-                    Photo:action.TeamB.Photo
-                }),
-            });
+            //sets the game clock time to match the phase time
+            case Actions.COPY_PHASE_TIME :
+                return CopyPhaseToGameClock(state);
+                
+            case Actions.SET_BOARD_STATUS :
+                return SetBoardStatus(state, action.BoardStatus);
 
-        case Actions.SET_TEAM_COLOR :
-            if(action.Team.Side === 'A') {
-                return Object.assign({}, state, {
-                    TeamA:Object.assign({}, state.TeamA, {
-                        Color:action.Color
-                    })
-                });
-            } else {
-                return Object.assign({}, state, {
-                    TeamB:Object.assign({}, state.TeamB, {
-                        Color:action.Color
-                    })
-                });
-            }
+            case Actions.TOGGLE_CONFIRM :
+                return ToggleConfirm(state);
 
-        case Actions.SET_TEAM_NAME :
-            if(action.Team.Side === 'A') {
-                return Object.assign({}, state, {
-                    TeamA:Object.assign({}, state.TeamA, {
-                        Name:action.Name
-                    })
-                });
-            } else {
-                return Object.assign({}, state, {
-                    TeamB:Object.assign({}, state.TeamB, {
-                        Name:action.Name
-                    })
-                });
-            }
+            case Actions.SET_PHASE :
+                return SetPhase(state, action.index);
 
-        case Actions.SET_TEAM_SCORE :
-            if(action.Team.Side === 'A') {
-                let jampoints = state.TeamA.JamPoints;
-                if(typeof(action.jampoints) === 'number')
-                    jampoints = action.jampoints;
-                return Object.assign({}, state, {
-                    TeamA:Object.assign({}, state.TeamA, {
-                        Score:action.amount,
-                        JamPoints:jampoints
-                    })
-                });
-            } else {
-                let jampoints = state.TeamB.JamPoints;
-                if(typeof(action.jampoints) === 'number')
-                    jampoints = action.jampoints;
-                return Object.assign({}, state, {
-                    TeamB:Object.assign({}, state.TeamB, {
-                        Score:action.amount,
-                        JamPoints:jampoints
-                    })
-                });
-            }
+            case Actions.SET_PHASE_TIME :
+                return SetPhaseTime(state, action.hour, action.minute, action.second);
 
-        case Actions.SET_TEAM_JAMPOINTS :
-            if(Object.is(action.Team, state.TeamA)) {
-                let team = Object.assign({}, state.TeamA, {
-                    JamPoints:action.amount
-                });
+            case Actions.SET_PHASES :
                 return Object.assign({}, state, {
-                    TeamA:team
+                    Phases:action.records
                 });
-            } else {
-                let team = Object.assign({}, state.TeamB, {
-                    JamPoints:action.amount
-                });
-                return Object.assign({}, state, {
-                    TeamB:team
-                });
-            }
 
-        case Actions.SET_TEAM_TIMEOUTS : {
-            let amount = action.amount;
-            if(amount > state.MaxTimeouts)
-                amount = state.MaxTimeouts;
-            else if(amount < 0)
-                amount = 0;
-            if(Object.is(action.Team, state.TeamA)) {
-                let team = Object.assign({}, state.TeamA, {
-                    Timeouts:amount
-                });
-                return Object.assign({}, state, {
-                    TeamA:team
-                });
-            } else {
-                let team = Object.assign({}, state.TeamB, {
-                    Timeouts:amount
-                });
-                return Object.assign({}, state, {
-                    TeamB:team
-                });
-            }
+            case Actions.SET_JAM_COUNTER :
+                return SetJamCounter(state, action.amount);
+
+            /* Team Actions */
+            case Actions.SET_TEAM :
+                return SetTeam(state, action.side, action.record);
+
+            //set both teams
+            case Actions.SET_TEAMS :
+                return SetTeams(state, action.TeamA, action.TeamB);
+
+            case Actions.SET_TEAM_COLOR :
+                return SetTeamColor(state, action.side, action.color);
+
+            case Actions.SET_TEAM_NAME :
+                return SetTeamName(state, action.side, action.name);
+
+            case Actions.SET_TEAM_SCORE :
+                return SetTeamScore(state, action.side, action.amount, action.jampoints);
+
+            case Actions.SET_TEAM_JAMPOINTS :
+                return SetTeamJamPoints(state, action.side, action.amount);
+
+            case Actions.SET_TEAM_TIMEOUTS :
+                return SetTeamTimeouts(state, action.side, action.amount);
+
+            case Actions.SET_TEAM_CHALLENGES :
+                return SetTeamChallenges(state, action.side, action.amount);
+
+            //Sets the team status
+            //The status is toggled between teams, as no two teams
+            //can have the same status
+            case Actions.SET_TEAM_STATUS :
+                return SetTeamStatus(state, action.side, action.value);
+
+            case Actions.RESET_JAM :
+                return ResetJam(state);
+
+            default :
+                return BaseReducer(state, action);
         }
-
-        case Actions.SET_TEAM_CHALLENGES : {
-            let amount = action.amount;
-            if(amount > state.MaxChallenges)
-                amount = state.MaxChallenges;
-            else if(amount < 0)
-                amount = 0;
-            if(Object.is(action.Team, state.TeamA)) {
-                let team = Object.assign({}, state.TeamA, {
-                    Challenges:amount
-                });
-                return Object.assign({}, state, {
-                    TeamA:team
-                });
-            } else {
-                let team = Object.assign({}, state.TeamB, {
-                    Challenges:amount
-                });
-                return Object.assign({}, state, {
-                    TeamB:team
-                });
-            }
-        }
-
-        //Sets the team status
-        //The status is toggled between teams, as no two teams
-        //can have the same status
-        case Actions.SET_TEAM_STATUS : {
-            let status = action.value;
-            if(state.JamState === vars.Clock.Status.Running) {
-                if(status !== vars.Team.Status.PowerJam && status !== vars.Team.Status.LeadJammer) {
-                    return state;
-                }
-            }
-
-            if(Object.is(action.Team, state.TeamA)) {
-                let team = Object.assign({}, state.TeamA, {
-                    Status:(action.value === state.TeamA.Status) ? vars.Team.Status.Normal : status
-                });
-                let bseconds = state.MaxBreakSeconds;
-                if(team.Status == vars.Team.Status.Timeout || team.Status == vars.Team.Status.Challenge)
-                    bseconds = state.MaxTimeoutSeconds;
-                return Object.assign({}, state, {
-                    BreakSecond:bseconds,
-                    TeamA:team,
-                    TeamB:Object.assign({}, state.TeamB, {
-                        Status:vars.Team.Status.Normal
-                    })
-                });
-            } else {
-                let team = Object.assign({}, state.TeamB, {
-                    Status:(action.value === state.TeamB.Status) ? vars.Team.Status.Normal : status
-                });
-                let bseconds = state.MaxBreakSeconds;
-                if(team.Status == vars.Team.Status.Timeout || team.Status == vars.Team.Status.Challenge)
-                    bseconds = state.MaxTimeoutSeconds;
-                return Object.assign({}, state, {
-                    BreakSecond:bseconds,
-                    TeamB:team,
-                    TeamA:Object.assign({}, state.TeamA, {
-                        Status:vars.Team.Status.Normal
-                    })
-                });
-            }
-        }
-
-        case Actions.RESET_JAM :
-            return Object.assign({}, state, {
-                GameHour:state.StartGameHour,
-                GameMinute:state.StartGameMinute,
-                GameSecond:state.StartGameSecond,
-                GameState:vars.Clock.Status.Stopped,
-                JamState:vars.Clock.Status.Ready,
-                BreakState:vars.Clock.Status.Ready,
-                JamHour:InitState.JamHour,
-                JamMinute:InitState.JamMinute,
-                JamSecond:state.MaxJamSeconds
-            });
-
-        default :
-            return state;
+    } catch(er) {
+        return state;
     }
 }
-
-const ScoreboardStore = createStore(ControllerReducer);
 
 /**
  * Updates the scoreboard state to match the configuration
@@ -950,7 +1052,7 @@ const updateData = async function() {
         data = Object.assign({}, data);
         if(data.MaxJamSeconds !== undefined)
             delete data.MaxJamSeconds;
-        let state = ScoreboardController.getState();
+        let state = ScoreboardController.GetState();
         let compare = {
             MaxBreakSeconds:state.MaxBreakSeconds,
             //MaxJamSeconds:state.MaxJamSeconds,
@@ -961,1010 +1063,667 @@ const updateData = async function() {
             JamChangeMode:state.JamChangeMode
         };
 
-        if(!DataController.compare(data, compare)) {
+        if(!Compare(data, compare)) {
             ScoreboardController.SetState(data);
         }
     }
 };
 
-let remoteData:Function|null = null;
+const ScoreboardController:IScoreboardController = CreateController('SB', ScoreboardReducer);
+ScoreboardController.Init = () => {
+    let data:any = DataController.GetMiscRecord('ScoreboardConfig');
+    if(data && !Number.isNaN(data.MaxJamSeconds)) {
+        ScoreboardController.SetState({MaxJamSeconds:data.MaxJamSeconds});
+    }
+};
 
-const ScoreboardController = {
-    Key:'SB',
-    /**
-     * Initialize the scoreboard controller
-     * - Start listeners
-     */
-    Init() {
-        remoteData = DataController.subscribe(updateData);
-        updateData();
-        let data:any = DataController.GetMiscRecord('ScoreboardConfig');
-        if(data && !Number.isNaN(data.MaxJamSeconds)) {
-            ScoreboardController.SetState({MaxJamSeconds:data.MaxJamSeconds});
+ScoreboardController.SetState = (state:any) => {
+    ScoreboardController.Dispatch({
+        type:Actions.SET_STATE,
+        state:state
+    });
+};
+
+ScoreboardController.ToggleJamClock = async () => {
+    ScoreboardController.Dispatch({
+        type:Actions.TOGGLE_JAM_CLOCK
+    });
+};
+ScoreboardController.StartJamClock = async () => {
+    ScoreboardController.Dispatch({
+        type:Actions.SET_STATE,
+        state:{
+            JamState:vars.Clock.Status.Running,
+            GameClock:vars.Clock.Status.Running,
+            BreakClock:vars.Clock.Status.Ready
         }
-    },
-
-    /**
-     * Sets the state of the scoreboard.
-     * @param {Object} state 
-     */
-    async SetState(state) {
-        ScoreboardController.getStore().dispatch({
-            type:Actions.SET_STATE,
-            state:state
-        });
-    },
-
-    /**
-     * Toggles the jam clock
-     */
-    async ToggleJamClock() {
-        ScoreboardController.getStore().dispatch({
-            type:Actions.TOGGLE_JAM_CLOCK
-        });
-    },
-
-    /**
-     * Starts the jam clock, game clock, and stops the break clock.
-     */
-    async StartJamClock() {
-        ScoreboardController.getStore().dispatch({
-            type:Actions.SET_STATE,
-            state:{
-                JamState:vars.Clock.Status.Running,
-                GameClock:vars.Clock.Status.Running,
-                BreakClock:vars.Clock.Status.Ready
-            }
-        });
-    },
-
-    /**
-     * Stops the jam clock and starts the break clock
-     */
-    async StopJamClock() {
-        ScoreboardController.getStore().dispatch({
-            type:Actions.SET_STATE,
-            state:{
-                JamState:vars.Clock.Status.Stopped,
-                BreakState:vars.Clock.Status.Running
-            }
-        });
-    },
-
-    /**
-     * Toggles the game clock
-     */
-    async ToggleGameClock() {
-        ScoreboardController.getStore().dispatch({
-            type:Actions.TOGGLE_GAME_CLOCK
-        });
-    },
-
-    /**
-     * Starts the game clock
-     */
-    async StartGameClock() {
-        ScoreboardController.getStore().dispatch({
-            type:Actions.SET_STATE,
-            state:{
-                ClockState:vars.Clock.Status.Running
-            }
-        });
-    },
-
-    /**
-     * Stops the game clock.
-     */
-    async StopGameClock() {
-        ScoreboardController.getStore().dispatch({
-            type:Actions.SET_STATE,
-            state:{
-                GameState:vars.Clock.Status.Stopped
-            }
-        })
-    },
-
-    /**
-     * Stops the game and break clock at the same time.
-     */
-    async StopBreakGameClock() {
-        if(ScoreboardController.getState().JamState !== vars.Clock.Status.Running) {
-            ScoreboardController.getStore().dispatch({
-                type:Actions.SET_STATE,
-                state:{
-                    GameState:vars.Clock.Status.Stopped,
-                    BreakState:vars.Clock.Status.Stopped
-                }
-            });
+    });
+};
+ScoreboardController.StopJamClock = async () => {
+    ScoreboardController.Dispatch({
+        type:Actions.SET_STATE,
+        state:{
+            JamState:vars.Clock.Status.Stopped,
+            BreakState:vars.Clock.Status.Running
         }
-    },
-
-    /**
-     * Toggles the break clock
-     */
-    async ToggleBreakClock() {
-        ScoreboardController.getStore().dispatch({
-            type:Actions.TOGGLE_BREAK_CLOCK
-        });
-    },
-
-    /**
-     * Starts the break clock
-     */
-    async StartBreakClock() {
-        ScoreboardController.getStore().dispatch({
+    });
+};
+ScoreboardController.ToggleGameClock = async () => {
+    ScoreboardController.Dispatch({
+        type:Actions.TOGGLE_GAME_CLOCK
+    });
+};
+ScoreboardController.StartGameClock = async () => {
+    ScoreboardController.Dispatch({
+        type:Actions.SET_STATE,
+        state:{
+            ClockState:vars.Clock.Status.Running
+        }
+    });
+};
+ScoreboardController.StopGameClock = async () => {
+    ScoreboardController.Dispatch({
+        type:Actions.SET_STATE,
+        state:{
+            GameState:vars.Clock.Status.Stopped
+        }
+    })
+};
+ScoreboardController.StopBreakGameClock = async () => {
+    if(ScoreboardController.GetState().JamState !== vars.Clock.Status.Running) {
+        ScoreboardController.Dispatch({
             type:Actions.SET_STATE,
             state:{
-                BreakState:vars.Clock.Status.Running
+                GameState:vars.Clock.Status.Stopped,
+                BreakState:vars.Clock.Status.Stopped
             }
         });
-    },
-
-    /**
-     * Stops the break clock
-     */
-    async StopBreakClock() {
-        ScoreboardController.getStore().dispatch({
-            type:Actions.SET_STATE,
-            state:{
-                BreakState:vars.Clock.Status.Ready
-            }
-        });
-    },
-
-    /**
-     * Toggles the confirm status
-     */
-    async ToggleConfirm() {
-        ScoreboardController.getStore().dispatch({
-            type:Actions.TOGGLE_CONFIRM
-        });
-    },
-
-    /**
-     * Resets all values on the board.
-     */
-    async Reset() {
-        let data:any = DataController.GetMiscRecord('ScoreboardConfig');
-        let seconds:number = ScoreboardController.getState().MaxJamSeconds;
-        if(data && data.MaxJamSeconds && !Number.isNaN(data.MaxJamSeconds))
-            seconds = data.MaxJamSeconds;
-        ScoreboardController.getStore().dispatch({
-            type:Actions.RESET_STATE,
+    }
+};
+ScoreboardController.ToggleBreakClock = async () => {
+    ScoreboardController.Dispatch({
+        type:Actions.TOGGLE_BREAK_CLOCK
+    });
+};
+ScoreboardController.StartBreakClock = async () => {
+    ScoreboardController.Dispatch({
+        type:Actions.SET_STATE,
+        state:{
+            BreakState:vars.Clock.Status.Running
+        }
+    });
+};
+ScoreboardController.StopBreakClock = async () => {
+    ScoreboardController.Dispatch({
+        type:Actions.SET_STATE,
+        state:{
+            BreakState:vars.Clock.Status.Ready
+        }
+    });
+};
+ScoreboardController.ToggleConfirm = async () => {
+    ScoreboardController.Dispatch({
+        type:Actions.TOGGLE_CONFIRM
+    });
+};
+ScoreboardController.Reset = async () => {
+    let data:any = DataController.GetMiscRecord('ScoreboardConfig');
+    let seconds:number = ScoreboardController.GetState().MaxJamSeconds;
+    if(data && data.MaxJamSeconds && !Number.isNaN(data.MaxJamSeconds))
+        seconds = data.MaxJamSeconds;
+    ScoreboardController.Dispatch({
+        type:Actions.RESET_STATE,
+        values:{
             MaxJamSeconds:seconds
-        });
-    },
-
-    /**
-     * Sets the game time
-     * @param {Number} hour 
-     * @param {Number} minute 
-     * @param {Number} second 
-     */
-    async SetGameTime(hour, minute, second) {
-        ScoreboardController.getStore().dispatch({
-            type:Actions.SET_GAME_TIME,
-            hour:hour,
-            minute:minute,
-            second:second
-        });
-    },
-
-    /**
-     * Sets the game time
-     */
-    async CopyGameTime() {
-        ScoreboardController.getStore().dispatch({
-            type:Actions.COPY_PHASE_TIME
-        });
-    },
-
-    /**
-     * Sets the seconds on the break clock.
-     * @param {Number} second Seconds on the break clock
-     */
-    async SetBreakTime(second) {
-        ScoreboardController.getStore().dispatch({
-            type:Actions.SET_STATE,
-            state:{
-                BreakHour:0,
-                BreakMinute:0,
-                BreakSecond:second
-            }
-        });
-    },
-
-    /**
-     * Sets the seconds on the jam clock.
-     * @param {Number} second 
-     * @param minute
-     */
-    async SetJamTime(second:number, minute:number) {
-        ScoreboardController.getStore().dispatch({
-            type:Actions.SET_STATE,
-            state:{
-                JamHour:0,
-                JamMinute:minute,
-                JamSecond:second
-            }
-        });
-    },
-
-    /**
-     * Sets the board status, such as official timeout
-     * @param {Number} value 
-     */
-    async SetBoardStatus(value) {
-        ScoreboardController.getStore().dispatch({
-            type:Actions.SET_BOARD_STATUS,
-            BoardStatus:value
-        });
-    },
-
-    /**
-     * Sets the phase / quarter
-     * @param {Number} index 
-     */
-    async SetPhase(index:number) {
-        var Phases = DataController.getState().Phases;
-        if(index < 0)
-            index = Phases.length - 1;
-        else if(index >= Phases.length)
-            index = 0;
-        ScoreboardController.getStore().dispatch({
-            type:Actions.SET_PHASE,
-            index:index
-        });
-    },
-
-    /**
-     * Sets the phase time. (This does not change the game clock time.)
-     * @param {Number} hour 
-     * @param {Number} minute 
-     * @param {Number} second 
-     */
-    async SetPhaseTime(hour, minute, second) {
-        if(hour > 23)
-            hour = 23;
-        else if(hour < 0)
-            hour = 0;
-        if(minute > 59)
-            minute = 59;
-        else if(minute < 0)
-            minute = 0;
-        if(second > 59)
-            second = 59;
-        else if(second < 0)
-            second = 0;
-        ScoreboardController.getStore().dispatch({
-            type:Actions.SET_PHASE_TIME,
-            hour:hour,
-            minute:minute,
-            second:second
-        });
-    },
-
-    /**
-     * Move to the next phase
-     */
-    async IncreasePhase() {
-        ScoreboardController.SetPhase(ScoreboardController.getState().PhaseIndex + 1);
-    },
-
-    /**
-     * Move to the previous phase
-     */
-    async DecreasePhase() {
-        ScoreboardController.SetPhase(ScoreboardController.getState().PhaseIndex - 1);
-    },
-
-    /**
-     * Sets the Jam Counter / #
-     * @param {Number} amount 
-     */
-    async SetJamCounter(amount) {
-        ScoreboardController.getStore().dispatch({
-            type:Actions.SET_JAM_COUNTER,
-            amount:amount
-        });
-    },
-
-    /**
-     * Increases the Jam Counter
-     * @param {Number} amount 
-     */
-    async IncreaseJamCounter(amount) {
-        ScoreboardController.SetJamCounter(ScoreboardController.getState().JamCounter + amount);
-    },
-
-    /**
-     * Decreases the Jam Counter
-     * @param {Number} amount 
-     */
-    async DecreaseJamCounter(amount) {
-        ScoreboardController.SetJamCounter(ScoreboardController.getState().JamCounter - amount);
-    },
-
-    /**
-     * Changes the given currentTeam to the new team.
-     * @param {Object} currentTeam 
-     * @param {Object} nextTeam 
-     */
-    async SetTeam(currentTeam, nextTeam) {
-        ScoreboardController.getStore().dispatch({
-            type:Actions.SET_TEAM,
-            current:currentTeam,
-            nextTeam:nextTeam
-        });
-    },
-
-    /**
-     * Sets both teams of the scoreboard.
-     * @param {SScoreboardTeam} a 
-     * @param {SScoreboardTeam} b 
-     * @param {Boolean} reset
-     * @param {Boolean} resetRoster
-     */
-    async SetTeams(a:SScoreboardTeam, b:SScoreboardTeam, reset:boolean = false, resetRoster:boolean = false) {
-        if(a === null || typeof(a) !== "object" || b === null || typeof(b) !== "object")
-            return;
-        ScoreboardController.getStore().dispatch({
-            type:Actions.SET_TEAMS,
-            TeamA:a,
-            TeamB:b,
-            Reset:reset
-        });
-        if(reset)
-            ScoreboardController.Reset();
-        if(resetRoster)
-            RosterController.LoadSkaters();
-    },
-
-    /**
-     * Sets the given team's score
-     * @param {Object} team 
-     * @param {Number} amount 
-     * @param {Number} jampoints
-     */
-    async SetTeamScore(side:string, amount:number, jampoints?:number) {
-        let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
-        if(amount < 0)
-            amount = 0;
-        else if(amount > 999)
-            amount = 999;
-
-        if(typeof(jampoints) === "number") {
-            ScoreboardController.getStore().dispatch({
-                type:Actions.SET_TEAM_SCORE,
-                Team:team,
-                amount:amount,
-                jampoints:team.JamPoints + jampoints
-            });
-        } else {
-            ScoreboardController.getStore().dispatch({
-                type:Actions.SET_TEAM_SCORE,
-                Team:team,
-                amount:amount
-            });
         }
-    },
-
-    /**
-     * Sets the given team's timeouts
-     * @param side
-     * @param amount 
-     */
-    async SetTeamTimeouts(side:string, amount:number) {
-        let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
-        ScoreboardController.getStore().dispatch({
-            type:Actions.SET_TEAM_TIMEOUTS,
-            Team:team,
-            amount:amount
-        });
-    },
-
-    /**
-     * Sets the given team's Challenges
-     * @param side
-     * @param amount 
-     */
-    async SetTeamChallenges(side:string, amount:number) {
-        let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
-        ScoreboardController.getStore().dispatch({
-            type:Actions.SET_TEAM_CHALLENGES,
-            Team:team,
-            amount:amount
-        });
-    },
-
-    /**
-     * Sets the number of jam points for the given team.
-     * @param side 
-     * @param amount 
-     */
-    async SetTeamJamPoints(side:string, amount:number) {
-        let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
-        if(amount < -99)
-            amount = 99;
-        else if(amount > 99)
-            amount = 99;
-
-        ScoreboardController.getStore().dispatch({
-            type:Actions.SET_TEAM_JAMPOINTS,
-            Team:team,
-            amount:amount
-        });
-    },
-
-    /**
-     * Sets the given team's status.
-     * @param side
-     * @param status 
-     */
-    async SetTeamStatus(side:string, status:number) {
-        let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
-        ScoreboardController.getStore().dispatch({
-            type:Actions.SET_TEAM_STATUS,
-            Team:team,
-            value:status
-        });
-    },
-
-    /**
-     * Changes the name of the given team on the scoreboard.
-     * @param side The team to change
-     * @param name The new name
-     */
-    async SetTeamName(side:string, name:string) {
-        let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
-        ScoreboardController.getStore().dispatch({
-            type:Actions.SET_TEAM_NAME,
-            Team:team,
-            Name:name
-        });
-    },
-
-    /**
-     * Sets the team's color.
-     * @param side
-     * @param color 
-     */
-    async SetTeamColor(side:string, color:string) {
-        let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
-        ScoreboardController.getStore().dispatch({
-            type:Actions.SET_TEAM_COLOR,
-            Team:team,
-            Color:color
-        });
-    },
-
-    /**
-     * Increases the team's score by the given amount.
-     * @param side 
-     * @param amount 
-     */
-    async IncreaseTeamScore(side:string, amount:number) {
-        let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
-        if(ScoreboardController.getState().JamState !== vars.Clock.Status.Running) {
-            ScoreboardController.SetTeamScore(side, team.Score + amount, amount);
-        } else {
-            ScoreboardController.SetTeamScore(side, team.Score + amount, 0);
+    });
+};
+ScoreboardController.SetGameTime = async (hour:number, minute:number, second:number) => {
+    ScoreboardController.Dispatch({
+        type:Actions.SET_GAME_TIME,
+        hour:hour,
+        minute:minute,
+        second:second
+    });
+};
+ScoreboardController.CopyGameTime = async () => {
+    ScoreboardController.Dispatch({
+        type:Actions.COPY_PHASE_TIME
+    });
+};
+ScoreboardController.SetBreakTime = async (seconds:number) => {
+    ScoreboardController.Dispatch({
+        type:Actions.SET_STATE,
+        state:{
+            BreakHour:0,
+            BreakMinute:0,
+            BreakSecond:seconds
         }
-    },
-
-    /**
-     * Decreases the team's score by the given amount
-     * @param side 
-     * @param amount
-     */
-    async DecreaseTeamScore(side:string, amount:number) {
-        let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
-        if(ScoreboardController.getState().JamState !== vars.Clock.Status.Running) {
-            ScoreboardController.SetTeamScore(side, team.Score - amount, amount * -1);
-        } else {
-            ScoreboardController.SetTeamScore(side, team.Score - amount, 0);
+    });
+};
+ScoreboardController.SetJamTime = async (second:number, minute:number) => {
+    ScoreboardController.Dispatch({
+        type:Actions.SET_STATE,
+        state:{
+            JamHour:0,
+            JamMinute:minute,
+            JamSecond:second
         }
-    },
+    });
+};
+ScoreboardController.SetBoardStatus = async (value:number) => {
+    ScoreboardController.Dispatch({
+        type:Actions.SET_BOARD_STATUS,
+        BoardStatus:value
+    });
+};
+ScoreboardController.SetPhase = async (index:number) => {
+    let Phases:Array<PhaseRecord> = PhasesController.Get();
+    if(index < 0)
+        index = Phases.length - 1;
+    else if(index >= Phases.length)
+        index = 0;
+    ScoreboardController.Dispatch({
+        type:Actions.SET_PHASE,
+        index:index
+    });
+};
+ScoreboardController.SetPhaseTime = async (hour:number, minute:number, second:number) => {
+    ScoreboardController.Dispatch({
+        type:Actions.SET_PHASE_TIME,
+        hour:hour,
+        minute:minute,
+        second:second
+    });
+};
+ScoreboardController.IncreasePhase = async () => {
+    ScoreboardController.SetPhase(ScoreboardController.GetState().PhaseIndex + 1);
+};
+ScoreboardController.DecreasePhase = async () => {
+    ScoreboardController.SetPhase(ScoreboardController.GetState().PhaseIndex - 1);
+};
+ScoreboardController.SetJamCounter = async (amount:number) => {
+    ScoreboardController.Dispatch({
+        type:Actions.SET_JAM_COUNTER,
+        amount:amount
+    });
+};
+ScoreboardController.IncreaseJamCounter = async (amount:number) => {
+    ScoreboardController.SetJamCounter(ScoreboardController.GetState().JamCounter + amount);
+};
+ScoreboardController.DecreaseJamCounter = async (amount:number) => {
+    ScoreboardController.SetJamCounter(ScoreboardController.GetState().JamCounter - amount);
+};
+ScoreboardController.SetTeam = async (side:Sides, record:TeamRecord) => {
+    ScoreboardController.Dispatch({
+        type:Actions.SET_TEAM,
+        side:side,
+        record:record
+    });
+};
+ScoreboardController.SetTeams = async (a:SScoreboardTeam, b:SScoreboardTeam, reset:boolean = false, resetRoster:boolean = false) => {
+    if(a === null || typeof(a) !== "object" || b === null || typeof(b) !== "object")
+        return;
+    ScoreboardController.Dispatch({
+        type:Actions.SET_TEAMS,
+        TeamA:a,
+        TeamB:b
+    });
+    if(reset)
+        ScoreboardController.Reset();
+    if(resetRoster)
+        RosterController.LoadSkaters();
+};
+ScoreboardController.SetTeamScore = async (side:Sides, amount:number, jampoints?:number) => {
+    ScoreboardController.Dispatch({
+        type:Actions.SET_TEAM_SCORE,
+        side:side,
+        amount:amount,
+        jampoints:jampoints
+    });
+};
+ScoreboardController.SetTeamTimeouts = async (side:Sides, amount:number) => {
+    ScoreboardController.Dispatch({
+        type:Actions.SET_TEAM_TIMEOUTS,
+        side:side,
+        amount:amount
+    });
+};
+ScoreboardController.SetTeamChallenges = async (side:Sides, amount:number) => {
+    ScoreboardController.Dispatch({
+        type:Actions.SET_TEAM_CHALLENGES,
+        side:side,
+        amount:amount
+    });
+};
+ScoreboardController.SetTeamJamPoints = async (side:Sides, amount:number) => {
+    ScoreboardController.Dispatch({
+        type:Actions.SET_TEAM_JAMPOINTS,
+        side:side,
+        amount:amount
+    });
+};
+ScoreboardController.SetTeamStatus = async (side:Sides, status:number) => {
+    ScoreboardController.Dispatch({
+        type:Actions.SET_TEAM_STATUS,
+        side:side,
+        value:status
+    });
+};
+ScoreboardController.SetTeamName = async (side:Sides, name:string) => {
+    ScoreboardController.Dispatch({
+        type:Actions.SET_TEAM_NAME,
+        side:side,
+        name:name
+    });
+};
+ScoreboardController.SetTeamColor = async (side:Sides, color:string) => {
+    ScoreboardController.Dispatch({
+        type:Actions.SET_TEAM_COLOR,
+        side:side,
+        color:color
+    });
+};
+ScoreboardController.IncreaseTeamScore = async (side:Sides, amount:number) => {
+    let team = (side === 'A') ? ScoreboardController.GetState().TeamA : ScoreboardController.GetState().TeamB;
+    if(ScoreboardController.GetState().JamState !== vars.Clock.Status.Running) {
+        ScoreboardController.SetTeamScore(side, team.Score + amount, amount);
+    } else {
+        ScoreboardController.SetTeamScore(side, team.Score + amount, 0);
+    }
+};
+ScoreboardController.DecreaseTeamScore = async (side:Sides, amount:number) => {
+    let team = (side === 'A') ? ScoreboardController.GetState().TeamA : ScoreboardController.GetState().TeamB;
+    if(ScoreboardController.GetState().JamState !== vars.Clock.Status.Running) {
+        ScoreboardController.SetTeamScore(side, team.Score - amount, amount * -1);
+    } else {
+        ScoreboardController.SetTeamScore(side, team.Score - amount, 0);
+    }
+};
+ScoreboardController.IncreaseTeamJamPoints = async (side:Sides, amount:number) => {
+    let team = (side === 'A') ? ScoreboardController.GetState().TeamA : ScoreboardController.GetState().TeamB;
+    ScoreboardController.SetTeamJamPoints(side, team.JamPoints + amount);
+};
+ScoreboardController.DecreaseTeamJamPoints = async (side:Sides, amount:number) => {
+    let team = (side === 'A') ? ScoreboardController.GetState().TeamA : ScoreboardController.GetState().TeamB;
+    ScoreboardController.SetTeamJamPoints(side, team.JamPoints - amount);
+};
 
-    /**
-     * Increases the team's jam points
-     * @param side
-     * @param amount 
-     */
-    async IncreaseTeamJamPoints(side:string, amount:number) {
-        let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
-        ScoreboardController.SetTeamJamPoints(side, team.JamPoints + amount);
-    },
+ScoreboardController.IncreaseTeamChallenges = async (side:Sides, amount:number) => {
+    let team = (side === 'A') ? ScoreboardController.GetState().TeamA : ScoreboardController.GetState().TeamB;
+    ScoreboardController.SetTeamChallenges(side, team.Challenges + amount);
+};
+ScoreboardController.DecreaseTeamChallenges = async (side:Sides, amount:number) => {
+    let team = (side === 'A') ? ScoreboardController.GetState().TeamA : ScoreboardController.GetState().TeamB;
+    ScoreboardController.SetTeamChallenges(side, team.Challenges - amount);
+};
+ScoreboardController.IncreaseTeamTimeouts = async (side:Sides, amount:number) => {
+    let team = (side === 'A') ? ScoreboardController.GetState().TeamA : ScoreboardController.GetState().TeamB;
+    ScoreboardController.SetTeamTimeouts(side, team.Timeouts + amount);
+};
+ScoreboardController.DecreaseTeamTimeouts = async (side:Sides, amount:number) => {
+    let team = (side === 'A') ? ScoreboardController.GetState().TeamA : ScoreboardController.GetState().TeamB;
+    ScoreboardController.SetTeamTimeouts(side, team.Timeouts - amount);
+};
+ScoreboardController.OfficialTimeout = async () => {
+    ScoreboardController.Dispatch({
+        type:Actions.SET_OFFICIAL_TIMEOUT
+    });
+};
+ScoreboardController.InjuryTimeout = async () => {
+    ScoreboardController.Dispatch({
+        type:Actions.SET_INJURY_TIMEOUT
+    });
+};
+ScoreboardController.ResetJam = async () => {
+    ScoreboardController.Dispatch({
+        type:Actions.RESET_JAM
+    });
+};
+ScoreboardController.ApplyConfig = async (config:any) => {
+    if(config === null || typeof(config) !== "object")
+        return;
 
-    /**
-     * Decreases the team's jam points
-     * @param side
-     * @param amount 
-     */
-    async DecreaseTeamJamPoints(side:string, amount:number) {
-        let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
-        ScoreboardController.SetTeamJamPoints(side, team.JamPoints - amount);
-    },
-
-    /**
-     * Increases the team's challenges
-     * @param side
-     * @param amount
-     */
-    async IncreaseTeamChallenges(side:string, amount:number) {
-        let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
-        ScoreboardController.SetTeamChallenges(side, team.Challenges + amount);
-    },
-
-    /**
-     * Decreases the team's challenges
-     * @param side
-     * @param amount
-     */
-    async DecreaseTeamChallenges(side:string, amount:number) {
-        let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
-        ScoreboardController.SetTeamChallenges(side, team.Challenges - amount);
-    },
-
-    /**
-     * Increases the team's timeouts.
-     * @param side
-     * @param amount
-     */
-    async IncreaseTeamTimeouts(side:string, amount:number) {
-        let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
-        ScoreboardController.SetTeamTimeouts(side, team.Timeouts + amount);
-    },
-
-    /**
-     * Decreases the team's timeouts.
-     * @param side
-     * @param amount 
-     */
-    async DecreaseTeamTimeouts(side:string, amount:number) {
-        let team = (side === 'A') ? ScoreboardController.getState().TeamA : ScoreboardController.getState().TeamB;
-        ScoreboardController.SetTeamTimeouts(side, team.Timeouts - amount);
-    },
-
-    /**
-     * Calls an official timeout
-     */
-    async OfficialTimeout() {
-        ScoreboardController.getStore().dispatch({
-            type:Actions.SET_OFFICIAL_TIMEOUT
-        });
-    },
-
-    /**
-     * Calls an injury timeout.
-     */
-    async InjuryTimeout() {
-        ScoreboardController.getStore().dispatch({
-            type:Actions.SET_INJURY_TIMEOUT
-        });
-    },
-
-    /**
-     * Resets the jam to the previous 
-     */
-    async ResetJam() {
-        ScoreboardController.getStore().dispatch({
-            type:Actions.RESET_JAM
-        });
-    },
-
-    /**
-     * Applies the given configuration options against the state of the scoreboard.
-     * @param {Object} config 
-     */
-    async ApplyConfig(config) {
-        if(config === null || typeof(config) !== "object")
-            return;
-
-        var teamA = DataController.getTeam(config.TeamA.ID);
-        var teamB = DataController.getTeam(config.TeamB.ID);
-        ScoreboardController.getStore().dispatch({
-            type:Actions.SET_STATE,
-            state:{
-                ID: parseInt(config.ID),
-                JamID: parseInt(config.JamID),
-                JamHour: parseInt(config.JamHour),
-                JamMinute: parseInt(config.JamMinute),
-                JamSecond: parseInt(config.JamSecond),
-                JamState: parseInt(config.JamState),
-                JamCounter: parseInt(config.JamCounter),
-                BreakHour: parseInt(config.BreakHour),
-                BreakMinute: parseInt(config.BreakMinute),
-                BreakSecond: parseInt(config.BreakSecond),
-                BreakState: parseInt(config.BreakState),
-                GameHour: parseInt(config.GameHour),
-                GameMinute: parseInt(config.GameMinute),
-                GameSecond: parseInt(config.GameSecond),
-                GameState: parseInt(config.GameState),
-                TeamA:{
-                    ID: parseInt(config.TeamA.ID),
-                    Side:'A',
-                    Name: config.TeamA.Name,
-                    Score: parseInt(config.TeamA.Score),
-                    Timeouts: parseInt(config.TeamA.Timeouts),
-                    Challenges: parseInt(config.TeamA.Challenges),
-                    JamPoints: parseInt(config.TeamA.JamPoints),
-                    Status: parseInt(config.TeamA.Status),
-                    Color:(teamA) ? teamA.Color : '#333333',
-                    Thumbnail:(teamA) ? teamA.Thumbnail : '',
-                    ScoreboardThumbnail:(teamA) ? teamA.ScoreboardThumbnail : '',
-                    Slide:(teamA) ? teamA.Slide : '',
-                    Photo:(teamA) ? teamA.Photo : '',
-                },
-                TeamB:{
-                    ID: parseInt(config.TeamB.ID),
-                    Side:'B',
-                    Name: config.TeamB.Name,
-                    Score: parseInt(config.TeamB.Score),
-                    Timeouts: parseInt(config.TeamB.Timeouts),
-                    Challenges: parseInt(config.TeamB.Challenges),
-                    JamPoints: parseInt(config.TeamB.JamPoints),
-                    Status: parseInt(config.TeamB.Status),
-                    Color:(teamB) ? teamB.Color : '#333333',
-                    Thumbnail:(teamB) ? teamB.Thumbnail : '',
-                    ScoreboardThumbnail:(teamB) ? teamB.ScoreboardThumbnail : '',
-                    Slide:(teamB) ? teamB.Slide : '',
-                    Photo:(teamB) ? teamB.Photo : '',
-                },
-                PhaseID: parseInt( config.PhaseID ),
-                PhaseName: config.PhaseName,
-                PhaseStatus: config.PhaseStatus,
-                ConfirmStatus: config.ConfirmStatus,
-                BoardStatus: config.BoardStatus
-            }
-        });
-    },
-
-    /**
-     * Handles keyboard events for the Scoreboard
-     * @param {KeyEvent} ev 
-     */
-    async onKeyUp(ev) {
-        switch(ev.keyCode) {
-            //toggle jam clock
-            case keycodes.SPACEBAR :
-            case keycodes.ENTER :
-                ScoreboardController.ToggleJamClock();
-            break;
-
-            //toggle break clock
-            //call official timeout
-            case keycodes.UP :
-                if(ev.ctrlKey) {
-                    ScoreboardController.OfficialTimeout();
-                } else {
-                    ScoreboardController.ToggleGameClock();
-                }
-            break;
-
-            //toggle break clock
-            //call injury timeout
-            case keycodes.DOWN :
-                if(ev.ctrlKey) {
-                    ScoreboardController.InjuryTimeout();
-                } else {
-                    ScoreboardController.ToggleBreakClock();
-                }
-            break;
-
-            //increase / decrease left-side score
-            case keycodes.LEFT :
-                if(ev.shiftKey) {
-                    ScoreboardController.DecreaseTeamScore('A', 1);
-                } else {
-                    ScoreboardController.IncreaseTeamScore('A', 1);
-                }
-            break;
-
-            //toggle left-side jammer status
-            case keycodes.Q :
-                if(ev.shiftKey)
-                    ScoreboardController.SetTeamStatus('A', vars.Team.Status.PowerJam)
-                else
-                    ScoreboardController.SetTeamStatus('A', vars.Team.Status.LeadJammer)
-            break;
-
-            //toggle left-side timeout / challenge status
-            case keycodes.OPENBRACKET :
-                if(ev.shiftKey)
-                    ScoreboardController.SetTeamStatus('A', vars.Team.Status.Challenge)
-                else
-                    ScoreboardController.SetTeamStatus('A', vars.Team.Status.Timeout)
-            break;
-
-            //increase / decrease right-side score
-            case keycodes.RIGHT :
-                if(ev.shiftKey) {
-                    ScoreboardController.DecreaseTeamScore('B', 1);
-                } else {
-                    ScoreboardController.IncreaseTeamScore('B', 1);
-                }
-            break;
-
-            //toggle right-side jammer status
-            case keycodes.W :
-                if(ev.shiftKey)
-                    ScoreboardController.SetTeamStatus('B', vars.Team.Status.PowerJam)
-                else
-                    ScoreboardController.SetTeamStatus('B', vars.Team.Status.LeadJammer)
-            break;
-
-            //toggle right-side timeout / challenge status
-            case keycodes.CLOSEBRACKET :
-                if(ev.shiftKey)
-                    ScoreboardController.SetTeamStatus('B', vars.Team.Status.Challenge)
-                else
-                    ScoreboardController.SetTeamStatus('B', vars.Team.Status.Timeout)
-            break;
-
-            case keycodes.A :
-                ScoreboardController.ToggleConfirm();
-            break;
-
-            case keycodes.ADD :
-            case keycodes.EQUAL :
-                ScoreboardController.IncreaseJamCounter(1);
-            break;
-
-            case keycodes.SUBTRACT :
-            case keycodes.DASH :
-                ScoreboardController.DecreaseJamCounter(1);
-            break;
-
-            case keycodes.P :
-                ScoreboardController.IncreasePhase();
-            break;
-
-            default :
-
-            break;
+    let teamA:TeamRecord = TeamsController.GetRecord(config.TeamA.ID);
+    let teamB:TeamRecord = TeamsController.GetRecord(config.TeamB.ID);
+    ScoreboardController.Dispatch({
+        type:Actions.SET_STATE,
+        state:{
+            ID: parseInt(config.ID),
+            JamID: parseInt(config.JamID),
+            JamHour: parseInt(config.JamHour),
+            JamMinute: parseInt(config.JamMinute),
+            JamSecond: parseInt(config.JamSecond),
+            JamState: parseInt(config.JamState),
+            JamCounter: parseInt(config.JamCounter),
+            BreakHour: parseInt(config.BreakHour),
+            BreakMinute: parseInt(config.BreakMinute),
+            BreakSecond: parseInt(config.BreakSecond),
+            BreakState: parseInt(config.BreakState),
+            GameHour: parseInt(config.GameHour),
+            GameMinute: parseInt(config.GameMinute),
+            GameSecond: parseInt(config.GameSecond),
+            GameState: parseInt(config.GameState),
+            TeamA:{
+                ID: parseInt(config.TeamA.ID),
+                Side:'A',
+                Name: config.TeamA.Name,
+                Score: parseInt(config.TeamA.Score),
+                Timeouts: parseInt(config.TeamA.Timeouts),
+                Challenges: parseInt(config.TeamA.Challenges),
+                JamPoints: parseInt(config.TeamA.JamPoints),
+                Status: parseInt(config.TeamA.Status),
+                Color:(teamA) ? teamA.Color : '#333333',
+                Thumbnail:(teamA) ? teamA.Thumbnail : '',
+                ScoreboardThumbnail:(teamA) ? teamA.ScoreboardThumbnail : '',
+                Slide:(teamA) ? teamA.Slide : '',
+                Photo:(teamA) ? teamA.Photo : '',
+            },
+            TeamB:{
+                ID: parseInt(config.TeamB.ID),
+                Side:'B',
+                Name: config.TeamB.Name,
+                Score: parseInt(config.TeamB.Score),
+                Timeouts: parseInt(config.TeamB.Timeouts),
+                Challenges: parseInt(config.TeamB.Challenges),
+                JamPoints: parseInt(config.TeamB.JamPoints),
+                Status: parseInt(config.TeamB.Status),
+                Color:(teamB) ? teamB.Color : '#333333',
+                Thumbnail:(teamB) ? teamB.Thumbnail : '',
+                ScoreboardThumbnail:(teamB) ? teamB.ScoreboardThumbnail : '',
+                Slide:(teamB) ? teamB.Slide : '',
+                Photo:(teamB) ? teamB.Photo : '',
+            },
+            PhaseID: parseInt( config.PhaseID ),
+            PhaseName: config.PhaseName,
+            PhaseStatus: config.PhaseStatus,
+            ConfirmStatus: config.ConfirmStatus,
+            BoardStatus: config.BoardStatus
         }
-    },
+    });
+};
 
-    /**
-     * Triggered when the user presses a button on a connected GamePad
-     * @param button GameButton
-     */
-    async onGamepadButtonPress(buttons:IGamepadButtonMap) {
-        let state = ScoreboardController.getState();
-        //X
-        if(buttons.X.pressed) {
-            if(buttons.L2.pressed && buttons.R2.pressed) {
-                ScoreboardController.ResetJam();
-            } else {
-                ScoreboardController.ToggleJamClock();
-            }
-            return;
-        }
+ScoreboardController.onKeyUp = async (ev:any) => {
+    switch(ev.keyCode) {
+        //toggle jam clock
+        case keycodes.SPACEBAR :
+        case keycodes.ENTER :
+            ScoreboardController.ToggleJamClock();
+        break;
 
-        //RESET
-        if(buttons.SELECT.pressed 
-            && buttons.START.pressed 
-            && buttons.L2.pressed 
-            && buttons.R2.pressed
-            && buttons.L1.pressed
-            && buttons.R1.pressed
-            ) {
-            ScoreboardController.Reset();
-            return;
-        }
-
-        //Y
-        if(buttons.Y.pressed) {
-            
-            return;
-        }
-
-        //UP - Game Clock / Official Timeout
-        if(buttons.UP.pressed) {
-            if(buttons.R2.pressed) {
+        //toggle break clock
+        //call official timeout
+        case keycodes.UP :
+            if(ev.ctrlKey) {
                 ScoreboardController.OfficialTimeout();
             } else {
                 ScoreboardController.ToggleGameClock();
             }
-            return;
-        }
+        break;
 
-        //DOWN - Break Clock / Injury Timeout
-        if(buttons.DOWN.pressed) {
-            if(buttons.R2.pressed) {
+        //toggle break clock
+        //call injury timeout
+        case keycodes.DOWN :
+            if(ev.ctrlKey) {
                 ScoreboardController.InjuryTimeout();
             } else {
                 ScoreboardController.ToggleBreakClock();
             }
+        break;
 
-            return;
-        }
-
-        //LEFT 
-        if(buttons.LEFT.pressed) {
-            if(buttons.L2.pressed) {
-                ScoreboardController.DecreaseJamCounter(1);
-            } else if(buttons.R2.pressed) {
+        //increase / decrease left-side score
+        case keycodes.LEFT :
+            if(ev.shiftKey) {
                 ScoreboardController.DecreaseTeamScore('A', 1);
             } else {
                 ScoreboardController.IncreaseTeamScore('A', 1);
             }
+        break;
 
-            return;
-        }
+        //toggle left-side jammer status
+        case keycodes.Q :
+            if(ev.shiftKey)
+                ScoreboardController.SetTeamStatus('A', vars.Team.Status.PowerJam)
+            else
+                ScoreboardController.SetTeamStatus('A', vars.Team.Status.LeadJammer)
+        break;
 
-        //RIGHT 
-        if(buttons.RIGHT.pressed) {
-            if(buttons.L2.pressed) {
-                ScoreboardController.IncreaseJamCounter(1);
-            } else if(buttons.R2.pressed) {
+        //toggle left-side timeout / challenge status
+        case keycodes.OPENBRACKET :
+            if(ev.shiftKey)
+                ScoreboardController.SetTeamStatus('A', vars.Team.Status.Challenge)
+            else
+                ScoreboardController.SetTeamStatus('A', vars.Team.Status.Timeout)
+        break;
+
+        //increase / decrease right-side score
+        case keycodes.RIGHT :
+            if(ev.shiftKey) {
                 ScoreboardController.DecreaseTeamScore('B', 1);
             } else {
                 ScoreboardController.IncreaseTeamScore('B', 1);
             }
+        break;
 
-            return;
-        }
-
-        //L1
-        if(buttons.L1.pressed) {
-            if(buttons.R2.pressed)
-                ScoreboardController.SetTeamStatus('A', vars.Team.Status.PowerJam);
+        //toggle right-side jammer status
+        case keycodes.W :
+            if(ev.shiftKey)
+                ScoreboardController.SetTeamStatus('B', vars.Team.Status.PowerJam)
             else
-                ScoreboardController.SetTeamStatus('A', vars.Team.Status.LeadJammer);
-            return;
-        }
+                ScoreboardController.SetTeamStatus('B', vars.Team.Status.LeadJammer)
+        break;
 
-        //R1
-        if(buttons.R1.pressed) {
-            if(buttons.R2.pressed)
-                ScoreboardController.SetTeamStatus('B', vars.Team.Status.PowerJam);
+        //toggle right-side timeout / challenge status
+        case keycodes.CLOSEBRACKET :
+            if(ev.shiftKey)
+                ScoreboardController.SetTeamStatus('B', vars.Team.Status.Challenge)
             else
-                ScoreboardController.SetTeamStatus('B', vars.Team.Status.LeadJammer);
-            return;
-        }
+                ScoreboardController.SetTeamStatus('B', vars.Team.Status.Timeout)
+        break;
 
-        //A
-        if(buttons.A.pressed) {
+        case keycodes.A :
             ScoreboardController.ToggleConfirm();
-            return;
-        }
+        break;
 
-        //SELECT
-        if(buttons.SELECT.pressed) {
-            if(buttons.L2.pressed && buttons.R2.pressed) {
-                ScoreboardController.CopyGameTime();
-            } else if(buttons.R2.pressed) {
-                ScoreboardController.DecreasePhase();
-            } else {
-                ScoreboardController.IncreasePhase();
-            }
-            return;
-        }
+        case keycodes.ADD :
+        case keycodes.EQUAL :
+            ScoreboardController.IncreaseJamCounter(1);
+        break;
 
-        //START
-        if(buttons.START.pressed) {
-            if(buttons.L2.pressed && buttons.R2.pressed) {
-                ScoreboardController.ResetJam();
-            }
-            return;
-        }
-    },
+        case keycodes.SUBTRACT :
+        case keycodes.DASH :
+            ScoreboardController.DecreaseJamCounter(1);
+        break;
 
-    /**
-     * Triggered when the user holds a button down
-     * @param buttons IGamepadButtonMap
-     */
-    async onGamepadButtonDown(buttons:IGamepadButtonMap) {
-        let state = ScoreboardController.getState();
-        //LEFT
-        if(buttons.LEFT.pressed && buttons.LEFT.frames%12 === 0) {
-            if(buttons.L2.pressed) {
-                ScoreboardController.DecreaseJamCounter(1);
-            } else if(buttons.R2.pressed) {
-                ScoreboardController.DecreaseTeamScore('A', 1);
-            } else {
-                ScoreboardController.IncreaseTeamScore('A', 1);
-            }
-            return;
-        }
+        case keycodes.P :
+            ScoreboardController.IncreasePhase();
+        break;
 
-        //RIGHT
-        if(buttons.RIGHT.pressed && buttons.RIGHT.frames%12 === 0) {
-            if(buttons.L2.pressed) {
-                ScoreboardController.IncreaseJamCounter(1);
-            } else if(buttons.R2.pressed) {
-                ScoreboardController.DecreaseTeamScore('B', 1);
-            } else {
-                ScoreboardController.IncreaseTeamScore('B', 1);
-            }
-            return;
-        }
-    },
+        default :
 
-    /**
-     * Triggered when the user releases a button on the gamepad
-     * @param buttons IGamepadButtonMap
-     */
-    async onGamepadButtonUp(buttons:IGamepadButtonMap) {
-
-    },
-
-    /**
-     * Triggered when the connected game controller's axes have moved
-     * @param axes IGamepadAxes
-     */
-    async onGamepadAxis(axes:IGamepadAxes) {
-
-    },
-
-    /**
-     * Gets the configuration for this controller
-     * - MaxBreakSeconds = Maximum # of seconds on the break clock
-     * - MaxJamSeconds = Maximum # of seconds on the jam clock
-     * - MaxChallenges = Max # of challenges per team (per half)
-     * - MaxTimeouts = Max # of timeouts per team (per half)
-     * - JamChangeMode = true/false
-     */
-    getConfig() {
-        let config:any = DataController.GetMiscRecord('ScoreboardConfig');
-        return Object.assign({
-            MaxBreakSeconds:30,
-            MaxJamSeconds:60,
-            MaxChallenges:1,
-            MaxTimeouts:2,
-            MaxTimeoutSeconds:60,
-            MaxChallengeSeconds:60,
-            JamChangeMode:false
-        }, config);
-    },
-
-    /**
-     * 
-     * @param settings 
-     */
-    async saveConfig(settings:any) : Promise<boolean> {
-        let config:any = Object.assign(ScoreboardController.getConfig(), settings);
-        console.log('saving...')
-        return DataController.SaveMiscRecord('ScoreboardConfig', config);
-    },
-
-    /**
-     * Gets the store.
-     */
-    getStore() {
-        return ScoreboardStore;
-    },
-
-    /**
-     * Gets the current state.
-     */
-    getState() {
-        return ScoreboardController.getStore().getState();
-    },
-
-    /**
-     * Subscribes to the store changes, and returns a function to unsubscribe.
-     * @param {Function} f 
-     */
-    subscribe(f) : Unsubscribe {
-        return ScoreboardController.getStore().subscribe(f);
-    },
-
-    /**
-     * Builds the API for the scoreboard
-     */
-    async buildAPI() {
-        const server = window.LocalServer;
-        const exp = server.ExpressApp;
-
-        //get state
-        exp.get(/^\/api\/scoreboard(\/?)$/i, (req, res) => {
-            res.send(server.PrepareObjectForSending(DataController.PrepareObjectForSending(ScoreboardController.getState())));
-            res.end();
-        });
+        break;
     }
-}
+};
+
+ScoreboardController.onGamepadButtonPress = async (buttons:IGamepadButtonMap) => {
+    let state = ScoreboardController.GetState();
+    //X
+    if(buttons.X.pressed) {
+        if(buttons.L2.pressed && buttons.R2.pressed) {
+            ScoreboardController.ResetJam();
+        } else {
+            ScoreboardController.ToggleJamClock();
+        }
+        return;
+    }
+
+    //RESET
+    if(buttons.SELECT.pressed 
+        && buttons.START.pressed 
+        && buttons.L2.pressed 
+        && buttons.R2.pressed
+        && buttons.L1.pressed
+        && buttons.R1.pressed
+        ) {
+        ScoreboardController.Reset();
+        return;
+    }
+
+    //Y
+    if(buttons.Y.pressed) {
+        
+        return;
+    }
+
+    //UP - Game Clock / Official Timeout
+    if(buttons.UP.pressed) {
+        if(buttons.R2.pressed) {
+            ScoreboardController.OfficialTimeout();
+        } else {
+            ScoreboardController.ToggleGameClock();
+        }
+        return;
+    }
+
+    //DOWN - Break Clock / Injury Timeout
+    if(buttons.DOWN.pressed) {
+        if(buttons.R2.pressed) {
+            ScoreboardController.InjuryTimeout();
+        } else {
+            ScoreboardController.ToggleBreakClock();
+        }
+
+        return;
+    }
+
+    //LEFT 
+    if(buttons.LEFT.pressed) {
+        if(buttons.L2.pressed) {
+            ScoreboardController.DecreaseJamCounter(1);
+        } else if(buttons.R2.pressed) {
+            ScoreboardController.DecreaseTeamScore('A', 1);
+        } else {
+            ScoreboardController.IncreaseTeamScore('A', 1);
+        }
+
+        return;
+    }
+
+    //RIGHT 
+    if(buttons.RIGHT.pressed) {
+        if(buttons.L2.pressed) {
+            ScoreboardController.IncreaseJamCounter(1);
+        } else if(buttons.R2.pressed) {
+            ScoreboardController.DecreaseTeamScore('B', 1);
+        } else {
+            ScoreboardController.IncreaseTeamScore('B', 1);
+        }
+
+        return;
+    }
+
+    //L1
+    if(buttons.L1.pressed) {
+        if(buttons.R2.pressed)
+            ScoreboardController.SetTeamStatus('A', vars.Team.Status.PowerJam);
+        else
+            ScoreboardController.SetTeamStatus('A', vars.Team.Status.LeadJammer);
+        return;
+    }
+
+    //R1
+    if(buttons.R1.pressed) {
+        if(buttons.R2.pressed)
+            ScoreboardController.SetTeamStatus('B', vars.Team.Status.PowerJam);
+        else
+            ScoreboardController.SetTeamStatus('B', vars.Team.Status.LeadJammer);
+        return;
+    }
+
+    //A
+    if(buttons.A.pressed) {
+        ScoreboardController.ToggleConfirm();
+        return;
+    }
+
+    //SELECT
+    if(buttons.SELECT.pressed) {
+        if(buttons.L2.pressed && buttons.R2.pressed) {
+            ScoreboardController.CopyGameTime();
+        } else if(buttons.R2.pressed) {
+            ScoreboardController.DecreasePhase();
+        } else {
+            ScoreboardController.IncreasePhase();
+        }
+        return;
+    }
+
+    //START
+    if(buttons.START.pressed) {
+        if(buttons.L2.pressed && buttons.R2.pressed) {
+            ScoreboardController.ResetJam();
+        }
+        return;
+    }
+};
+
+ScoreboardController.onGamepadButtonDown = async (buttons:IGamepadButtonMap) => {
+    
+    let state = ScoreboardController.GetState();
+    //LEFT
+    if(buttons.LEFT.pressed && buttons.LEFT.frames%12 === 0) {
+        if(buttons.L2.pressed) {
+            ScoreboardController.DecreaseJamCounter(1);
+        } else if(buttons.R2.pressed) {
+            ScoreboardController.DecreaseTeamScore('A', 1);
+        } else {
+            ScoreboardController.IncreaseTeamScore('A', 1);
+        }
+        return;
+    }
+
+    //RIGHT
+    if(buttons.RIGHT.pressed && buttons.RIGHT.frames%12 === 0) {
+        if(buttons.L2.pressed) {
+            ScoreboardController.IncreaseJamCounter(1);
+        } else if(buttons.R2.pressed) {
+            ScoreboardController.DecreaseTeamScore('B', 1);
+        } else {
+            ScoreboardController.IncreaseTeamScore('B', 1);
+        }
+        return;
+    }
+};
+
+ScoreboardController.onGamepadButtonUp = async () => {};
+ScoreboardController.onGamepadAxis = async () => {};
+ScoreboardController.getConfig = async () => {
+    let config:any = DataController.GetMiscRecord('ScoreboardConfig');
+    return {
+        MaxBreakSeconds:30,
+        MaxJamSeconds:60,
+        MaxChallenges:1,
+        MaxTimeouts:2,
+        MaxTimeoutSeconds:60,
+        MaxChallengeSeconds:60,
+        JamChangeMode:false
+    , ...config};
+};
+
+ScoreboardController.saveConfig = async (settings:any) : Promise<boolean> => {
+    let config:any = Object.assign(ScoreboardController.getConfig(), settings);
+    return DataController.SaveMiscRecord('ScoreboardConfig', config);
+};
+
+ScoreboardController.BuildAPI = async () => {
+    const server = window.LocalServer;
+    const exp = server.ExpressApp;
+
+    //get state
+    exp.get(/^\/api\/scoreboard(\/?)$/i, (req, res) => {
+        res.send(server.PrepareObjectForSending(PrepareObjectForSending(ScoreboardController.GetState())));
+        res.end();
+    });
+};
 
 export default ScoreboardController;

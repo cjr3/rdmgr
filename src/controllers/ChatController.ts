@@ -1,9 +1,18 @@
-import {createStore} from 'redux';
+import {CreateController, BaseReducer} from './functions.controllers';
+import {IController, Files} from './vars';
 
-const SET_STATE = 'SET_STATE';
-const ADD_MESSAGE = 'ADD_MESSAGE';
-const CLEAR_CHAT = 'CLEAR_CHAT';
-const MARK_READ = 'MARK_READ';
+interface IChatController extends IController {
+    AddMessage:Function;
+    ReadMessages:Function;
+    GetUnreadMessageCount:Function;
+    Clear:Function;
+}
+
+enum Actions {
+    ADD_MESSAGE = 'ADD_MESSAGE',
+    CLEAR_CHAT = 'CLEAR_CHAT',
+    MARK_READ = 'MARK_READ'
+};
 
 export type MessageRecord = {
     name:string;
@@ -13,139 +22,115 @@ export type MessageRecord = {
     self:boolean;
 }
 
-export interface SChatController {
-    Messages:Array<MessageRecord>
+interface SChatController {
+    Messages:Array<MessageRecord>;
 }
 
 export const InitState:SChatController = {
     Messages:[]
 };
 
-function ChatReducer(state = InitState, action) {
-    let messages:Array<MessageRecord> = [];
-    switch(action.type) {
-        //sets the state
-        case SET_STATE :
-            return Object.assign({}, state, action.values);
+const AddMessage = (state:SChatController, message:MessageRecord) => {
+    let records:Array<MessageRecord> = state.Messages.slice();
+    records.push(message);
+    if(records.length > 50)
+        records.shift();
+    return {...state, Messages:records};
+};
 
-        //adds a message
-        case ADD_MESSAGE :
-            messages = state.Messages.slice();
-            messages.push({
-                name:action.message.name,
-                line:action.message.line,
-                time:action.message.time,
-                read:action.message.read,
-                self:action.message.self
-            });
+const MarkAllRead = (state:SChatController) => {
+    let records:Array<MessageRecord> = state.Messages.slice();
+    records.forEach(m => m.read = true);
+    return {...state, Messages:records};
+};
 
-            //maximum number of messages
-            if(messages.length > 50)
-                messages.shift();
-                
-            return Object.assign({}, state, {Messages:messages});
+const Clear = (state:SChatController) => {
+    return {...state, Messages:new Array<MessageRecord>()};
+};
 
-        //mark all chat messages as read
-        case MARK_READ :
-            messages = state.Messages.slice();
-            messages.forEach((m) => {m.read = true;});
-            return Object.assign({}, state, {Messages:messages});
-
-        //clears the chat messages
-        case CLEAR_CHAT :
-            return Object.assign({}, state, {Messages:[]});
-
-        default :
-            return state;
+const ChatReducer = (state:SChatController = InitState, action) => {
+    try {
+        switch(action.type) {
+            //adds a message
+            case Actions.ADD_MESSAGE : {
+                return AddMessage(state, action.message);
+            }
+    
+            //mark all chat messages as read
+            case Actions.MARK_READ :
+                return MarkAllRead(state);
+    
+            //clears the chat messages
+            case Actions.CLEAR_CHAT :
+                return Clear(state);
+    
+            default :
+                return BaseReducer(state, action);
+        }
+    } catch(er) {
+        return state;
     }
 }
 
-const ChatStore = createStore( ChatReducer );
+const ChatController:IChatController = CreateController('CHT', ChatReducer);
 
-const ChatController = {
-    Key:'CHT',
-    /**
-     * Sets the state of the chat controller.
-     * @param {Object} state An object with key/value pairs
-     */
-    async SetState(state) {
-        ChatController.getStore().dispatch({
-            type:SET_STATE,
-            values:state
-        });
-    },
+/**
+ * Adds a message to the chat.
+ * Message object structure:
+ * - line (the text of the message)
+ * - name (username / peer ID)
+ * - time (time of message)
+ * - read (true/false if the message has been seen by the user or not)
+ * - self (true/false if message sender is local user)
+ * 
+ * Messages are not permanent, and are cleared when closing the program.
+ * 
+ * @param {Object} message 
+ */
+ChatController.AddMessage = async (message:MessageRecord) => {
+    ChatController.Dispatch({
+        type:Actions.ADD_MESSAGE,
+        message:message
+    });
+};
 
-    /**
-     * Adds a message to the chat.
-     * Message object structure:
-     * - line (the text of the message)
-     * - name (username / peer ID)
-     * - time (time of message)
-     * - read (true/false if the message has been seen by the user or not)
-     * - self (true/false if message sender is local user)
-     * 
-     * Messages are not permanent, and are cleared when closing the program.
-     * 
-     * @param {Object} message 
-     */
-    async AddMessage(message:MessageRecord) {
-        ChatController.getStore().dispatch({
-            type:ADD_MESSAGE,
-            message:message
-        });
-    },
+/**
+ * Marks all messages as read.
+ */
+ChatController.ReadMessages = () => {
+    ChatController.Dispatch({
+        type:Actions.MARK_READ
+    });
+};
 
-    /**
-     * Marks all messages as read.
-     */
-    async ReadMesssages() {
-        ChatController.getStore().dispatch({
-            type:MARK_READ
-        });
-    },
+/**
+ * Gets the number of unread messages.
+ * @return {Number} The total number of unread messages.
+ */
+ChatController.GetUnreadMessageCount = () :number => {
+    let messages:Array<MessageRecord> = ChatController.GetState().Messages;
+    if(messages.length <= 0)
+        return 0;
+    let total:number = 0;
+    messages.forEach(m => {
+        if(!m.read)
+            total++;
+    });
+    return total;
+};
 
-    /**
-     * Gets the number of unread messages.
-     * @return {Number} The total number of unread messages.
-     */
-    GetUnreadMessageCount() {
-        var total = 0;
-        ChatController.getState().Messages.forEach((m:MessageRecord) => {
-            total += (m.read) ? 0 : 1;
-        });
-        return total;
-    },
+/**
+ * Clears all messages from the user's chat
+ * Does not clear messages from other users.
+ */
+ChatController.Clear = () => {
+    ChatController.Dispatch({
+        type:Actions.CLEAR_CHAT
+    });
+};
 
-    /**
-     * CLears the chat room of messages.
-     */
-    async Clear() {
-        ChatController.getStore().dispatch({
-            type:CLEAR_CHAT
-        });
-    },
-
-    /**
-     * Gets the current state of the chat controller.
-     */
-    getState() {
-        return ChatStore.getState();
-    },
-
-    /**
-     * Gets the store
-     */
-    getStore() {
-        return ChatStore;
-    },
-
-    /**
-     * Adds a listener for state changes.
-     * @param {Function} f 
-     */
-    subscribe(f) {
-        return ChatStore.subscribe(f);
-    }
+ChatController.Get = () : Array<MessageRecord> => {
+    return ChatController.GetState().Messages;
 };
 
 export default ChatController;

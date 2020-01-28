@@ -1,110 +1,222 @@
-import {createStore} from 'redux'
-import {SkaterRecord} from 'tools/vars';
+import {SkaterRecord, PenaltyRecord} from 'tools/vars';
+import { IController } from './vars';
+import { CreateController, BaseReducer } from './functions.controllers';
+import SkatersController from './SkatersController';
 
-const SET_STATE = 'SET_STATE';
-const ADD_SKATER = 'ADD_SKATER';
-const REMOVE_SKATER = 'REMOVE_SKATER';
-const UPDATE_SKATER = 'UPDATE_SKATER';
+export type Sides = 'A' | 'B';
+
+interface IPenaltyController extends IController {
+    Add:Function;
+    Remove:Function;
+    Update:{(record:SkaterRecord,records:Array<PenaltyRecord>)};
+    Clear:Function;
+    SetSkaters:Function;
+    SetCurrentSkater:{(record:SkaterRecord|null)};
+    updateSkaters:Function;
+}
+
+enum Actions {
+    ADD = 'ADD',
+    REMOVE = 'REMOVE',
+    UPDATE = 'UPDATE',
+    CLEAR = 'CLEAR',
+    SET = 'SET',
+    SET_CURRENT_SKATER = 'SET_CURRENT_SKATER',
+    UPDATE_SKATERS = 'UPDATE_SKATERS'
+};
 
 export interface SPenaltyController {
-    Skaters:Array<SkaterRecord>
+    Skaters:Array<SkaterRecord>;
+    Skater:SkaterRecord|null;
 }
 
 export const InitState:SPenaltyController = {
-    Skaters:[]
+    Skaters:new Array<SkaterRecord>(),
+    Skater:null
 };
 
-function PenaltyReducer(state = InitState, action) {
-    var skaters:Array<SkaterRecord> = [];
-    switch(action.type) {
-        case SET_STATE :
-            return Object.assign({}, state, action.values);
+const GetSkaterIndex = (records:Array<SkaterRecord>, record:SkaterRecord) : number => {
+    if(records.length <= 0)
+        return 0;
+    return records.findIndex(s => s.RecordID == record.RecordID);
+};
 
-        case ADD_SKATER :
-            if(state.Skaters[action.Record.RecordID])
-                return state;
-            skaters = state.Skaters.splice(0);
-            skaters[action.Record.RecordID] = action.Record;
-            return Object.assign({}, state, {Skaters:skaters});
+const AddSkater = (state:SPenaltyController, record:SkaterRecord) => {
+    let records:Array<SkaterRecord> = state.Skaters;
+    if(GetSkaterIndex(records, record) >= 0)
+        return state;
+    return {...state, Skaters:[...records, record]};
+};
 
-        case REMOVE_SKATER :
-            if(state.Skaters[action.RecordID]) {
-                skaters = state.Skaters.splice(0);
-                delete skaters[action.RecordID];
-                return Object.assign({}, state, {Skaters:skaters});
+const RemoveSkater = (state:SPenaltyController, id:number) => {
+    let records:Array<SkaterRecord> = state.Skaters;
+    let index:number = records.findIndex(r => r.RecordID == id);
+    if(index < 0)
+        return state;
+    if(state.Skater && state.Skater.RecordID == id) {
+        return {
+            ...state,
+            Skaters:records.filter(r => r.RecordID != id),
+            Skater:null
+        }
+    }
+    return {...state, Skaters:records.filter(r => r.RecordID != id)};
+};
+
+const UpdateSkater = (state:SPenaltyController, record:SkaterRecord, penalties:Array<PenaltyRecord>) => {
+    if(penalties.length <= 0)
+        return RemoveSkater(state, record.RecordID);
+    let skaters:Array<SkaterRecord> = state.Skaters.slice();
+    let index:number = skaters.findIndex(r => r.RecordID == record.RecordID);
+    if(index < 0) {
+        skaters.push({
+            ...record,
+            Penalties:penalties
+        });
+    } else {
+        skaters[index].Penalties = penalties;
+    }
+
+    if(state.Skater && state.Skater.RecordID == record.RecordID) {
+        return {
+            ...state,
+            Skaters:skaters,
+            Skater:{
+                ...state.Skater,
+                Penalties:penalties
             }
-            return state;
+        }
+    }
 
-        case UPDATE_SKATER :
-            if(!state.Skaters[action.RecordID])
-                return state;
-            skaters = state.Skaters.splice(0);
-            skaters[action.RecordID].Penalties = action.Penalties;
-            return Object.assign({}, state, {Skaters:skaters});
+    return {...state, Skaters:skaters};
+};
 
-        default :
-            return state;
+/**
+ * Updates skater details from the SkaterController
+ * @param state 
+ * @param records 
+ */
+const UpdateSkaters = (state:SPenaltyController, records:Array<SkaterRecord>) => {
+    if(state.Skaters.length <= 0 || records.length <= 0)
+        return state;
+    let skaters:Array<SkaterRecord> = state.Skaters.slice();
+    let cskater:SkaterRecord|null = state.Skater;
+    if(cskater)
+        cskater = {...cskater};
+    skaters.forEach((skater, index) => {
+        let rindex:number = records.findIndex(r => r.RecordID == skater.RecordID);
+        if(rindex >= 0) {
+            //let penalties = skater.Penalties;
+            //let position = skater.Position;
+            skaters[index] = {
+                ...skaters[index],
+                ...records[rindex],
+                Penalties:skaters[index].Penalties,
+                Position:skaters[index].Position
+            }
+
+            if(cskater && skater.RecordID == cskater.RecordID) {
+                cskater.Penalties = skaters[index].Penalties;
+            }
+        }
+    });
+    return {...state, Skaters:skaters, Skater:cskater};
+};
+
+const ClearSkaters = (state:SPenaltyController) => {
+    return {
+        ...state, 
+        Skaters:new Array<SkaterRecord>(),
+        Skater:null
+    };
+};
+
+const SetSkaters = (state:SPenaltyController, records:Array<SkaterRecord>) => {
+    return {...state, Skaters:records};
+};
+
+const SetCurrentSkater = (state:SPenaltyController, record:SkaterRecord|null) => {
+    if(record) {
+        if(state.Skater && state.Skater.RecordID == record.RecordID) {}
+        else {
+            return {...state, Skater:{...record}};
+        }
+    }
+    return {...state, Skater:null};
+};
+
+const PenaltyReducer = (state:SPenaltyController = InitState, action) => {
+    try {
+        switch(action.type) {
+            case Actions.ADD :
+                return AddSkater(state, action.record);
+            case Actions.REMOVE :
+                return RemoveSkater(state, action.id);
+            case Actions.UPDATE :
+                return UpdateSkater(state, action.record, action.records);
+            case Actions.UPDATE_SKATERS :
+                return UpdateSkaters(state, action.records);
+            case Actions.CLEAR :
+                return ClearSkaters(state);
+            case Actions.SET :
+                return SetSkaters(state, action.records);
+            case Actions.SET_CURRENT_SKATER :
+                return SetCurrentSkater(state, action.record);
+            default :
+                return BaseReducer(state, action);
+        }
+    } catch(er) {
+        return state;
     }
 }
 
-const PenaltyStore = createStore(PenaltyReducer);
+const PenaltyController:IPenaltyController = CreateController('PT', PenaltyReducer);
 
-const PenaltyController = {
-    Key:'PT',
-    SetState(state) {
-        PenaltyController.getStore().dispatch({
-            type:SET_STATE,
-            values:state
-        });
-    },
-
-    Add(record) {
-        PenaltyController.getStore().dispatch({
-            type:ADD_SKATER,
-            Record:record
-        });
-    },
-
-    Remove(id) {
-        PenaltyController.getStore().dispatch({
-            type:REMOVE_SKATER,
-            RecordID:id
-        });
-    },
-
-    Update(id, penalties) {
-        PenaltyController.getStore().dispatch({
-            type:REMOVE_SKATER,
-            RecordID:id,
-            Penalties:penalties
-        });
-    },
-
-    Clear() {
-        PenaltyController.getStore().dispatch({
-            type:SET_STATE,
-            values:{Skaters:[]}
-        });
-    },
-
-    SetSkaters(records) {
-        PenaltyController.getStore().dispatch({
-            type:SET_STATE,
-            values:{Skaters:records}
-        });
-    },
-
-    getState() {
-        return PenaltyStore.getState();
-    },
-
-    getStore() {
-        return PenaltyStore;
-    },
-
-    subscribe(f) {
-        return PenaltyStore.subscribe(f);
-    }
+PenaltyController.Add = async (record:SkaterRecord) => {
+    PenaltyController.Dispatch({
+        type:Actions.ADD,
+        record:record
+    });
 };
+
+PenaltyController.Remove = async (id:number) => {
+    PenaltyController.Dispatch({
+        type:Actions.REMOVE,
+        id:id
+    });
+};
+PenaltyController.Update = async (record:SkaterRecord, records:Array<PenaltyRecord>) => {
+    PenaltyController.Dispatch({
+        type:Actions.UPDATE,
+        record:record,
+        records:records
+    });
+};
+PenaltyController.Clear = () => {
+    PenaltyController.Dispatch({
+        type:Actions.CLEAR
+    });
+};
+
+PenaltyController.SetSkaters = (records:Array<SkaterRecord>) => {
+    PenaltyController.Dispatch({
+        type:Actions.SET,
+        records:records
+    });
+};
+
+PenaltyController.SetCurrentSkater = (record:SkaterRecord|null) => {
+    PenaltyController.Dispatch({
+        type:Actions.SET_CURRENT_SKATER,
+        record:record
+    });
+};
+
+PenaltyController.updateSkaters = SkatersController.Subscribe(() => {
+    PenaltyController.Dispatch({
+        type:Actions.UPDATE_SKATERS,
+        records:SkatersController.Get()
+    });
+});
 
 export default PenaltyController;

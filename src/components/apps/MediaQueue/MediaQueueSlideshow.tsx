@@ -1,12 +1,12 @@
 import React from 'react';
 import SlideshowController from 'controllers/SlideshowController';
-import DataController from 'controllers/DataController';
 import cnames from 'classnames';
 import { Unsubscribe } from 'redux';
 import SortPanel from 'components/tools/SortPanel';
 import vars, { SlideshowRecord, VideoRecord, AnthemRecord } from 'tools/vars';
 import { MediaThumbnail } from 'components/Elements';
 import MediaQueueController from 'controllers/MediaQueueController';
+import { Compare } from 'controllers/functions';
 
 export default class MediaQueueSlideshow extends React.PureComponent<any, {
     Slides:Array<any>;
@@ -14,9 +14,9 @@ export default class MediaQueueSlideshow extends React.PureComponent<any, {
     Record:SlideshowRecord | VideoRecord | AnthemRecord | undefined | null;
 }> {
     readonly state = {
-        Slides:SlideshowController.getState().Slides,
-        Index:SlideshowController.getState().Index,
-        Record:MediaQueueController.getState().Record
+        Slides:SlideshowController.GetState().Slides,
+        Index:SlideshowController.GetState().Index,
+        Record:MediaQueueController.GetState().Record
     }
 
     protected remoteSlideshow:Unsubscribe|null = null;
@@ -30,18 +30,18 @@ export default class MediaQueueSlideshow extends React.PureComponent<any, {
     }
 
     protected async updateSlideshow() {
-        let slides:Array<any> = SlideshowController.getState().Slides;
-        let changes:any = {Index:SlideshowController.getState().Index};
+        let slides:Array<any> = SlideshowController.GetState().Slides;
+        let changes:any = {Index:SlideshowController.GetState().Index};
 
-        if(!DataController.compare(slides, this.state.Slides))
+        if(!Compare(slides, this.state.Slides))
             changes.Slides = slides;
 
         this.setState(changes);
     }
 
     protected async updateMedia() {
-        let record = MediaQueueController.getState().Record;
-        if(!DataController.compare(record, this.state.Record))
+        let record = MediaQueueController.GetState().Record;
+        if(!Compare(record, this.state.Record))
             this.setState({Record:record});
     }
 
@@ -54,8 +54,8 @@ export default class MediaQueueSlideshow extends React.PureComponent<any, {
     }
 
     componentDidMount() {
-        this.remoteSlideshow = SlideshowController.subscribe(this.updateSlideshow);
-        this.remoteMedia = MediaQueueController.subscribe(this.updateMedia);
+        this.remoteSlideshow = SlideshowController.Subscribe(this.updateSlideshow);
+        this.remoteMedia = MediaQueueController.Subscribe(this.updateMedia);
     }
 
     componentWillUnmount() {

@@ -1,8 +1,8 @@
 import React from 'react'
 import Counter from 'components/tools/Counter'
-import {Icon, IconSubtract} from 'components/Elements'
-import ScoreboardController, {SScoreboardTeam} from 'controllers/ScoreboardController'
-
+import {Icon, IconSubtract, IconPlus} from 'components/Elements'
+import ScoreboardController from 'controllers/ScoreboardController'
+import { Unsubscribe } from 'redux'
 
 /**
  * Component for controlling team timeout value
@@ -20,8 +20,8 @@ class Timeouts extends React.PureComponent<{
     max:number;
 }> {
     readonly state = {
-        amount:ScoreboardController.getState().MaxTimeouts,
-        max:ScoreboardController.getState().MaxTimeouts
+        amount:ScoreboardController.GetState().MaxTimeouts,
+        max:ScoreboardController.GetState().MaxTimeouts
     }
 
     /**
@@ -31,7 +31,7 @@ class Timeouts extends React.PureComponent<{
     /**
      * Listener for scoreboard controller
      */
-    protected remoteScore:Function|null = null;
+    protected remoteScore?:Unsubscribe;
 
     /**
      * Constructor
@@ -48,9 +48,9 @@ class Timeouts extends React.PureComponent<{
     /**
      * Updates the state to match the controller.
      */
-    updateState() {
+    protected updateState() {
         this.setState(() => {
-            var cstate = ScoreboardController.getState();
+            var cstate = ScoreboardController.GetState();
             var amount = cstate.TeamA.Timeouts;
             if(this.props.side === 'B')
                 amount = cstate.TeamB.Timeouts;
@@ -66,7 +66,7 @@ class Timeouts extends React.PureComponent<{
      * Triggered when the amount changes.
      * @param {Number} amount 
      */
-    onChange(amount) {
+    protected onChange(amount) {
         this.setState(() => {
             return {amount:amount}
         }, () => {
@@ -78,7 +78,7 @@ class Timeouts extends React.PureComponent<{
      * Triggered when the user adds challenges
      * @param amount number
      */
-    onAdd(amount:number) {
+    protected onAdd(amount:number) {
         ScoreboardController.IncreaseTeamTimeouts(this.props.side, amount);
     }
 
@@ -86,7 +86,7 @@ class Timeouts extends React.PureComponent<{
      * Triggered when the user subtracts challenges
      * @param amount number
      */
-    onSubtract(amount:number) {
+    protected onSubtract(amount:number) {
         ScoreboardController.DecreaseTeamTimeouts(this.props.side, amount);
     }
 
@@ -94,14 +94,14 @@ class Timeouts extends React.PureComponent<{
      * Triggered when the component mounts to the DOM.
      */
     componentDidMount() {
-        this.remoteScore = ScoreboardController.subscribe(this.updateState);
+        this.remoteScore = ScoreboardController.Subscribe(this.updateState);
     }
 
     /**
      * Close listeners
      */
     componentWillUnmount() {
-        if(this.remoteScore !== null)
+        if(this.remoteScore)
             this.remoteScore();
     }
 
@@ -123,14 +123,17 @@ class Timeouts extends React.PureComponent<{
                         ref={this.CounterItem}
                     />
                 </div>
-                <div>
+                <div className="icons">
+                    <Icon 
+                        src={IconPlus}
+                        onClick={() => {
+                            ScoreboardController.IncreaseTeamTimeouts(this.props.side, 1);
+                        }}
+                        />
                     <Icon 
                         src={IconSubtract}
                         onClick={() => {
                             ScoreboardController.DecreaseTeamTimeouts(this.props.side, 1);
-                        }}
-                        onContextMenu={() => {
-                            ScoreboardController.IncreaseTeamTimeouts(this.props.side, 1);
                         }}
                         />
                 </div>

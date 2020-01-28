@@ -1,9 +1,9 @@
 import React from 'react';
-import CaptureController from 'controllers/CaptureController';
 import PenaltyController from 'controllers/PenaltyController';
 import CaptureControlPanel, {PCaptureControlPanel} from './CaptureControlPanel';
 import { SkaterRecord, PenaltyRecord } from 'tools/vars';
-import DataController from 'controllers/DataController';
+import PenaltiesController from 'controllers/PenaltiesController';
+import PenaltyCaptureController from 'controllers/capture/Penalty';
 
 /**
  * Component for configuring penalty tracker elements.
@@ -28,10 +28,10 @@ export default class CaptureControlPenaltyTracker extends React.PureComponent<PC
 }> {
 
     readonly state = {
-        Duration:CaptureController.getState().PenaltyTracker.Duration/1000,
-        Shown:CaptureController.getState().PenaltyTracker.Shown,
-        Skaters:PenaltyController.getState().Skaters,
-        Penalties:DataController.getPenalties(true)
+        Duration:PenaltyCaptureController.GetState().Duration/1000,
+        Shown:PenaltyCaptureController.GetState().Shown,
+        Skaters:PenaltyController.GetState().Skaters,
+        Penalties:PenaltiesController.Get()
     }
 
     /**
@@ -67,11 +67,7 @@ export default class CaptureControlPenaltyTracker extends React.PureComponent<PC
     updateState() {
         this.setState(() => {
             return {
-                Skaters:PenaltyController.getState().Skaters
-            }
-        }, () => {
-            if(this.state.Skaters.length >= 1) {
-                CaptureController.SetPenaltyTrackerVisibility( true );
+                Skaters:PenaltyController.GetState().Skaters
             }
         });
     }
@@ -82,7 +78,7 @@ export default class CaptureControlPenaltyTracker extends React.PureComponent<PC
     updateCapture() {
         this.setState(() => {
             return {
-                Shown:CaptureController.getState().PenaltyTracker.Shown
+                Shown:PenaltyCaptureController.GetState().Shown
             }
         });
     }
@@ -93,7 +89,7 @@ export default class CaptureControlPenaltyTracker extends React.PureComponent<PC
      */
     updateData() {
         this.setState(() => {
-            return {Penalties:DataController.getPenalties(true)};
+            return {Penalties:PenaltiesController.Get()};
         });
     }
 
@@ -101,12 +97,12 @@ export default class CaptureControlPenaltyTracker extends React.PureComponent<PC
      * Triggered when the user changes the value for the duration to hide the penalty tracker.
      * @param {Event} ev 
      */
-    onChangeDuration(ev) {
+    protected onChangeDuration(ev) {
         var value = parseInt(ev.target.value);
         this.setState(() => {
             return {Duration:value};
         }, () => {
-            CaptureController.SetPenaltyTrackerDuration(this.state.Duration * 1000)
+            PenaltyCaptureController.SetDuration(this.state.Duration * 1000)
         });
     }
 
@@ -115,9 +111,9 @@ export default class CaptureControlPenaltyTracker extends React.PureComponent<PC
      * - Create controller listeners
      */
     componentDidMount() {
-        this.remoteState = PenaltyController.subscribe(this.updateState);
-        this.remoteCapture = CaptureController.subscribe(this.updateCapture);
-        this.remoteData = DataController.subscribe(this.updateData);
+        this.remoteState = PenaltyController.Subscribe(this.updateState);
+        this.remoteCapture = PenaltyCaptureController.Subscribe(this.updateCapture);
+        this.remoteData = PenaltiesController.Subscribe(this.updateData);
     }
 
     /**

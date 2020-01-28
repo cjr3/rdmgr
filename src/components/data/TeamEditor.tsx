@@ -1,20 +1,18 @@
 import React from 'react';
-import RecordEditor from './RecordEditor';
+import RecordEditor, {PRecordEditor} from './RecordEditor';
 import vars, { TeamRecord } from 'tools/vars';
+import {Unsubscribe} from 'redux';
+import TeamsController from 'controllers/TeamsController';
+import RecordList from './RecordList';
+
+interface props extends PRecordEditor {
+    record:TeamRecord|null
+};
 
 /**
  * Component for editing team records.
  */
-export default class TeamEditor extends React.PureComponent<{
-    /**
-     * Record to edit
-     */
-    record:TeamRecord|null;
-    /**
-     * true to show, false to hide
-     */
-    opened:boolean;
-}> {
+export default class TeamEditor extends React.PureComponent<props> {
     /**
      * Renders the component.
      */
@@ -22,10 +20,55 @@ export default class TeamEditor extends React.PureComponent<{
         return (
             <RecordEditor 
                 recordType={vars.RecordType.Team}
-                opened={this.props.opened}
                 {...this.props}
                 >
             </RecordEditor>
         );
+    }
+}
+
+
+export class TeamRecordList extends React.PureComponent<{
+    shown:boolean;
+    record:TeamRecord|null;
+    onSelect:Function;
+    keywords?:string;
+}, {
+    Records:Array<TeamRecord>;
+}> {
+    readonly state = {
+        Records:TeamsController.Get()
+    }
+
+    protected remoteData?:Unsubscribe;
+
+    constructor(props) {
+        super(props);
+        this.updateData = this.updateData.bind(this);
+    }
+
+    protected updateData() {
+        this.setState({Records:TeamsController.Get()});
+    }
+
+    componentDidMount() {
+        this.remoteData = TeamsController.Subscribe(this.updateData);
+    }
+
+    componentWillUnmount() {
+        if(this.remoteData)
+            this.remoteData();
+    }
+
+    render() {
+        return (
+            <RecordList
+                keywords={this.props.keywords}
+                className={(this.props.shown) ? 'shown' : ''}
+                onSelect={this.props.onSelect}
+                recordid={(this.props.record) ? this.props.record.RecordID : 0}
+                records={this.state.Records}
+                />
+        )
     }
 }

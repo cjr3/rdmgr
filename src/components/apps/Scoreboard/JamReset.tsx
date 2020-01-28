@@ -50,9 +50,9 @@ export default class JamReset extends React.PureComponent<{
 }> {
 
     readonly state = {
-        hour:ScoreboardController.getState().StartGameHour,
-        minute:ScoreboardController.getState().StartGameMinute,
-        second:ScoreboardController.getState().StartGameSecond
+        hour:ScoreboardController.GetState().StartGameHour,
+        minute:ScoreboardController.GetState().StartGameMinute,
+        second:ScoreboardController.GetState().StartGameSecond
     }
 
     protected remoteScoreboard;
@@ -63,9 +63,9 @@ export default class JamReset extends React.PureComponent<{
     }
 
     updateScoreboard() {
-        let hour = ScoreboardController.getState().StartGameHour;
-        let minute = ScoreboardController.getState().StartGameMinute;
-        let second = ScoreboardController.getState().StartGameSecond;
+        let hour = ScoreboardController.GetState().StartGameHour;
+        let minute = ScoreboardController.GetState().StartGameMinute;
+        let second = ScoreboardController.GetState().StartGameSecond;
         if(hour !== this.state.hour || minute !== this.state.minute || second !== this.state.second) {
             this.setState({
                 hour:hour,
@@ -76,7 +76,7 @@ export default class JamReset extends React.PureComponent<{
     }
 
     componentDidMount() {
-        this.remoteScoreboard = ScoreboardController.subscribe(this.updateScoreboard);
+        this.remoteScoreboard = ScoreboardController.Subscribe(this.updateScoreboard);
     }
 
     componentWillUnmount() {

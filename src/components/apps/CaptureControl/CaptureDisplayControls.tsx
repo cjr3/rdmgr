@@ -1,6 +1,5 @@
 import React from 'react';
 import CameraController from 'controllers/CameraController';
-import CaptureController, {CapturePanels} from 'controllers/CaptureController';
 import ScorekeeperController from 'controllers/ScorekeeperController';
 import PenaltyController from 'controllers/PenaltyController';
 import CaptureControlCamera from './CaptureControlCamera';
@@ -16,13 +15,17 @@ import {
     IconWhistle,
     IconClipboard,
     IconTeam,
-    IconOffline,
     IconCapture
 } from 'components/Elements';
 import vars from 'tools/vars';
 import RosterController from 'controllers/RosterController';
 import CaptureControlRoster from './CaptureControlRoster';
-import CaptureControlCameraPeer from './CaptureControlCameraPeer';
+import RosterCaptureController from 'controllers/capture/Roster';
+import AnnouncerCaptureController from 'controllers/capture/Announcer';
+import AnthemCaptureController from 'controllers/capture/Anthem';
+import CameraCaptureController from 'controllers/capture/Camera';
+import PenaltyCaptureController from 'controllers/capture/Penalty';
+import ScorekeeperCaptureController from 'controllers/capture/Scorekeeper';
 
 /**
  * Component for configuring the elements on the capture window.
@@ -43,43 +46,37 @@ export default class CaptureDisplayControls extends React.PureComponent<any, {
             type:CaptureControlRoster,
             name:"Intros",
             icon:IconTeam,
-            toggle:CaptureController.ToggleRoster,
-            control:CapturePanels.ROSTER
+            toggle:RosterCaptureController.Toggle
         },
         [vars.RecordType.Announcer]:{
             type:CaptureControlAnnouncers,
             name:"Announcers",
             icon:IconMic,
-            toggle:CaptureController.ToggleAnnouncers,
-            control:CapturePanels.ANNOUNCER
+            toggle:AnnouncerCaptureController.Toggle
         },
         [vars.RecordType.Anthem]:{
             type:CaptureControlAnthem,
             name:"Anthem",
             icon:IconFlag,
-            toggle:CaptureController.ToggleNationalAnthem,
-            control:CapturePanels.ANTHEM
+            toggle:AnthemCaptureController.Toggle
         },
         [CameraController.Key]:{
             type:CaptureControlCamera,
             name:"Camera #1",
             icon:IconStreamOff,
-            toggle:CaptureController.ToggleMainCamera,
-            control:CapturePanels.CAMERA
+            toggle:CameraCaptureController.Toggle
         },
         [PenaltyController.Key]:{
             type:CaptureControlPenaltyTracker,
             name:"Penalty Tracker",
             icon:IconWhistle,
-            toggle:CaptureController.TogglePenaltyTracker,
-            control:CapturePanels.PENALTY
+            toggle:PenaltyCaptureController.Toggle
         },
         [ScorekeeperController.Key]:{
             type:CaptureControlScorekeeper,
             name:"Scorekeeper",
             icon:IconClipboard,
-            toggle:CaptureController.ToggleScorekeeper,
-            control:CapturePanels.SCOREKEEPER
+            toggle:ScorekeeperCaptureController.Toggle
         },
         ['MISC']:{
             type:CaptureControlMisc,

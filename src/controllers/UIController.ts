@@ -1,36 +1,55 @@
-import {createStore, Unsubscribe, Store} from 'redux';
-import DataController from './DataController';
+import {IController, Files} from './vars';
+import {CreateController, BaseReducer} from './functions.controllers';
+
+
+type Panels = 
+    'Scoreboard' | 'Chat' | 'Scorekeeper' | 'PenaltyTracker' |
+    'Roster' | 'CaptureControl' | 'MediaQueue' | 'DisplayControls' |
+    'ConfigPanel' | 'APILogin';
+
+interface IUIController extends IController {
+    SetCurrentPanel:{(index:Panels, value:string)};
+    ToggleDisplay:{(index:Panels)};
+    SetDisplay:{(index:Panels, shown:boolean)};
+    SetScoreboardPanel:{(value:string)};
+    ShowScoreboard:Function;
+    ShowCaptureController:Function;
+    ShowPenaltyTracker:Function;
+    ShowScorekeeper:Function;
+    ShowMediaQueue:Function;
+    ShowRoster:Function;
+    ToggleChat:Function;
+};
 
 export enum Actions {
-    SET_STATE,
-    SET_CURRENT_PANEL,
-    TOGGLE_DISPLAY,
-    SET_DISPLAY
+    SET_CURRENT_PANEL = 'SET_CURRENT_PANEL',
+    TOGGLE_DISPLAY = 'TOGGLE_DISPLAY',
+    SET_DISPLAY = 'SET_DISPLAY'
 }
 
-interface UIControllerDisplayState {
+interface SUIControllerDisplay {
     Panel:string;
     Shown:boolean;
     Application:boolean;
 }
 
-interface UIControllerState {
-    Scoreboard:UIControllerDisplayState;
-    Chat:UIControllerDisplayState;
-    Scorekeeper:UIControllerDisplayState;
-    PenaltyTracker:UIControllerDisplayState;
-    Roster:UIControllerDisplayState;
-    CaptureControl:UIControllerDisplayState;
-    MediaQueue:UIControllerDisplayState;
-    DisplayControls:UIControllerDisplayState;
-    ConfigPanel:UIControllerDisplayState;
-    APILogin:UIControllerDisplayState;
+interface SUIController {
+    Scoreboard:SUIControllerDisplay;
+    Chat:SUIControllerDisplay;
+    Scorekeeper:SUIControllerDisplay;
+    PenaltyTracker:SUIControllerDisplay;
+    Roster:SUIControllerDisplay;
+    CaptureControl:SUIControllerDisplay;
+    MediaQueue:SUIControllerDisplay;
+    DisplayControls:SUIControllerDisplay;
+    ConfigPanel:SUIControllerDisplay;
+    APILogin:SUIControllerDisplay;
 };
 
-export const InitState:UIControllerState = {
+export const InitState:SUIController = {
     Scoreboard:{
         Panel:'',
-        Shown:false,
+        Shown:true,
         Application:true
     },
     Chat:{
@@ -80,154 +99,104 @@ export const InitState:UIControllerState = {
     }
 }
 
-function UIControllerReducer(state:UIControllerState = InitState, action:any) {
+const SetCurrentPanel = (state:SUIController, index:Panels, value:string) => {
+    let current:string = state[index].Panel;
+    if(current == value)
+        current = '';
+    else
+        current = value;
+    
+    return Object.assign({}, state, {
+        [index]:Object.assign({}, state[index], {
+            Panel:current
+        })
+    });
+};
+
+const ToggleDisplay = (state:SUIController, index:Panels) => {
+    return Object.assign({}, state, {
+        [index]:Object.assign({}, state[index], {
+            Shown:!state[index].Shown
+        })
+    });
+};
+
+const SetDisplay = (state:SUIController, index:Panels, shown:boolean) => {
+    let obj = {...state};
+    if(obj[index].Application) {
+        for(let key in obj) {
+            if(obj[key].Application)
+                obj[key].Shown = false;
+        }
+    }
+    obj[index].Shown = shown;
+    return obj;
+};
+
+const UIReducer = (state:SUIController = InitState, action:any) => {
     try {
         switch(action.type) {
-            case Actions.SET_STATE : {
-                //return Object.assign({}, state, action.values);
-                return DataController.merge({}, state, action.values);
-            }
-            break;
-
-            case Actions.SET_CURRENT_PANEL : {
-                if(!state[action.index])
-                    return state;
-
-                let current:string = state[action.index].Panel;
-                if(current === action.value)
-                    current = '';
-                else
-                    current = action.value;
-
-                return Object.assign({}, state, {
-                    [action.index]:Object.assign({}, state[action.index], {
-                        Panel:current
-                    })
-                });
-            }
-            break;
-
-            case Actions.TOGGLE_DISPLAY : {
-                if(!state[action.index])
-                    return state;
-                return Object.assign({}, state, {
-                    [action.index]:Object.assign({}, state[action.index], {
-                        Shown:!state[action.index].Shown
-                    })
-                });
-            }
-            break;
-
-            case Actions.SET_DISPLAY : {
-                if(!state[action.index])
-                    return state;
-   
-                let obj = Object.assign({}, state);
-
-                //hide other Applications if this is an Application
-                if(state[action.index].Application) {
-                    for(let key in obj) {
-                        if(obj[key].Application)
-                            obj[key].Shown = false;
-                    }
-                }
-                obj[action.index].Shown = action.shown;
-
-                return obj;
-            }
-            break;
-
-            default : {
-                return state;
-            }
-            break;
+            case Actions.SET_CURRENT_PANEL :
+                return SetCurrentPanel(state, action.index, action.value);
+            case Actions.TOGGLE_DISPLAY :
+                return ToggleDisplay(state, action.index);
+            case Actions.SET_DISPLAY :
+                return SetDisplay(state, action.index, action.shown);
+            default :
+                return BaseReducer(state, action);
         }
     } catch(er) {
         return state;
     }
-}
+};
 
-const UIControllerStore = createStore(UIControllerReducer);
+const UIController:IUIController = CreateController('UI', UIReducer);
+UIController.SetCurrentPanel = async (index:Panels, value:string) => {
+    UIController.Dispatch({
+        type:Actions.SET_CURRENT_PANEL,
+        index:index,
+        value:value
+    });
+};
+UIController.ToggleDisplay = async (index:Panels) => {
+    UIController.Dispatch({
+        type:Actions.TOGGLE_DISPLAY,
+        index:index
+    });
+};
 
-const UIController = {
-    Key:'UI',
-    Init() {
+UIController.SetDisplay = async (index:Panels, shown:boolean) => {
+    UIController.Dispatch({
+        type:Actions.SET_DISPLAY,
+        index:index,
+        shown:shown
+    });
+};
 
-    },
+UIController.SetScoreboardPanel = async (value:string) => {
+    UIController.SetCurrentPanel('Scoreboard', value);
+};
 
-    async SetState(state:any) {
-        UIController.getStore().dispatch({
-            type:Actions.SET_STATE,
-            values:state
-        });
-    },
-
-    async SetCurrentPanel(index:string, value:string) {
-        UIController.getStore().dispatch({
-            type:Actions.SET_CURRENT_PANEL,
-            index:index,
-            value:value
-        });
-    },
-
-    async ToggleDisplay(index:string) {
-        UIController.getStore().dispatch({
-            type:Actions.TOGGLE_DISPLAY,
-            index:index
-        });
-    },
-
-    async SetDisplay(index:string, shown:boolean) {
-        UIController.getStore().dispatch({
-            type:Actions.SET_DISPLAY,
-            index:index,
-            shown:shown
-        });
-    },
-
-    SetScoreboardPanel(value:string) {
-        UIController.SetCurrentPanel('Scoreboard', value);
-    },
-
-    ShowScoreboard() {
-        UIController.SetDisplay('Scoreboard', true);
-    },
-
-    ShowCaptureController() {
-        UIController.SetDisplay('CaptureControl', true);
-    },
-
-    ShowPenaltyTracker() {
-        UIController.SetDisplay('PenaltyTracker', true);
-    },
-
-    ShowScorekeeper() {
-        UIController.SetDisplay('Scorekeeper', true);
-    },
-
-    ShowMediaQueue() {
-        UIController.SetDisplay('MediaQueue', true);
-    },
-
-    ShowRoster() {
-        UIController.SetDisplay('Roster', true);
-    },
-
-    ToggleChat() {
-        UIController.ToggleDisplay('Chat');
-    },
-
-    getState() : UIControllerState {
-        return UIControllerStore.getState();
-    },
-
-    getStore() : Store<UIControllerState> {
-        return UIControllerStore;
-    },
-
-    subscribe(f) : Unsubscribe {
-        return UIController.getStore().subscribe(f);
-    }
-}
+UIController.ShowScoreboard = async () => {
+    UIController.SetDisplay('Scoreboard', true);
+};
+UIController.ShowCaptureController = async () => {
+    UIController.SetDisplay('CaptureControl', true);
+};
+UIController.ShowPenaltyTracker = async () => {
+    UIController.SetDisplay('PenaltyTracker', true);
+};
+UIController.ShowScorekeeper = async () => {
+    UIController.SetDisplay('Scorekeeper', true);
+};
+UIController.ShowMediaQueue = async () => {
+    UIController.SetDisplay('MediaQueue', true);
+};
+UIController.ShowRoster = async () => {
+    UIController.SetDisplay('Roster', true);
+};
+UIController.ToggleChat = async () => {
+    UIController.ToggleDisplay('Chat');
+};
 
 export default UIController;

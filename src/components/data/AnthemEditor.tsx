@@ -1,21 +1,18 @@
 import React from 'react';
-import RecordEditor from './RecordEditor';
-import DataController from 'controllers/DataController';
+import RecordEditor, {PRecordEditor} from './RecordEditor';
 import vars, { AnthemRecord } from 'tools/vars';
+import AnthemsController from 'controllers/AnthemsController';
+import { Unsubscribe } from 'redux';
+import RecordList from './RecordList';
+
+interface props extends PRecordEditor {
+    record:AnthemRecord|null;
+}
 
 /**
  * Component for editing National Anthem records.
  */
-export default class AnthemEditor extends React.PureComponent<{
-    /**
-     * The record to edit
-     */
-    record:AnthemRecord|null;
-    /**
-     * true to show, false to hide
-     */
-    opened:boolean;
-}, {
+export default class AnthemEditor extends React.PureComponent<props, {
     /**
      * Biography of current record
      */
@@ -95,7 +92,6 @@ export default class AnthemEditor extends React.PureComponent<{
             <RecordEditor 
                 recordType={vars.RecordType.Anthem}
                 onSubmit={this.onSubmit}
-                opened={this.props.opened}
                 {...this.props}
                 >
                 <tr>
@@ -108,6 +104,51 @@ export default class AnthemEditor extends React.PureComponent<{
                     </td>
                 </tr>
             </RecordEditor>
+        )
+    }
+}
+
+export class AnthemRecordList extends React.PureComponent<{
+    shown:boolean;
+    record:AnthemRecord|null;
+    onSelect:Function;
+    keywords?:string;
+}, {
+    Records:Array<AnthemRecord>;
+}> {
+    readonly state = {
+        Records:AnthemsController.Get()
+    }
+
+    protected remoteData?:Unsubscribe;
+
+    constructor(props) {
+        super(props);
+        this.updateData = this.updateData.bind(this);
+    }
+
+    protected updateData() {
+        this.setState({Records:AnthemsController.Get()});
+    }
+
+    componentDidMount() {
+        this.remoteData = AnthemsController.Subscribe(this.updateData);
+    }
+
+    componentWillUnmount() {
+        if(this.remoteData)
+            this.remoteData();
+    }
+
+    render() {
+        return (
+            <RecordList
+                keywords={this.props.keywords}
+                className={(this.props.shown) ? 'shown' : ''}
+                onSelect={this.props.onSelect}
+                recordid={(this.props.record) ? this.props.record.RecordID : 0}
+                records={this.state.Records}
+                />
         )
     }
 }

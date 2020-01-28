@@ -1,5 +1,4 @@
 import React from 'react';
-import CaptureController from 'controllers/CaptureController';
 import {
     IconButton, 
     IconMic, 
@@ -15,6 +14,18 @@ import {
     IconTeam,
     IconClipboard
 } from 'components/Elements';
+import AnnouncerCaptureController from 'controllers/capture/Announcer';
+import CameraCaptureController from 'controllers/capture/Camera';
+import SlideshowCaptureController from 'controllers/capture/Slideshow';
+import VideoCaptureController from 'controllers/capture/Video';
+import AnthemCaptureController from 'controllers/capture/Anthem';
+import PenaltyCaptureController from 'controllers/capture/Penalty';
+import ScoreboardCaptureController, { ScorebannerCaptureController, JamClockCaptureController, JamCounterCaptureController } from 'controllers/capture/Scoreboard';
+import ScorekeeperCaptureController from 'controllers/capture/Scorekeeper';
+import SponsorCaptureController from 'controllers/capture/Sponsor';
+import RaffleCaptureController from 'controllers/capture/Raffle';
+import RosterCaptureController from 'controllers/capture/Roster';
+import { Unsubscribe } from 'redux';
 
 
 /**
@@ -40,7 +51,7 @@ export default class CaptureDisplayButtons extends React.PureComponent<any, {
     /**
      * Determines if the national anthem singer is displayed or not
      */
-    NationalAnthem:boolean;
+    Anthem:boolean;
     /**
      * Determines if the sponsor slideshow is displayed or not
      */
@@ -79,26 +90,40 @@ export default class CaptureDisplayButtons extends React.PureComponent<any, {
     Scorekeeper:boolean;
 }> {
     readonly state = {
-        Announcers:CaptureController.getState().Announcers.Shown,
-        MainCamera:CaptureController.getState().MainCamera.Shown,
-        MainSlideshow:CaptureController.getState().MainSlideshow.Shown,
-        MainVideo:CaptureController.getState().MainVideo.Shown,
-        NationalAnthem:CaptureController.getState().NationalAnthem.Shown,
-        PenaltyTracker:CaptureController.getState().PenaltyTracker.Shown,
-        Scorebanner:CaptureController.getState().Scorebanner.Shown,
-        Scorekeeper:CaptureController.getState().Scorekeeper.Shown,
-        Scoreboard:CaptureController.getState().Scoreboard.Shown,
-        SponsorSlideshow:CaptureController.getState().SponsorSlideshow.Shown,
-        JamClock:CaptureController.getState().Scoreboard.JamClockShown,
-        JamCounter:CaptureController.getState().Scoreboard.JamCounterShown,
-        Raffle:CaptureController.getState().Raffle.Shown,
-        Roster:CaptureController.getState().Roster.Shown
+        Announcers:AnnouncerCaptureController.GetState().Shown,
+        MainCamera:CameraCaptureController.GetState().Shown,
+        MainVideo:VideoCaptureController.GetState().Shown,
+        Anthem:AnthemCaptureController.GetState().Shown,
+        PenaltyTracker:PenaltyCaptureController.GetState().Shown,
+        Scoreboard:ScoreboardCaptureController.GetState().Shown,
+        Scorebanner:ScorebannerCaptureController.GetState().Shown,
+        Scorekeeper:ScorekeeperCaptureController.GetState().Shown,
+        Roster:RosterCaptureController.GetState().Shown,
+        JamClock:JamClockCaptureController.GetState().Shown,
+        JamCounter:JamCounterCaptureController.GetState().Shown,
+        MainSlideshow:SlideshowCaptureController.GetState().Shown,
+        SponsorSlideshow:SponsorCaptureController.GetState().Shown,
+        Raffle:RaffleCaptureController.GetState().Shown
     };
 
     /**
      * Listener for capture controller
      */
-    protected remoteCapture:Function|null = null;
+    protected remoteCapture?:Unsubscribe;
+    protected remoteAnnouncers?:Unsubscribe;
+    protected remoteAnthem?:Unsubscribe;
+    protected remoteCamera?:Unsubscribe;
+    protected remotePenalty?:Unsubscribe;
+    protected remoteScorekeeper?:Unsubscribe;
+    protected remoteScoreboard?:Unsubscribe;
+    protected remoteJamClock?:Unsubscribe;
+    protected remoteJamCounter?:Unsubscribe;
+    protected remoteSlideshow?:Unsubscribe;
+    protected remoteSponsors?:Unsubscribe;
+    protected remoteScorebanner?:Unsubscribe;
+    protected remoteRaffle?:Unsubscribe;
+    protected remoteRoster?:Unsubscribe;
+    protected remoteVideo?:Unsubscribe;
 
     /**
      * 
@@ -106,47 +131,130 @@ export default class CaptureDisplayButtons extends React.PureComponent<any, {
      */
     constructor(props) {
         super(props);
-        this.updateState = this.updateState.bind(this);
+        this.updateAnnouncers = this.updateAnnouncers.bind(this);
+        this.updateAnthem = this.updateAnthem.bind(this);
+        this.updateCamera = this.updateCamera.bind(this);
+        this.updatePenaltyTracker = this.updatePenaltyTracker.bind(this);
+        this.updateJamClock = this.updateJamClock.bind(this);
+        this.updateJamCounter = this.updateJamCounter.bind(this);
+        this.updateRaffle = this.updateRaffle.bind(this);
+        this.updateRoster = this.updateRoster.bind(this);
+        this.updateScorebanner = this.updateScorebanner.bind(this);
+        this.updateScoreboard = this.updateScoreboard.bind(this);
+        this.updateScorekeper = this.updateScorekeper.bind(this);
+        this.updateSlideshow = this.updateSlideshow.bind(this);
+        this.updateSponsor = this.updateSponsor.bind(this);
+        this.updateVideo = this.updateVideo.bind(this);
     }
 
-    /**
-     * Updates the state to match the Capture Controller
-     */
-    updateState() {
-        this.setState(() => {
-            var cstate = CaptureController.getState();
-            return {
-                Announcers:cstate.Announcers.Shown,
-                MainCamera:cstate.MainCamera.Shown,
-                MainSlideshow:cstate.MainSlideshow.Shown,
-                MainVideo:cstate.MainVideo.Shown,
-                NationalAnthem:cstate.NationalAnthem.Shown,
-                PenaltyTracker:cstate.PenaltyTracker.Shown,
-                Scorebanner:cstate.Scorebanner.Shown,
-                Scoreboard:cstate.Scoreboard.Shown,
-                SponsorSlideshow:cstate.SponsorSlideshow.Shown,
-                JamClock:cstate.Scoreboard.JamClockShown,
-                JamCounter:cstate.Scoreboard.JamCounterShown,
-                Raffle:cstate.Raffle.Shown,
-                Roster:cstate.Roster.Shown,
-                Scorekeeper:cstate.Scorekeeper.Shown
-            };
-        });
+    protected updateAnnouncers() {
+        this.setState({Announcers:AnnouncerCaptureController.GetState().Shown});
+    }
+
+    protected updateAnthem() {
+        this.setState({Anthem:AnthemCaptureController.GetState().Shown});
+    }
+
+    protected updateCamera() {
+        this.setState({MainCamera:CameraCaptureController.GetState().Shown});
+    }
+
+    protected updateJamClock() {
+        this.setState({JamClock:JamClockCaptureController.GetState().Shown});
+    }
+
+    protected updateJamCounter() {
+        this.setState({JamCounter:JamCounterCaptureController.GetState().Shown});
+    }
+
+    protected updatePenaltyTracker() {
+        this.setState({PenaltyTracker:PenaltyCaptureController.GetState().Shown});
+    }
+
+    protected updateScorekeper() {
+        this.setState({Scorekeeper:ScorekeeperCaptureController.GetState().Shown});
+    }
+    
+    protected updateScorebanner() {
+        this.setState({Scorebanner:ScorebannerCaptureController.GetState().Shown});
+    }
+
+    protected updateScoreboard() {
+        this.setState({Scoreboard:ScoreboardCaptureController.GetState().Shown});
+    }
+
+    protected updateSlideshow() {
+        this.setState({MainSlideshow:SlideshowCaptureController.GetState().Shown});
+    }
+
+    protected updateSponsor() {
+        this.setState({SponsorSlideshow:SponsorCaptureController.GetState().Shown});
+    }
+
+    protected updateRaffle() {
+        this.setState({Raffle:RaffleCaptureController.GetState().Shown});
+    }
+    
+    protected updateRoster() {
+        this.setState({Roster:RosterCaptureController.GetState().Shown});
+    }
+
+    protected updateVideo() {
+        this.setState({MainVideo:VideoCaptureController.GetState().Shown});
     }
 
     /**
      * Start listeners
      */
     componentDidMount() {
-        this.remoteCapture = CaptureController.subscribe(this.updateState);
+        this.remoteAnnouncers = AnnouncerCaptureController.Subscribe(this.updateAnnouncers);
+        this.remoteAnthem = AnthemCaptureController.Subscribe(this.updateAnthem);
+        this.remoteCamera = CameraCaptureController.Subscribe(this.updateCamera);
+        this.remoteJamClock = JamClockCaptureController.Subscribe(this.updateJamClock);
+        this.remoteJamCounter = JamCounterCaptureController.Subscribe(this.updateJamCounter);
+        this.remotePenalty = PenaltyCaptureController.Subscribe(this.updatePenaltyTracker);
+        this.remoteScorebanner = ScorebannerCaptureController.Subscribe(this.updateScorebanner);
+        this.remoteScoreboard = ScoreboardCaptureController.Subscribe(this.updateScoreboard);
+        this.remoteScorekeeper = ScorekeeperCaptureController.Subscribe(this.updateScorekeper);
+        this.remoteSlideshow = SlideshowCaptureController.Subscribe(this.updateSlideshow);
+        this.remoteSponsors = SponsorCaptureController.Subscribe(this.updateSponsor);
+        this.remoteRaffle = RaffleCaptureController.Subscribe(this.updateRaffle);
+        this.remoteRoster = RosterCaptureController.Subscribe(this.updateRoster);
+        this.remoteVideo = VideoCaptureController.Subscribe(this.updateVideo);
     }
 
     /**
      * Close listeners
      */
     componentWillUnmount() {
-        if(this.remoteCapture !== null)
-            this.remoteCapture();
+        if(this.remoteAnnouncers)
+            this.remoteAnnouncers();
+        if(this.remoteAnthem)
+            this.remoteAnthem();
+        if(this.remoteCamera)
+            this.remoteCamera();
+        if(this.remotePenalty)
+            this.remotePenalty();
+        if(this.remoteJamClock)
+            this.remoteJamClock();
+        if(this.remoteJamCounter)
+            this.remoteJamCounter();
+        if(this.remoteScoreboard)
+            this.remoteScoreboard();
+        if(this.remoteScorebanner)
+            this.remoteScorebanner();
+        if(this.remoteScorekeeper)
+            this.remoteScorekeeper();
+        if(this.remoteSlideshow)
+            this.remoteSlideshow();
+        if(this.remoteSponsors)
+            this.remoteSponsors();
+        if(this.remoteRaffle)
+            this.remoteRaffle();
+        if(this.remoteRoster)
+            this.remoteRoster();
+        if(this.remoteVideo)
+            this.remoteVideo();
     }
 
     /**
@@ -158,83 +266,83 @@ export default class CaptureDisplayButtons extends React.PureComponent<any, {
                 <IconButton
                     src={IconMic}
                     active={this.state.Announcers}
-                    onClick={CaptureController.ToggleAnnouncers}>
+                    onClick={AnnouncerCaptureController.Toggle}>
                         Announcers
                 </IconButton>
                 <IconButton
                     src={IconFlag}
-                    active={this.state.NationalAnthem}
-                    onClick={CaptureController.ToggleNationalAnthem}>
+                    active={this.state.Anthem}
+                    onClick={AnthemCaptureController.Toggle}>
                         Anthem
                 </IconButton>
                 <IconButton
                     src={IconStreamOff}
                     active={this.state.MainCamera}
-                    onClick={CaptureController.ToggleMainCamera}>
+                    onClick={CameraCaptureController.Toggle}>
                         Camera
                 </IconButton>
                 <IconButton
                     src={IconStopwatch}
                     active={this.state.JamClock}
-                    onClick={CaptureController.ToggleJamClock}>
+                    onClick={JamClockCaptureController.Toggle}>
                         Jam Clock
                 </IconButton>
                 <IconButton
                     src={IconPlus}
                     active={this.state.JamCounter}
-                    onClick={CaptureController.ToggleJamCounter}>
+                    onClick={JamCounterCaptureController.Toggle}>
                         Jam Counter
                 </IconButton>
                 <IconButton
                     src={IconClipboard}
                     active={this.state.Scorekeeper}
-                    onClick={CaptureController.ToggleScorekeeper}>
+                    onClick={ScorekeeperCaptureController.Toggle}>
                         Jammers
                 </IconButton>
                 <IconButton
                     src={IconWhistle}
                     active={this.state.PenaltyTracker}
-                    onClick={CaptureController.TogglePenaltyTracker}>
+                    onClick={PenaltyCaptureController.Toggle}>
                         Penalties
                 </IconButton>
                 <IconButton
                     src={IconTicket}
                     active={this.state.Raffle}
-                    onClick={CaptureController.ToggleRaffle}>Raffle</IconButton>
+                    onClick={RaffleCaptureController.Toggle}>Raffle</IconButton>
                 <IconButton
                     src={IconSkate}
                     active={this.state.Scorebanner}
-                    onClick={CaptureController.ToggleScorebanner}>
+                    onClick={ScorebannerCaptureController.Toggle}>
                         Score Banner
                 </IconButton>
                 <IconButton
                     src={IconSkate}
                     active={this.state.Scoreboard}
-                    onClick={CaptureController.ToggleScoreboard}>
+                    onClick={ScoreboardCaptureController.Toggle}>
                         Scoreboard
                 </IconButton>
                 <IconButton
                     src={IconSlideshow}
                     active={this.state.MainSlideshow}
-                    onClick={CaptureController.ToggleSlideshow}>
+                    onClick={SlideshowCaptureController.Toggle}>
                         Slideshow
                 </IconButton>
                 <IconButton
                     src={IconSlideshow}
                     active={this.state.SponsorSlideshow}
-                    onClick={CaptureController.ToggleSponsors}>
+                    onClick={SponsorCaptureController.Toggle}>
                         Sponsors
                 </IconButton>
                 <IconButton
                     src={IconTeam}
                     active={this.state.Roster}
-                    onClick={CaptureController.ToggleRoster}>
+                    onClick={RosterCaptureController.Toggle}>
                         Roster
                 </IconButton>
                 <IconButton
                     src={IconMovie}
                     active={this.state.MainVideo}
-                    onClick={CaptureController.ToggleMainVideo}>
+                    onClick={VideoCaptureController.Toggle}>
                         Video
                 </IconButton>
             </React.Fragment>

@@ -1,25 +1,18 @@
 import React, { CSSProperties } from 'react';
 import cnames from 'classnames';
 import RosterController from 'controllers/RosterController';
-import DataController from 'controllers/DataController';
 import ScoreboardController from 'controllers/ScoreboardController';
-import CameraController from 'controllers/CameraController';
 import vars, { SkaterRecord } from 'tools/vars';
 import Carousel, { CarouselRecord } from 'components/3d/Carousel';
 import './css/CaptureRoster.scss';
 import { Unsubscribe } from 'redux';
-import CaptureController from 'controllers/CaptureController';
+import RosterCaptureController from 'controllers/capture/Roster';
+import { Compare, AddMediaPath } from 'controllers/functions';
 
 /**
  * Component for displaying roster on the CaptureForm
  */
-export default class CaptureRoster extends React.PureComponent<{
-    /**
-     * true to show, false to hide
-     */
-    shown:boolean;
-    className:string;
-}, {
+export default class CaptureRoster extends React.PureComponent<any, {
     /**
      * Currently display team 
      */
@@ -76,42 +69,41 @@ export default class CaptureRoster extends React.PureComponent<{
     CurrentSlide:string;
     ShowTeamPhoto:boolean;
     RemoteShown:boolean;
+    Shown:boolean;
+    className:string;
 }> {
 
     readonly state = {
-        CurrentTeam:RosterController.getState().CurrentTeam,
-        SkaterIndex:RosterController.getState().SkaterIndex,
-        SkatersA:RosterController.getState().TeamA.Skaters,
-        SkatersB:RosterController.getState().TeamB.Skaters,
+        CurrentTeam:RosterController.GetState().CurrentTeam,
+        SkaterIndex:RosterController.GetState().SkaterIndex,
+        SkatersA:RosterController.GetState().TeamA.Skaters,
+        SkatersB:RosterController.GetState().TeamB.Skaters,
         TeamA:{
-            ID:ScoreboardController.getState().TeamA.ID,
-            Color:ScoreboardController.getState().TeamA.Color,
-            Thumbnail:ScoreboardController.getState().TeamA.Thumbnail,
-            Name:ScoreboardController.getState().TeamA.Name,
-            Slide:ScoreboardController.getState().TeamA.Slide,
-            Photo:ScoreboardController.getState().TeamA.Photo
+            ID:ScoreboardController.GetState().TeamA.ID,
+            Color:ScoreboardController.GetState().TeamA.Color,
+            Thumbnail:ScoreboardController.GetState().TeamA.Thumbnail,
+            Name:ScoreboardController.GetState().TeamA.Name,
+            Slide:ScoreboardController.GetState().TeamA.Slide,
+            Photo:ScoreboardController.GetState().TeamA.Photo
         },
         TeamB:{
-            ID:ScoreboardController.getState().TeamB.ID,
-            Color:ScoreboardController.getState().TeamB.Color,
-            Thumbnail:ScoreboardController.getState().TeamB.Thumbnail,
-            Name:ScoreboardController.getState().TeamB.Name,
-            Slide:ScoreboardController.getState().TeamB.Slide,
-            Photo:ScoreboardController.getState().TeamB.Photo
+            ID:ScoreboardController.GetState().TeamB.ID,
+            Color:ScoreboardController.GetState().TeamB.Color,
+            Thumbnail:ScoreboardController.GetState().TeamB.Thumbnail,
+            Name:ScoreboardController.GetState().TeamB.Name,
+            Slide:ScoreboardController.GetState().TeamB.Slide,
+            Photo:ScoreboardController.GetState().TeamB.Photo
         },
         CurrentSlide:'A',
         ShowTeamPhoto:false,
-        RemoteShown:RosterController.getState().RemoteShown
+        RemoteShown:RosterController.GetState().RemoteShown,
+        Shown:RosterCaptureController.GetState().Shown,
+        className:RosterCaptureController.GetState().className
     }
 
-    /**
-     * RosterController remote
-     */
-    protected remoteRoster:Function|null = null;
-    /**
-     * ScoreboardController remote
-     */
-    protected remoteScoreboard:Function|null = null;
+    protected remoteRoster?:Unsubscribe;
+    protected remoteScoreboard?:Unsubscribe;
+    protected remoteCapture?:Unsubscribe;
 
     protected SourceA:string = '';
     protected SourceB:string = '';
@@ -123,14 +115,15 @@ export default class CaptureRoster extends React.PureComponent<{
     constructor(props) {
         super(props);
         this.updateRoster = this.updateRoster.bind(this);
+        this.updateCapture = this.updateCapture.bind(this);
         this.updateScoreboard = this.updateScoreboard.bind(this);
     }
 
     /**
      * Updates the state to match the roster controller.
      */
-    protected async updateRoster() {
-        let cstate = RosterController.getState();
+    protected updateRoster() {
+        let cstate = RosterController.GetState();
         let changes:any = {
             CurrentTeam:cstate.CurrentTeam,
             SkaterIndex:cstate.SkaterIndex,
@@ -140,10 +133,10 @@ export default class CaptureRoster extends React.PureComponent<{
         let skatersA = cstate.TeamA.Skaters;
         let skatersB = cstate.TeamB.Skaters;
 
-        if(!DataController.compare(skatersA, this.state.SkatersA))
+        if(!Compare(skatersA, this.state.SkatersA))
             changes.SkatersA = skatersA;
 
-        if(!DataController.compare(skatersB, this.state.SkatersB))
+        if(!Compare(skatersB, this.state.SkatersB))
             changes.SkatersB = skatersB;
 
         if(cstate.SkaterIndex != this.state.SkaterIndex) {
@@ -163,43 +156,53 @@ export default class CaptureRoster extends React.PureComponent<{
      * - Update TeamA
      * - Update TeamB
      */
-    updateScoreboard() {
+    protected updateScoreboard() {
         this.setState({
             TeamA:{
-                ID:ScoreboardController.getState().TeamA.ID,
-                Color:ScoreboardController.getState().TeamA.Color,
-                Thumbnail:ScoreboardController.getState().TeamA.Thumbnail,
-                Name:ScoreboardController.getState().TeamA.Name,
-                Slide:ScoreboardController.getState().TeamA.Slide,
-                Photo:ScoreboardController.getState().TeamA.Photo
+                ID:ScoreboardController.GetState().TeamA.ID,
+                Color:ScoreboardController.GetState().TeamA.Color,
+                Thumbnail:ScoreboardController.GetState().TeamA.Thumbnail,
+                Name:ScoreboardController.GetState().TeamA.Name,
+                Slide:ScoreboardController.GetState().TeamA.Slide,
+                Photo:ScoreboardController.GetState().TeamA.Photo
             },
             TeamB:{
-                ID:ScoreboardController.getState().TeamB.ID,
-                Color:ScoreboardController.getState().TeamB.Color,
-                Thumbnail:ScoreboardController.getState().TeamB.Thumbnail,
-                Name:ScoreboardController.getState().TeamB.Name,
-                Slide:ScoreboardController.getState().TeamB.Slide,
-                Photo:ScoreboardController.getState().TeamB.Photo
+                ID:ScoreboardController.GetState().TeamB.ID,
+                Color:ScoreboardController.GetState().TeamB.Color,
+                Thumbnail:ScoreboardController.GetState().TeamB.Thumbnail,
+                Name:ScoreboardController.GetState().TeamB.Name,
+                Slide:ScoreboardController.GetState().TeamB.Slide,
+                Photo:ScoreboardController.GetState().TeamB.Photo
             }
         });
+    }
+
+    protected updateCapture() {
+        this.setState({
+            Shown:RosterCaptureController.GetState().Shown,
+            className:RosterCaptureController.GetState().className
+        })
     }
 
     /**
      * Start listeners
      */
     componentDidMount() {
-        this.remoteRoster = RosterController.subscribe(this.updateRoster);
-        this.remoteScoreboard = ScoreboardController.subscribe(this.updateScoreboard);
+        this.remoteRoster = RosterController.Subscribe(this.updateRoster);
+        this.remoteScoreboard = ScoreboardController.Subscribe(this.updateScoreboard);
+        this.remoteCapture = RosterCaptureController.Subscribe(this.updateCapture);
     }
 
     /**
      * Close listeners
      */
     componentWillUnmount() {
-        if(this.remoteScoreboard !== null)
+        if(this.remoteScoreboard)
             this.remoteScoreboard();
-        if(this.remoteRoster !== null)
+        if(this.remoteRoster)
             this.remoteRoster();
+        if(this.remoteCapture)
+            this.remoteCapture();
     }
 
     protected renderFullscreen() : JSX.Element {
@@ -209,7 +212,7 @@ export default class CaptureRoster extends React.PureComponent<{
             team:(this.state.SkaterIndex === -1)
         });
 
-        let shown:boolean = this.props.shown;
+        let shown:boolean = this.state.Shown;
         if(!shown && window && window.remoteApps && window.remoteApps.ROS)
             shown = this.state.RemoteShown;
 
@@ -243,18 +246,22 @@ export default class CaptureRoster extends React.PureComponent<{
             if(this.state.CurrentTeam === 'A') {
                 if(this.state.SkatersA[this.state.SkaterIndex]) {
                     skater = this.state.SkatersA[this.state.SkaterIndex];
-                    if(skater.Slide)
-                        src = skater.Slide;
-                    else if(skater.Photo)
-                        src = skater.Photo;
+                    if(skater != null) {
+                        if(skater.Slide)
+                            src = skater.Slide;
+                        else if(skater.Photo)
+                            src = skater.Photo;
+                    }
                 }
             } else {
                 if(this.state.SkatersB[this.state.SkaterIndex]) {
                     skater = this.state.SkatersB[this.state.SkaterIndex];
-                    if(skater.Slide)
-                        src = skater.Slide;
-                    else if(skater.Photo)
-                        src = skater.Photo;
+                    if(skater != null) {
+                        if(skater.Slide)
+                            src = skater.Slide;
+                        else if(skater.Photo)
+                            src = skater.Photo;
+                    }
                 }
             }
         }
@@ -267,10 +274,10 @@ export default class CaptureRoster extends React.PureComponent<{
                 shown:(shown)
             } )}>
                 <div className={classA}>
-                    <img src={DataController.mpath(this.SourceA)} alt=""/>
+                    <img src={AddMediaPath(this.SourceA)} alt=""/>
                 </div>
                 <div className={classB}>
-                    <img src={DataController.mpath(this.SourceB)} alt=""/>
+                    <img src={AddMediaPath(this.SourceB)} alt=""/>
                 </div>
             </div>
         );
@@ -296,10 +303,10 @@ export default class CaptureRoster extends React.PureComponent<{
             teamID = this.state.TeamB.ID;
         }
 
-        teamLogo = DataController.mpath(teamLogo);
+        teamLogo = AddMediaPath(teamLogo);
         if(teamLogo) {
             thumbnails.push({
-                src:DataController.mpath(teamLogo),
+                src:AddMediaPath(teamLogo),
                 key:`${vars.RecordType.Team}-${teamID}`
             });
         }
@@ -321,15 +328,15 @@ export default class CaptureRoster extends React.PureComponent<{
                 if(skater === null || skater === undefined)
                     break;
                 let src = teamLogo;
-                if(this.props.className === 'fullscreen') {
+                if(this.state.className === 'fullscreen') {
                     if(skater.Slide)
-                        src = DataController.mpath(skater.Slide);
+                        src = AddMediaPath(skater.Slide);
                     else if(skater.Photo)
-                        src = DataController.mpath(skater.Photo);
+                        src = AddMediaPath(skater.Photo);
                     else if(skater.Thumbnail)
-                        src = DataController.mpath(skater.Thumbnail);
+                        src = AddMediaPath(skater.Thumbnail);
                 } else if(skater.Thumbnail) {
-                    src = DataController.mpath(skater.Thumbnail);
+                    src = AddMediaPath(skater.Thumbnail);
                 }
 
                 if(i === this.state.SkaterIndex) {
@@ -355,7 +362,7 @@ export default class CaptureRoster extends React.PureComponent<{
             }
         }
 
-        let shown:boolean = this.props.shown;
+        let shown:boolean = this.state.Shown;
         if(window && window.remoteApps && window.remoteApps.ROS && this.state.RemoteShown)
             shown = true;
 
@@ -383,40 +390,8 @@ export default class CaptureRoster extends React.PureComponent<{
      * Renders the component
      */
     render() {
-
-        if(this.props.className === 'fullscreen')
+        if(this.state.className === 'fullscreen')
             return this.renderFullscreen();
         return this.renderCamera();
     }
-}
-
-function SkaterFullscreen(props:{skater:SkaterRecord,className?:string}) {
-    if(props.skater.Slide) {
-        return <SkaterSlide src={props.skater.Slide} className={props.className}/>;
-    } else if(props.skater.Photo) {
-        return <SkaterPhoto skater={props.skater} className={props.className}/>;
-    } else {
-        return (
-            <div className={cnames("slide skater nopic", props.className)}>
-                {props.skater.Name}
-            </div>
-        );
-    }
-}
-
-function SkaterSlide(props:{src:string,className?:string}) : JSX.Element {
-    return (
-        <div className={cnames('slide skater skater-slide', props.className)}>
-            <img src={DataController.mpath(props.src)} alt=""/>
-        </div>
-    );
-}
-
-function SkaterPhoto(props:{skater:SkaterRecord,className?:string}) : JSX.Element {
-    let name:string = props.skater.Name;
-    return (
-        <div className={cnames('slide skater photo', props.className)}>
-            <img src={DataController.mpath(props.skater.Photo)} alt=""/>
-        </div>
-    );
 }

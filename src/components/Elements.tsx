@@ -7,7 +7,8 @@ import React, { CSSProperties } from 'react'
 import cnames from 'classnames'
 import './css/Elements.scss'
 import {default as UISlider, SliderProps} from '@material-ui/core/Slider'
-import DataController from 'controllers/DataController';
+import { CanAccessFile } from 'controllers/functions.io';
+import { AddMediaPath, GetAspectSize } from 'controllers/functions';
 
 //static icons
 export const IconAttachment:any = require('images/icons/attachment.png');
@@ -68,6 +69,7 @@ export const IconPause = require('images/icons/pause.png');
 export const IconController = require('images/icons/gamepad.png');
 export const Icon2x = require('images/icons/2x.png');
 export const IconLeague = require('images/icons/leagueicon.png');
+export const IconPalette = require('images/icons/palette.png');
 
 /**
  * Creates a <button> element
@@ -114,7 +116,9 @@ interface PElement {
     /**
      * Additional styles
      */
-    style?:CSSProperties
+    style?:CSSProperties;
+    onClick?:Function;
+    onContextMenu?:Function;
 }
 
 interface PMediaElement extends PElement {
@@ -126,10 +130,6 @@ interface PMediaElement extends PElement {
      * Child elements
      */
     children?:any;
-    /**
-     * Triggered when the user clicks/touches the element
-     */
-    onClick?:Function;
 }
 
 /**
@@ -431,7 +431,7 @@ class MediaThumbnailElement extends React.PureComponent<PMediaThumbnailElement> 
         if(this.Brush == null)
             return;
         this.clear();
-        var size = DataController.aspectSize(this.Width, this.Height, this.ImageItem.width, this.ImageItem.height);
+        var size = GetAspectSize(this.Width, this.Height, this.ImageItem.width, this.ImageItem.height);
         this.Brush.drawImage(this.ImageItem, size.x, size.y, size.width, size.height);
     }
 
@@ -452,12 +452,12 @@ class MediaThumbnailElement extends React.PureComponent<PMediaThumbnailElement> 
             if(this.props.src.search('http') === 0) {
                 this.ImageItem.src = this.props.src;
             } else if(this.props.src.search('c:') === 0) {
-                DataController.access(this.props.src).then(() => {
+                CanAccessFile(this.props.src).then(() => {
                     this.ImageItem.src = this.props.src;
                 }).catch(() => {this.clear();});
             } else {
-                DataController.access(DataController.mpath(this.props.src)).then(() => {
-                    this.ImageItem.src = DataController.mpath(this.props.src);
+                CanAccessFile(AddMediaPath(this.props.src)).then(() => {
+                    this.ImageItem.src = AddMediaPath(this.props.src);
                 }).catch(() => {this.clear();});
             }
         }

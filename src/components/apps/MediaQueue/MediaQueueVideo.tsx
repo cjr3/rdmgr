@@ -3,10 +3,10 @@ import MediaQueueController from 'controllers/MediaQueueController';
 import VideoController from 'controllers/VideoController';
 import cnames from 'classnames';
 import vars, { SlideshowRecord, VideoRecord, AnthemRecord } from 'tools/vars';
-import DataController from 'controllers/DataController';
-import CaptureController from 'controllers/CaptureController';
 import CaptureCameraStyleButtons from 'components/apps/CaptureControl/CaptureCameraStyleButtons';
 import CaptureVideoStyleButtons from 'components/apps/CaptureControl/CaptureVideoStyleButtons';
+import VideoCaptureController from 'controllers/capture/Video';
+import { Compare, AddMediaPath } from 'controllers/functions';
 
 
 export default class MediaQueueVideo extends React.PureComponent<any, {
@@ -15,9 +15,9 @@ export default class MediaQueueVideo extends React.PureComponent<any, {
     Status:number;
 }> {
     readonly state = {
-        Record:MediaQueueController.getState().Record,
-        Source:VideoController.getState().Source,
-        Status:VideoController.getState().Status
+        Record:MediaQueueController.GetState().Record,
+        Source:VideoController.GetState().Source,
+        Status:VideoController.GetState().Status
     }
 
     protected VideoItem:React.RefObject<HTMLVideoElement> = React.createRef();
@@ -32,14 +32,14 @@ export default class MediaQueueVideo extends React.PureComponent<any, {
     }
 
     protected async updateMedia() {
-        let record = MediaQueueController.getState().Record;
-        if(!DataController.compare(record, this.state.Record))
+        let record = MediaQueueController.GetState().Record;
+        if(!Compare(record, this.state.Record))
             this.setState({Record:record});
     }
 
     protected async updateVideo() {
         this.setState({
-            Status:VideoController.getState().Status
+            Status:VideoController.GetState().Status
         }, () => {
             
             if(this.VideoItem !== null && this.VideoItem.current !== null) {
@@ -67,14 +67,14 @@ export default class MediaQueueVideo extends React.PureComponent<any, {
                     Status:vars.Video.Status.Playing,
                     CurrentTime:0
                 });
-                CaptureController.SetMainVideoVisibility( true );
+                VideoCaptureController.Show();
                 this.VideoItem.current.play();
             }
         }
     }
 
     componentDidMount() {
-        this.remoteMedia = MediaQueueController.subscribe(this.updateMedia);
+        this.remoteMedia = MediaQueueController.Subscribe(this.updateMedia);
     }
 
     componentWillUnmount() {
@@ -89,7 +89,7 @@ export default class MediaQueueVideo extends React.PureComponent<any, {
         if(this.state.Record && this.state.Record.RecordType === vars.RecordType.Video) {
             shown = true;
             if(this.state.Record.Filename)
-                src = DataController.mpath('videos/' + this.state.Record.Filename);
+                src = AddMediaPath('videos/' + this.state.Record.Filename);
         }
 
         return (

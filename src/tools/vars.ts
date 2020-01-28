@@ -247,6 +247,10 @@ export interface SkaterRecord extends Record {
      * Positiion code, such as 'Jammer'
      */
     Position?:string;
+    /**
+     * Deck the skater is on (Track or Deck)
+     */
+    Deck?:string;
 };
 
 export interface SkaterTeamRecord {
@@ -327,11 +331,11 @@ export interface PhaseRecord extends Record {
      * An array of numbers for hours, minutes, and seconds
      * [0] = hours, [1] = minutes, [2] = seconds
      */
-    Duration:Array<number>;
+    Duration?:Array<number>;
     /**
      * Quarter the phase is assigned (1, 2, 3, 4)
      */
-    PhaseQtr:number;
+    PhaseQtr?:number;
 }
 
 export interface AnthemRecord extends Record {
@@ -375,7 +379,7 @@ export interface PeerRecord extends Record {
     /**
      * Collection of controller codes that the peer receives state updates from other peers
      */
-    ReceiveApps:Array<string>;
+    ReceiveApps?:Array<string>;
 }
 
 export enum Controllers {
@@ -396,25 +400,62 @@ export enum Controllers {
     ANTHEM
 };
 
-export interface IController {
-    /**
-     * Unique key for the controller
-     */
-    Key:string;
-    /**
-     * Initializes the controller
-     */
-    Init?:Function;
-    /**
-     * Gets the store object of the controller
-     */
-    getStore:Function;
-    /**
-     * Gets the current state of the controller
-     */
-    getState:Function;
-    /**
-     * Subscribes to the store for the controller
-     */
-    subscribe:Function;
-};
+
+
+export interface JamRecord {
+    ID:number;
+    MatchID:number;
+    JamNumber:number;
+    JamType:string;
+    JamDate:string;
+    JamClockStart:string;
+    JamClockEnd:string;
+    JamTimeStart:string;
+    JamTimeEnd:string;
+    GameClockStart:string;
+    GameClockEnd:string;
+    TeamAID:number;
+    TeamAName:string;
+    TeamAScore:number;
+    TeamAPoints:number;
+    TeamAStatus:number;
+    TeamATimeouts:number;
+    TeamAChallenges:number;
+    TeamBID:number;
+    TeamBName:string;
+    TeamBScore:number;
+    TeamBPoints:number;
+    TeamBStatus:number;
+    TeamBTimeouts:number;
+    TeamBChallenges:number;
+    PhaseID:number;
+    PhaseName:string;
+    LeadJamTeamID:number;
+    JamEndReason:string;
+    Penalties:Array<JamRecordPenalty>;
+    Skaters:Array<JamRecordSkater>;
+}
+
+export interface JamRecordSkater {
+    ID:number;
+    JamID:number;
+    SkaterID:number;
+    SkaterNumber:string;
+    SkaterName:string;
+    TeamID:number;
+    TeamName:string;
+    Jammer:string;
+    Blocker:string;
+    Pivot:string;
+    StarPass:string;
+    Points:number;
+    Penalties:number;
+}
+
+export interface JamRecordPenalty {
+    ID:number;
+    SkaterJamID:number;
+    PenaltyID:number;
+    PenaltyName:string;
+    PenaltyType:string;
+}

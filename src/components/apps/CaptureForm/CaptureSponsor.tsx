@@ -1,8 +1,9 @@
 import React from 'react';
-import DataController from 'controllers/DataController';
 import SponsorController, {SSponsorController} from 'controllers/SponsorController';
 import cnames from 'classnames';
 import './css/CaptureSponsor.scss';
+import SponsorCaptureController from 'controllers/capture/Sponsor';
+import { AddMediaPath } from 'controllers/functions';
 
 interface SCaptureSponsor extends SSponsorController {
     CurrentSlide?:string
@@ -11,13 +12,23 @@ interface SCaptureSponsor extends SSponsorController {
 /**
  * Slideshow for the sponsor display.
  */
-export default class CaptureSponsor extends React.Component<{
-    /**
-     * true to show, false to hide
-     */
-    shown:boolean;
-}, SCaptureSponsor> {
-    readonly state:SCaptureSponsor = SponsorController.getState();
+export default class CaptureSponsor extends React.Component<any, {
+    Index:number;
+    Slides:Array<any>;
+    Shown:boolean;
+    className:string;
+    CurrentSlide:string;
+    RecordID:number;
+}> {
+    
+    readonly state = {
+        Index:SponsorController.GetState().Index,
+        Slides:SponsorController.GetState().Slides,
+        RecordID:SponsorController.GetState().RecordID,
+        Shown:SponsorCaptureController.GetState().Shown,
+        className:SponsorCaptureController.GetState().className,
+        CurrentSlide:'A'
+    };
 
     /**
      * Source of Slide A
@@ -30,7 +41,8 @@ export default class CaptureSponsor extends React.Component<{
     /**
      * SponsorController remote
      */
-    protected remoteState:Function|null = null;
+    protected remoteState?:Function;
+    protected remoteCapture?:Function;
     
     /**
      * Constructor
@@ -40,16 +52,35 @@ export default class CaptureSponsor extends React.Component<{
         super(props);
         this.state.CurrentSlide = 'A';
         this.updateState = this.updateState.bind(this);
+        this.updateCapture = this.updateCapture.bind(this);
     }
 
     /**
      * Updates the state to match the controller.
      */
-    updateState() {
-        this.setState((state) => {
-            return Object.assign({}, SponsorController.getState(), {
-                CurrentSlide:(state.CurrentSlide === 'A') ? 'B' : 'A'
-            });
+    protected updateState() {
+        
+        let changes:any = {
+            Index:SponsorController.GetState().Index,
+            Slides:SponsorController.GetState().Slides,
+            RecordID:SponsorController.GetState().RecordID
+        };
+
+        if(changes.RecordID != this.state.RecordID) {
+            this.SourceA = '';
+            this.SourceB = '';
+            changes.CurrentSlide = 'A';
+        } else if(changes.Index != this.state.Index) {
+            changes.CurrentSlide = (this.state.CurrentSlide == 'A') ? 'B' : 'A';
+        }
+
+        this.setState(changes);
+    }
+
+    protected updateCapture() {
+        this.setState({
+            Shown:SponsorCaptureController.GetState().Shown,
+            className:SponsorCaptureController.GetState().className,
         });
     }
 
@@ -57,15 +88,18 @@ export default class CaptureSponsor extends React.Component<{
      * Start listeners
      */
     componentDidMount() {
-        this.remoteState = SponsorController.subscribe(this.updateState);
+        this.remoteState = SponsorController.Subscribe(this.updateState);
+        this.remoteCapture = SponsorCaptureController.Subscribe(this.updateCapture);
     }
 
     /**
      * Close listeners
      */
     componentWillUnmount() {
-        if(this.remoteState !== null)
+        if(this.remoteState)
             this.remoteState();
+        if(this.remoteCapture)
+            this.remoteCapture();
     }
 
     /**
@@ -73,7 +107,7 @@ export default class CaptureSponsor extends React.Component<{
      */
     render() {
         let className:string = cnames('capture-sponsors', {
-            shown:this.props.shown
+            shown:this.state.Shown
         });
 
         let classA:string = cnames({
@@ -86,17 +120,11 @@ export default class CaptureSponsor extends React.Component<{
             shown:(this.state.CurrentSlide === 'B')
         });
 
-        let classTemp:string = cnames({
-            slide:true,
-            temp:true,
-            shown:(this.state.TemporarySlide !== '')
-        });
-
         if(this.state.Slides && this.state.Slides.length && this.state.Slides[this.state.Index]) {
             if(this.state.CurrentSlide === 'A')
-                this.SourceA = DataController.mpath(this.state.Slides[this.state.Index].Filename);
+                this.SourceA = AddMediaPath(this.state.Slides[this.state.Index].Filename);
             else {
-                this.SourceB = DataController.mpath(this.state.Slides[this.state.Index].Filename);
+                this.SourceB = AddMediaPath(this.state.Slides[this.state.Index].Filename);
             }
         }
 
@@ -107,9 +135,6 @@ export default class CaptureSponsor extends React.Component<{
                 </div>
                 <div className={classB}>
                     <img src={this.SourceB} alt=""/>
-                </div>
-                <div className={classTemp}>
-                    <img src={this.state.TemporarySlide} alt=""/>
                 </div>
             </div>
         );

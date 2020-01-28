@@ -21,7 +21,7 @@ export default class CaptureCameraPeer extends React.PureComponent<{
     PeerID:string;
 }> {
     readonly state = {
-        PeerID:CameraController.getState().PeerID
+        PeerID:CameraController.GetState().PeerID
     };
 
     /**
@@ -54,7 +54,7 @@ export default class CaptureCameraPeer extends React.PureComponent<{
      */
     updateState() {
         this.setState({
-            PeerID:CameraController.getState().PeerID
+            PeerID:CameraController.GetState().PeerID
         });
     }
 
@@ -121,7 +121,7 @@ export default class CaptureCameraPeer extends React.PureComponent<{
      * Start listeners
      */
     componentDidMount() {
-        this.remoteState = CameraController.subscribe(this.updateState);
+        this.remoteState = CameraController.Subscribe(this.updateState);
         window.onPeerStream = this.onPeerStream;
         window.onPeerStreamClose = this.onPeerStreamClose;
         window.onPeerStreamError = this.onPeerStreamError;

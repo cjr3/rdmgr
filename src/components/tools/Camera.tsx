@@ -52,6 +52,9 @@ export default class Camera extends React.PureComponent<{
     constructor(props) {
         super(props);
         this.destroy = this.destroy.bind(this);
+        this.loadCamera = this.loadCamera.bind(this);
+        this.start = this.start.bind(this);
+        this.play = this.play.bind(this);
     }
 
     /**
@@ -84,7 +87,7 @@ export default class Camera extends React.PureComponent<{
                     this.props.onStream(stream);
                 this.start();
             }).catch((er) => {
-
+                this.destroy();
             });
         } catch(er) {
             alert(er.message);
@@ -143,7 +146,6 @@ export default class Camera extends React.PureComponent<{
      */
     componentDidUpdate(prevProps) {
         if(prevProps.deviceId !== this.props.deviceId) {
-            this.destroy();
             this.loadCamera(this.props.deviceId);
         }
 
