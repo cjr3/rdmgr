@@ -20,7 +20,9 @@ const InitState:SMonitor = {
     className:'',
     ID:'',
     Width:1280,
-    Height:720
+    Height:720,
+    Duration:0,
+    Delay:0
 };
 
 const SetMonitorBounds = (state:SMonitor, width:number, height:number) => {

@@ -2,8 +2,13 @@ import React from 'react';
 import { 
     Icon,
     IconLoop,
-    IconSave
+    IconSave,
+    IconNo
 } from 'components/Elements';
+
+import APIMatchesController from 'controllers/api/Matches';
+import {GetAuthToken} from 'controllers/api/functions';
+import UIController from 'controllers/UIController';
 
 /**
  * Component for posting scores to bout records at the API endpoint.
@@ -90,17 +95,20 @@ class MatchItem extends React.PureComponent<{
         this.setState(() => {
             return {saving:true};
         }, async () => {
-            /*
-            DataController.putMatchScores(
-                this.props.record.RecordID,
-                this.state.ScoreA,
-                this.state.ScoreB
-            ).then(() => {
-                this.setState({errorMessage:"",saving:false});
-            }).catch((error) => {
-                this.setState({errorMessage:error,saving:false});
+            let record:any = {...this.props.record};
+            record.TeamA.Score = this.state.ScoreA;
+            record.TeamB.Score = this.state.ScoreB;
+            APIMatchesController.UpdateRecord(record).then(() => {
+                this.setState({saving:false, errorMessage:''});
+            }, (err) => {
+                if(typeof err === 'string')
+                    this.setState({errorMessage:err,saving:false});
+                else if(err === false) {
+                    UIController.ShowLogin(() => {
+                        this.onClickSubmit();
+                    });
+                }
             });
-            */
         });
     }
 
@@ -118,6 +126,8 @@ class MatchItem extends React.PureComponent<{
         }
 
         let iconSaving:string = IconSave;
+        if(this.state.errorMessage)
+            iconSaving = IconNo;
         if(this.state.saving)
             iconSaving = IconLoop;
 
@@ -162,6 +172,7 @@ class MatchItem extends React.PureComponent<{
                                     onClick={this.onClickSubmit}
                                     src={iconSaving}
                                     active={this.state.saving}
+                                    title={this.state.errorMessage}
                                 />
                             </td>
                         </tr>

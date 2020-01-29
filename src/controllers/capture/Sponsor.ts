@@ -17,7 +17,8 @@ enum Actions {
 export const InitState:SSponsor = {
     Shown:false,
     className:'',
-    Delay:10000
+    Delay:10000,
+    Duration:0
 }
 
 const SetDelay = (state:SSponsor, delay:number) => {

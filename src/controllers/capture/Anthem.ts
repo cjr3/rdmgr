@@ -20,6 +20,8 @@ enum Actions {
 export const InitState:SAnthemController = {
     Shown:false,
     className:'',
+    Duration:0,
+    Delay:0,
     Record:{
         RecordID:0,
         RecordType:vars.RecordType.Anthem,

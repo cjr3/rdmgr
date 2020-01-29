@@ -1,7 +1,6 @@
 import {CreateController, BaseReducer} from './functions';
 import { ICaptureController, SCaptureControllerState } from './vars';
 import APIStandingsController from 'controllers/api/Standings';
-import { Files } from 'controllers/vars';
 
 interface IStandingsController extends ICaptureController {
     SetRecords:Function;
@@ -18,7 +17,9 @@ enum Actions {
 export const InitState:SStandingsState = {
     Shown:false,
     className:'',
-    Records:new Array<any>()
+    Records:new Array<any>(),
+    Duration:10000,
+    Delay:0
 };
 
 const SetRecords = (state:SStandingsState, records:Array<any>) => {

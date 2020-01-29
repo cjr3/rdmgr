@@ -1,6 +1,14 @@
 import { Store, createStore } from 'redux';
 import { SCaptureControllerState, Actions, ICaptureController } from './vars';
 import { LoadJsonFile, RecordSavers, StateSavers } from 'controllers/functions.io';
+import { delay } from 'tools/functions';
+
+let DurationTimer:any = 0;
+let DelayTimer:any = 0;
+const Interrupt = () => {
+    try {clearTimeout(DurationTimer);} catch(er) {}
+    try {clearTimeout(DelayTimer);} catch(er) {}
+}
 
 const SetState = (state:any, values:any) => {
     return {...state, ...values};
@@ -15,7 +23,6 @@ const Hide = (state:SCaptureControllerState) => {
 };
 
 const Show = (state:SCaptureControllerState) => {
-    console.trace();
     return {...state, Shown:true};
 };
 
@@ -25,6 +32,14 @@ const SetClass = (state:SCaptureControllerState, className:string) => {
 
 const SetVisibility = (state:SCaptureControllerState, value:boolean) => {
     return {...state, Shown:value};
+};
+
+const SetDelay = (state:SCaptureControllerState, value:number) => {
+    return {...state, Delay:Math.abs(value)};
+};
+
+const SetDuration = (state:SCaptureControllerState, value:number) => {
+    return {...state, Duration:Math.abs(value)};
 };
 
 export const BaseReducer = (state:any, action:any) => {
@@ -42,6 +57,10 @@ export const BaseReducer = (state:any, action:any) => {
                 return SetClass(state, action.className);
             case Actions.SET_VISIBILITY :
                 return SetVisibility(state, action.value);
+            case Actions.SET_DELAY :
+                return SetDelay(state, action.value);
+            case Actions.SET_DURATION :
+                return SetDuration(state, action.value);
             default :
                 return state;
         }
@@ -57,7 +76,9 @@ const CreateController = (key:string, reducer?:any) : any => {
     else {
         store = createStore(BaseReducer, {
             Shown:false,
-            className:''
+            className:'',
+            Duration:0,
+            Delay:0
         });
     }
 
@@ -65,13 +86,20 @@ const CreateController = (key:string, reducer?:any) : any => {
         Key:key,
         Init(){},
         async Show() {
+            Interrupt();
             controller.Dispatch({type:Actions.SHOW});
+            if(controller.GetState().Duration > 0)
+                DurationTimer = setTimeout(controller.Hide, controller.GetState().Duration);
         },
         async Hide() {
+            Interrupt();
             controller.Dispatch({type:Actions.HIDE});
         },
         async Toggle() {
+            Interrupt();
             controller.Dispatch({type:Actions.TOGGLE});
+            if(controller.GetState().Duration > 0)
+                DurationTimer = setTimeout(controller.Hide, controller.GetState().Duration);
         },
         async SetClass(className:string) {
             controller.Dispatch({
@@ -92,6 +120,18 @@ const CreateController = (key:string, reducer?:any) : any => {
             controller.Dispatch({
                 type:Actions.SET_VISIBILITY,
                 value:shown
+            });
+        },
+        async SetDelay(value:number) {
+            controller.Dispatch({
+                type:Actions.SET_DELAY,
+                value:value
+            });
+        },
+        async SetDuration(value:number) {
+            controller.Dispatch({
+                type:Actions.SET_DURATION,
+                value:value
             });
         },
         GetState() : any {

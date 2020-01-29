@@ -4,7 +4,7 @@ import Panel from 'components/Panel';
 import cnames from 'classnames';
 import { IconButton, IconCheck, IconNo } from 'components/Elements';
 import { LoadToken } from 'controllers/api/functions';
-
+import {LoginCallback} from 'controllers/UIController';
 
 export default class Login extends React.PureComponent<{
     onError?:Function;
@@ -73,6 +73,8 @@ export default class Login extends React.PureComponent<{
                 this.setState({processing:false,loggedIn:true,error:'',password:''});
                 if(this.props.onSuccess)
                     this.props.onSuccess();
+                if(LoginCallback)
+                    LoginCallback();
             }).catch((error) => {
                 this.setState({processing:false,loggedIn:false,error:error});
                 if(this.props.onError)

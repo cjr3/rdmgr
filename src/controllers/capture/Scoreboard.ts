@@ -15,7 +15,9 @@ export const InitBannerState:SScorebanner = {
     Shown:false,
     className:'',
     ClocksShown:true,
-    BackgroundImage:''
+    BackgroundImage:'',
+    Duration:0,
+    Delay:0
 };
 
 enum BannerActions {

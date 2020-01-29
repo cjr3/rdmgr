@@ -20,11 +20,13 @@ function endAnimation(v) {
     try {cancelAnimationFrame(v);} catch(er) {}
 }
 
+const delay = ms => new Promise(res => setTimeout(res, ms));
 
 export {
     endTimeout,
     startTimeout,
     endInterval,
     startInterval,
-    endAnimation
+    endAnimation,
+    delay
 };

@@ -196,18 +196,6 @@ export default class ScoreboardPanel extends React.PureComponent<any, {
 
         let buttons:Array<React.ReactElement> = new Array<React.ReactElement>(
             <IconButton
-                src={(this.state.panel === 'capture') ? IconX : IconPalette}
-                active={this.state.panel === 'capture'}
-                key="btn-appearance"
-                title="Appearance"
-                onClick={() => {
-                    this.setState((state) => {
-                        if(state.panel == 'capture')
-                            return {panel:''};
-                        return {panel:'capture'}
-                    });
-                }}/>,
-            <IconButton
                 src={(this.state.panel === 'scores') ? IconX : IconSave}
                 active={this.state.panel === 'scores'}
                 key="btn-scores"
@@ -297,10 +285,6 @@ export default class ScoreboardPanel extends React.PureComponent<any, {
                         sdate={this.StartDate}
                         edate={this.EndDate}
                     />
-                    <CapturePanel
-                        opened={(this.state.panel === 'capture')}
-                        onClose={() => {this.setState({panel:''})}}
-                    />
                 </Panel>
         )
     }
@@ -350,17 +334,6 @@ class ScoresPanel extends React.PureComponent<{
         }).catch((er) => {
             this.setState({error:er});
         });
-        /*
-        DataController.loadAPIMatches(false, {
-            sdate:this.props.sdate,
-            edate:this.props.edate,
-            order:"DESC"
-        }).then((matches) => {
-            this.setState({Matches:matches, error:'',title:"Post Scores"});
-        }).catch((msg:string) => {
-            this.setState({error:msg});
-        });
-        */
     }
 
     /**
@@ -393,6 +366,7 @@ class ScoresPanel extends React.PureComponent<{
                 buttons={buttons}
                 error={this.state.error}
                 title={this.state.title}
+                onOpen={this.load}
                 {...this.props}
                 >
                 <p>

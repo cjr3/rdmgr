@@ -17,7 +17,9 @@ enum Actions {
 export const InitState:SScoresState = {
     Shown:false,
     className:'',
-    Records:new Array<any>()
+    Records:new Array<any>(),
+    Duration:10000,
+    Delay:0
 };
 
 const SetRecords = (state:SScoresState, records:Array<any>) => {

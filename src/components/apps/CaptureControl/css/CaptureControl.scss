@@ -16,28 +16,6 @@
             border: solid 1px #CCCCCC;
         }
 
-        &:hover{
-            .notes{
-                transition: transform 150ms ease-in-out 3s;
-                transform: rotateX(0deg);
-            }
-        }
-
-        .notes {
-            position: absolute;
-            margin: auto;
-            transform: rotateX(90deg);
-            transform-origin: 50% 100%;
-            transition: transform 150ms ease-in-out 150ms;
-            background-color: #333333;
-            padding: 8px;
-            > p {
-                font-size: 0.9rem;
-                font-style: italic;
-                color: #999999;
-            }
-        }
-
         .camera-styles {
             > div {
                 overflow: hidden;
@@ -51,13 +29,23 @@
         .watcher-control {
             padding: 5px;
         }
-    }
 
-    .monitor-control {
-        overflow: hidden;
-        > * {
-            float: left;
-            margin: 2px;
+        .toggle-icons {
+            display: flex; 
+            flex-flow: row wrap;
+            flex: 0;
+            > .icon {
+                max-height: 38px;
+                margin: 1px;
+            }
+        }
+
+        .monitor-control {
+            overflow: hidden;
+            > * {
+                float: left;
+                margin: 2px;
+            }
         }
     }
 
@@ -150,7 +138,7 @@
                 display: flex;
                 flex-flow: row wrap;
                 align-items: center;
-                justify-content: space-between;
+                justify-content: center;
                 .icon {
                     height: 48px;
                 }
@@ -291,8 +279,11 @@
             flex: 1;
             width: 100%;
             position: relative;
+            display: grid;
+            grid-template: 375px auto / auto;
 
             .scorekeeper {
+                grid-area: 1 / 1;
                 .positions {
                     display: grid;
                     grid-template-rows: auto;
@@ -300,10 +291,14 @@
                     .team {
                         grid-area: 1 / 1;
                         .skater {
-                            display: none;
+                            display: grid;
                             &:first-of-type {
                                 display: grid;
                             }
+
+                            background-color: #333;
+                            border: solid 1px #000;
+
                             grid-template-rows: 75px;
                             grid-template-columns: 75px auto;
                             .thumbnail {
@@ -315,7 +310,7 @@
                                 line-height: 75px;
                                 text-align: center;
                                 font-family: $base-font-display;
-                                font-size: 36px;
+                                font-size: 24px;
                             }
                             .name {
                                 display: none;
@@ -330,13 +325,14 @@
             }
 
             .penalty-tracker {
+                grid-area: 2 / 1;
+                background-color: #222;
                 .skaters {
                     > div.stack-panel {
                         font-family: $base-font-display;
                         > div {
                             padding: 6px;
                             font-size: 24px;
-                            background-color: #222;
                             border: solid 1px #000;
                         }
                     }
@@ -382,15 +378,6 @@
                         }
                     }
                 }
-            }
-        }
-
-        > .toggle-icons {
-            display: flex; 
-            flex-flow: row wrap;
-            flex: 0;
-            > .icon {
-                max-height: 38px;
             }
         }
 

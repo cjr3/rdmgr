@@ -1,4 +1,4 @@
-import {IAPIController, RecordTypeCodes, APIActions, SAPIController} from './vars';
+import {IAPIController, APIActions, SAPIController} from './vars';
 import { Store, createStore } from 'redux';
 
 //user defined endpoints - for integrating your own data
@@ -8,7 +8,7 @@ let API_ENDPOINT_AUTH:string = '';
 let API_ENDPOINT:string = '';
 
 //RDMGR endpoints
-let RDMGR_API_ENDPOINT:string = 'http://api.rdmgr.org/api/v1';
+let RDMGR_API_ENDPOINT:string = '';
 let RDMGR_AUTH_TOKEN:string = '';
 let RDMGR_AUTH_ENDPOINT:string = '';
 let RDMGR_VALIDATE_ENDPOINT:string = '';
@@ -64,6 +64,8 @@ const SendData = async (method:'POST'|'PUT'|'DELETE', target:string, body:any) :
             rej('Failed to send request: please provide a request path!')
         else if(!body)
             rej('Failed to send request: No data to send!');
+        else if(!GetAuthToken())
+            rej(false);
         else {
             fetch(GetEndpoint() + target, GetInit({
                 method:method,
@@ -306,24 +308,24 @@ export const CreateController = (key:string, suffix:string, reducer?:any) : any 
         },
         UpdateRecord: async (record:any) => {
             return new Promise((res, rej) => {
-                if(!record)
+                if(!record || record === null || typeof(record) !== 'object')
                     rej('Please provide a record to save!');
                 else if(!record.RecordType)
                     rej('Please provide a RecordType code on your record.');
                 else if(!record.RecordID || record.RecordID <= 0)
                     rej('You must provide a record ID greater than zero to update a record.');
                 else {
-                    SendPut(controller.EndpointSuffix + "/" + record.RecordID, {
-                        Record:record
-                    }).then((response) => {
-                        if(response && response.record) {
+                    SendPut(controller.EndpointSuffix + "/" + record.RecordID, record).then((response) => {
+                        if(response && response.RecordID) {
                             controller.Dispatch({
                                 type:APIActions.UPDATE,
-                                record:response.record
+                                record:response
                             });
-                            res(response.record);
+                            res(response);
+                        } else if(response && response.message) {
+                            rej(response.message);
                         } else {
-                            rej('Failed to update record: No record was received from the endpoint');
+                            rej('Failed to update record: No response received from endpoint.');
                         }
                     }).catch((er) => {
                         rej(er);

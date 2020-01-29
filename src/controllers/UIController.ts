@@ -7,6 +7,8 @@ type Panels =
     'Roster' | 'CaptureControl' | 'MediaQueue' | 'DisplayControls' |
     'ConfigPanel' | 'APILogin';
 
+export let LoginCallback:any;
+
 interface IUIController extends IController {
     SetCurrentPanel:{(index:Panels, value:string)};
     ToggleDisplay:{(index:Panels)};
@@ -19,6 +21,9 @@ interface IUIController extends IController {
     ShowMediaQueue:Function;
     ShowRoster:Function;
     ToggleChat:Function;
+    ShowLogin:Function;
+    HideLogin:Function;
+    ToggleLogin:Function;
 };
 
 export enum Actions {
@@ -198,5 +203,22 @@ UIController.ShowRoster = async () => {
 UIController.ToggleChat = async () => {
     UIController.ToggleDisplay('Chat');
 };
+
+UIController.ShowLogin = async(cb?:any) => {
+    UIController.SetDisplay('APILogin', true);
+    if(cb)
+        LoginCallback = cb;
+};
+
+UIController.HideLogin = async() => {
+    UIController.SetDisplay('APILogin', false);
+};
+
+UIController.ToggleLogin = async(cb?:any) => {
+    UIController.ToggleDisplay('APILogin');
+    if(cb)
+        LoginCallback = cb;
+};
+
 
 export default UIController;

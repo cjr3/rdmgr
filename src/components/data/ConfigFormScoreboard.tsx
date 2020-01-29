@@ -224,112 +224,118 @@ export default class ConfigFormScoreboard extends React.PureComponent<{
                 buttons={buttons}
             >
                 <div className="record-form">
-                    <table className="grid" cellPadding={3}>
-                        <tbody>
-                            <tr>
-                                <td colSpan={2}><b>Team Settings</b></td>
-                            </tr>
-                            <tr>
-                                <td>Max Timeouts</td>
-                                <td>
-                                    <input
-                                        type="number"
-                                        min={0}
-                                        max={5}
-                                        size={10}
-                                        value={teamTimeoutMax}
-                                        onChange={this.onChangeTeamTimeoutMax}
-                                        /> per half
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Timeout Duration</td>
-                                <td>
-                                    <input
-                                        type="number"
-                                        min={15}
-                                        max={60}
-                                        step={5}
-                                        size={10}
-                                        value={teamTimeoutSeconds}
-                                        onChange={this.onChangeTeamTimeoutSeconds}
-                                        /> seconds
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Max Challenges</td>
-                                <td>
-                                    <input
-                                        type="number"
-                                        min={0}
-                                        max={5}
-                                        size={10}
-                                        value={teamChallengeMax}
-                                        onChange={this.onChangeTeamChallengeMax}
-                                        /> per half
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Challenge Duration</td>
-                                <td>
-                                    <input
-                                        type="number"
-                                        min={15}
-                                        max={60}
-                                        step={5}
-                                        size={10}
-                                        value={teamChallengeSeconds}
-                                        onChange={this.onChangeTeamChallengeSeconds}
-                                        /> seconds
-                                </td>
-                            </tr>
-                            <tr>
-                                <td colSpan={2}>Clock Settings</td>
-                            </tr>
-                            <tr>
-                                <td>Jam Mode</td>
-                                <td>
-                                    <ToggleButton
-                                        checked={jamMode}
-                                        onClick={this.onChangeJamMode}
-                                        label="Three-step Jam Mode: JAM, STOP, and READY"
-                                    />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Jam Duration</td>
-                                <td>
-                                    <input
-                                        type="number"
-                                        min={30}
-                                        max={120}
-                                        step={5}
-                                        size={10}
-                                        value={jamSeconds}
-                                        onChange={this.onChangeJamClockSeconds}
-                                        /> seconds
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Break Duration</td>
-                                <td>
-                                    <input
-                                        type="number"
-                                        min={0}
-                                        max={60}
-                                        step={5}
-                                        size={10}
-                                        value={breakSeconds}
-                                        onChange={this.onChangeBreakClockSeconds}
-                                        /> seconds
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <p>
-                        Jam Clock changes take effect after you reset the board, by
-                        selectong <i>Teams</i> on the Scoreboard, and checking <i>Reset Board</i>
-                    </p>
+                    <div className="form-section">
+                        <h3>Teams</h3>
+                        <table className="grid" cellPadding={3}>
+                            <tbody>
+                                <tr>
+                                    <td>Max Timeouts</td>
+                                    <td>
+                                        <input
+                                            type="number"
+                                            min={0}
+                                            max={5}
+                                            size={10}
+                                            value={teamTimeoutMax}
+                                            onChange={this.onChangeTeamTimeoutMax}
+                                            /> per half
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Timeout Duration</td>
+                                    <td>
+                                        <input
+                                            type="number"
+                                            min={15}
+                                            max={60}
+                                            step={5}
+                                            size={10}
+                                            value={teamTimeoutSeconds}
+                                            onChange={this.onChangeTeamTimeoutSeconds}
+                                            /> seconds
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Max Challenges</td>
+                                    <td>
+                                        <input
+                                            type="number"
+                                            min={0}
+                                            max={5}
+                                            size={10}
+                                            value={teamChallengeMax}
+                                            onChange={this.onChangeTeamChallengeMax}
+                                            /> per half
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Challenge Duration</td>
+                                    <td>
+                                        <input
+                                            type="number"
+                                            min={15}
+                                            max={60}
+                                            step={5}
+                                            size={10}
+                                            value={teamChallengeSeconds}
+                                            onChange={this.onChangeTeamChallengeSeconds}
+                                            /> seconds
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className="form-section">
+                        <h3>Clock</h3>
+                        <table cellPadding={3}>
+                            <tbody>
+                                <tr>
+                                    <td>Jam Mode</td>
+                                    <td>
+                                        <ToggleButton
+                                            checked={jamMode}
+                                            onClick={this.onChangeJamMode}
+                                            label="Three-step Jam Mode: JAM, STOP, and READY"
+                                        />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Jam Duration</td>
+                                    <td>
+                                        <input
+                                            type="number"
+                                            min={30}
+                                            max={120}
+                                            step={5}
+                                            size={10}
+                                            value={jamSeconds}
+                                            onChange={this.onChangeJamClockSeconds}
+                                            /> seconds
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Break Duration</td>
+                                    <td>
+                                        <input
+                                            type="number"
+                                            min={0}
+                                            max={60}
+                                            step={5}
+                                            size={10}
+                                            value={breakSeconds}
+                                            onChange={this.onChangeBreakClockSeconds}
+                                            /> seconds
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className="form-section">
+                        <p>
+                            Jam Mode change takes effect after you reset the board, by
+                            selectong <i>Teams</i> on the Scoreboard, and checking <i>Reset Board</i>
+                        </p>
+                    </div>
                 </div>
             </Panel>
         )

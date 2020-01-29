@@ -1,11 +1,7 @@
 import {CreateController, BaseReducer} from './functions';
 import { ICaptureController, SCaptureControllerState } from './vars';
-import { Files } from 'controllers/vars';
-
 
 interface IStateAnnouncer extends SCaptureControllerState {
-    Shown:boolean;
-    className:string;
     Announcer1:string;
     Announcer2:string;
     Duration:number;
@@ -21,29 +17,25 @@ export const InitState:IStateAnnouncer = {
     className:'',
     Announcer1:'',
     Announcer2:'',
-    Duration:10000
+    Duration:10000,
+    Delay:0
 };
 
+let Timer:any = 0;
+
 enum Actions {
-    SET_ANNOUNCERS = "SET_ANNOUNCERS",
-    SET_DURATION = "SET_DURATION"
+    SET_ANNOUNCERS = "SET_ANNOUNCERS"
 }
 
 const SetAnnouncers = (state:IStateAnnouncer, name1:string, name2:string) => {
     return {...state, Announcer1:name1, Announcer2:name2};
 };
 
-const SetDuration = (state:IStateAnnouncer, duration:number) => {
-    return {...state, Duration:duration};
-}
-
 const AnnouncerReducer = (state:IStateAnnouncer = InitState, action) => {
     try {
         switch(action.type) {
             case Actions.SET_ANNOUNCERS : 
                 return SetAnnouncers(state, action.name1, action.name2);
-            case Actions.SET_DURATION :
-                return SetDuration(state, action.duration);
             default :
                 return BaseReducer(state, action);
         }
@@ -58,13 +50,6 @@ AnnouncerCaptureController.SetAnnouncers = async (name1:string, name2:string) =>
         type:Actions.SET_ANNOUNCERS,
         name1:name1,
         name2:name2
-    });
-};
-
-AnnouncerCaptureController.SetDuration = async (duration:number) => {
-    AnnouncerCaptureController.Dispatch({
-        type:Actions.SET_DURATION,
-        duration:duration
     });
 };
 

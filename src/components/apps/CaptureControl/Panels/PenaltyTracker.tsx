@@ -4,6 +4,7 @@ import { SkaterRecord, PenaltyRecord } from 'tools/vars';
 import PenaltiesController from 'controllers/PenaltiesController';
 import PenaltyCaptureController from 'controllers/capture/Penalty';
 import Panel from 'components/Panel';
+import { Unsubscribe } from 'redux';
 
 /**
  * Component for configuring penalty tracker elements.
@@ -37,17 +38,12 @@ export default class PenaltyTrackerPanel extends React.PureComponent<any, {
     /**
      * Listener for Penalty Controller
      */
-    protected remoteState:Function|null = null;
+    protected remoteState?:Unsubscribe;
 
     /**
      * Listener for Capture Controller
      */
-    protected remoteCapture:Function|null = null;
-
-    /**
-     * Listener for data controller, to get penalty codes
-     */
-    protected remoteData:Function|null = null;
+    protected remoteCapture?:Unsubscribe;
 
     /**
      * Constructor
@@ -58,39 +54,20 @@ export default class PenaltyTrackerPanel extends React.PureComponent<any, {
         this.onChangeDuration = this.onChangeDuration.bind(this);
         this.updateState = this.updateState.bind(this);
         this.updateCapture = this.updateCapture.bind(this);
-        this.updateData = this.updateData.bind(this);
     }
 
     /**
      * Updates the state to match the camera controller.
      */
-    updateState() {
-        this.setState(() => {
-            return {
-                Skaters:PenaltyController.GetState().Skaters
-            }
-        });
+    protected updateState() {
+        this.setState({Skaters:PenaltyController.GetState().Skaters});
     }
 
     /**
      * Updates the state to match the capture controller.
      */
-    updateCapture() {
-        this.setState(() => {
-            return {
-                Shown:PenaltyCaptureController.GetState().Shown
-            }
-        });
-    }
-    
-    /**
-     * Updates the state to match the data controller
-     * - Gets the penalty records
-     */
-    updateData() {
-        this.setState(() => {
-            return {Penalties:PenaltiesController.Get()};
-        });
+    protected updateCapture() {
+        this.setState({Shown:PenaltyCaptureController.GetState().Shown});
     }
 
     /**
@@ -113,7 +90,6 @@ export default class PenaltyTrackerPanel extends React.PureComponent<any, {
     componentDidMount() {
         this.remoteState = PenaltyController.Subscribe(this.updateState);
         this.remoteCapture = PenaltyCaptureController.Subscribe(this.updateCapture);
-        this.remoteData = PenaltiesController.Subscribe(this.updateData);
     }
 
     /**
@@ -121,14 +97,11 @@ export default class PenaltyTrackerPanel extends React.PureComponent<any, {
      * - Remove controller listeners
      */
     componentWillUnmount() {
-        if(this.remoteCapture !== null)
+        if(this.remoteCapture)
             this.remoteCapture();
 
-        if(this.remoteState !== null)
+        if(this.remoteState)
             this.remoteState();
-
-        if(this.remoteData !== null)
-            this.remoteData();
     }
 
     /**
@@ -149,8 +122,8 @@ export default class PenaltyTrackerPanel extends React.PureComponent<any, {
                 />
         ];
 
-        let skaters:Array<React.ReactElement> = [];
-        this.state.Skaters.forEach((skater) => {
+        let skaters:Array<React.ReactElement> = new Array<React.ReactElement>();
+        this.state.Skaters.forEach((skater, index) => {
             let codes:Array<string> = [];
             if(skater.Penalties !== undefined && skater.Penalties.length >= 1) {
                 skater.Penalties.forEach((pen:any) => {
@@ -160,12 +133,14 @@ export default class PenaltyTrackerPanel extends React.PureComponent<any, {
                         codes.push(pen.Code);
                 });
             }
-            skaters.push(
-                <div className="stack-panel s2" key={`${skater.RecordID}-${skater.RecordID}`}>
-                    <div>{`#${skater.Number}`}</div>
-                    <div>{codes.join(', ')}</div>
-                </div>
-            );
+            if(index < 5) {
+                skaters.push(
+                    <div className="stack-panel s2" key={`${skater.RecordID}-${skater.RecordID}`}>
+                        <div>{`#${skater.Number}`}</div>
+                        <div>{codes.join(', ')}</div>
+                    </div>
+                );
+            }
         });
 
         return (

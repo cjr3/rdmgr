@@ -1,7 +1,6 @@
 import {CreateController, BaseReducer} from './functions';
 import { ICaptureController, SCaptureControllerState } from './vars';
 import APIScheduleController from '../api/Schedule';
-import { Files } from 'controllers/vars';
 
 interface IScheduleController extends ICaptureController {
     SetRecords:Function;
@@ -18,7 +17,9 @@ enum Actions {
 export const InitState:SScheduleState = {
     Shown:false,
     className:'',
-    Records:new Array<any>()
+    Records:new Array<any>(),
+    Duration:10000,
+    Delay:0
 };
 
 const SetRecords = (state:SScheduleState, records:Array<any>) => {

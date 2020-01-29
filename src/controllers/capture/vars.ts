@@ -5,11 +5,15 @@ export interface ICaptureController extends IController {
     Toggle:Function;
     SetClass:Function;
     SetVisibility:Function;
+    SetDelay:Function;
+    SetDuration:Function;
 }
 
 export interface SCaptureControllerState {
     Shown:boolean;
     className:string;
+    Delay:number;
+    Duration:number;
 }
 
 export enum Actions {
@@ -18,5 +22,7 @@ export enum Actions {
     SHOW = "SHOW",
     HIDE = "HIDE",
     SET_CLASS = "SET_CLASS",
-    SET_VISIBILITY = "SET_VISIBILITY"
+    SET_VISIBILITY = "SET_VISIBILITY",
+    SET_DELAY = 'SET_DELAY',
+    SET_DURATION = 'SET_DURATION'
 }

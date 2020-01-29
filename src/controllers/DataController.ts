@@ -31,6 +31,7 @@ import { AddMediaPath, RemoveMediaPath } from './functions';
 import { RecordSavers, LoadJsonFile, StateSavers } from './functions.io';
 import ScoreboardCaptureController, { JamClockCaptureController, JamCounterCaptureController, ScorebannerCaptureController } from './capture/Scoreboard';
 import ScorekeeperCaptureController from './capture/Scorekeeper';
+import { SetAuthEndpoint, SetEndpoint, SetValidateEndpoint } from './api/functions';
 
 let path = require('path');
 if(window && window.require) {
@@ -93,6 +94,7 @@ export interface SDataController {
         APIEndpoint:string;
         APIAuthEndpoint:string;
         APIValidateEndpoint:string;
+        APIUsername:string;
     }
 }
 
@@ -111,7 +113,8 @@ const InitState:SDataController = {
         NextBoutFlier:"",
         APIEndpoint:"",
         APIAuthEndpoint:"",
-        APIValidateEndpoint:""
+        APIValidateEndpoint:"",
+        APIUsername:""
     }
 };
 
@@ -328,6 +331,18 @@ DataController.LoadMiscRecords = async () => {
                 type:Actions.SET_MISC_RECORDS,
                 values:data
             });
+
+            //API keys
+
+            if(data.APIAuthEndpoint)
+                SetAuthEndpoint(data.APIAuthEndpoint);
+
+            if(data.APIEndpoint)
+                SetEndpoint(data.APIEndpoint);
+
+            if(data.APIValidateEndpoint)
+                SetValidateEndpoint(data.APIValidateEndpoint);
+
             res(true);
         }).catch((er) => {
             res(false);
