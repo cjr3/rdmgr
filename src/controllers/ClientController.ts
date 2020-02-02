@@ -1,6 +1,6 @@
 //controllers
 import CameraController from 'controllers/CameraController';
-//import CaptureController from 'controllers/CaptureController';
+import CaptureController from 'controllers/CaptureController';
 import ChatController from 'controllers/ChatController';
 import DataController from 'controllers/DataController';
 import MediaQueueController from 'controllers/MediaQueueController';
@@ -407,7 +407,7 @@ ClientController.Init = () => {
     Subscriptions[DataController.Key] = DataController.Subscribe(ClientController.updateData);
     Subscriptions[ChatController.Key] = ChatController.Subscribe(ClientController.updateChat);
     Subscriptions[CameraController.Key] = CameraController.Subscribe(ClientController.updateCamera);
-    //Subscriptions[CaptureController.Key] = CaptureController.Subscribe(ClientController.updateCapture);
+    Subscriptions[CaptureController.Key] = CaptureController.Subscribe(ClientController.updateCapture);
     Subscriptions[MediaQueueController.Key] = MediaQueueController.Subscribe(ClientController.updateMediaQueue);
     Subscriptions[PenaltyController.Key] = PenaltyController.Subscribe(ClientController.updatePenalty);
     Subscriptions[RaffleController.Key] = RaffleController.Subscribe(ClientController.updateRaffle);
@@ -963,7 +963,7 @@ ClientController.updateScoreboard = async () => {
         window.LocalServer.SendState(ScoreboardController.Key, Object.assign({}, cstate));
     }
 };
-/*
+
 ClientController.updateCapture = async () => {
 
     let state = CaptureController.GetState();
@@ -977,7 +977,7 @@ ClientController.updateCapture = async () => {
         window.LocalServer.SendState(CaptureController.Key, Object.assign({}, state));
     }
 };
-*/
+
 ClientController.updateSlideshow = async () => {
     let cstate = SlideshowController.GetState();
     IPC.send({

@@ -19,7 +19,6 @@ import {InitState as CaptureAnnouncerState} from 'controllers/capture/Announcer'
 import {InitState as CapturePenaltyState} from 'controllers/capture/Penalty';
 import {InitState as CaptureScheduleState} from 'controllers/capture/Schedule';
 import {InitBannerState as CaptureScorebannerState} from 'controllers/capture/Scoreboard';
-import {InitState as CaptureSponsorState} from 'controllers/capture/Sponsor';
 import {InitState as CaptureStandingsState} from 'controllers/capture/Standings';
 import {InitState as CaptureScoresState} from 'controllers/capture/Scores';
 
@@ -353,8 +352,9 @@ class Installation {
             case Files.CaptureRoster :
             case Files.CaptureScorekeeper :
             case Files.CaptureSlideshow :
+            case Files.CaptureSponsor :
             case Files.CaptureVideo :
-                data = {Shown:false,className:''};
+                data = {Shown:false,className:'',Duration:0,Delay:0,AutoHide:false};
             break;
 
             //Announcer
@@ -380,11 +380,6 @@ class Installation {
             //Scorebanner
             case Files.CaptureScorebanner :
                 data = Object.assign({}, CaptureScorebannerState);
-            break;
-
-            //Sponsor
-            case Files.CaptureSponsor :
-                data = Object.assign({}, CaptureSponsorState);
             break;
 
             //Standings

@@ -1,0 +1,51 @@
+@import 'src/css/vars.scss';
+.capture-jam-clock {
+    
+    position: absolute;
+    margin: auto;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 999;
+    font-family: $base-font-display;
+    font-size: 700px;
+    line-height: 650px;
+    text-align: center;
+    padding-left: 64px;
+    opacity: 0;
+    transition: opacity 150ms;
+    background-color: #000;
+
+    &.shown {
+        opacity: 1;
+    }
+    
+    &.warning {
+        color: $warning;
+    }
+
+    &.danger {
+        color: $danger;
+    }
+}
+
+.capture-form.stream {
+    .capture-jam-clock {
+        right: initial;
+        top: initial;
+        left: 32px;
+        bottom: 32px;
+        width: 100px;
+        height: 100px;
+        font-size: 6vw;
+        padding-left: 10px;
+        line-height: 90px;
+        border-radius: 16px;
+        transition: opacity 200ms, transform 150ms;
+        transform: translateY(150px);
+        &.warning, &.danger {
+            transform: translateY(0px);
+        }
+    }
+}

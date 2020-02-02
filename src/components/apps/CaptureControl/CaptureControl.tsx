@@ -1,5 +1,5 @@
 import React from 'react'
-import {ToggleButton} from 'components/Elements';
+import {ToggleButton, Button} from 'components/Elements';
 import Panel from 'components/Panel'
 import CaptureWatcher from './CaptureWatcher'
 //import CaptureDisplayControls from './CaptureDisplayControls';
@@ -12,19 +12,23 @@ import UIController from 'controllers/UIController';
 import { Unsubscribe } from 'redux';
 import StreamPanel, {ToggleIcons} from './Panels/StreamPanel';
 import ScoreboardPanel from './Panels/Scoreboard';
+import ScoresPanel from './Panels/Scores';
+import TeamPicker from '../Scoreboard/TeamPicker';
+import PhaseSelection from '../Scoreboard/PhaseSelection';
+import CameraPanel from './Panels/Camera';
+import RosterPanel from './Panels/Roster';
 
 /**
  * Component for determining what is displayed on the capture window.
  */
 export default class CaptureControl extends React.PureComponent<any, {
-    /**
-     * Determines if the capture control is displayed or not
-     */
     opened:boolean;
+    CurrentPanel:string;
 }> {
 
     readonly state = {
-        opened:UIController.GetState().CaptureControl.Shown
+        opened:UIController.GetState().CaptureControl.Shown,
+        CurrentPanel:''
     }
 
     protected remoteUI?:Unsubscribe;
@@ -32,10 +36,18 @@ export default class CaptureControl extends React.PureComponent<any, {
     constructor(props) {
         super(props);
         this.updateUI = this.updateUI.bind(this);
+        this.setPanel = this.setPanel.bind(this);
     }
 
     protected async updateUI() {
         this.setState({opened:UIController.GetState().CaptureControl.Shown});
+    }
+
+    protected setPanel(value:string) {
+        if(!value || this.state.CurrentPanel == value)
+            this.setState({CurrentPanel:''});
+        else
+            this.setState({CurrentPanel:value});
     }
 
     componentDidMount() {
@@ -52,10 +64,42 @@ export default class CaptureControl extends React.PureComponent<any, {
      */
     render() {
         return (
-            <Panel opened={this.state.opened} contentName="CC-app">
+            <Panel 
+                opened={this.state.opened} 
+                contentName="CC-app"
+                className="CC-app-panel"
+                buttons={[<Buttons key='buttons' onClick={this.setPanel} panel={this.state.CurrentPanel}/>]}
+                >
                 <CaptureControlPreview/>
                 <ScoreboardPanel/>
                 <StreamPanel/>
+                <ScoresPanel
+                    opened={(this.state.CurrentPanel === 'scores')}
+                />
+                <TeamPicker
+                    opened={(this.state.CurrentPanel === 'teams')}
+                    onClose={() => {this.setState({CurrentPanel:''})}}
+                    onSubmit={() => {this.setState({CurrentPanel:''})}}
+                    />
+                <PhaseSelection
+                    opened={(this.state.CurrentPanel === 'phase')}
+                    onClose={() => {this.setState({CurrentPanel:''})}}
+                    onSelect={() => {this.setState({CurrentPanel:''})}}
+                    />
+                <CameraPanel
+                    opened={(this.state.CurrentPanel === 'camera')}
+                    onClose={() => {this.setState({CurrentPanel:''})}}
+                    onSubmit={() => {this.setState({CurrentPanel:''})}}
+                    />
+                <CaptureControlMonitor
+                    opened={(this.state.CurrentPanel == 'monitor')}
+                    onClose={() => {this.setState({CurrentPanel:''})}}
+                    onSubmit={() => {this.setState({CurrentPanel:''})}}
+                    />
+                <RosterPanel
+                    opened={(this.state.CurrentPanel == 'roster')}
+                    onClose={() => {this.setState({CurrentPanel:''})}}
+                    />
             </Panel>
         );
     }
@@ -65,11 +109,9 @@ export default class CaptureControl extends React.PureComponent<any, {
  * Component for displaying a preview of the capture window.
  */
 function CaptureControlPreview() {
+    //<CaptureControlWatcher/>
     return (
         <div className="capture-preview">
-            <CaptureControlMonitor/>
-            <CaptureControlWatcher/>
-            <ToggleIcons/>
             <div className="camera-styles">
                 <CaptureCameraStyleButtons/>
                 <CaptureVideoStyleButtons/>
@@ -91,7 +133,6 @@ class CaptureControlWatcher extends React.PureComponent<any, {
     render() {
         return (
             <React.Fragment>
-                <CaptureWatcher shown={this.state.CapturePreviewShown}/>
                 <div className="watcher-control">
                     <ToggleButton
                         checked={this.state.CapturePreviewShown}
@@ -103,5 +144,25 @@ class CaptureControlWatcher extends React.PureComponent<any, {
                 </div>
             </React.Fragment>
         );
+    }
+}
+
+class Buttons extends React.PureComponent<{
+    panel:string;
+    onClick:Function;
+}> {
+
+    render() {
+        return (
+            <React.Fragment>
+                <ToggleIcons/>
+                <Button onClick={() => {this.props.onClick('scores')}} active={(this.props.panel === 'scores')}>Scores</Button>
+                <Button onClick={() => {this.props.onClick('phase')}} active={(this.props.panel === 'phase')}>Quarter</Button>
+                <Button onClick={() => {this.props.onClick('teams')}} active={(this.props.panel === 'teams')}>Teams</Button>
+                <Button onClick={() => {this.props.onClick('roster')}} active={(this.props.panel === 'roster')}>Intros</Button>
+                <Button onClick={() => {this.props.onClick('monitor')}} active={(this.props.panel === 'monitor')}>Monitor</Button>
+                <Button onClick={() => {this.props.onClick('camera')}} active={(this.props.panel === 'camera')}>Camera</Button>
+            </React.Fragment>
+        )
     }
 }

@@ -21,18 +21,24 @@ import CaptureScores from './CaptureScores';
 import { Unsubscribe } from 'redux';
 import { AddMediaPath } from 'controllers/functions';
 import './css/CaptureForm.scss';
+import DataController from 'controllers/DataController';
 
 /**
  * Main component for the capture window.
  */
 export default class CaptureForm extends React.Component<any, {
     Background:string;
+    StreamMode:boolean;
+    className:string;
 }> {
     readonly state = {
-        Background:CaptureController.GetState().Background
+        Background:DataController.GetMiscRecord('LeagueBackground'),
+        StreamMode:DataController.GetMiscRecord('StreamMode'),
+        className:CaptureController.GetState().className
     };
 
-    protected remoteStatus?:Unsubscribe;
+    protected remoteCapture?:Unsubscribe;
+    protected remoteData?:Unsubscribe;
 
     /**
      * Constructor
@@ -40,6 +46,21 @@ export default class CaptureForm extends React.Component<any, {
      */
     constructor(props) {
         super(props);
+        this.updateCapture = this.updateCapture.bind(this);
+        this.updateData = this.updateData.bind(this);
+    }
+
+    protected updateCapture() {
+        this.setState({
+            className:CaptureController.GetState().className
+        });
+    }
+
+    protected updateData() {
+        this.setState({
+            Background:DataController.GetMiscRecord('LeagueBackground'),
+            StreamMode:DataController.GetMiscRecord('StreamMode')
+        });
     }
 
     /**
@@ -48,6 +69,15 @@ export default class CaptureForm extends React.Component<any, {
      */
     componentDidMount() {
         CaptureController.Init(true);
+        this.remoteData = DataController.Subscribe(this.updateData);
+        this.remoteCapture = CaptureController.Subscribe(this.updateCapture);
+    }
+
+    componentWillUnmount() {
+        if(this.remoteCapture)
+            this.remoteCapture();
+        if(this.remoteData)
+            this.remoteData();
     }
 
     /**
@@ -58,8 +88,12 @@ export default class CaptureForm extends React.Component<any, {
         if(this.state.Background)
             style.backgroundImage = `url('${ AddMediaPath(this.state.Background) }')`;
 
+        let className:string = cnames('capture-form',{
+            stream:this.state.StreamMode
+        });
+
         return (
-            <div className="capture-form" style={style}>
+            <div className={className} style={style}>
                 <div className="dragger"></div>
                 <CaptureCamera/>
                 <CaptureVideo/>

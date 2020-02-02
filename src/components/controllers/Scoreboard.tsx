@@ -357,7 +357,7 @@ export default class Scoreboard extends React.PureComponent<{
                                 <ColorPicker
                                     name='color'
                                     value={this.state.TeamAColor}
-                                    size='10'
+                                    //size='10'
                                     onChange={this.onChangeTeamAColor}
                                     />
                             </td>
@@ -365,7 +365,7 @@ export default class Scoreboard extends React.PureComponent<{
                                 <ColorPicker
                                     name='color'
                                     value={this.state.TeamBColor}
-                                    size='10'
+                                    //size='10'
                                     onChange={this.onChangeTeamBColor}
                                     />
                             </td>

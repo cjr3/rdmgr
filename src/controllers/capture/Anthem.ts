@@ -22,6 +22,7 @@ export const InitState:SAnthemController = {
     className:'',
     Duration:0,
     Delay:0,
+    AutoHide:false,
     Record:{
         RecordID:0,
         RecordType:vars.RecordType.Anthem,

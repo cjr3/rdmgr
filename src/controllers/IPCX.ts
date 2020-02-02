@@ -1,6 +1,6 @@
 import CameraController from 'controllers/CameraController';
 import ScoreboardController from 'controllers/ScoreboardController';
-//import CaptureController from 'controllers/CaptureController';
+import CaptureController from 'controllers/CaptureController';
 import SlideshowController from 'controllers/SlideshowController';
 import VideoController from './VideoController';
 import RaffleController from './RaffleController';
@@ -60,6 +60,10 @@ class IPCX {
                     //scoreboard
                     case ScoreboardController.Key :
                         ScoreboardController.SetState(data.state);
+                    break;
+
+                    case CaptureController.Key :
+                        CaptureController.SetState(data.state);
                     break;
 
                     //capture status

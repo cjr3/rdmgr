@@ -90,11 +90,19 @@ export default class ConfigForm extends React.PureComponent<{
         super(props);
         this.onKeyUpKeywords = this.onKeyUpKeywords.bind(this);
         this.onClickNewRecord = this.onClickNewRecord.bind(this);
+        this.setRecordType = this.setRecordType.bind(this);
     }
 
     protected onKeyUpKeywords(ev: React.ChangeEvent<HTMLInputElement>) {
         let value:string = ev.currentTarget.value;
         this.setState({Keywords:value});
+    }
+
+    protected setRecordType(type:string) {
+        if(!type || type == this.state.RecordType)
+            this.setState({RecordType:''});
+        else
+            this.setState({RecordType:type});
     }
 
     protected onClickNewRecord() {
@@ -131,7 +139,13 @@ export default class ConfigForm extends React.PureComponent<{
     }
 
     render() {
-        let className:string = cnames('CFG-app');
+        let active:boolean = false;
+        if(this.state.AnthemSinger && this.state.RecordType == vars.RecordType.Anthem)
+            active = true;
+
+        let className:string = cnames('CFG-app', {
+            active:active
+        });
         let title:string = 'Configuration';
         switch(this.state.RecordType) {
             case vars.RecordType.Anthem : title = "Anthem Singers"; break;
@@ -273,67 +287,67 @@ export default class ConfigForm extends React.PureComponent<{
                             src={IconFlag}
                             title="Anthem Singers"
                             active={(this.state.RecordType == vars.RecordType.Anthem)}
-                            onClick={() => this.setState({RecordType:vars.RecordType.Anthem})}
+                            onClick={() => this.setRecordType(vars.RecordType.Anthem)}
                             />
                         <Icon 
                             src={IconWhistle}
                             title="Penalties"
                             active={(this.state.RecordType == vars.RecordType.Penalty)}
-                            onClick={() => this.setState({RecordType:vars.RecordType.Penalty})}
+                            onClick={() => this.setRecordType(vars.RecordType.Penalty)}
                             />
                         <Icon 
                             src={IconStopwatch}
                             title="Quarters/Phases"
                             active={(this.state.RecordType == vars.RecordType.Phase)}
-                            onClick={() => this.setState({RecordType:vars.RecordType.Phase})}
+                            onClick={() => this.setRecordType(vars.RecordType.Phase)}
                             />
                         <Icon 
                             src={IconSkater}
                             title="Skaters"
                             active={(this.state.RecordType == vars.RecordType.Skater)}
-                            onClick={() => this.setState({RecordType:vars.RecordType.Skater})}
+                            onClick={() => this.setRecordType(vars.RecordType.Skater)}
                             />
                         <Icon 
                             src={IconTeam}
                             title="Teams"
                             active={(this.state.RecordType == vars.RecordType.Team)}
-                            onClick={() => this.setState({RecordType:vars.RecordType.Team})}
+                            onClick={() => this.setRecordType(vars.RecordType.Team)}
                             />
                         <Icon 
                             src={IconSlideshow}
                             title="Slideshows"
                             active={(this.state.RecordType == vars.RecordType.Slideshow)}
-                            onClick={() => this.setState({RecordType:vars.RecordType.Slideshow})}
+                            onClick={() => this.setRecordType(vars.RecordType.Slideshow)}
                             />
                         <Icon 
                             src={IconMovie}
                             title="Videos"
                             active={(this.state.RecordType == vars.RecordType.Video)}
-                            onClick={() => this.setState({RecordType:vars.RecordType.Video})}
+                            onClick={() => this.setRecordType(vars.RecordType.Video)}
                             />
                         <Icon 
                             src={IconOffline}
                             title="Network/Peers"
                             active={(this.state.RecordType == vars.RecordType.Peer)}
-                            onClick={() => this.setState({RecordType:vars.RecordType.Peer})}
+                            onClick={() => this.setRecordType(vars.RecordType.Peer)}
                             />
                         <Icon 
                             src={IconSkate}
                             title="Scoreboard"
                             active={(this.state.RecordType == 'SCOREBOARD')}
-                            onClick={() => this.setState({RecordType:'SCOREBOARD'})}
+                            onClick={() => this.setRecordType('SCOREBOARD')}
                             />
                         <Icon 
                             src={IconQueue}
                             title="API"
                             active={(this.state.RecordType == 'API')}
-                            onClick={() => this.setState({RecordType:'API'})}
+                            onClick={() => this.setRecordType('API')}
                             />
                         <Icon 
                             src={IconPalette}
                             title="Misc"
                             active={(this.state.RecordType == 'MISC')}
-                            onClick={() => this.setState({RecordType:'MISC'})}
+                            onClick={() => this.setRecordType('MISC')}
                             />
                     </div>
                     <div className="search">

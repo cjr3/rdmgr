@@ -22,7 +22,8 @@ const InitState:SMonitor = {
     Width:1280,
     Height:720,
     Duration:0,
-    Delay:0
+    Delay:0,
+    AutoHide:false
 };
 
 const SetMonitorBounds = (state:SMonitor, width:number, height:number) => {

@@ -192,50 +192,6 @@
         }
     }
 
-
-    .phase-selection {
-        max-width: 300px;
-        max-height: 460px;
-        > .content {
-            > button {
-                display: flex;
-                flex-flow: row wrap;
-                width: 100%;
-                font-size: 18px;
-                padding: 6px;
-
-                div:first-child {
-                    flex: 1;
-                    text-align: left;
-                }
-
-                div:last-child {
-                    flex: 0;
-                    min-width: 100px;
-                }
-            }
-        }
-    }
-
-    .team-selector {
-        display: flex;
-        flex-flow: row wrap;
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-        .team-selection {
-            flex: 0 0 50%;
-            padding: 10px;
-            height: 100%;
-            align-self: center;
-            img {
-                max-width: 200px;
-                max-height: 200px;
-                cursor: pointer;
-            }
-        }
-    }
-
     /* Display Options Panel */
     .display-options {
         height: 125px;
@@ -402,15 +358,6 @@
         .boardstatus {
             bottom: 72px;
         }
-
-        .team-selector {
-            .team-selection {
-                select {
-                    display: block;
-                }
-            }
-        }
-
         .team-panel {
             max-width: calc(75%);
             max-height: 450px;

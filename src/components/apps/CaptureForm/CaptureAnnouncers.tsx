@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { CSSProperties } from 'react';
 import cnames from 'classnames';
 import {IconMic, Icon} from 'components/Elements';
 import './css/CaptureAnnouncer.scss';
 import AnnouncerCaptureController from 'controllers/capture/Announcer';
 import { Unsubscribe } from 'redux';
+import PopupBanner from 'components/2d/PopupBanner';
+import DataController from 'controllers/DataController';
+import { AddMediaPath } from 'controllers/functions';
 
 /**
  * Component for displaying the announcer names on the capture window.
@@ -13,17 +16,18 @@ export default class CaptureAnnouncers extends React.PureComponent<any, {
     className:string;
     Announcer1:string;
     Announcer2:string;
+    LeagueLogo:string;
 }> {
     readonly state = {
         Shown:AnnouncerCaptureController.GetState().Shown,
         className:AnnouncerCaptureController.GetState().className,
         Announcer1:AnnouncerCaptureController.GetState().Announcer1,
-        Announcer2:AnnouncerCaptureController.GetState().Announcer2
+        Announcer2:AnnouncerCaptureController.GetState().Announcer2,
+        LeagueLogo:DataController.GetMiscRecord('LeagueLogo')
     }
-    /**
-     * CaptureController remote
-     */
+    
     protected remoteState?:Unsubscribe;
+    protected remoteData?:Unsubscribe;
 
     /**
      * 
@@ -32,6 +36,7 @@ export default class CaptureAnnouncers extends React.PureComponent<any, {
     constructor(props) {
         super(props);
         this.updateState = this.updateState.bind(this);
+        this.updateData = this.updateData.bind(this);
     }
 
     /**
@@ -43,6 +48,12 @@ export default class CaptureAnnouncers extends React.PureComponent<any, {
             className:AnnouncerCaptureController.GetState().className,
             Announcer1:AnnouncerCaptureController.GetState().Announcer1,
             Announcer2:AnnouncerCaptureController.GetState().Announcer2
+        });
+    }
+
+    protected updateData(){
+        this.setState({
+            LeagueLogo:DataController.GetMiscRecord('LeagueLogo')
         });
     }
 
@@ -65,19 +76,34 @@ export default class CaptureAnnouncers extends React.PureComponent<any, {
      * Renders the component.
      */
     render() {
+        let name:string = '';
+        let names:Array<string> = new Array<string>();
+        let style:CSSProperties = {};
+        if(this.state.Announcer1)
+            names.push(this.state.Announcer1);
+        if(this.state.Announcer2)
+            names.push(this.state.Announcer2);
+
+        if(names.length >= 1) {
+            name = names.join(' & ');
+        }
+
+        if(this.state.LeagueLogo)
+            style.backgroundImage = `url('${AddMediaPath(this.state.LeagueLogo)}')`;
+
         return (
-            <div className={cnames('capture-announcers', this.state.className, {shown:this.state.Shown})}>
-                <h1>
+            <PopupBanner
+                className={cnames('announcers', this.state.className)}
+                shown={this.state.Shown}
+                style={style}
+                >
+                <div className="icon">
                     <Icon src={IconMic}/>
-                    Announcers
-                </h1>
-                <div className={cnames('announcer', 'announcer1', {
-                    shown:(this.state.Announcer1 !== '')
-                })}>{this.state.Announcer1}</div>
-                <div className={cnames('announcer', 'announcer2', {
-                    shown:(this.state.Announcer2 !== '')
-                })}>{this.state.Announcer2}</div>
-            </div>
+                </div>
+                <div className="names">
+                    {name}
+                </div>
+            </PopupBanner>
         )
     }
 }

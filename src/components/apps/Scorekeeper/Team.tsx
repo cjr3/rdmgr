@@ -1,5 +1,5 @@
 import React, { CSSProperties } from 'react';
-import ScorekeeperController, {Sides, Decks, Positions, SScorekeeperTeamDeck} from 'controllers/ScorekeeperController';
+import ScorekeeperController, {Sides, Decks, Positions, SScorekeeperTeamDeck, SScorekeeperState} from 'controllers/ScorekeeperController';
 import { IconStar, Button, IconButton } from 'components/Elements';
 import cnames from 'classnames';
 import { Unsubscribe } from 'redux';
@@ -215,18 +215,18 @@ class SkaterDeck extends React.PureComponent<{
     side:Sides;
     deck:Decks;
 }, {
-    Jammer:SkaterRecord|null;
-    Pivot:SkaterRecord|null;
-    Blocker1:SkaterRecord|null;
-    Blocker2:SkaterRecord|null;
-    Blocker3:SkaterRecord|null;
+    Jammer:SkaterRecord;
+    Pivot:SkaterRecord;
+    Blocker1:SkaterRecord;
+    Blocker2:SkaterRecord;
+    Blocker3:SkaterRecord;
 }> {
     readonly state = {
-        Jammer:null,
-        Pivot:null,
-        Blocker1:null,
-        Blocker2:null,
-        Blocker3:null
+        Jammer:ScorekeeperController.GetState().TeamA.Track.Jammer,
+        Pivot:ScorekeeperController.GetState().TeamA.Track.Pivot,
+        Blocker1:ScorekeeperController.GetState().TeamA.Track.Blocker1,
+        Blocker2:ScorekeeperController.GetState().TeamA.Track.Blocker2,
+        Blocker3:ScorekeeperController.GetState().TeamA.Track.Blocker3
     }
 
     protected remoteScorekeeper:Unsubscribe|null = null;
@@ -237,34 +237,25 @@ class SkaterDeck extends React.PureComponent<{
     }
 
     protected async updateScorekeeper() {
-        let cstate = ScorekeeperController.GetState();
-        let skaters = cstate.TeamA.Track;
-        if(this.props.deck === 'Deck')
-            skaters = cstate.TeamA.Deck;
-        if(this.props.side === 'B') {
-            skaters = cstate.TeamB.Track;
-            if(this.props.deck === 'Deck')
-                skaters = cstate.TeamB.Deck;
+        let cstate:SScorekeeperState = ScorekeeperController.GetState();
+        if(this.props.side == 'A') {
+            if(this.props.deck == 'Track') {
+                this.setState({...cstate.TeamA.Track});
+            } else {
+                this.setState({...cstate.TeamA.Deck});
+            }
+        } else {
+            if(this.props.deck == 'Track') {
+                this.setState({...cstate.TeamB.Track});
+            } else {
+                this.setState({...cstate.TeamB.Deck});
+            }
         }
-
-        if(!Compare(skaters.Jammer, this.state.Jammer))
-            this.setState({Jammer:skaters.Jammer});
-
-        if(!Compare(skaters.Pivot, this.state.Pivot))
-            this.setState({Pivot:skaters.Pivot});
-
-        if(!Compare(skaters.Blocker1, this.state.Blocker1))
-            this.setState({Blocker1:skaters.Blocker1});
-
-        if(!Compare(skaters.Blocker2, this.state.Blocker2))
-            this.setState({Blocker2:skaters.Blocker2});
-
-        if(!Compare(skaters.Blocker3, this.state.Blocker3))
-            this.setState({Blocker3:skaters.Blocker3});
     }
 
     componentDidMount() {
         this.remoteScorekeeper = ScorekeeperController.Subscribe(this.updateScorekeeper);
+        this.updateScorekeeper();
     }
 
     componentWillUnmount() {

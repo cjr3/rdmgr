@@ -80,17 +80,29 @@
 }
 
 @media screen and (max-width:960px) and (min-height: 1080px) {
-    .CFG-app.record {
-        .forms {
-            width: calc(100% - 48px);
-        }
-        .sections {
-            width: 48px;
-            .section {
-                width: 48px;
-                overflow: hidden;
-                .record-list {
-                    display: none;
+    .CFG-app-panel {
+        > .content {
+            .forms {
+                width: calc(100% - 300px);
+            }
+
+            > .sections {
+                width: 300px;
+                > .title {
+                    .text {
+                        font-size: 16px;
+                    }
+                    > .icon {
+                        max-height: 36px;
+                    }
+                }
+                > .lists {
+                    > .record-list {
+                        width: 100%;
+                        > button {
+                            width: 100%;
+                        }
+                    }
                 }
             }
         }

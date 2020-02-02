@@ -1,7 +1,14 @@
 @import 'src/css/vars.scss';
 
+.capture-form.stream {
+    .capture-SB {
+        display: none;
+    }
+}
+
 .capture-SB {
     position: absolute;
+    margin: auto;
     width: 100%;
     height: 100%;
     top: 0;
@@ -231,13 +238,6 @@
             border-radius: 16px;
             border: solid 6px #FFFFFF;
             z-index: 3;
-            /*
-            transition: 
-                background-color 150ms ease-in-out 250ms,
-                color 150ms ease-in-out,
-                border 150ms ease-in-out 250ms
-                ;
-            */
         }
 
         .status {

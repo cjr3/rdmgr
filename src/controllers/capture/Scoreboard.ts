@@ -3,6 +3,7 @@ import { ICaptureController, SCaptureControllerState } from './vars';
 
 interface IBannerController extends ICaptureController {
     ToggleClocks:Function;
+    SetClocks:{(value:boolean)};
     SetBackground:Function;
 }
 
@@ -17,12 +18,14 @@ export const InitBannerState:SScorebanner = {
     ClocksShown:true,
     BackgroundImage:'',
     Duration:0,
-    Delay:0
+    Delay:0,
+    AutoHide:false
 };
 
 enum BannerActions {
     TOGGLE_CLOCKS = "TOGGLE_CLOCKS",
-    SET_BACKGROUND = 'SET_BACKGROUND'
+    SET_BACKGROUND = 'SET_BACKGROUND',
+    SET_CLOCKS = 'SET_CLOCKS'
 }
 
 const SetBannerBackground = (state:SScorebanner, background:string|null) => {
@@ -33,6 +36,10 @@ const ToggleBannerClocks = (state:SScorebanner) => {
     return {...state, ClocksShown:!state.ClocksShown};
 }
 
+const SetClocks = (state:SScorebanner, value:boolean) => {
+    return {...state, ClocksShown:value};
+};
+
 const BannerReducer = (state:SScorebanner = InitBannerState, action) => {
     try {
         switch(action.type) {
@@ -40,6 +47,8 @@ const BannerReducer = (state:SScorebanner = InitBannerState, action) => {
                 return SetBannerBackground(state, action.src);
             case BannerActions.TOGGLE_CLOCKS :
                 return ToggleBannerClocks(state);
+            case BannerActions.SET_CLOCKS :
+                return SetClocks(state, action.value);
             default :
                 return BaseReducer(state, action);
         }
@@ -56,6 +65,13 @@ const ScorebannerCaptureController:IBannerController = CreateController('CC-SB-B
 ScorebannerCaptureController.ToggleClocks = () => {
     ScorebannerCaptureController.Dispatch({
         type:BannerActions.TOGGLE_CLOCKS
+    });
+};
+
+ScorebannerCaptureController.SetClocks = (value:boolean) => {
+    ScorebannerCaptureController.Dispatch({
+        type:BannerActions.SET_CLOCKS,
+        value:value
     });
 };
 

@@ -1,5 +1,28 @@
 @import '~css/vars.scss';
 
+.CC-app-panel {
+    > .buttons {
+        justify-content: flex-end;
+        > button {
+            flex: 0;
+        }
+        .toggle-icons {
+            flex: 1;
+            padding: 3px;
+            .icon {
+                max-height: 36px;
+                margin: 0px 3px;
+                opacity: 0.5;
+                &.active{
+                    background-color: transparent;
+                    opacity: 1;
+                    filter: brightness(50%) sepia(100%) saturate(1000%) hue-rotate(90deg);
+                }
+            }
+        }
+    }
+}
+
 .CC-app {
 
     .capture-preview {
@@ -55,7 +78,7 @@
         left: 0;
         top: 0;
         bottom: 0;
-        width: 25%;
+        width: 33%;
 
         > .buttons {
             background-color: transparent;
@@ -184,37 +207,15 @@
                 }
             }
 
-            .team-panel {
-                .team-selection {
-                    text-align: center;
-                    select {
-                        width: 100%;
-                    }
-                    img {
-                        max-width: 150px;
-                        max-height: 150px;
-                        cursor: pointer;
-                    }
-                }
-
-                .buttons {
-                    height: 96px;
-                    .toggle-button {
-                        width: 50%;
-                        margin: 0px;
-                        font-size: 14px;
-                    }
-                }
-            }
-
             .jam-controls {
                 display: flex;
                 flex-flow: row wrap;
                 position: absolute;
                 left: 0;
                 right: 0;
-                bottom: 0;
+                bottom: 16px;
                 margin: auto;
+                max-width: 300px;
                 button {
                     flex: 1;
                     font-weight: bold;
@@ -291,12 +292,13 @@
                     .team {
                         grid-area: 1 / 1;
                         .skater {
-                            display: grid;
+                            position: relative;
+                            display: none;
                             &:first-of-type {
                                 display: grid;
                             }
 
-                            background-color: #333;
+                            background-color: #111;
                             border: solid 1px #000;
 
                             grid-template-rows: 75px;
@@ -313,7 +315,15 @@
                                 font-size: 24px;
                             }
                             .name {
-                                display: none;
+                                position: absolute;
+                                margin: auto;
+                                left: 0;
+                                right: 0;
+                                bottom: 0;
+                                font-size: 1.1vw;
+                                padding: 3px;
+                                text-align: right;
+                                text-shadow: 1px 2px 3px #000;
                             }
                         }
                     }
@@ -326,7 +336,8 @@
 
             .penalty-tracker {
                 grid-area: 2 / 1;
-                background-color: #222;
+                background-color: #111;
+                border-top: solid 2px #000;
                 .skaters {
                     > div.stack-panel {
                         font-family: $base-font-display;
@@ -352,32 +363,6 @@
             > .content {
                 height: calc(100% - 48px);
                 top: 0px;
-            }
-            
-            .roster {
-                .roster-skaters {
-                    > button {
-                        border: none;
-                        padding: 0px;
-                        > div {
-                            display: flex;
-                            flex-flow: row wrap;
-                            font-size: 18px;
-                            border: solid 1px #999999;
-                            border-bottom: none;
-                            padding: 3px;
-                            > .num {
-                                flex: 0 0 100px;
-                                > img {
-                                    max-height: 48px;
-                                }
-                            }
-                            > .name {
-                                flex: 1;
-                            }
-                        }
-                    }
-                }
             }
         }
 
@@ -447,27 +432,6 @@
             .scorebanner {
                 .phase-control {
                     justify-content: center;
-                }
-
-                .jam-controls {
-                    justify-content: center;
-                    button {
-                        flex: 0 0 300px;
-                    }
-                }
-
-                .team-panel {
-                    .team-selector {
-                        display: grid;
-                        grid-template-columns: 50% 50%;
-                        grid-template-rows: auto;
-                        .team-selection {
-                            grid-area: 1/1;
-                            &:nth-child(even) {
-                                grid-area: 1/2;
-                            }
-                        }
-                    }
                 }
             }
         }

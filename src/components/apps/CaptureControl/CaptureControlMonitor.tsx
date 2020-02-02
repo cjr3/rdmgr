@@ -1,5 +1,6 @@
 import React from 'react';
 import {Button} from 'components/Elements';
+import Panel from 'components/Panel';
 
 type DimensionRecord = {
     width:number;
@@ -10,7 +11,11 @@ type DimensionRecord = {
  * Component for controlling the monitor, dimensions, and position,
  * of the capture window.
  */
-export default class CaptureControlMonitor extends React.PureComponent<any, {
+export default class CaptureControlMonitor extends React.PureComponent<{
+    opened:boolean;
+    onClose:Function;
+    onSubmit:Function;
+}, {
     /**
      * ID of monitor the capture window is displayed on
      */
@@ -58,7 +63,7 @@ export default class CaptureControlMonitor extends React.PureComponent<any, {
     /**
      * Triggered when the user clicks the button to set the monitor.
      */
-    protected onClickSubmit() {
+    protected async onClickSubmit() {
         this.state.Monitors.forEach((monitor:any) => {
             if(monitor.id === this.state.MonitorID) {
                 if(window && window.RDMGR && window.RDMGR.captureWindow) {
@@ -180,16 +185,30 @@ export default class CaptureControlMonitor extends React.PureComponent<any, {
             i++;
         });
 
+        let buttons:Array<React.ReactElement> = new Array<React.ReactElement>(
+            <Button onClick={this.onClickSubmit} key='btn-submit'>Submit</Button>,
+            <Button onClick={this.props.onClose} key='btn-close'>Close</Button>
+        );
+
         return (
-            <div className="monitor-control">
-                <div>
-                    <select value={this.state.MonitorID} onChange={this.onChangeMonitor}>{monitors}</select>
+            <Panel
+                opened={this.props.opened}
+                popup={true}
+                onClose={this.props.onClose}
+                buttons={buttons}
+                >
+                <div className="record-form">
+                    <h3>Capture Window Location</h3>
+                    <div className="form-section">
+                        <p>Monitors</p>
+                        <select value={this.state.MonitorID} onChange={this.onChangeMonitor}>{monitors}</select>
+                    </div>
+                    <div className="form-section">
+                        <p>Dimension</p>
+                        <select value={this.state.Width} onChange={this.onChangeSize}>{sizes}</select>
+                    </div>
                 </div>
-                <div>
-                    <select value={this.state.Width} onChange={this.onChangeSize}>{sizes}</select>
-                </div>
-                <Button onClick={this.onClickSubmit}>Update</Button>
-            </div>
+            </Panel>
         );
     }
 }

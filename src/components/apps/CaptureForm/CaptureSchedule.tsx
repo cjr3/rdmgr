@@ -75,7 +75,7 @@ export default class CaptureSchedule extends React.PureComponent<any, {
         let shown:boolean = false;
         if(this.state.Records && this.state.Records.length >= 1) {
             shown = this.state.Shown;
-            let max:number = 8;
+            let max:number = 6;
             this.state.Records.forEach((record, index) => {
                 if(index < max) {
                     let tdate = new Date(Date.parse(record.BoutDate));

@@ -41,22 +41,14 @@
         opacity: 1;
         filter: grayscale(0%);
     }
-}
 
-.capture-sponsors.shown {
-    opacity: 1;
-}
-
-.capture-form.sponsor-board > .capture-sponsors {
-    /*width: 84.375%;*/
-    height: 84.375%;
-    padding: 0px 15.625% 0px 15.625%;
-    transition: opacity 500ms ease-in-out 800ms;
-    @media screen and (max-width: 1024px) {
-        height: 86%;
+    &.shown {
+        opacity: 1;
     }
 }
 
-.capture-form.sponsor-board.jamming > .capture-sponsors.shown {
-    opacity: 0;
+.capture-form.stream {
+    .capture-sponsors {
+        display: none;
+    }
 }

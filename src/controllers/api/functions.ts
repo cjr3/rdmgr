@@ -7,11 +7,14 @@ let API_ENDPOINT_VALIDATE:string = '';
 let API_ENDPOINT_AUTH:string = '';
 let API_ENDPOINT:string = '';
 
-//RDMGR endpoints
+//RDMGR
 let RDMGR_API_ENDPOINT:string = '';
 let RDMGR_AUTH_TOKEN:string = '';
 let RDMGR_AUTH_ENDPOINT:string = '';
 let RDMGR_VALIDATE_ENDPOINT:string = '';
+
+//YouTube DATA
+let YOUTUBE_DATA_API_KEY:string = '';
 
 export const SetAuthToken = (token:string) => {
     API_AUTH_TOKEN = token;
@@ -54,6 +57,14 @@ export const GetHeaders = () : any => {
         headers["Authorization"] = "Bearer " + API_AUTH_TOKEN;
 
     return headers;
+};
+
+export const SetYouTubeDataAPIKey = (key:string) => {
+    YOUTUBE_DATA_API_KEY = key;
+};
+
+export const GetYouTubeDataAPIKey = () => {
+    return YOUTUBE_DATA_API_KEY;
 };
 
 const SendData = async (method:'POST'|'PUT'|'DELETE', target:string, body:any) : Promise<any> => {
@@ -361,9 +372,22 @@ export const CreateController = (key:string, suffix:string, reducer?:any) : any 
                 })
             });
         },
-        Load: async () : Promise<any> => {
+        Load: async (query?:any) : Promise<any> => {
             return new Promise((res, rej) => {
-                SendGet(controller.EndpointSuffix).then((response) => {
+                let suffix:string = controller.EndpointSuffix;
+                if(query) {
+                    if(typeof(query) === "string")
+                        suffix += "?" + query;
+                    else if(typeof(query) === 'object') {
+                        let parts:any = [];
+                        for(var key in query) {
+                            parts.push(key + "=" + query[key]);
+                        }
+                        suffix += "?" + parts.join('&');
+                    }
+                }
+
+                SendGet(suffix).then((response) => {
                     if(response && response.records) {
                         controller.SetRecords(response.records);
                         res(response.records);

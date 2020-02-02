@@ -125,7 +125,7 @@ export function SkaterItem(props:{skater:SkaterRecord|null,color:string}) {
         );
     } else {
         return (
-            <div className="skater">
+            <div className="skater" style={{borderColor:props.color}}>
                 
             </div>
         )

@@ -1,106 +1,48 @@
 @import 'src/css/vars.scss';
 
-.capture-announcers {
-    position: absolute;
-    margin: auto;
-    left: 0;
-    right: 0;
+.popup-banner.announcers {
     z-index: 1000;
-    width: 480px;
-    height: 80px;
-    bottom: 32px;
-    background-color: $navy;
-    border-radius: 0;
-    border: solid 1px $gold;
-    animation: kf-announcer-banner-hide 1s 1 forwards;
-    display: flex;
-    flex-flow: row wrap;
-    justify-content: center;
-    align-content: center;
-    align-items: center;
-    > h1 {
-        flex: 1 0 100%;
-        width: 100%;
-        height: 28px;
-        text-align: center;
-        font-size: 18px;
-        text-transform: uppercase;
-        margin: 0;
-        padding: 0;
-        border-bottom: solid 1px $gold;
-        color: $gold;
-        .icon {
-            height: 26px;
-            width: 26px;
-            vertical-align: bottom;
-            padding: 3px;
+    background-size: 64px auto;
+    > .content {
+        display: grid;
+        opacity: 0;
+        transition: opacity 150ms 0ms ease-in-out;
+        grid-template-columns: 48px auto;
+        > .icon {
+            grid-area: 1 / 1;
+            align-self: center;
+            > .icon {
+                height: 48px;
+            }
+        }
+
+        > .names {
+            grid-area: 1 / 2;
+            padding: 16px;
+            font-size: 3vw;
+            text-align: center;
         }
     }
 
-    .announcer {
-        flex: 1;
-        text-align:center;
-        font-size: 22px;
-        height: 52px;
-        line-height: 44px;
-        font-family: $base-font-display;
+    &.shown {
+        > .content {
+            transition-duration: 500ms;
+            transition-delay: 500ms;
+            opacity: 1;
+        }
     }
 }
 
-.capture-announcers.shown {
-    clip-path: inset(100%);
-    animation: kf-announcer-banner 1s 1 forwards;
-    opacity: 1;
-}
-
-@keyframes kf-announcer-banner {
-    0% {
-        transform-origin: 50% 0%;
-        transform: translateY(300px);
-        clip-path: inset(100%);
-        border-radius: 0px;
-    }
-
-    5% {
-        clip-path: inset(0 calc(100% - 29px) calc(100% - 29px) calc(100% - 29px));
-    }
-
-    50% {
-        transform: translateY(0px);
-    }
-
-    75% {
-        clip-path: inset(0 0 calc(100% - 29px) 0);
-    }
-
-    100% {
-        transform: translateY(0px);
-        clip-path: inset(0);
-    }
-}
-
-@keyframes kf-announcer-banner-hide {
-    100% {
-        transform-origin: 50% 0%;
-        transform: translateY(300px);
-        clip-path: inset(100%);
-        border-radius: 0px;
-    }
-
-    95% {
-        clip-path: inset(0 calc(100% - 29px) calc(100% - 29px) calc(100% - 29px));
-    }
-
-    50% {
-        transform: translateY(0px);
-    }
-
-    25% {
-        clip-path: inset(0 0 calc(100% - 29px) 0);
-    }
-
-    0% {
-        transform: translateY(0px);
-        clip-path: inset(0);
+.capture-form.stream {
+    .popup-banner.announcers {
+        width: 480px;
+        bottom: 32px;
+        height: 64px;
+        > .content {
+            > .names {
+                text-align: left;
+                font-size: 1.5vw;
+            }
+        }
     }
 }

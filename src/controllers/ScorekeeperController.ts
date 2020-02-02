@@ -34,11 +34,11 @@ export interface SScorekeeperTeamDeckStatus {
 }
 
 export interface SScorekeeperTeamDeck {
-    Jammer:SkaterRecord|null;
-    Pivot:SkaterRecord|null;
-    Blocker1:SkaterRecord|null;
-    Blocker2:SkaterRecord|null;
-    Blocker3:SkaterRecord|null;
+    Jammer:any;
+    Pivot:any;
+    Blocker1:any;
+    Blocker2:any;
+    Blocker3:any;
 }
 
 export interface SScorekeeperTeam {

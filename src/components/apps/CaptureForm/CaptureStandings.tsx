@@ -2,8 +2,9 @@ import React from 'react';
 import cnames from 'classnames';
 import { Unsubscribe } from 'redux';
 import './css/CaptureStandings.scss';
-import { IconLeague } from 'components/Elements';
 import StandingsCaptureController from 'controllers/capture/Standings';
+import DataController from 'controllers/DataController';
+import { AddMediaPath } from 'controllers/functions';
 
 /**
  * Displays the standings
@@ -21,17 +22,17 @@ export default class CaptureStandings extends React.PureComponent<any, {
      * Standing records
      */
     Records:Array<any>;
+    LeagueLogo:string;
 }> {
     readonly state = {
         Shown:StandingsCaptureController.GetState().Shown,
         className:StandingsCaptureController.GetState().className,
-        Records:StandingsCaptureController.Get()
+        Records:StandingsCaptureController.Get(),
+        LeagueLogo:DataController.GetMiscRecord('LeagueLogo')
     }
 
-    /**
-     * CaptureController listener
-     */
     protected remoteCapture?:Unsubscribe;
+    protected remoteData?:Unsubscribe;
 
     /**
      * Constructor
@@ -40,6 +41,7 @@ export default class CaptureStandings extends React.PureComponent<any, {
     constructor(props) {
         super(props);
         this.updateCapture = this.updateCapture.bind(this);
+        this.updateData = this.updateData.bind(this);
     }
 
     /**
@@ -53,11 +55,18 @@ export default class CaptureStandings extends React.PureComponent<any, {
         });
     }
 
+    protected updateData() {
+        this.setState({
+            LeagueLogo:DataController.GetMiscRecord('LeagueLogo')
+        });
+    }
+
     /**
      * Listen to controllers
      */
     componentDidMount() {
         this.remoteCapture = StandingsCaptureController.Subscribe(this.updateCapture);
+        this.remoteData = DataController.Subscribe(this.updateData);
     }
 
     /**
@@ -66,6 +75,8 @@ export default class CaptureStandings extends React.PureComponent<any, {
     componentWillUnmount() {
         if(this.remoteCapture)
             this.remoteCapture();
+        if(this.remoteData)
+            this.remoteData();
     }
 
     /**
@@ -74,6 +85,9 @@ export default class CaptureStandings extends React.PureComponent<any, {
     render() {
         let teams:Array<React.ReactElement> = new Array<React.ReactElement>();
         let shown:boolean = false;
+        let logo:string = '';
+        if(this.state.LeagueLogo)
+            logo = AddMediaPath(this.state.LeagueLogo);
         if(this.state.Records && this.state.Records.length >= 1) {
             shown = this.state.Shown;
             let max:number = 8;
@@ -99,7 +113,7 @@ export default class CaptureStandings extends React.PureComponent<any, {
                 <div className="standings">
                     <div className="team" key="standings-header">
                         <div className="logo">
-                            <img src={IconLeague} alt=""/>
+                            <img src={logo} alt=""/>
                         </div>
                         <div className="standing">#</div>
                         <div className="win-loss">W-L</div>

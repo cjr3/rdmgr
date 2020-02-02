@@ -19,7 +19,8 @@ export const InitState:SScoresState = {
     className:'',
     Records:new Array<any>(),
     Duration:10000,
-    Delay:0
+    Delay:0,
+    AutoHide:true
 };
 
 const SetRecords = (state:SScoresState, records:Array<any>) => {

@@ -1,5 +1,5 @@
 import React, { CSSProperties } from 'react';
-import ScorekeeperController, {Sides} from 'controllers/ScorekeeperController';
+import ScorekeeperController, {Sides, SScorekeeperTeamDeck, Positions} from 'controllers/ScorekeeperController';
 import ScoreboardController from 'controllers/ScoreboardController';
 import cnames from 'classnames';
 import './css/CaptureScorekeeper.scss';
@@ -66,9 +66,12 @@ export default class CaptureScorekeeper extends React.Component<any, {
 
         return (
             <div className={className}>
-                <div className="jammers">
-                    <Jammer side='A'/>
-                    <Jammer side='B'/>
+                <CaptureScorekeeperScreen/>
+                <div className="popup">
+                    <div className="jammers">
+                        <Jammer side='A'/>
+                        <Jammer side='B'/>
+                    </div>
                 </div>
             </div>
         );
@@ -187,4 +190,228 @@ class Jammer extends React.PureComponent<{
             </div>
         )
     }
+}
+
+class CaptureScorekeeperScreen extends React.PureComponent<any, {
+    TrackA:SScorekeeperTeamDeck;
+    TrackB:SScorekeeperTeamDeck;
+    ColorA:string;
+    ColorB:string;
+}> {
+    readonly state = {
+        TrackA:ScorekeeperController.GetState().TeamA.Track,
+        TrackB:ScorekeeperController.GetState().TeamB.Track,
+        ColorA:ScoreboardController.GetState().TeamA.Color,
+        ColorB:ScoreboardController.GetState().TeamB.Color
+    }
+
+    protected remoteScoreboard?:Unsubscribe;
+    protected remoteScorekeeper?:Unsubscribe;
+
+    constructor(props) {
+        super(props);
+        this.updateScorekeeper = this.updateScorekeeper.bind(this);
+        this.updateScoreboard = this.updateScoreboard.bind(this);
+    }
+
+    protected updateScorekeeper() {
+        this.setState({
+            TrackA:ScorekeeperController.GetState().TeamA.Track,
+            TrackB:ScorekeeperController.GetState().TeamB.Track
+        });
+    }
+
+    protected updateScoreboard() {
+        this.setState({
+            ColorA:ScoreboardController.GetState().TeamA.Color,
+            ColorB:ScoreboardController.GetState().TeamB.Color
+        });
+    }
+
+    componentDidMount() {
+        this.remoteScorekeeper = ScorekeeperController.Subscribe(this.updateScorekeeper);
+        this.remoteScoreboard = ScoreboardController.Subscribe(this.updateScoreboard);
+    }
+
+    componentWillUnmount() {
+        if(this.remoteScorekeeper)
+            this.remoteScorekeeper();
+
+        if(this.remoteScoreboard)
+            this.remoteScoreboard();
+    }
+
+    render() {
+        return (
+            <div className="screen">
+                <div className="team team-a">
+                    <SkaterScreen side='A' position='Jammer'/>
+                    <SkaterScreen side='A' position='Pivot'/>
+                    <SkaterScreen side='A' position='Blocker1'/>
+                    <SkaterScreen side='A' position='Blocker2'/>
+                    <SkaterScreen side='A' position='Blocker3'/>
+                </div>
+                <div className="team team-b">
+                    <SkaterScreen side='B' position='Jammer'/>
+                    <SkaterScreen side='B' position='Pivot'/>
+                    <SkaterScreen side='B' position='Blocker1'/>
+                    <SkaterScreen side='B' position='Blocker2'/>
+                    <SkaterScreen side='B' position='Blocker3'/>
+                </div>
+            </div>
+        );
+    }
+}
+
+class SkaterScreen extends React.PureComponent<{
+    side:Sides;
+    position:Positions;
+}, {
+    Skater:any;
+    Logo:string;
+    Color:string;
+    Shown:boolean;
+}> {
+    readonly state = {
+        Skater:null,
+        Logo:ScoreboardController.GetState().TeamA.Thumbnail,
+        Color:ScoreboardController.GetState().TeamA.Color,
+        Shown:false
+    }
+
+    protected Timer:any = 0;
+    
+    protected remoteScoreboard?:Unsubscribe;
+    protected remoteScorekeeper?:Unsubscribe;
+
+    constructor(props) {
+        super(props);
+        this.updateScoreboard = this.updateScoreboard.bind(this);
+        this.updateScorekeeper = this.updateScorekeeper.bind(this);
+        if(this.props.side == 'B') {
+            this.state.Logo = ScoreboardController.GetState().TeamB.Thumbnail;
+            this.state.Color = ScoreboardController.GetState().TeamB.Color;
+        }
+    }
+
+    protected updateScorekeeper() {
+        try {clearTimeout(this.Timer);} catch(er) {}
+        let skater:any = ScorekeeperController.GetState().TeamA.Track[this.props.position];
+        if(this.props.side == 'B') {
+            skater = ScorekeeperController.GetState().TeamB.Track[this.props.position];
+        }
+
+        if(!skater && this.state.Skater) {
+            this.setState({
+                Shown:false
+            }, () => {
+                this.Timer = setTimeout(() => {
+                    let skater:any = ScorekeeperController.GetState().TeamA.Track[this.props.position];
+                    if(this.props.side == 'B') {
+                        skater = ScorekeeperController.GetState().TeamB.Track[this.props.position];
+                    }
+                    this.setState({Skater:skater})
+                }, 1000);
+            });
+        } else {
+            this.setState({Skater:skater, Shown:(skater)});
+        }
+    }
+
+    protected updateScoreboard() {
+        if(this.props.side === 'A') {
+            this.setState({
+                Logo:ScoreboardController.GetState().TeamA.Thumbnail,
+                Color:ScoreboardController.GetState().TeamA.Color
+            });
+        } else if(this.props.side == 'B') {
+            this.setState({
+                Logo:ScoreboardController.GetState().TeamB.Thumbnail,
+                Color:ScoreboardController.GetState().TeamB.Color
+            });
+        }
+    }
+
+    componentDidMount() {
+        this.remoteScoreboard = ScoreboardController.Subscribe(this.updateScoreboard);
+        this.remoteScorekeeper = ScorekeeperController.Subscribe(this.updateScorekeeper);
+        this.updateScorekeeper();
+    }
+
+    componentWillUnmount() {
+        if(this.remoteScoreboard)
+            this.remoteScoreboard();
+        if(this.remoteScorekeeper)
+            this.remoteScorekeeper();
+    }
+
+    render() {
+        let className:string = cnames('skater', {
+            shown:(this.state.Shown)
+        });
+
+        let style:CSSProperties = {};
+        if(this.state.Color) {
+            style.backgroundImage = `linear-gradient(#000, ${this.state.Color})`;
+        }
+
+        let num:string = '';
+        let src:string = '';
+        let skater:any = this.state.Skater;
+
+        if(skater && skater.Number)
+            num = skater.Number;
+
+        if(skater && skater.Thumbnail)
+            src = AddMediaPath(skater.Thumbnail);
+        else if(this.state.Logo)
+            src = AddMediaPath(this.state.Logo);
+
+        return (
+            <div className={className} style={style}>
+                <div className="thumbnail">
+                    <img src={src} alt=""/>
+                </div>
+                <div className="num">{num}</div>
+            </div>
+        )
+    }
+}
+
+function _SkaterScreen(props:{record:any, color:string}) {
+
+    let style:CSSProperties = {
+        backgroundImage:'none'
+    };
+
+    if(props.color) {
+        style.backgroundImage = `linear-gradient(#000, ${props.color})`;
+    }
+
+    if(!props.record) {
+        return (
+            <div className="skater no-skater" style={style}>
+                <div className="thumbnail"></div>
+                <div className="num"></div>
+            </div>
+        );
+    }
+
+    let skater:SkaterRecord = props.record;
+
+    let src:string = '';
+    if(skater.Thumbnail) {
+        src = AddMediaPath(skater.Thumbnail);
+    }
+    
+    return (
+        <div className="skater" style={style}>
+            <div className="thumbnail">
+                <img src={src} alt=""/>
+            </div>
+            <div className="num">
+                {skater.Number}
+            </div>
+        </div>
+    );
 }

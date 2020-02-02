@@ -281,7 +281,6 @@ export default class CaptureControlScorebanner extends React.PureComponent<PCapt
                     <PhaseSelection opened={(this.state.panel === 'phase')}
                         onClose={() => {this.setState({panel:''})}}
                         onSelect={() => {this.setState({panel:''})}}
-                        className="phase-selection"
                         />
                     <TeamPicker opened={(this.state.panel === 'teams')}
                         onClose={() => {this.setState({panel:''})}}

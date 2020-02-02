@@ -88,6 +88,12 @@
     }
 }
 
+.capture-form.stream {
+    .capture-raffle {
+        display: none;
+    }
+}
+
 @media screen and (max-height: 576px) {
     .capture-raffle {
         .ticket {

@@ -22,25 +22,7 @@ import Positions from 'components/apps/Scorekeeper/Positions';
 export default class StreamPanel extends React.PureComponent<any, {
     CurrentPanel:string;
 }> {
-
-    readonly state = {
-        CurrentPanel:''
-    }
-
-    protected setPanel(key:string) {
-        this.setState((state) => {
-            if(key && state.CurrentPanel == key)
-                return {CurrentPanel:''};
-            return {CurrentPanel:key};
-        });
-    }
-
-    render() {    
-        let iconCamera:string = (this.state.CurrentPanel === 'camera') ? IconX : IconStreamOff;
-        let iconAnnouncer:string = (this.state.CurrentPanel === 'announcer') ? IconX : IconMic;
-        let iconAnthem:string = (this.state.CurrentPanel === 'anthem') ? IconX : IconFlag;
-        let iconRoster:string = (this.state.CurrentPanel === 'roster') ? IconX : IconTeam;
-
+    render() {
         return (
             <div className="stream-panel">
                 <div className="panels">
@@ -51,37 +33,15 @@ export default class StreamPanel extends React.PureComponent<any, {
                         <PenaltyTrackerPanel/>
                     </div>
                 </div>
-                <div className="panel-icons">
-
-                    <IconButton src={iconCamera} title="Camera" onClick={() => {
-                        this.setPanel('camera');
-                    }} active={(this.state.CurrentPanel === 'camera')}/>
-
-                    <IconButton src={iconAnnouncer} title="Announcers" onClick={() => {
-                        this.setPanel('announcer');
-                    }} active={(this.state.CurrentPanel === 'announcer')}/>
-
-                    <IconButton src={iconAnthem} title="National Anthem" onClick={() => {
-                        this.setPanel('anthem');
-                    }} active={(this.state.CurrentPanel === 'anthem')}/>
-
-                    <IconButton src={iconRoster} title="Roster" onClick={() => {
-                        this.setPanel('roster');
-                    }} active={(this.state.CurrentPanel === 'roster')}/>
-                </div>
-                <AnnouncerPanel opened={(this.state.CurrentPanel === 'announcer')}/>
-                <AnthemPanel opened={(this.state.CurrentPanel === 'anthem')}/>
-                <CameraPanel opened={(this.state.CurrentPanel === 'camera')}/>
-                <RosterPanel opened={(this.state.CurrentPanel === 'roster')}/>
             </div>
-        )
+        );
     }
 }
 
 export class ToggleIcons extends React.PureComponent<any, {
     AnnouncerShown:boolean;
     AnthemShown:boolean;
-    RosterShown:boolean;
+    //RosterShown:boolean;
     PenaltyTrackerShown:boolean;
     ScorekeeperShown:boolean;
     ScoresShown:boolean;
@@ -93,7 +53,7 @@ export class ToggleIcons extends React.PureComponent<any, {
     readonly state = {
         AnnouncerShown:AnnouncerCaptureController.GetState().Shown,
         AnthemShown:AnthemCaptureController.GetState().Shown,
-        RosterShown:RosterCaptureController.GetState().Shown,
+        //RosterShown:RosterCaptureController.GetState().Shown,
         PenaltyTrackerShown:PenaltyCaptureController.GetState().Shown,
         ScorekeeperShown:ScorekeeperCaptureController.GetState().Shown,
         ScoresShown:ScoresCaptureController.GetState().Shown,
@@ -137,7 +97,7 @@ export class ToggleIcons extends React.PureComponent<any, {
     }
 
     protected updateRoster(){
-        this.setState({RosterShown:RosterCaptureController.GetState().Shown});
+        //this.setState({RosterShown:RosterCaptureController.GetState().Shown});
     }
 
     protected updatePenalty(){
@@ -172,7 +132,7 @@ export class ToggleIcons extends React.PureComponent<any, {
         this.remoteAnnouncer = AnnouncerCaptureController.Subscribe(this.updateAnnouncer);
         this.remoteAnthem = AnthemCaptureController.Subscribe(this.updateAnthem);
         this.remotePenalty = PenaltyCaptureController.Subscribe(this.updatePenalty);
-        this.remoteRoster = RosterCaptureController.Subscribe(this.updateRoster);
+        //this.remoteRoster = RosterCaptureController.Subscribe(this.updateRoster);
         this.remoteSchedule = ScheduleCaptureController.Subscribe(this.updateSchedule);
         this.remoteScorebanner = ScorebannerCaptureController.Subscribe(this.updateScorebanner);
         this.remoteScorekeeper = ScorekeeperCaptureController.Subscribe(this.updateScorekeeper);
@@ -230,11 +190,6 @@ export class ToggleIcons extends React.PureComponent<any, {
                     PenaltyCaptureController.SetClass('stream');
                     PenaltyCaptureController.Toggle();
                 }} active={this.state.PenaltyTrackerShown}/>
-
-                <Icon src={IconTeam} title="Roster" onClick={() => {
-                    RosterCaptureController.SetClass('stream');
-                    RosterCaptureController.Toggle();
-                }} active={this.state.RosterShown}/>
 
                 <Icon src={IconClipboard} title="Scorekeeper" onClick={() => {
                     ScorekeeperCaptureController.SetClass('stream');

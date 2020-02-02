@@ -5,6 +5,7 @@ import ScoreboardController from 'controllers/ScoreboardController'
 import { Button } from 'components/Elements';
 import UIController from 'controllers/UIController';
 import PhasesController from 'controllers/PhasesController';
+import './css/PhaseSelection.scss';
 
 export interface PPhaseSelection {
     /**
@@ -41,10 +42,6 @@ export default class PhaseSelection extends React.PureComponent<{
      * Triggered when the panel closes
      */
     onClose:Function;
-    /**
-     * Class name of panel content
-     */
-    className?:string
 }, {
     /**
      * Record of phases to select from
@@ -162,7 +159,14 @@ export default class PhaseSelection extends React.PureComponent<{
         });
 
         return (
-            <Panel popup={true} opened={this.props.opened} {...this.props}>
+            <Panel 
+                popup={true}
+                opened={this.props.opened}
+                contentName="phase-selection"
+                className="phase-selection-panel"
+                title="Set Quarter and Game Clock"
+                {...this.props}
+                >
                 {phases}
             </Panel>
         )

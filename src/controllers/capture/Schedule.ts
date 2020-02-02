@@ -19,7 +19,8 @@ export const InitState:SScheduleState = {
     className:'',
     Records:new Array<any>(),
     Duration:10000,
-    Delay:0
+    Delay:0,
+    AutoHide:true
 };
 
 const SetRecords = (state:SScheduleState, records:Array<any>) => {

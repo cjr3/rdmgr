@@ -42,6 +42,14 @@ const SetDuration = (state:SCaptureControllerState, value:number) => {
     return {...state, Duration:Math.abs(value)};
 };
 
+const SetAutoHide = (state:SCaptureControllerState, value:boolean) => {
+    return {...state, AutoHide:value};
+};
+
+const ToggleAutoHide = (state:SCaptureControllerState) => {
+    return {...state, AutoHide:!state.AutoHide};
+};
+
 export const BaseReducer = (state:any, action:any) => {
     try {
         switch(action.type) {
@@ -61,6 +69,10 @@ export const BaseReducer = (state:any, action:any) => {
                 return SetDelay(state, action.value);
             case Actions.SET_DURATION :
                 return SetDuration(state, action.value);
+            case Actions.SET_AUTO_HIDE :
+                return SetAutoHide(state, action.value);
+            case Actions.TOGGLE_AUTO_HIDE :
+                return ToggleAutoHide(state);
             default :
                 return state;
         }
@@ -78,7 +90,8 @@ const CreateController = (key:string, reducer?:any) : any => {
             Shown:false,
             className:'',
             Duration:0,
-            Delay:0
+            Delay:0,
+            AutoHide:false
         });
     }
 
@@ -88,7 +101,7 @@ const CreateController = (key:string, reducer?:any) : any => {
         async Show() {
             Interrupt();
             controller.Dispatch({type:Actions.SHOW});
-            if(controller.GetState().Duration > 0)
+            if(controller.GetState().Duration > 0 && controller.GetState().AutoHide)
                 DurationTimer = setTimeout(controller.Hide, controller.GetState().Duration);
         },
         async Hide() {
@@ -98,7 +111,7 @@ const CreateController = (key:string, reducer?:any) : any => {
         async Toggle() {
             Interrupt();
             controller.Dispatch({type:Actions.TOGGLE});
-            if(controller.GetState().Duration > 0)
+            if(controller.GetState().Duration > 0 && controller.GetState().AutoHide)
                 DurationTimer = setTimeout(controller.Hide, controller.GetState().Duration);
         },
         async SetClass(className:string) {
@@ -132,6 +145,17 @@ const CreateController = (key:string, reducer?:any) : any => {
             controller.Dispatch({
                 type:Actions.SET_DURATION,
                 value:value
+            });
+        },
+        async SetAutoHide(value:boolean) {
+            controller.Dispatch({
+                type:Actions.SET_AUTO_HIDE,
+                value:value
+            });
+        },
+        async ToggleAutoHide() {
+            controller.Dispatch({
+                type:Actions.TOGGLE_AUTO_HIDE
             });
         },
         GetState() : any {
@@ -187,4 +211,4 @@ const CreateController = (key:string, reducer?:any) : any => {
 
 export {
     CreateController
-};  
+};

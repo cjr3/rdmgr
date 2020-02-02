@@ -532,8 +532,7 @@
     }
 }
 
-.capture-jam-counter,
-.capture-jam-clock
+.capture-jam-counter
 {
     position: absolute;
     margin: auto;
@@ -553,61 +552,5 @@
 
     @media (max-height:576px) {
         font-size: 480px;
-    }
-}
-
-.capture-jam-counter.shown,
-.capture-jam-clock.shown
-{
-    opacity: 1;
-}
-
-.capture-jam-clock.warning {
-    color: $warning;
-}
-
-.capture-jam-clock.danger {
-    color: $danger;
-}
-
-
-//sponsor board 
-.capture-form.sponsor-board {
-    .capture-jam-clock {
-        opacity: 0;
-        width: 100%;
-        height: 100%;
-        font-size: 500px;
-        line-height: 575px;
-    }
-}
-
-.capture-form.sponsor-board.jamming {
-    .capture-jam-clock {
-        bottom: initial;
-        font-size: 500px;
-        line-height: 575px;
-        background-color: #000000;
-        height: calc(100% - 112px);
-        z-index: 99;
-    }
-
-    @media (max-height: 576px) {
-        .capture-jam-clock {
-            font-size: 380px;
-            line-height: 440px;
-            height: calc(100% - 80px);
-        }
-    }
-
-    .capture-jam-clock.shown {
-        opacity: 1;
-    }
-}
-
-.capture-form.scoreboard-shown {
-    .capture-jam-clock.shown,
-    .capture-jam-counter.shown {
-        opacity: 0;
     }
 }

@@ -452,7 +452,6 @@ class ScoreboardPanels extends React.PureComponent<any, {
                 <PhaseSelection opened={(this.state.panel === 'phase')}
                     onClose={() => {UIController.SetScoreboardPanel('');}}
                     onSelect={() => {UIController.SetScoreboardPanel('');}}
-                    className="phase-selection"
                     />
                 <TeamPicker opened={(this.state.panel === 'teams')}
                     onClose={() => {UIController.SetScoreboardPanel('');}}

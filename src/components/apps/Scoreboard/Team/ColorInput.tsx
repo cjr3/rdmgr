@@ -130,7 +130,6 @@ export default class ColorInput extends React.PureComponent<{
                     <ColorPicker
                         name='color'
                         value={color}
-                        size='10'
                         onChange={this.onChangeColor}
                         />
                 </div>

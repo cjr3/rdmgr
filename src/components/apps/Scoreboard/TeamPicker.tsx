@@ -4,6 +4,7 @@ import ScoreboardController from 'controllers/ScoreboardController';
 import Panel from 'components/Panel';
 import { Button, ToggleButton } from 'components/Elements';
 import TeamsController from 'controllers/TeamsController';
+import './css/TeamPicker.scss';
 
 /**
  * Component for the scoreboard to pick the teams.
@@ -119,7 +120,7 @@ export default class TeamPicker extends React.PureComponent<{
             <Panel 
                 opened={this.props.opened}
                 title="Team Selection" 
-                contentName="team-selector"
+                contentName="team-picker"
                 className="team-panel"
                 popup={true}
                 buttons={buttons}

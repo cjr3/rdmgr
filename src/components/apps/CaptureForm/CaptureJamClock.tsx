@@ -4,6 +4,7 @@ import cnames from 'classnames';
 import { JamClockCaptureController } from 'controllers/capture/Scoreboard';
 import { Unsubscribe } from 'redux';
 import vars from 'tools/vars';
+import './css/JamClock.scss';
 
 /**
  * Component for displaying a large jam clock on the capture window
@@ -74,7 +75,7 @@ export default class CaptureJamClock extends React.PureComponent<any, {
      */
     render() {
         let className:string = cnames('capture-jam-clock', {
-            shown:(this.state.Shown && this.state.JamState == vars.Clock.Status.Running),
+            shown:(this.state.Shown),
             warning:(this.state.JamSecond <= vars.Clock.Warning),
             danger:(this.state.JamSecond <= vars.Clock.Danger)
         });

@@ -3,19 +3,29 @@ import ScoreboardController from 'controllers/ScoreboardController';
 import cnames from 'classnames';
 import { JamCounterCaptureController } from 'controllers/capture/Scoreboard';
 import { Unsubscribe } from 'redux';
+import './css/JamCounter.scss';
+import vars from 'tools/vars';
 
 /**
  * Component for displaying a large jam counter on the CaptureForm
  */
 export default class CaptureJamCounter extends React.PureComponent<any, {
     JamCounter:number;
+    JamState:number;
+    JamSeconds:number;
+    MaxJamSeconds:number;
     Shown:boolean;
     className:string;
+    Duration:number;
 }> {
     readonly state = {
         JamCounter:ScoreboardController.GetState().JamCounter,
+        JamState:ScoreboardController.GetState().JamState,
+        JamSeconds:ScoreboardController.GetState().JamSecond,
+        MaxJamSeconds:ScoreboardController.GetState().MaxJamSeconds,
         Shown:JamCounterCaptureController.GetState().Shown,
-        className:JamCounterCaptureController.GetState().className
+        className:JamCounterCaptureController.GetState().className,
+        Duration:Math.round(JamCounterCaptureController.GetState().Duration/1000)
     }
 
     protected remoteScoreboard?:Unsubscribe;
@@ -36,14 +46,18 @@ export default class CaptureJamCounter extends React.PureComponent<any, {
      */
     protected updateState() {
         this.setState({
-            JamCounter:ScoreboardController.GetState().JamCounter
+            JamCounter:ScoreboardController.GetState().JamCounter,
+            JamState:ScoreboardController.GetState().JamState,
+            JamSeconds:ScoreboardController.GetState().JamSecond,
+            MaxJamSeconds:ScoreboardController.GetState().MaxJamSeconds,
         });
     }
 
     protected updateCapture() {
         this.setState({
             Shown:JamCounterCaptureController.GetState().Shown,
-            className:JamCounterCaptureController.GetState().className
+            className:JamCounterCaptureController.GetState().className,
+            Duration:Math.round(JamCounterCaptureController.GetState().Duration/1000)
         });
     }
 
@@ -69,10 +83,14 @@ export default class CaptureJamCounter extends React.PureComponent<any, {
      * Renders the component
      */
     render() {
-        var className = cnames('capture-jam-counter', {shown:this.props.shown});
+        let className:string = cnames('capture-jam-counter', {
+            shown:this.state.Shown,
+            jamming:(this.state.JamState == vars.Clock.Status.Running),
+            showing:((this.state.MaxJamSeconds - this.state.JamSeconds) <= this.state.Duration)
+        });
         return (
             <div className={className}>
-                {this.state.JamCounter.toString().padStart(2,'0')}
+                #{this.state.JamCounter.toString().padStart(2,'0')}
             </div>
         )
     }

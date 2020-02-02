@@ -247,8 +247,10 @@ class RaffleTicketEntry extends React.PureComponent<any, {
         if(this.TicketItem != null && this.TicketItem.current !== null)
             ml = this.TicketItem.current.maxLength;
         if(digit === 'X') {
-            if(value.length < 1)
+            if(value.length < 1) {
+                RaffleController.Remove();
                 return;
+            }
             this.setState(() => {
                 return {value:value.substring(0, value.length - 1)};
             }, () => {

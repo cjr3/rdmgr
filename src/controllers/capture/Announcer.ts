@@ -9,7 +9,6 @@ interface IStateAnnouncer extends SCaptureControllerState {
 
 interface IAnnouncerController extends ICaptureController {
     SetAnnouncers:Function;
-    SetDuration:Function;
 }
 
 export const InitState:IStateAnnouncer = {
@@ -18,7 +17,8 @@ export const InitState:IStateAnnouncer = {
     Announcer1:'',
     Announcer2:'',
     Duration:10000,
-    Delay:0
+    Delay:0,
+    AutoHide:false
 };
 
 let Timer:any = 0;

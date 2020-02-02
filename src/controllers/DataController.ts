@@ -31,7 +31,14 @@ import { AddMediaPath, RemoveMediaPath } from './functions';
 import { RecordSavers, LoadJsonFile, StateSavers } from './functions.io';
 import ScoreboardCaptureController, { JamClockCaptureController, JamCounterCaptureController, ScorebannerCaptureController } from './capture/Scoreboard';
 import ScorekeeperCaptureController from './capture/Scorekeeper';
-import { SetAuthEndpoint, SetEndpoint, SetValidateEndpoint } from './api/functions';
+import { SetAuthEndpoint, SetEndpoint, SetValidateEndpoint, SetAuthToken } from './api/functions';
+import SponsorCaptureController from './capture/Sponsor';
+import SlideshowCaptureController from './capture/Slideshow';
+import SlideshowController from './SlideshowController';
+import SponsorController from './SponsorController';
+import ScoresCaptureController from './capture/Scores';
+import ScheduleCaptureController from './capture/Schedule';
+import StandingsCaptureController from './capture/Standings';
 
 let path = require('path');
 if(window && window.require) {
@@ -279,23 +286,39 @@ DataController.Load = async () => {
         DataController.LoadMiscRecords()
     ]).then(() => {
         //then states (because they rely on records)
+
+        SetAuthEndpoint(DataController.GetMiscRecord('APIAuthEndpoint'));
+        SetEndpoint(DataController.GetMiscRecord('APIEndpoint'));
+        SetValidateEndpoint(DataController.GetMiscRecord('APIValidateEndpoint'));
+
         return Promise.all([
-            ScoreboardController.Load(),
-            ScoreboardCaptureController.Load(),
+            AnnouncerCaptureController.Load(),
+            AnthemCaptureController.Load(),
             JamClockCaptureController.Load(),
             JamCounterCaptureController.Load(),
             ScorebannerCaptureController.Load(),
-            AnnouncerCaptureController.Load(),
-            AnthemCaptureController.Load(),
+            ScoreboardCaptureController.Load(),
+            ScoreboardController.Load(),
             ChatController.Load(),
-            PenaltyController.Load(),
             PenaltyCaptureController.Load(),
-            ScorekeeperController.Load(),
+            PenaltyController.Load(),
             ScorekeeperCaptureController.Load(),
-            RosterController.Load(),
+            ScorekeeperController.Load(),
             RosterCaptureController.Load(),
+            RosterController.Load(),
+            SponsorCaptureController.Load(),
+            SponsorController.Load(),
+            SlideshowCaptureController.Load(),
+            SlideshowController.Load(),
             UIController.Load()
-        ]);
+        ]).then((res) => {
+            ScoresCaptureController.Load();
+            ScheduleCaptureController.Load();
+            StandingsCaptureController.Load();
+            return true;
+        }).catch(() => {
+            return false;
+        });
     })
 };
 

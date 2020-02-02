@@ -5,10 +5,9 @@ import {
     IconSave,
     IconNo
 } from 'components/Elements';
-
 import APIMatchesController from 'controllers/api/Matches';
-import {GetAuthToken} from 'controllers/api/functions';
 import UIController from 'controllers/UIController';
+import './css/Scores.scss';
 
 /**
  * Component for posting scores to bout records at the API endpoint.
@@ -117,6 +116,7 @@ class MatchItem extends React.PureComponent<{
      */
     render() {
         let mdate:string = "";
+        let title:string = 'Click to Save Scores';
         if(this.MatchDate) {
             mdate = this.MatchDate.toLocaleDateString('en-us', {
                 month:'2-digit',
@@ -126,58 +126,56 @@ class MatchItem extends React.PureComponent<{
         }
 
         let iconSaving:string = IconSave;
-        if(this.state.errorMessage)
+        if(this.state.errorMessage) {
             iconSaving = IconNo;
+            title = this.state.errorMessage;
+        }
         if(this.state.saving)
             iconSaving = IconLoop;
 
         return (
             <div className="match-item">
-                <div className="match-date">{mdate}</div>
-                <table>
-                    <tbody>
-                        <tr>
-                            <td className="match-team">
-                                <img src={this.props.record.TeamA.Thumbnail} title={this.props.record.TeamA.Name}/>
-                            </td>
-                            <td className="match-team">
-                                <img src={this.props.record.TeamB.Thumbnail} title={this.props.record.TeamB.Name}/>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td className="match-score">
-                                <input
-                                    type="number"
-                                    min={0}
-                                    max={999}
-                                    value={this.state.ScoreA}
-                                    onChange={this.onChangeScoreA}
-                                    disabled={this.state.saving}
-                                    size={4}
-                                    />
-                            </td>
-                            <td className="match-score">
-                                <input
-                                    type="number"
-                                    min={0}
-                                    max={999}
-                                    value={this.state.ScoreB}
-                                    onChange={this.onChangeScoreB}
-                                    disabled={this.state.saving}
-                                    size={4}
-                                    />
-                            </td>
-                            <td>
-                                <Icon
-                                    onClick={this.onClickSubmit}
-                                    src={iconSaving}
-                                    active={this.state.saving}
-                                    title={this.state.errorMessage}
-                                />
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div className="date">{mdate}</div>
+                <div className="team-a">
+                    <div className="logo">
+                        <img src={this.props.record.TeamA.Thumbnail} title={this.props.record.TeamA.Name}/>
+                    </div>
+                    <div className="score">
+                        <input
+                            type="number"
+                            min={0}
+                            max={999}
+                            value={this.state.ScoreA}
+                            onChange={this.onChangeScoreA}
+                            disabled={this.state.saving}
+                            size={4}
+                            />
+                    </div>
+                </div>
+                <div className="team-b">
+                    <div className="logo">
+                        <img src={this.props.record.TeamB.Thumbnail} title={this.props.record.TeamB.Name}/>
+                    </div>
+                    <div className="score">
+                        <input
+                            type="number"
+                            min={0}
+                            max={999}
+                            value={this.state.ScoreB}
+                            onChange={this.onChangeScoreB}
+                            disabled={this.state.saving}
+                            size={4}
+                            />
+                    </div>
+                </div>
+                <div className="controls">
+                    <Icon
+                        onClick={this.onClickSubmit}
+                        src={iconSaving}
+                        active={this.state.saving}
+                        title={title}
+                    />
+                </div>
             </div>
         );
     }

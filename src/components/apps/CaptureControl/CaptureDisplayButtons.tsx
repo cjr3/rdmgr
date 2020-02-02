@@ -12,7 +12,8 @@ import {
     IconSlideshow, 
     IconMovie,
     IconTeam,
-    IconClipboard
+    IconClipboard,
+    IconQueue
 } from 'components/Elements';
 import AnnouncerCaptureController from 'controllers/capture/Announcer';
 import CameraCaptureController from 'controllers/capture/Camera';
@@ -26,68 +27,32 @@ import SponsorCaptureController from 'controllers/capture/Sponsor';
 import RaffleCaptureController from 'controllers/capture/Raffle';
 import RosterCaptureController from 'controllers/capture/Roster';
 import { Unsubscribe } from 'redux';
+import ScoresCaptureController from 'controllers/capture/Scores';
+import ScheduleCaptureController from 'controllers/capture/Schedule';
+import StandingsCaptureController from 'controllers/capture/Standings';
 
 
 /**
  * A component for buttons that control what is visible on the capture window.
  */
 export default class CaptureDisplayButtons extends React.PureComponent<any, {
-    /**
-     * Determines if the scoreboard is visible or not
-     */
     Scoreboard:boolean;
-    /**
-     * Determines if the main camera is visible or not.
-     */
     MainCamera:boolean;
-    /**
-     * Determines if the main video is displayed or not.
-     */
     MainVideo:boolean;
-    /**
-     * Determines if the scorebanner is displayed or not
-     */
     Scorebanner:boolean;
-    /**
-     * Determines if the national anthem singer is displayed or not
-     */
     Anthem:boolean;
-    /**
-     * Determines if the sponsor slideshow is displayed or not
-     */
     SponsorSlideshow:boolean;
-    /**
-     * Determines if the main slideshow is visible or not
-     */
     MainSlideshow:boolean;
-    /**
-     * Determines if the announcer is visible or not
-     */
     Announcers:boolean;
-    /**
-     * Determines if the penalty tracker is shown or not
-     */
     PenaltyTracker:boolean;
-    /**
-     * Determines if the full-screen jam clock is shown
-     */
     JamClock:boolean;
-    /**
-     * Determines if the full-screen jam counter is shown
-     */
     JamCounter:boolean;
-    /**
-     * Determines if the raffle screen is shown
-     */
     Raffle:boolean;
-    /**
-     * Determines if the roster is displayed
-     */
     Roster:boolean;
-    /**
-     * Determines if the Scorekeeper is displayed
-     */
     Scorekeeper:boolean;
+    Scores:boolean;
+    Schedule:boolean;
+    Standings:boolean;
 }> {
     readonly state = {
         Announcers:AnnouncerCaptureController.GetState().Shown,
@@ -103,7 +68,10 @@ export default class CaptureDisplayButtons extends React.PureComponent<any, {
         JamCounter:JamCounterCaptureController.GetState().Shown,
         MainSlideshow:SlideshowCaptureController.GetState().Shown,
         SponsorSlideshow:SponsorCaptureController.GetState().Shown,
-        Raffle:RaffleCaptureController.GetState().Shown
+        Raffle:RaffleCaptureController.GetState().Shown,
+        Scores:ScoresCaptureController.GetState().Shown,
+        Standings:StandingsCaptureController.GetState().Shown,
+        Schedule:ScheduleCaptureController.GetState().Shown
     };
 
     /**
@@ -124,6 +92,9 @@ export default class CaptureDisplayButtons extends React.PureComponent<any, {
     protected remoteRaffle?:Unsubscribe;
     protected remoteRoster?:Unsubscribe;
     protected remoteVideo?:Unsubscribe;
+    protected remoteScores?:Unsubscribe;
+    protected remoteStandings?:Unsubscribe;
+    protected remoteSchedule?:Unsubscribe;
 
     /**
      * 
@@ -145,6 +116,9 @@ export default class CaptureDisplayButtons extends React.PureComponent<any, {
         this.updateSlideshow = this.updateSlideshow.bind(this);
         this.updateSponsor = this.updateSponsor.bind(this);
         this.updateVideo = this.updateVideo.bind(this);
+        this.updateScores = this.updateScores.bind(this);
+        this.updateSchedule = this.updateSchedule.bind(this);
+        this.updateStandings = this.updateStandings.bind(this);
     }
 
     protected updateAnnouncers() {
@@ -203,6 +177,18 @@ export default class CaptureDisplayButtons extends React.PureComponent<any, {
         this.setState({MainVideo:VideoCaptureController.GetState().Shown});
     }
 
+    protected updateScores() {
+        this.setState({Scores:ScoresCaptureController.GetState().Shown});
+    }
+
+    protected updateSchedule() {
+        this.setState({Schedule:ScheduleCaptureController.GetState().Shown});
+    }
+
+    protected updateStandings() {
+        this.setState({Standings:StandingsCaptureController.GetState().Shown});
+    }
+
     /**
      * Start listeners
      */
@@ -221,6 +207,9 @@ export default class CaptureDisplayButtons extends React.PureComponent<any, {
         this.remoteRaffle = RaffleCaptureController.Subscribe(this.updateRaffle);
         this.remoteRoster = RosterCaptureController.Subscribe(this.updateRoster);
         this.remoteVideo = VideoCaptureController.Subscribe(this.updateVideo);
+        this.remoteScores = ScoresCaptureController.Subscribe(this.updateScores);
+        this.remoteSchedule = ScheduleCaptureController.Subscribe(this.updateSchedule);
+        this.remoteStandings = StandingsCaptureController.Subscribe(this.updateStandings);
     }
 
     /**
@@ -255,6 +244,12 @@ export default class CaptureDisplayButtons extends React.PureComponent<any, {
             this.remoteRoster();
         if(this.remoteVideo)
             this.remoteVideo();
+        if(this.remoteScores)
+            this.remoteScores();
+        if(this.remoteSchedule)
+            this.remoteSchedule();
+        if(this.remoteStandings)
+            this.remoteStandings();
     }
 
     /**
@@ -294,12 +289,6 @@ export default class CaptureDisplayButtons extends React.PureComponent<any, {
                         Jam Counter
                 </IconButton>
                 <IconButton
-                    src={IconClipboard}
-                    active={this.state.Scorekeeper}
-                    onClick={ScorekeeperCaptureController.Toggle}>
-                        Jammers
-                </IconButton>
-                <IconButton
                     src={IconWhistle}
                     active={this.state.PenaltyTracker}
                     onClick={PenaltyCaptureController.Toggle}>
@@ -320,6 +309,12 @@ export default class CaptureDisplayButtons extends React.PureComponent<any, {
                     active={this.state.Scoreboard}
                     onClick={ScoreboardCaptureController.Toggle}>
                         Scoreboard
+                </IconButton>
+                <IconButton
+                    src={IconClipboard}
+                    active={this.state.Scorekeeper}
+                    onClick={ScorekeeperCaptureController.Toggle}>
+                        Scorekeeper
                 </IconButton>
                 <IconButton
                     src={IconSlideshow}
@@ -344,6 +339,24 @@ export default class CaptureDisplayButtons extends React.PureComponent<any, {
                     active={this.state.MainVideo}
                     onClick={VideoCaptureController.Toggle}>
                         Video
+                </IconButton>
+                <IconButton
+                    src={IconQueue}
+                    active={this.state.Scores}
+                    onClick={ScoresCaptureController.Toggle}
+                    >Data: Scores
+                </IconButton>
+                <IconButton
+                    src={IconQueue}
+                    active={this.state.Schedule}
+                    onClick={ScheduleCaptureController.Toggle}
+                    >Data: Schedule
+                </IconButton>
+                <IconButton
+                    src={IconQueue}
+                    active={this.state.Standings}
+                    onClick={StandingsCaptureController.Toggle}
+                    >Data: Standings
                 </IconButton>
             </React.Fragment>
         )

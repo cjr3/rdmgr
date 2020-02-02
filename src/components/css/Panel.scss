@@ -128,7 +128,7 @@
         min-height: 48px;
         max-width: 50%;
         max-height: 80%;
-        transition: transform 75ms linear;
+        /*transition: transform 75ms ease-in-out;*/
         transform-origin: 50% 100%;
         z-index: 9;
         > .content {
@@ -182,5 +182,6 @@
 @media screen and (max-width:960px) and (min-height: 1080px) { 
     .panel.popup {
         max-height: 50%;
+        max-width: 65%;
     }
 }

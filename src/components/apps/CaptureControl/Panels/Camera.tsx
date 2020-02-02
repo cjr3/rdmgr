@@ -14,6 +14,8 @@ import Panel from 'components/Panel';
  */
 export default class CameraPanel extends React.PureComponent<{
     opened:boolean;
+    onClose:Function;
+    onSubmit:Function;
 },{
     /**
      * Local device ID of selected camera.
@@ -27,11 +29,13 @@ export default class CameraPanel extends React.PureComponent<{
      * Determines if the camera is visible or not.
      */
     Shown:boolean;
+    loading:boolean;
 }> {
     readonly state = {
         Cameras:CameraController.GetState().Cameras,
         DeviceID:'',
-        Shown:CameraCaptureController.GetState().Shown
+        Shown:CameraCaptureController.GetState().Shown,
+        loading:false
     }
 
     /**
@@ -59,7 +63,8 @@ export default class CameraPanel extends React.PureComponent<{
      */
     protected updateState() {
         this.setState({
-            Cameras:CameraController.GetState().Cameras
+            Cameras:CameraController.GetState().Cameras,
+            loading:false
         }, () => {
             this.forceUpdate();
         });
@@ -77,6 +82,7 @@ export default class CameraPanel extends React.PureComponent<{
      */
     protected async onClickSubmit() {
         await CameraController.Set(this.state.DeviceID);
+        this.props.onSubmit();
     }
 
     /**
@@ -160,7 +166,11 @@ export default class CameraPanel extends React.PureComponent<{
             <IconButton
                 src={IconLoop}
                 key="btn-load"
-                onClick={CameraController.Load}>Load</IconButton>,
+                active={this.state.loading}
+                onClick={() => {
+                    this.setState({loading:true});
+                    CameraController.Load();
+                }}>Load</IconButton>,
             <IconButton
                 key="btn-submit"
                 src={IconCheck}
@@ -173,7 +183,9 @@ export default class CameraPanel extends React.PureComponent<{
                 opened={this.props.opened}
                 buttons={buttons}
                 popup={true}
-                contentName="camera">
+                contentName="camera"
+                onClose={this.props.onClose}
+                >
                 <div className="record-list">
                     {cameras}
                 </div>

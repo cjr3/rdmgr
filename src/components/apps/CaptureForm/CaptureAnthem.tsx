@@ -5,6 +5,7 @@ import DataController from 'controllers/DataController';
 import AnthemCaptureController from 'controllers/capture/Anthem';
 import { Unsubscribe } from 'redux';
 import { AddMediaPath } from 'controllers/functions';
+import PopupBanner from 'components/2d/PopupBanner';
 
 /**
  * Component for displaying national anthem singer info on the capture window.
@@ -17,7 +18,7 @@ export default class CaptureAnthem extends React.PureComponent<any, {
 }> {
 
     readonly state = {
-        Shown:(AnthemCaptureController.GetState().Shown && AnthemCaptureController.GetState().className == ''),
+        Shown:AnthemCaptureController.GetState().Shown,
         Name:AnthemCaptureController.GetState().Record.Name,
         Bio:AnthemCaptureController.GetState().Record.Description,
         BackgroundImage:DataController.GetMiscRecord('NationalFlag')
@@ -44,7 +45,7 @@ export default class CaptureAnthem extends React.PureComponent<any, {
      */
     protected updateState() {
         this.setState({
-            Shown:(AnthemCaptureController.GetState().Shown && AnthemCaptureController.GetState().className == ''),
+            Shown:AnthemCaptureController.GetState().Shown,
             Name:AnthemCaptureController.GetState().Record.Name,
             Bio:AnthemCaptureController.GetState().Record.Description
         });
@@ -78,7 +79,7 @@ export default class CaptureAnthem extends React.PureComponent<any, {
      * Renders the component
      */
     render() {
-        let className:string = cnames('capture-anthem', {
+        let className:string = cnames('anthem-screen', {
             shown:this.state.Shown
         });
 
@@ -94,7 +95,7 @@ export default class CaptureAnthem extends React.PureComponent<any, {
 
         let style:CSSProperties = {};
         if(this.state.BackgroundImage)
-            style.backgroundImage = "url('" + AddMediaPath(this.state.BackgroundImage) + "')";
+            style.backgroundImage = `url('${AddMediaPath(this.state.BackgroundImage)}')`;
 
         return (
             <div className={className} style={style}>
@@ -111,7 +112,7 @@ export class CaptureAnthemBanner extends React.PureComponent<any, {
     BackgroundImage:string;
 }> {
     readonly state = {
-        Shown:(AnthemCaptureController.GetState().className == 'banner' && AnthemCaptureController.GetState().Shown),
+        Shown:AnthemCaptureController.GetState().Shown,
         Name:AnthemCaptureController.GetState().Record.Name,
         BackgroundImage:DataController.GetMiscRecord('NationalFlag')
     }
@@ -127,7 +128,7 @@ export class CaptureAnthemBanner extends React.PureComponent<any, {
 
     protected updateCapture() {
         this.setState({
-            Shown:(AnthemCaptureController.GetState().className == 'banner' && AnthemCaptureController.GetState().Shown),
+            Shown:AnthemCaptureController.GetState().Shown,
             Name:AnthemCaptureController.GetState().Record.Name
         });
     }
@@ -157,16 +158,17 @@ export class CaptureAnthemBanner extends React.PureComponent<any, {
     }
 
     render() {
-        let className:string = cnames('capture-anthem banner', {
-            shown:this.state.Shown
-        });
         let style:CSSProperties = {};
         if(this.state.BackgroundImage)
             style.backgroundImage = "url('" + AddMediaPath(this.state.BackgroundImage) + "')";
         return (
-            <div className={className} style={style}>
-                <div className="name shown">{this.state.Name}</div>
-            </div>
+            <PopupBanner
+                shown={this.state.Shown}
+                className="anthem-banner"
+                style={style}
+                >
+                <div className="name">{this.state.Name}</div>
+            </PopupBanner>
         );
     }
 }

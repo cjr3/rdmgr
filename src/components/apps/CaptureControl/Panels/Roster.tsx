@@ -17,12 +17,14 @@ import vars, { SkaterRecord } from 'tools/vars';
 import RosterCaptureController from 'controllers/capture/Roster';
 import { Compare, AddMediaPath } from 'controllers/functions';
 import Panel from 'components/Panel';
+import './css/Roster.scss';
 
 /**
  * Component for configuring the roster.
  */
 export default class RosterPanel extends React.PureComponent<{
     opened:boolean;
+    onClose:Function;
 }> {
     readonly state = {
         Shown:RosterCaptureController.GetState().Shown
