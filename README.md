@@ -2,8 +2,6 @@
 
 RDMGR is a peer-to-peer A/V production application for Roller Derby. It's written in React, Typescript, and Node.js, packaged under Electron. You can support the development of this software at [patreon.com/rollerderby](https://patreon.com/rollerderby) .
 
-![Image of Scoreboard](https://c10.patreonusercontent.com/3/eyJwIjoxfQ%3D%3D/patreon-media/p/post/32098284/d47c8b94fa3e4b35b6caf565b392496a/1.jpg?token-time=1579651200&token-hash=OmU6kxg8UsFkCCvnz9yAgLdMOE0uzMeJJUUl0_vnfmI%3D)
-
 ## Features
 - Scoreboard
 - Capture Window
@@ -20,8 +18,6 @@ RDMGR is a peer-to-peer A/V production application for Roller Derby. It's writte
 - Camera
 
 ### Scoreboard
-
-![Image of Scoreboard](https://c10.patreonusercontent.com/3/eyJwIjoxfQ%3D%3D/patreon-media/p/post/32098284/742d713eb5b8445d972e80cf2364d79b/1.jpg?token-time=1579651200&token-hash=kK7IC8xvFRZTU4Wg76hBiLPedgCdgQkGcVeMaGCGez8%3D)
 
 - Simple UI for controlling the flow of the game.
 - Point-and-click controls that work well with touch screens, too.
@@ -54,8 +50,6 @@ You can assign penalties to skaters, to display a list to fans, and scorekeepers
 Use the Roster to organize the skaters on the Scorekeeper, Penalty Tracker, and intros.
 
 ### Scorekeeper
-
-![Image of Scorekeeper](https://c10.patreonusercontent.com/3/eyJwIjoxfQ%3D%3D/patreon-media/p/post/32098284/c68de314952347b18a6c2b914754cf8f/1.jpg?token-time=1579651200&token-hash=p9iptrl-24LU_LGusTFRX_JcMejBXCNZbNLiN-lFo5Y%3D)
 
 The Scorekeeper lets you place the skaters into positions. Jammer photos can also be displayed on the Capture Window, along with their jersey # and team color.
 
