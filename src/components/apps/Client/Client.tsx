@@ -113,6 +113,7 @@ export default class Client extends React.PureComponent<any, {
                 <ClientConfigPanel/>
                 <ClientDisplayPanel/>
                 <ClientRecordRequest/>
+                <ClientLogin/>
             </React.Fragment>
         );
     }
@@ -133,7 +134,6 @@ function ClientApplications() {
             <Scorekeeper/>
             <Roster/>
             <MediaQueue/>
-            <ClientLogin/>
         </Panel>
     );
 }

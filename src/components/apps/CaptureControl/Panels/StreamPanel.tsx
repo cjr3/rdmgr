@@ -167,15 +167,6 @@ export class ToggleIcons extends React.PureComponent<any, {
     render() {
         return (
             <div className="toggle-icons">
-                <Icon src={IconSkate} title="Scoreboard" onClick={() => {
-                    ScoreboardCaptureController.Hide();
-                    ScorebannerCaptureController.Toggle();
-                }} active={this.state.ScorebannerShown}/>
-
-                <Icon src={IconStreamOff} title="Camera" onClick={() => {
-                    CameraCaptureController.Toggle();
-                }} active={this.state.CameraShown}/>
-
                 <Icon src={IconMic} title="Announcers" onClick={() => {
                     AnnouncerCaptureController.SetClass('banner');
                     AnnouncerCaptureController.Toggle();
@@ -191,7 +182,7 @@ export class ToggleIcons extends React.PureComponent<any, {
                     PenaltyCaptureController.Toggle();
                 }} active={this.state.PenaltyTrackerShown}/>
 
-                <Icon src={IconClipboard} title="Scorekeeper" onClick={() => {
+                <Icon src={IconClipboard} title="Jammers" onClick={() => {
                     ScorekeeperCaptureController.SetClass('stream');
                     ScorekeeperCaptureController.Toggle();
                 }} active={this.state.ScorekeeperShown}/>

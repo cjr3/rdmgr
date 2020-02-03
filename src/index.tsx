@@ -42,7 +42,6 @@ DataController.Init().then(() => {
                 };
                 window.ReactEntryPoint = ReactDOM.render(<ViewManager />, document.getElementById('root'));
                 serviceWorker.unregister();
-                //DataController.loadAPIRecords();
             }).catch((er) => {
                 //console.log(er);
             })

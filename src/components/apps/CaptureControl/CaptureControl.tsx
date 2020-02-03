@@ -17,6 +17,7 @@ import TeamPicker from '../Scoreboard/TeamPicker';
 import PhaseSelection from '../Scoreboard/PhaseSelection';
 import CameraPanel from './Panels/Camera';
 import RosterPanel from './Panels/Roster';
+import PreviewPanel from './Panels/Preview';
 
 /**
  * Component for determining what is displayed on the capture window.
@@ -37,6 +38,7 @@ export default class CaptureControl extends React.PureComponent<any, {
         super(props);
         this.updateUI = this.updateUI.bind(this);
         this.setPanel = this.setPanel.bind(this);
+        this.onClosePanel = this.onClosePanel.bind(this);
     }
 
     protected async updateUI() {
@@ -48,6 +50,10 @@ export default class CaptureControl extends React.PureComponent<any, {
             this.setState({CurrentPanel:''});
         else
             this.setState({CurrentPanel:value});
+    }
+
+    protected onClosePanel() {
+        this.setState({CurrentPanel:''});
     }
 
     componentDidMount() {
@@ -70,35 +76,35 @@ export default class CaptureControl extends React.PureComponent<any, {
                 className="CC-app-panel"
                 buttons={[<Buttons key='buttons' onClick={this.setPanel} panel={this.state.CurrentPanel}/>]}
                 >
-                <CaptureControlPreview/>
                 <ScoreboardPanel/>
                 <StreamPanel/>
                 <ScoresPanel
                     opened={(this.state.CurrentPanel === 'scores')}
+                    onClose={this.onClosePanel}
                 />
                 <TeamPicker
                     opened={(this.state.CurrentPanel === 'teams')}
-                    onClose={() => {this.setState({CurrentPanel:''})}}
-                    onSubmit={() => {this.setState({CurrentPanel:''})}}
+                    onClose={this.onClosePanel}
+                    onSubmit={this.onClosePanel}
                     />
                 <PhaseSelection
                     opened={(this.state.CurrentPanel === 'phase')}
-                    onClose={() => {this.setState({CurrentPanel:''})}}
-                    onSelect={() => {this.setState({CurrentPanel:''})}}
+                    onClose={this.onClosePanel}
+                    onSelect={this.onClosePanel}
                     />
                 <CameraPanel
                     opened={(this.state.CurrentPanel === 'camera')}
-                    onClose={() => {this.setState({CurrentPanel:''})}}
-                    onSubmit={() => {this.setState({CurrentPanel:''})}}
+                    onClose={this.onClosePanel}
+                    onSubmit={this.onClosePanel}
                     />
                 <CaptureControlMonitor
                     opened={(this.state.CurrentPanel == 'monitor')}
-                    onClose={() => {this.setState({CurrentPanel:''})}}
-                    onSubmit={() => {this.setState({CurrentPanel:''})}}
+                    onClose={this.onClosePanel}
+                    onSubmit={this.onClosePanel}
                     />
                 <RosterPanel
                     opened={(this.state.CurrentPanel == 'roster')}
-                    onClose={() => {this.setState({CurrentPanel:''})}}
+                    onClose={this.onClosePanel}
                     />
             </Panel>
         );

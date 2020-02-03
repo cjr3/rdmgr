@@ -46,7 +46,7 @@ export default class ScoresPanel extends React.PureComponent<{
             month:'2-digit',
             day:'2-digit'
         });
-        tdate.setDate(tdate.getDate() - 7);
+        tdate.setDate(tdate.getDate() - 29);
         let sdate:string = tdate.toLocaleDateString('en-us',{
             year:'numeric',
             month:'2-digit',
@@ -55,7 +55,9 @@ export default class ScoresPanel extends React.PureComponent<{
 
         APIMatchesController.Load({
             sdate:sdate,
-            edate:edate
+            edate:edate,
+            orderby:'date',
+            order:'DESC'
         }).then((records) => {
             if(typeof(records) === 'object')
                 this.setState({Matches:records, error:'', title:'Post Scores'});
@@ -97,7 +99,10 @@ export default class ScoresPanel extends React.PureComponent<{
                 buttons={buttons}
                 error={this.state.error}
                 title={this.state.title}
-                onOpen={this.load}
+                onOpen={() => {
+                    if(!this.state.Matches || this.state.Matches.length <= 0)
+                        this.load();
+                }}
                 {...this.props}
                 >
                 <div className="record-form">

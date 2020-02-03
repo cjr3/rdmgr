@@ -6,8 +6,11 @@ APIMatchesController.NewRecord = () : MatchRecord => {
     return {
         RecordID:0,
         RecordType:'MAT',
-        StartTime:'00:00:00',
-        EndTime:'00:00:00',
+        MatchDate:'',
+        SeasonID:0,
+        BoutID:0,
+        StartTime:'18:00:00',
+        EndTime:'20:00:00',
         TeamA:{
             ID:0,
             Score:0

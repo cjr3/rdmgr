@@ -3,7 +3,7 @@ import cnames from 'classnames';
 import {Icon, IconX} from 'components/Elements';
 import './css/Panel.scss';
 
-interface PPanel {
+export interface PPanelProps {
     opened:boolean;
     popup?:boolean;
     buttons?:Array<React.ReactElement>;
@@ -20,7 +20,7 @@ interface PPanel {
 /**
  * Component for creating a panel
  */
-class Panel extends React.Component<PPanel> {
+class Panel extends React.Component<PPanelProps> {
     componentDidUpdate(prevProps) {
         if(prevProps.opened === false && this.props.opened === true) {
             if(this.props.onOpen)

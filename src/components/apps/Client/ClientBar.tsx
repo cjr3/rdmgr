@@ -12,7 +12,8 @@ import {
     IconOnline,
     IconCapture,
     IconChat,
-    IconSettings
+    IconSettings,
+    IconStreamOff
 } from 'components/Elements';
 import ScoreboardController from 'controllers/ScoreboardController';
 import PenaltyController from 'controllers/PenaltyController';
@@ -58,7 +59,7 @@ export default class ClientBar extends React.PureComponent<any, {
             CaptureControl:{
                 Key:'CC',
                 Name:"Capture Control",
-                Icon:IconMonitor
+                Icon:IconStreamOff
             },
             PenaltyTracker:{
                 Key:PenaltyController.Key,

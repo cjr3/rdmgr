@@ -70,6 +70,7 @@ export const IconController = require('images/icons/gamepad.png');
 export const Icon2x = require('images/icons/2x.png');
 export const IconLeague = require('images/icons/leagueicon.png');
 export const IconPalette = require('images/icons/palette.png');
+export const IconVS = require('images/icons/vs.png');
 
 /**
  * Creates a <button> element

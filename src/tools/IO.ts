@@ -1,9 +1,3 @@
-import {Files} from 'controllers/vars';
-//import ScoreboardController from 'controllers/ScoreboardController';
-//import RosterController from 'controllers/RosterController';
-//import ChatController from 'controllers/ChatController';
-//import CaptureController from 'controllers/CaptureController';
-//import UIController from 'controllers/UIController';
 import { FileExtension } from 'controllers/functions.io';
 
 /**

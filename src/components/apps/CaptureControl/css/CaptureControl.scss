@@ -24,6 +24,42 @@
 }
 
 .CC-app {
+    .preview {
+        position: absolute;
+        margin: auto;
+        top: 0;
+        left: 0;
+        &.playing {
+            opacity: 1;
+            > .icon {
+                opacity: 0;
+            }
+        }
+        &.paused {
+            opacity: 0.5;
+            > .icon {
+                opacity: 1;
+            }
+        }
+        > video {
+            cursor:pointer;
+        }
+
+        > .icon {
+            transition: opacity 250ms ease-in-out;
+            position: absolute;
+            margin: auto;
+            top: 0;
+            right: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 2;
+            &:hover {
+                opacity: 1;
+                background-color: rgba(0,0,0,0.5);
+            }
+        }
+    }
 
     .capture-preview {
         position: absolute;

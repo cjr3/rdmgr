@@ -106,10 +106,17 @@ export interface Record {
     Records?:Array<any>;
 };
 
-export interface BoutRecord extends Record {
-    RecordType:'BUT',
+export interface SeasonRecord extends Record {
+    RecordType:'SEA',
     DateStart:string;
     DateEnd:string;
+    Bouts:Array<BoutRecord>;
+    Standings:Array<any>;
+}
+
+export interface BoutRecord extends Record {
+    RecordType:'BUT',
+    BoutDate:string;
     DoorsOpen:string;
     Matches:Array<MatchRecord>;
 };
@@ -123,6 +130,9 @@ interface MatchTeam {
 export interface MatchRecord {
     RecordID:number;
     RecordType:'MAT';
+    SeasonID:number;
+    BoutID:number;
+    MatchDate:string;
     StartTime:string;
     EndTime:string;
     TeamA:MatchTeam;
@@ -254,6 +264,11 @@ export interface PhaseRecord extends Record {
      * Quarter the phase is assigned (1, 2, 3, 4)
      */
     PhaseQtr?:number;
+}
+
+export interface SponsorRecord extends Record {
+    RecordType:'SPN';
+    Website:string;
 }
 
 export interface JamRecord {

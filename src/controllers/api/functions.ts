@@ -1,4 +1,4 @@
-import {IAPIController, APIActions, SAPIController} from './vars';
+import {IAPIController, APIActions, SAPIController, Record} from './vars';
 import { Store, createStore } from 'redux';
 
 //user defined endpoints - for integrating your own data
@@ -317,30 +317,45 @@ export const CreateController = (key:string, suffix:string, reducer?:any) : any 
                 record:record
             });
         },
-        UpdateRecord: async (record:any) => {
+        UpdateRecord: async (record:Record) => {
             return new Promise((res, rej) => {
                 if(!record || record === null || typeof(record) !== 'object')
                     rej('Please provide a record to save!');
                 else if(!record.RecordType)
                     rej('Please provide a RecordType code on your record.');
-                else if(!record.RecordID || record.RecordID <= 0)
-                    rej('You must provide a record ID greater than zero to update a record.');
+                else if(typeof(record.RecordID) === 'undefined')
+                    rej('You must provide a RecordID!');
                 else {
-                    SendPut(controller.EndpointSuffix + "/" + record.RecordID, record).then((response) => {
-                        if(response && response.RecordID) {
-                            controller.Dispatch({
-                                type:APIActions.UPDATE,
-                                record:response
-                            });
-                            res(response);
-                        } else if(response && response.message) {
-                            rej(response.message);
-                        } else {
-                            rej('Failed to update record: No response received from endpoint.');
-                        }
-                    }).catch((er) => {
-                        rej(er);
-                    });
+                    if(record.RecordID > 0) {
+                        SendPut(controller.EndpointSuffix + "/" + record.RecordID, record).then((response) => {
+                            if(response && response.RecordID) {
+                                controller.Dispatch({
+                                    type:APIActions.UPDATE,
+                                    record:response
+                                });
+                                res(response);
+                            } else if(response && response.message) {
+                                rej(response.message);
+                            } else {
+                                rej('Failed to update record: No response received from endpoint.');
+                            }
+                        }).catch((er) => {
+                            rej(er);
+                        });
+                    } else {
+                        SendPost(controller.EndpointSuffix, record).then((response) => {
+                            if(response && response.RecordID) {
+                                controller.AddRecord(response);
+                                res(response);
+                            } else if(response && response.message) {
+                                rej(response.message);
+                            } else {
+                                rej('Failed to create record: No response received from endpoint.');
+                            }
+                        }).catch((er) => {
+                            rej(er);
+                        });
+                    }
                 }
             });
         },
@@ -362,8 +377,10 @@ export const CreateController = (key:string, suffix:string, reducer?:any) : any 
         LoadRecord: async (id:number) => {
             return new Promise((res, rej) => {
                 SendGet(controller.EndpointSuffix + "/" + id).then((response) => {
-                    if(response && response.record) {
-                        res(response.record);
+                    if(typeof(response) === 'object' && response !== null && typeof(response.RecordID) === 'number') {
+                        res(response);
+                    } else if(response && response.error) {
+                        rej(response.error);
                     } else {
                         rej('No record found');
                     }
@@ -388,7 +405,10 @@ export const CreateController = (key:string, suffix:string, reducer?:any) : any 
                 }
 
                 SendGet(suffix).then((response) => {
-                    if(response && response.records) {
+                    if(response && Array.isArray(response)) {
+                        controller.SetRecords(response);
+                        res(response);
+                    } else if(response && response.records) {
                         controller.SetRecords(response.records);
                         res(response.records);
                     } else {

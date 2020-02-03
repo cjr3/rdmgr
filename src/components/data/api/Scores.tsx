@@ -23,6 +23,12 @@ export default function Scores(props:{Matches:Array<any>}) {
         );
     });
 
+    if(matches.length <= 0) {
+        return (
+            <div className="message">No matches found.</div>
+        );
+    }
+
     return (
         <React.Fragment>
             {matches}

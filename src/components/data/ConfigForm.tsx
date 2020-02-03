@@ -23,7 +23,8 @@ import {
     Icon,
     IconSkate,
     IconQueue,
-    IconPalette
+    IconPalette,
+    IconVS
 } from 'components/Elements';
 import Panel from 'components/Panel';
 
@@ -57,6 +58,10 @@ import { TeamRecordList } from './TeamEditor';
 import { VideoRecordList } from './VideoEditor';
 import './css/ConfigForm.scss';
 import MiscConfigForm from './MiscConfigForm';
+import { MatchRecord } from 'controllers/api/vars';
+import APIMatchesController from 'controllers/api/Matches';
+import RDMGRMatchPanel, { RDMGRMatchList } from './api/Match';
+import APITeamsController from 'controllers/api/Teams';
 
 export default class ConfigForm extends React.PureComponent<{
     opened:boolean;
@@ -72,6 +77,7 @@ export default class ConfigForm extends React.PureComponent<{
     Team:TeamRecord|null;
     Slideshow:SlideshowRecord|null;
     Video:VideoRecord|null;
+    Match:MatchRecord|null
 }> {
     readonly state = {
         RecordType:'',
@@ -83,7 +89,8 @@ export default class ConfigForm extends React.PureComponent<{
         Skater:null,
         Team:null,
         Slideshow:null,
-        Video:null
+        Video:null,
+        Match:null
     }
 
     constructor(props) {
@@ -131,6 +138,9 @@ export default class ConfigForm extends React.PureComponent<{
             case vars.RecordType.Video :
                 this.setState({Video:VideosController.NewRecord()});
             break;
+            case 'MAT' :
+                this.setState({Match:APIMatchesController.NewRecord()});
+            break;
 
             default :
 
@@ -156,6 +166,7 @@ export default class ConfigForm extends React.PureComponent<{
             case vars.RecordType.Slideshow : title = "Slideshows"; break;
             case vars.RecordType.Team : title = "Teams"; break;
             case 'SCOREBOARD' : title = "Scoreboard"; break;
+            case 'MAT' : title = 'Matches'; break;
             case 'API' : title = "RDMGR API"; break;
             case 'MISC' : title = "Misc. Config"; break;
         }
@@ -222,6 +233,15 @@ export default class ConfigForm extends React.PureComponent<{
                         onCancel={() => this.setState({RecordType:''})}
                         onSubmit={() => this.setState({RecordType:''})}
                         />
+                    <RDMGRMatchPanel
+                        record={this.state.Match}
+                        opened={(this.state.RecordType == 'MAT' && this.state.Match != null)}
+                        onCancel={() => {this.setState({RecordType:'', Match:null})}}
+                        onSave={() => {
+                            this.setState({RecordType:'', Match:null});
+                            APIMatchesController.Load();
+                        }}
+                        />
                 </div>
                 <div className="sections">
                     <div className="title">
@@ -281,6 +301,13 @@ export default class ConfigForm extends React.PureComponent<{
                             onSelect={(record:VideoRecord) => {this.setState({Video:record})}}
                             keywords={this.state.Keywords}
                             />
+
+                        <RDMGRMatchList
+                            shown={(this.state.RecordType == 'MAT')}
+                            record={this.state.Match}
+                            onSelect={(record:MatchRecord) => {this.setState({Match:record})}}
+                            keywords={this.state.Keywords}
+                            />
                     </div>
                     <div className="icons">
                         <Icon 
@@ -288,6 +315,18 @@ export default class ConfigForm extends React.PureComponent<{
                             title="Anthem Singers"
                             active={(this.state.RecordType == vars.RecordType.Anthem)}
                             onClick={() => this.setRecordType(vars.RecordType.Anthem)}
+                            />
+                        <Icon
+                            src={IconVS}
+                            title="Matches"
+                            active={(this.state.RecordType === 'MAT')}
+                            onClick={() => {
+                                if(this.state.RecordType != 'MAT') {
+                                    APIMatchesController.Load();
+                                    APITeamsController.Load();
+                                }
+                                this.setRecordType('MAT');
+                            }}
                             />
                         <Icon 
                             src={IconWhistle}

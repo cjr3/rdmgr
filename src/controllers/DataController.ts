@@ -39,6 +39,10 @@ import SponsorController from './SponsorController';
 import ScoresCaptureController from './capture/Scores';
 import ScheduleCaptureController from './capture/Schedule';
 import StandingsCaptureController from './capture/Standings';
+import APIMatchesController from './api/Matches';
+import APISeasonsController from './api/Seasons';
+import APIBoutsController from './api/Bouts';
+import APITeamsController from './api/Teams';
 
 let path = require('path');
 if(window && window.require) {
@@ -315,6 +319,10 @@ DataController.Load = async () => {
             ScoresCaptureController.Load();
             ScheduleCaptureController.Load();
             StandingsCaptureController.Load();
+            APIMatchesController.Load();
+            APISeasonsController.Load();
+            APIBoutsController.Load();
+            APITeamsController.Load();
             return true;
         }).catch(() => {
             return false;
