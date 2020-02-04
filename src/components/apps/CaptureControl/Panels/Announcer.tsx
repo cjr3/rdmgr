@@ -1,7 +1,9 @@
 import React from 'react';
-import {IconX, IconCheck, IconButton} from 'components/Elements';
+import {IconX, IconCheck, IconButton, IconHidden, IconShown} from 'components/Elements';
 import AnnouncerCaptureController from 'controllers/capture/Announcer';
 import Panel from 'components/Panel';
+import './css/Announcer.scss';
+import { Unsubscribe } from 'redux';
 
 /**
  * Component for configuring announcers.
@@ -18,10 +20,6 @@ export default class AnnouncerPanel extends React.PureComponent<{
      */
     Announcer2:string;
     /**
-     * How long, in seconds, to display the announcer names
-     */
-    Duration:number;
-    /**
      * Determines if the announcer names are shown or not
      */
     Shown:boolean;
@@ -33,20 +31,15 @@ export default class AnnouncerPanel extends React.PureComponent<{
     readonly state = {
         Announcer1:AnnouncerCaptureController.GetState().Announcer1,
         Announcer2:AnnouncerCaptureController.GetState().Announcer2,
-        Duration:AnnouncerCaptureController.GetState().Duration/1000,
         Shown:AnnouncerCaptureController.GetState().Shown
     }
 
-    /**
-     * Listener for capture controller
-     */
-    protected remoteCapture:Function|null = null;
+    protected remoteCapture?:Unsubscribe;
 
     constructor(props) {
         super(props);
         this.onChangeAnnouncer1 = this.onChangeAnnouncer1.bind(this);
         this.onChangeAnnouncer2 = this.onChangeAnnouncer2.bind(this);
-        this.onChangeDuration = this.onChangeDuration.bind(this);
         this.onClickSubmit = this.onClickSubmit.bind(this);
         this.onClickCancel = this.onClickCancel.bind(this);
         this.updateCapture = this.updateCapture.bind(this);
@@ -83,7 +76,7 @@ export default class AnnouncerPanel extends React.PureComponent<{
      * Triggered when the user clicks the submit button.
      */
     protected onClickSubmit() {
-        AnnouncerCaptureController.SetAnnouncers(this.state.Announcer1, this.state.Announcer2, this.state.Duration * 1000);
+        AnnouncerCaptureController.SetAnnouncers(this.state.Announcer1, this.state.Announcer2);
     }
 
     /**
@@ -93,19 +86,7 @@ export default class AnnouncerPanel extends React.PureComponent<{
         this.setState({
             Announcer1:AnnouncerCaptureController.GetState().Announcer1,
             Announcer2:AnnouncerCaptureController.GetState().Announcer2,
-            Duration:AnnouncerCaptureController.GetState().Duration/1000,
             Shown:AnnouncerCaptureController.GetState().Shown
-        });
-    }
-
-    /**
-     * Triggered when the user changes the duration for the announcer
-     * @param {Event} ev 
-     */
-    protected onChangeDuration(ev: React.ChangeEvent<HTMLInputElement>) {
-        var duration = parseInt(ev.currentTarget.value);
-        this.setState(() => {
-            return {Duration:duration}
         });
     }
 
@@ -121,7 +102,7 @@ export default class AnnouncerPanel extends React.PureComponent<{
      * - Close listeners
      */
     componentWillUnmount() {
-        if(this.remoteCapture !== null)
+        if(this.remoteCapture)
             this.remoteCapture();
     }
 
@@ -132,62 +113,65 @@ export default class AnnouncerPanel extends React.PureComponent<{
         //submit button is active if values don't match the state
         let changed:boolean = (
             this.state.Announcer1 !== AnnouncerCaptureController.GetState().Announcer1 ||
-            this.state.Announcer2 !== AnnouncerCaptureController.GetState().Announcer2 ||
-            (this.state.Duration*1000) !== AnnouncerCaptureController.GetState().Duration
+            this.state.Announcer2 !== AnnouncerCaptureController.GetState().Announcer2
         );
 
+        let iconVisibility:string = IconHidden;
+        if(this.state.Shown) {
+            iconVisibility = IconShown;
+        }
+
         let buttons:Array<React.ReactElement> = Array<React.ReactElement>(
+            <IconButton
+                key="btn-toggle"
+                src={iconVisibility}
+                onClick={AnnouncerCaptureController.Toggle}
+                active={this.state.Shown}
+                title="Show/Hide"
+                />,
             <IconButton
                 key="btn-cancel"
                 src={IconX}
                 onClick={this.onClickCancel}
+                title="Cancel"
                 />,
-
             <IconButton
                 key="btn-submit"
                 src={IconCheck}
                 active={changed}
                 onClick={this.onClickSubmit}
+                title="Submit"
                 />
         );
 
         return (
             <Panel
                 opened={this.props.opened}
-                popup={true}
                 buttons={buttons}
+                popup={true}
                 title="Announcers"
-                contentName="announcers"
+                className="announcers"
                 >
-                <p>Announcer #1:</p>
-                <div>
-                    <input type="text"
-                        size={20}
-                        maxLength={15}
-                        value={this.state.Announcer1}
-                        onChange={this.onChangeAnnouncer1}
-                    />
-                </div>
-                <p>Announcer #2:</p>
-                <div>
+                <div className="record-form">
+                    <div className="form-section">
+                        <input type="text"
+                            size={20}
+                            maxLength={15}
+                            value={this.state.Announcer1}
+                            onChange={this.onChangeAnnouncer1}
+                            placeholder={"Announcer #1"}
+                        />
+                    </div>
+                    <div className="form-section">
                     <input type="text"
                         size={20}
                         maxLength={15}
                         value={this.state.Announcer2}
                         onChange={this.onChangeAnnouncer2}
+                        placeholder={"Announcer #2"}
                     />
+                    </div>
                 </div>
-                <p>
-                    Show for 
-                    <input type="number"
-                        size={2}
-                        maxLength={5}
-                        min="5"
-                        max="15"
-                        value={this.state.Duration}
-                        onChange={this.onChangeDuration}
-                    /> seconds
-                </p>
             </Panel>
         );
     }

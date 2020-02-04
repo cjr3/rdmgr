@@ -1,114 +1,159 @@
 import React from 'react';
-import APIMatchesController from 'controllers/api/Matches';
-import { IconButton, IconLoop } from 'components/Elements';
+import APIScoresController from 'controllers/api/Scores';
+import ScoresCaptureController from 'controllers/capture/Scores';
+import { Unsubscribe } from 'redux';
 import Panel from 'components/Panel';
-import Scores from 'components/data/api/Scores';
+import { IconButton, IconHidden, IconShown, IconLoop } from 'components/Elements';
+import './css/Scores.scss';
 
-/**
- * Component for posting scores to the API Endpoint
- * - This is a wrapper component
- */
 export default class ScoresPanel extends React.PureComponent<{
     opened:boolean;
-    sdate?:string;
-    edate?:string;
-    onClose?:Function;
-    className?:string;
 }, {
-    Matches:Array<any>;
-    error?:string;
-    title:string;
+    Records:Array<any>;
+    Shown:boolean;
+    Loading:boolean;
+    error:string;
 }> {
-
     readonly state = {
-        Matches:[],
-        error:'',
-        title:"Post Scores"
+        Records:APIScoresController.Get(),
+        Shown:ScoresCaptureController.GetState().Shown,
+        Loading:false,
+        error:''
     }
 
-    /**
-     * Constructor
-     * @param props 
-     */
+    protected remoteScores?:Unsubscribe;
+    protected remoteCapture?:Unsubscribe;
+
     constructor(props) {
         super(props);
+        this.updateScores = this.updateScores.bind(this);
+        this.updateCapture = this.updateCapture.bind(this);
         this.load = this.load.bind(this);
     }
 
-    /**
-     * Attempts to load matches from the API
-     */
+    protected updateScores() {
+        this.setState({
+            Records:APIScoresController.Get(),
+            Loading:false,
+            error:''
+        });
+    }
+
+    protected updateCapture() {
+        this.setState({
+            Shown:ScoresCaptureController.GetState().Shown
+        });
+    }
+
     protected load() {
-        this.setState({error:'',title:"Loading...",Matches:[]});
-        let tdate:Date = new Date();
-        let edate:string = tdate.toLocaleDateString('en-us',{
-            year:'numeric',
-            month:'2-digit',
-            day:'2-digit'
-        });
-        tdate.setDate(tdate.getDate() - 29);
-        let sdate:string = tdate.toLocaleDateString('en-us',{
-            year:'numeric',
-            month:'2-digit',
-            day:'2-digit'
-        });
-
-        APIMatchesController.Load({
-            sdate:sdate,
-            edate:edate,
-            orderby:'date',
-            order:'DESC'
-        }).then((records) => {
-            if(typeof(records) === 'object')
-                this.setState({Matches:records, error:'', title:'Post Scores'});
-            else
-                this.setState({error:'', title:'Scores'});
-        }).catch((er) => {
-            this.setState({error:er});
+        this.setState({Loading:true,error:''}, () => {
+            APIScoresController.Load();
         });
     }
 
-    /**
-     * Triggered when the component is mounted to the DOM
-     */
     componentDidMount() {
-        this.load();
+        this.remoteCapture = ScoresCaptureController.Subscribe(this.updateCapture);
+        this.remoteScores = APIScoresController.Subscribe(this.updateScores);
     }
 
-    /**
-     * Renders the component
-     * - A list of matches with textbox entries to adjust scores, and save them.
-     */
+    componentWillUnmount() {
+        if(this.remoteScores)
+            this.remoteScores();
+        if(this.remoteCapture)
+            this.remoteCapture();
+    }
+
     render() {
-        const buttons:Array<React.ReactElement> = new Array<React.ReactElement>(
+        let iconShown:string = IconHidden;
+        if(this.state.Shown)
+            iconShown = IconShown;
+        let matches:Array<React.ReactElement> = new Array<React.ReactElement>();
+        let buttons:Array<React.ReactElement> = new Array<React.ReactElement>(
+            <IconButton
+                src={iconShown}
+                title="Show/hide"
+                active={this.state.Shown}
+                onClick={ScoresCaptureController.Toggle}
+                key='btn-toggle'/>,
             <IconButton
                 src={IconLoop}
+                title="Load Records"
+                active={this.state.Loading}
                 onClick={this.load}
-                key="btn-load"
-                >
-                Load
-            </IconButton>
+                key='btn-load'/>
         );
+
+        let max:number = 6;
+        this.state.Records.forEach((record, index) => {
+            if(index < max) {
+                matches.push(
+                    <MatchItem record={record} key={`${record.RecordType}-${record.RecordID}`}/>
+                );
+            }
+        });
 
         return (
             <Panel
-                popup={true}
-                className="scores-panel"
-                contentName="rdmgr-api-scores"
+                className="scores"
                 opened={this.props.opened}
+                popup={true}
+                title="Latest Scores"
+                contentName="matches"
                 buttons={buttons}
-                error={this.state.error}
-                title={this.state.title}
-                onOpen={() => {
-                    if(!this.state.Matches || this.state.Matches.length <= 0)
-                        this.load();
-                }}
-                {...this.props}
-                >
-                <div className="record-form">
-                    <Scores Matches={this.state.Matches}/>
-                </div>
+            >
+                {matches}
             </Panel>
-        );
+        )
+    }
+}
+
+class MatchItem extends React.PureComponent<{
+    record:any;
+}> {
+
+    render() {
+        let srcA:string = '';
+        let srcB:string = '';
+        let scoreA:number = 0;
+        let scoreB:number = 0;
+
+        //A
+        if(this.props.record && this.props.record.TeamA) {
+            if(this.props.record.TeamA.Score)
+                scoreA = this.props.record.TeamA.Score;
+
+            if(this.props.record.TeamA.Thumbnail)
+                srcA = this.props.record.TeamA.Thumbnail;
+        }
+
+        //B
+        if(this.props.record && this.props.record.TeamB) {
+            if(this.props.record.TeamB.Score)
+                scoreB = this.props.record.TeamB.Score;
+
+            if(this.props.record.TeamB.Thumbnail)
+                srcB = this.props.record.TeamB.Thumbnail;
+        }
+
+        return (
+            <div className="match-item">
+                <div className="team-a">
+                    <div className="thumbnail">
+                        <img src={srcA} alt=""/>
+                    </div>
+                    <div className="score">
+                        {scoreA}
+                    </div>
+                </div>
+                <div className="team-b">
+                    <div className="score">
+                        {scoreB}
+                    </div>
+                    <div className="thumbnail">
+                        <img src={srcB} alt=""/>
+                    </div>
+                </div>
+            </div>
+        )
     }
 }

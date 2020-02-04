@@ -24,97 +24,13 @@
 }
 
 .CC-app {
-    .preview {
-        position: absolute;
-        margin: auto;
-        top: 0;
-        left: 0;
-        &.playing {
-            opacity: 1;
-            > .icon {
-                opacity: 0;
-            }
-        }
-        &.paused {
-            opacity: 0.5;
-            > .icon {
-                opacity: 1;
-            }
-        }
-        > video {
-            cursor:pointer;
-        }
-
-        > .icon {
-            transition: opacity 250ms ease-in-out;
-            position: absolute;
-            margin: auto;
-            top: 0;
-            right: 0;
-            left: 0;
-            bottom: 0;
-            z-index: 2;
-            &:hover {
-                opacity: 1;
-                background-color: rgba(0,0,0,0.5);
-            }
-        }
-    }
-
-    .capture-preview {
-        position: absolute;
-        left: 0;
-        right: 0;
-        top: 0;
-        bottom: 0;
-        margin: auto;
-        width: 640px;
-        height: 100%;
-
-        > canvas {
-            border: solid 1px #CCCCCC;
-        }
-
-        .camera-styles {
-            > div {
-                overflow: hidden;
-                > .icon {
-                    float: left;
-                    margin-left: 5px;
-                }
-            }
-        }
-
-        .watcher-control {
-            padding: 5px;
-        }
-
-        .toggle-icons {
-            display: flex; 
-            flex-flow: row wrap;
-            flex: 0;
-            > .icon {
-                max-height: 38px;
-                margin: 1px;
-            }
-        }
-
-        .monitor-control {
-            overflow: hidden;
-            > * {
-                float: left;
-                margin: 2px;
-            }
-        }
-    }
 
     .scoreboard {
-        position: absolute;
-        margin: auto;
-        left: 0;
-        top: 0;
-        bottom: 0;
         width: 33%;
+        top: 0;
+        left: 0;
+        right: initial;
+        bottom: 0;
 
         > .buttons {
             background-color: transparent;
@@ -302,165 +218,59 @@
         }
     }
 
-    .stream-panel {
-        position: absolute;
-        margin: auto;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        width: 25%;
-        display: flex;
-        flex-flow: column wrap;
-        overflow: hidden;
-        > .panels {
-            flex: 1;
-            width: 100%;
-            position: relative;
-            display: grid;
-            grid-template: 375px auto / auto;
-
-            .scorekeeper {
-                grid-area: 1 / 1;
-                .positions {
-                    display: grid;
-                    grid-template-rows: auto;
-                    grid-template-columns: 50% 50%;
-                    .team {
-                        grid-area: 1 / 1;
-                        .skater {
-                            position: relative;
-                            display: none;
-                            &:first-of-type {
-                                display: grid;
-                            }
-
-                            background-color: #111;
-                            border: solid 1px #000;
-
-                            grid-template-rows: 75px;
-                            grid-template-columns: 75px auto;
-                            .thumbnail {
-                                grid-area: 1 / 1 / 2 / 1;
-                            }
-
-                            .num {
-                                grid-area: 1 / 2 / 1 / 2;
-                                line-height: 75px;
-                                text-align: center;
-                                font-family: $base-font-display;
-                                font-size: 24px;
-                            }
-                            .name {
-                                position: absolute;
-                                margin: auto;
-                                left: 0;
-                                right: 0;
-                                bottom: 0;
-                                font-size: 1.1vw;
-                                padding: 3px;
-                                text-align: right;
-                                text-shadow: 1px 2px 3px #000;
-                            }
-                        }
-                    }
-
-                    .team:nth-child(2) {
-                        grid-area: 1 / 2;
-                    }
-                }
-            }
-
-            .penalty-tracker {
-                grid-area: 2 / 1;
-                background-color: #111;
-                border-top: solid 2px #000;
-                .skaters {
-                    > div.stack-panel {
-                        font-family: $base-font-display;
-                        > div {
-                            padding: 6px;
-                            font-size: 24px;
-                            border: solid 1px #000;
-                        }
-                    }
-                }
-            }
-        }
-
-        > .panel {
-            max-width: 100%;
-            max-height: calc(100% - 48px);
-            top: 0;
-            bottom: initial;
-            > .title {
+    > .announcers,
+    > .anthem
+    {
+        > .title {
+            .icon {
                 display: none;
-            }
-
-            > .content {
-                height: calc(100% - 48px);
-                top: 0px;
-            }
-        }
-
-        > .panel-icons
-        {
-            display: flex;
-            flex-flow: row wrap;
-            justify-content: flex-end;
-            text-align: right;
-            flex: 0 0 48px;
-            > button {
-                background-color: $purple;
-                padding: 3px 8px;
-                &.active {
-                    background-color: $green;
-                }
             }
         }
     }
+
+    > .announcers {
+        bottom: 235px;
+        right: 0;
+        left: initial;
+        top: initial;
+        border-left: solid 1px #333;
+        border-top: solid 1px #333;
+        max-height: 240px;
+        max-width: 250px;
+    }
+
+    > .anthem {
+        bottom: 0;
+        right: 0;
+        left: initial;
+        top: initial;
+        border-top: solid 1px #333;
+        border-left: solid 1px #333;
+        max-height: 235px;
+        max-width: 250px;
+    }
+
+    > .roster {
+        right: 0;
+        top: 0;
+        bottom: 0;
+        left: initial;
+        width: 35%;
+        height: 100%;
+        max-height: 100%;
+    }
+
+    > .camera,
+    > .monitor
+    {
+        max-width: 350px;
+        max-height: 350px;
+    }
+
 }
 
 @media screen and (max-width:960px) and (min-height: 1080px) {
     .CC-app {
-        .capture-preview {
-            height: 480px;
-            bottom: initial;
-            overflow: hidden;
-            width: 100%;
-            .camera-styles {
-                position: absolute;
-                right: 0;
-                bottom: 116px;
-            }
-
-            > p:nth-child(even) {
-                top: 120px;
-            }
-
-            .monitor-control {
-                position: absolute;
-                right: 4px;
-                height: 34px;
-            }
-
-            .watcher-control {
-                position: absolute;
-                right: 0;
-                top: 48px;
-                width: calc(100% - 640px);
-            }
-
-            .toggle-icons {
-                position: absolute;
-                right: 0;
-                bottom: 220px;
-                width: calc(100% - 650px);
-                .icon {
-                    max-height: 36px;
-                }
-            }
-        }
-
         .scoreboard {
             top: initial;
             height: calc(100% - 380px);
@@ -472,10 +282,17 @@
             }
         }
 
-        .stream-panel {
-            top: initial;
-            height: calc(100% - 380px);
+        > .announcers {
+            max-width: 50%;
+        }
+        > .anthem {
+            max-width: 50%;
+        }
+
+        > .roster {
             width: 50%;
+            max-height: calc(100% - 380px);
+            top: initial;
         }
     }
 }

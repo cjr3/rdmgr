@@ -74,7 +74,7 @@ export default class CaptureScores extends React.PureComponent<any, {
         let matches:Array<React.ReactElement> = new Array<React.ReactElement>();
         let shown:boolean = false;
         if(this.state.Records && this.state.Records.length >= 1) {
-            let max:number = 4;
+            let max:number = 6;
             shown = this.state.Shown;
             this.state.Records.forEach((record, index) => {
                 if(index < max) {

@@ -76,7 +76,7 @@ export default class RosterPanel extends React.PureComponent<{
             <Panel 
                 opened={this.props.opened}
                 popup={true}
-                contentName="roster"
+                className="roster"
                 title="Intros"
                 buttons={[<Buttons key='buttons'/>]}
                 >
@@ -148,10 +148,6 @@ class Buttons extends React.PureComponent<any, {
     render() {
         return (
             <React.Fragment>
-                <IconButton
-                    src={IconSubtract}
-                    onClick={() => {RosterCaptureController.SetClass('');}}
-                    />
                 <IconButton
                     src={IconLoop}
                     title="Load Roster"

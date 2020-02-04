@@ -4,7 +4,9 @@ import {
     Button,
     IconButton,
     IconCheck,
-    IconLoop
+    IconLoop,
+    IconHidden,
+    IconShown
 } from 'components/Elements';
 import CameraCaptureController from 'controllers/capture/Camera';
 import Panel from 'components/Panel';
@@ -139,6 +141,9 @@ export default class CameraPanel extends React.PureComponent<{
      */
     render() {
         let label:string = '(no camera)';
+        let iconVisibile:string = IconHidden;
+        if(this.state.Shown)
+            iconVisibile = IconShown;
         let changed:boolean = (this.state.DeviceID == CameraController.GetState().DeviceID) ? false : true;
         let cameras:Array<React.ReactElement> = [
             <Button
@@ -164,18 +169,27 @@ export default class CameraPanel extends React.PureComponent<{
 
         let buttons:Array<React.ReactElement> = [
             <IconButton
+                src={iconVisibile}
+                key="btn-toggle"
+                active={this.state.Shown}
+                onClick={CameraCaptureController.Toggle}
+                title="Show/Hide"
+                />,
+            <IconButton
                 src={IconLoop}
                 key="btn-load"
                 active={this.state.loading}
+                title="Load"
                 onClick={() => {
                     this.setState({loading:true});
                     CameraController.Load();
-                }}>Load</IconButton>,
+                }}/>,
             <IconButton
                 key="btn-submit"
                 src={IconCheck}
                 active={changed}
-                onClick={this.onClickSubmit}>Submit</IconButton>
+                title="Submit"
+                onClick={this.onClickSubmit}/>
         ];
 
         return (
@@ -183,7 +197,7 @@ export default class CameraPanel extends React.PureComponent<{
                 opened={this.props.opened}
                 buttons={buttons}
                 popup={true}
-                contentName="camera"
+                className="camera"
                 onClose={this.props.onClose}
                 >
                 <div className="record-list">

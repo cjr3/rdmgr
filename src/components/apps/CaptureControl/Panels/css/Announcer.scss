@@ -1,0 +1,11 @@
+@import '~css/vars.scss';
+
+.CC-app {
+    > .announcers {
+        > .content {
+            input[type="text"] {
+                width: 100%;
+            }
+        }
+    }
+}

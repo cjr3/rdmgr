@@ -1,9 +1,8 @@
-import React from 'react';
+import React, { CSSProperties } from 'react';
 import  {
     IconX,
     IconCheck,
     IconButton,
-    IconNo,
     IconHidden,
     IconShown,
     IconSave
@@ -166,6 +165,9 @@ export default class AnthemPanel extends React.PureComponent<{
         );
         let iconToggle:string = (this.state.Shown) ? IconShown : IconHidden;
         let changed:boolean = (this.state.Name != this.state.CurrentName) ? true : false;
+        let style:CSSProperties = {visibility:'hidden'};
+        if(this.state.RecordID <= 0)
+            style.visibility = 'visible';
 
         this.state.Records.forEach((singer) => {
             singers.push(
@@ -186,9 +188,10 @@ export default class AnthemPanel extends React.PureComponent<{
                 />,
             <IconButton
                 key="btn-submit"
-                src={IconSave}
+                src={IconCheck}
                 onClick={this.onClickSubmit}
                 active={changed}
+                title="Submit"
                 />
         );
 
@@ -196,41 +199,30 @@ export default class AnthemPanel extends React.PureComponent<{
             <Panel
                 opened={this.props.opened}
                 popup={true}
-                contentName="anthem"
+                className="anthem"
                 buttons={buttons}
+                title="Anthem"
                 >
-                <div className="record-list">
-                    <IconButton
-                        src={(this.state.className === 'banner') ? IconCheck : IconX}
-                        active={(this.state.className === 'banner')}
-                        onClick={() => {
-                            AnthemCaptureController.SetClass('banner');
-                        }}
-                        >Banner</IconButton>
-                    <IconButton
-                        src={(this.state.className === '') ? IconCheck : IconX}
-                        active={(this.state.className === '')}
-                        onClick={() => {
-                            AnthemCaptureController.SetClass('');
-                        }}
-                        >Full Screen</IconButton>
+                <div className="record-form">
+                    <div className="form-section">
+                        <select size={1}
+                            value={this.state.RecordID}
+                            onChange={this.onChangeSinger}
+                            style={{width:"100%"}}
+                            >{singers}</select>
+                    </div>
+                    <div className="form-section">
+                        <input
+                            type="text"
+                            size={30}
+                            maxLength={30}
+                            value={this.state.Name}
+                            onChange={this.onChangeName}
+                            onKeyUp={this.onKeyUpName}
+                            style={style}
+                            />
+                    </div>
                 </div>
-                <select size={1}
-                    value={this.state.RecordID}
-                    onChange={this.onChangeSinger}
-                    style={{width:"100%"}}
-                    >{singers}</select>
-                <p>Name</p>
-                <p>
-                    <input
-                        type="text"
-                        size={30}
-                        maxLength={30}
-                        value={this.state.Name}
-                        onChange={this.onChangeName}
-                        onKeyUp={this.onKeyUpName}
-                        />
-                </p>
             </Panel>
         );
     }

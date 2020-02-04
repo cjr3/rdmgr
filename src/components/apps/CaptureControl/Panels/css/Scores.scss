@@ -1,0 +1,41 @@
+.CC-app {
+    .scores {
+        max-width: 300px;
+        right: 550px;
+        max-height: 100%;
+        left: initial;
+        top: initial;
+        > .title .icon {display: none;}
+        > .matches {
+            .match-item {
+                display: flex;
+                flex-flow: row wrap;
+                align-content: center;
+                justify-content: center;
+                text-align: center;
+                &:nth-child(even) {
+                    background-color: #111;
+                }
+                .team-a, .team-b {
+                    text-align: center;
+                    flex: 0 0 50%;
+                    display: flex;
+                    .thumbnail {
+                        flex: 0 0 50px;
+                        padding: 3px;
+                        > img {
+                            max-height: 50px;
+                        }
+                    }
+                    .score {
+                        padding: 3px;
+                        flex:1;
+                        font-size: 22px;
+                        padding: 3px;
+                        line-height: 50px;
+                    }
+                }
+            }
+        }
+    }
+}

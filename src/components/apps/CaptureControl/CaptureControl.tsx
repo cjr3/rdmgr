@@ -1,23 +1,22 @@
 import React from 'react'
-import {ToggleButton, Button} from 'components/Elements';
+import {Button} from 'components/Elements';
 import Panel from 'components/Panel'
-import CaptureWatcher from './CaptureWatcher'
-//import CaptureDisplayControls from './CaptureDisplayControls';
-//import CaptureStreamControls from './CaptureStreamControls';
 import CaptureControlMonitor from './CaptureControlMonitor';
-import CaptureCameraStyleButtons from './CaptureCameraStyleButtons';
-import CaptureVideoStyleButtons from './CaptureVideoStyleButtons';
 import './css/CaptureControl.scss'
 import UIController from 'controllers/UIController';
 import { Unsubscribe } from 'redux';
-import StreamPanel, {ToggleIcons} from './Panels/StreamPanel';
+import {ToggleIcons} from './Panels/StreamPanel';
 import ScoreboardPanel from './Panels/Scoreboard';
-import ScoresPanel from './Panels/Scores';
+import PostScoresPanel from './Panels/PostScores';
 import TeamPicker from '../Scoreboard/TeamPicker';
 import PhaseSelection from '../Scoreboard/PhaseSelection';
 import CameraPanel from './Panels/Camera';
 import RosterPanel from './Panels/Roster';
-import PreviewPanel from './Panels/Preview';
+import AnnouncerPanel from './Panels/Announcer';
+import AnthemPanel from './Panels/Anthem';
+import JammersPanel from './Panels/Jammers';
+import SchedulePanel from './Panels/Schedule';
+import ScoresPanel from './Panels/Scores';
 
 /**
  * Component for determining what is displayed on the capture window.
@@ -77,8 +76,12 @@ export default class CaptureControl extends React.PureComponent<any, {
                 buttons={[<Buttons key='buttons' onClick={this.setPanel} panel={this.state.CurrentPanel}/>]}
                 >
                 <ScoreboardPanel/>
-                <StreamPanel/>
-                <ScoresPanel
+                <AnthemPanel opened={true}/>
+                <AnnouncerPanel opened={true}/>
+                <SchedulePanel opened={true}/>
+                <ScoresPanel opened={true}/>
+                <JammersPanel/>
+                <PostScoresPanel
                     opened={(this.state.CurrentPanel === 'scores')}
                     onClose={this.onClosePanel}
                 />
@@ -111,48 +114,6 @@ export default class CaptureControl extends React.PureComponent<any, {
     }
 }
 
-/**
- * Component for displaying a preview of the capture window.
- */
-function CaptureControlPreview() {
-    //<CaptureControlWatcher/>
-    return (
-        <div className="capture-preview">
-            <div className="camera-styles">
-                <CaptureCameraStyleButtons/>
-                <CaptureVideoStyleButtons/>
-            </div>
-        </div>
-    );
-}
-
-class CaptureControlWatcher extends React.PureComponent<any, {
-    /**
-     * Determines if the preview of the capture window is displayed or not
-     */
-    CapturePreviewShown:boolean;
-}> {
-    readonly state = {
-        CapturePreviewShown:false
-    };
-
-    render() {
-        return (
-            <React.Fragment>
-                <div className="watcher-control">
-                    <ToggleButton
-                        checked={this.state.CapturePreviewShown}
-                        onClick={() => {
-                            this.setState({CapturePreviewShown:!this.state.CapturePreviewShown});
-                        }}
-                        label="Watch"
-                    />
-                </div>
-            </React.Fragment>
-        );
-    }
-}
-
 class Buttons extends React.PureComponent<{
     panel:string;
     onClick:Function;
@@ -162,7 +123,7 @@ class Buttons extends React.PureComponent<{
         return (
             <React.Fragment>
                 <ToggleIcons/>
-                <Button onClick={() => {this.props.onClick('scores')}} active={(this.props.panel === 'scores')}>Scores</Button>
+                <Button onClick={() => {this.props.onClick('scores')}} active={(this.props.panel === 'scores')}>Post Scores</Button>
                 <Button onClick={() => {this.props.onClick('phase')}} active={(this.props.panel === 'phase')}>Quarter</Button>
                 <Button onClick={() => {this.props.onClick('teams')}} active={(this.props.panel === 'teams')}>Teams</Button>
                 <Button onClick={() => {this.props.onClick('roster')}} active={(this.props.panel === 'roster')}>Intros</Button>

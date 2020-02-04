@@ -141,7 +141,9 @@ class MatchItem extends React.PureComponent<{
 
         return (
             <div className="match-item">
-                <div className="date">{mdate}</div>
+                <div className="date">
+                    <div>{this.props.record.Name}</div>
+                </div>
                 <div className="team-a">
                     <div className="logo">
                         <img src={this.props.record.TeamA.Thumbnail} title={this.props.record.TeamA.Name}/>

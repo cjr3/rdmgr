@@ -1,5 +1,5 @@
 import React from 'react';
-import {Button} from 'components/Elements';
+import {IconButton, IconCheck} from 'components/Elements';
 import Panel from 'components/Panel';
 
 type DimensionRecord = {
@@ -186,8 +186,12 @@ export default class CaptureControlMonitor extends React.PureComponent<{
         });
 
         let buttons:Array<React.ReactElement> = new Array<React.ReactElement>(
-            <Button onClick={this.onClickSubmit} key='btn-submit'>Submit</Button>,
-            <Button onClick={this.props.onClose} key='btn-close'>Close</Button>
+            <IconButton
+                src={IconCheck}
+                key='btn-submit'
+                title='Set Monitor'
+                onClick={this.onClickSubmit}
+                />
         );
 
         return (
@@ -196,6 +200,7 @@ export default class CaptureControlMonitor extends React.PureComponent<{
                 popup={true}
                 onClose={this.props.onClose}
                 buttons={buttons}
+                className="monitor"
                 >
                 <div className="record-form">
                     <h3>Capture Window Location</h3>
@@ -204,7 +209,7 @@ export default class CaptureControlMonitor extends React.PureComponent<{
                         <select value={this.state.MonitorID} onChange={this.onChangeMonitor}>{monitors}</select>
                     </div>
                     <div className="form-section">
-                        <p>Dimension</p>
+                        <p>Dimensions</p>
                         <select value={this.state.Width} onChange={this.onChangeSize}>{sizes}</select>
                     </div>
                 </div>

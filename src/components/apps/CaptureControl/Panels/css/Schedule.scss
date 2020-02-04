@@ -1,0 +1,38 @@
+.CC-app {
+    .schedule {
+        right: 250px;
+        top: 0;
+        left: initial;
+        bottom: initial;
+        max-width: 300px;
+        max-height: 100%;
+        > .title .icon {display: none;}
+        .matches {
+            .match-item {
+                display: flex;
+                flex-flow: row wrap;
+                align-content: center;
+                justify-content: center;
+                text-align: center;
+                &:nth-child(even) {
+                    background-color: #111;
+                }
+                .date {
+                    padding: 3px;
+                    flex:1;
+                    font-size: 22px;
+                    padding: 3px;
+                    line-height: 50px;
+                }
+
+                .team-a, .team-b {
+                    flex: 0 0 50px;
+                    padding: 3px;
+                    > img {
+                        max-height: 50px;
+                    }
+                }
+            }
+        }
+    }
+}
