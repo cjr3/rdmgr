@@ -177,10 +177,12 @@ const CreateController = (key:string, reducer?:any) : any => {
                         controller.SetState(state);
                         res(true);
                     }).catch((er) => {
-                        rej(`Failed to load capture state: ${er}`);
+                        //rej(`Failed to load capture state: ${er}`);
+                        res(true);
                     });
                 } else {
-                    res(false);
+                    //res(false);
+                    res(true);
                 }
             });
         },

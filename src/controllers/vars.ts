@@ -92,19 +92,22 @@ export enum RecordControllerActions {
 
 //file constants
 let FOLDER_MAIN = '';
+FOLDER_MAIN = 'c:/ProgramData/RDMGR';
+if(process.env.NODE_ENV && (process.env.NODE_ENV == 'development' || process.env.NODE_ENV == 'test')) {
+    FOLDER_MAIN = 'c:/rdmgrdata';
+}
+
+//alert(FOLDER_MAIN);
+/*
 switch(os.platform()) {
     case 'win32' :
-        FOLDER_MAIN = 'c:/ProgramData/RDMGR';
-        if(process.env.NODE_ENV && (process.env.NODE_ENV == 'development' || process.env.NODE_ENV == 'test')) {
-            FOLDER_MAIN = 'c:/rdmgrdata';
-        }
     break;
 
     default :
         throw new Error("Unrecognized OS!");
     break;
 }
-
+*/
 const FOLDER_DATA = FOLDER_MAIN + "/files";
 const FOLDER_MEDIA_ROOT = FOLDER_MAIN + "/images";
 const FOLDER_MEDIA = FOLDER_MAIN + "/images/uploads";

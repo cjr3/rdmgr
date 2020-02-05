@@ -72,7 +72,7 @@
   "build": {
     "appId": "com.carljroberts.rdmgr",
     "productName": "RDMGR",
-    "copyright": "Copyright 2019 ${author}",
+    "copyright": "Copyright 2017-2020 ${author}",
     "files": [
       "build/**/*",
       "node_modules/**/*"

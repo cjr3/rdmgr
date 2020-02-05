@@ -28,8 +28,8 @@ import PhasesController from 'controllers/PhasesController';
 import TeamsController from 'controllers/TeamsController';
 
 export interface PathCheckResponse {
-    path:string,
-    exists:boolean
+    path:string;
+    exists:boolean;
 }
 
 /**

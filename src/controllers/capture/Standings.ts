@@ -67,4 +67,8 @@ StandingsCaptureController.Load = async () : Promise<boolean> => {
     });
 };
 
+APIStandingsController.Subscribe(() => {
+    StandingsCaptureController.SetRecords(APIStandingsController.Get());
+});
+
 export default StandingsCaptureController;

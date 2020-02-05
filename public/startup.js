@@ -1,8 +1,4 @@
 /**
- * Main Startup script for application.
- */
-
-/**
  * Class for starting up electron.
  */
 class ElectronStartup {
@@ -70,7 +66,7 @@ class ElectronStartup {
      */
     createWindows() {
         this.createControlWindow();
-        if(this.ShowCaptureWindow)
+        //if(this.ShowCaptureWindow)
             this.createCaptureWindow();
     }
 
@@ -78,6 +74,8 @@ class ElectronStartup {
      * Creates the control window, the user interface.
      */
     createControlWindow() {
+        const path = require('path');
+        const url = require('url');
         this.MainWindow = new this.BW({
             width: this.Width, 
             height: this.Height,
@@ -121,6 +119,8 @@ class ElectronStartup {
      * the result of the control window to viewers.
      */
     createCaptureWindow() {
+        const path = require('path');
+        const url = require('url');
         this.CaptureWindow = new this.BW({
             width:this.Width,
             height:this.Height,

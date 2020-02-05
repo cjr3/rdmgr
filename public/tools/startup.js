@@ -37,7 +37,7 @@ class RDMGRElectronStartup
     createWindows()
     {
         this.createMainWindow();
-        this.createCaptureWindow();
+        //this.createCaptureWindow();
     }
 
     createMainWindow()

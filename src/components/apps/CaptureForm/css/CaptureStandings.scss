@@ -12,6 +12,7 @@
     transition: opacity 500ms ease-in-out;
     opacity: 0;
     overflow: hidden;
+    z-index: 4;
 
     > h1 {
         background-color: $navy;

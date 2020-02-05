@@ -12,7 +12,7 @@
     background-color: $black;
     font-family: $base-font-display;
     opacity: 0;
-    z-index: 10;
+    z-index: 7;
     transition: transform 350ms linear, opacity 350ms linear;
     transform: translateY(-150px);
 
@@ -355,183 +355,6 @@
     }
 }
 
-.capture-form.sponsor-board > .capture-SB-banner.shown,
-.capture-SB-banner.pos-bottom.shown {
-    transform: translateY(0px);
-}
-
-.capture-form.sponsor-board > .capture-SB-banner {
-    z-index: 100;
-    height: 112px;
-    background-color: transparent;
-    transition: transform 150ms, opacity 500ms ease-in-out 150ms;
-    transform: translateY(0px);
-    opacity: 1;
-    overflow: visible;
-
-    .phase, .jam-counter, .jamclock {
-        display: none;
-    }
-
-    .gameclock {
-        width: 450px;
-        left: 430px;
-        text-align: center;
-        height: 112px;
-        font-size: 96px;
-        line-height: 96px;
-        padding-right: 24px;
-        background-color: #000000;
-    }
-
-    .team {
-        background-color: #000000;
-        .team-top {
-            background-position: center center;
-            background-size: contain;
-            .score {
-                min-width: 40%;
-                text-align: center;
-            }
-        }
-
-        .timeouts {
-            transform: rotateY(180deg) rotateZ(90deg) translateY(125px) translateX(60px) rotateX(180deg) scale(0.97);
-            background-color: #000000;
-            padding: 16px 16px 16px 12px;
-            > div {
-                height: 16px;
-                margin-top: -8px;
-            }
-        }
-    }
-
-    .team.team-A {
-        transform-origin: 0 0;
-        transform: scale(1.72);
-        left: 0;
-
-        .jampoints {
-            transform: translateX(-15px) scale(1.5);
-        }
-
-        .jampoints.shown {
-            transform: translateX(-15px) translateY(-55px) scale(1.5);
-        }
-
-        .status {
-            position: fixed;
-            transform: rotateZ(90deg) translateX(-100%) translateY(90px) scale(2.01);
-            color: transparent;
-            text-shadow: none;
-        }
-    }
-
-    .team.team-B {
-        transform-origin: 50% 0;
-        transform: scale(1.72);
-        left: initial;
-        right: 129px;
-        .score
-        {
-            transform: rotateY(180deg);
-            padding-left: 6px;
-        }
-
-        .status {
-            position: fixed;
-            line-height: 24px;
-            border-radius: 0px;
-            transform: rotateY(180deg) rotateZ(90deg) translateX(-100%) translateY(-31px) scale(2.01);
-            color: transparent;
-            text-shadow: none;
-        }
-
-        .status.leadjammer {
-            background-image: linear-gradient(0deg, rgba(0,0,0,0), $green);
-        }
-
-        .status.powerjam {
-            background-image: linear-gradient(0deg, rgba(0,0,0,0), $powerjam);
-        }
-
-        .status.timeout,
-        .status.challenge
-        {
-            background-image: linear-gradient(0deg, rgba(0,0,0,0), $blood);
-        }
-
-        .jampoints {
-            transform: rotateY(180deg) translateX(15px) scale(1.5);
-        }
-
-        .jampoints.shown {
-            transform: rotateY(180deg) translateX(15px) translateY(-55px) scale(1.5);
-        }
-    }
-
-    @media screen and (max-width: 1024px) {
-        .board-status {
-            top: -29px;
-        }
-        .team.team-A {
-            transform: translateY(31px) scale(1.25);
-    
-            .jampoints {
-                transform: translateX(-15px) scale(1.25);
-            }
-    
-            .jampoints.shown {
-                transform: translateX(-15px) translateY(-50px) scale(1.25);
-            }
-    
-            .status {
-                transform: rotateZ(90deg) translateX(-120%) translateY(90px) scale(2.45, 1.2);
-            }
-        }
-
-        .team.team-B {
-            transform: rotateY(180deg) translateY(31px) scale(1.25);
-            right: 0;
-            .score
-            {
-                transform: rotateY(180deg);
-                padding-left: 6px;
-            }
-
-            .status {
-                position: fixed;
-                line-height: 24px;
-                border-radius: 0px;
-                transform: rotateY(180deg) rotateZ(90deg) translateX(-120%) translateY(-31px) scale(2.45, 1.5);
-                color: transparent;
-                text-shadow: none;
-            }
-
-            .jampoints {
-                transform: rotateY(180deg) translateX(15px) scale(1.25);
-            }
-
-            .jampoints.shown {
-                transform: rotateY(180deg) translateX(15px) translateY(-50px) scale(1.25);
-            }
-        }
-
-        .gameclock {
-            width: 450px;
-            top: initial;
-            left: 0;
-            right: 0;
-            bottom: 0px;
-            height: 81px;
-            font-size: 72px;
-            line-height: 72px;
-            padding-right: 16px;
-            background-color: #000000;
-        }
-    }
-}
-
 .capture-jam-counter
 {
     position: absolute;
@@ -540,7 +363,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 999;
+    z-index: 14;
     font-family: $base-font-display;
     font-size: 700px;
     line-height: 650px;

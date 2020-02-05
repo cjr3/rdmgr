@@ -67,4 +67,8 @@ ScheduleCaptureController.Load = async () : Promise<boolean> => {
     });
 };
 
+APIScheduleController.Subscribe(() => {
+    ScheduleCaptureController.SetRecords(APIScheduleController.Get());
+});
+
 export default ScheduleCaptureController;

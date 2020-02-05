@@ -296,26 +296,26 @@ DataController.Load = async () => {
         SetValidateEndpoint(DataController.GetMiscRecord('APIValidateEndpoint'));
 
         return Promise.all([
-            AnnouncerCaptureController.Load(),
-            AnthemCaptureController.Load(),
-            JamClockCaptureController.Load(),
-            JamCounterCaptureController.Load(),
-            ScorebannerCaptureController.Load(),
-            ScoreboardCaptureController.Load(),
             ScoreboardController.Load(),
             ChatController.Load(),
-            PenaltyCaptureController.Load(),
             PenaltyController.Load(),
-            ScorekeeperCaptureController.Load(),
             ScorekeeperController.Load(),
-            RosterCaptureController.Load(),
             RosterController.Load(),
-            SponsorCaptureController.Load(),
             SponsorController.Load(),
-            SlideshowCaptureController.Load(),
             SlideshowController.Load(),
             UIController.Load()
         ]).then((res) => {
+            SlideshowCaptureController.Load();
+            SponsorCaptureController.Load();
+            RosterCaptureController.Load();
+            ScorekeeperCaptureController.Load();
+            PenaltyCaptureController.Load();
+            AnnouncerCaptureController.Load();
+            AnthemCaptureController.Load();
+            JamClockCaptureController.Load();
+            JamCounterCaptureController.Load();
+            ScorebannerCaptureController.Load();
+            ScoreboardCaptureController.Load();
             ScoresCaptureController.Load();
             ScheduleCaptureController.Load();
             StandingsCaptureController.Load();

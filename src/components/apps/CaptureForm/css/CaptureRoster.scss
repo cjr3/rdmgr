@@ -3,7 +3,7 @@
 .capture-roster.banner {
     position: absolute;
     margin: auto;
-    z-index: 30;
+    z-index: 3;
     left: 0;
     right: 0;
     bottom: 24px;
@@ -234,7 +234,7 @@
     position: absolute;
     width: 1280px;
     height: 720px;
-    z-index: 999;
+    z-index: 3;
     background-color: #000;
     transition: opacity 150ms;
     opacity: 0;

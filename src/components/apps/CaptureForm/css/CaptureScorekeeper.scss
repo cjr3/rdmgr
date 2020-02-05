@@ -1,13 +1,5 @@
 @import 'src/css/vars.scss';
 
-.capture-form.stream {
-    .capture-scorekeeper {
-        .screen {
-            display: none;
-        }
-    }
-}
-
 .capture-scorekeeper {
     position: absolute;
     margin: auto;
@@ -15,7 +7,7 @@
     height: 100%;
     top: 0;
     left: 0;
-    z-index: 20;
+    z-index: 6;
     transition: opacity 150ms;
     opacity: 0;
 
@@ -125,12 +117,12 @@
 
     .popup {
         display: none;
+        position: absolute;
+        margin: auto;
+        top: 70px;
+        right: 32px;
     
         .jammers {
-            position: absolute;
-            margin: auto;
-            top: 70px;
-            right: 32px;
             display: flex;
             flex-flow: row wrap;
             transform: rotateX(90deg) scaleX(1.5);
@@ -171,11 +163,25 @@
                 }
             }
         }
+    }
     
-        &.shown {
+    &.shown {
+        .popup {
             .jammers {
                 transform: rotateX(0deg) scaleX(1);
             }
+        }
+    }
+}
+
+
+.capture-form.stream {
+    .capture-scorekeeper {
+        .screen {
+            display: none;
+        }
+        .popup {
+            display: block;
         }
     }
 }

@@ -12,6 +12,7 @@
     transition: opacity 500ms ease-in-out;
     opacity: 0;
     overflow: hidden;
+    z-index: 4;
 
     > h1 {
         background-color: $navy;
@@ -48,16 +49,16 @@
                 }
                 display: grid;
                 grid-template-columns: 50% 50%;
+                height: 100px;
                 > .logo {
                     text-align: center;
                     > img {
                         padding: 8px;
-                        max-height: 150px;
                     }
                 }
 
                 > .score {
-                    font-size: 8vw;
+                    font-size: 6vw;
                     text-align: center;
                 }
             }
@@ -110,6 +111,7 @@
         > .matches {
             > .match {
                 width: 100%;
+                height: 50px;
                 > .team {
                     > .logo {
                         > img {

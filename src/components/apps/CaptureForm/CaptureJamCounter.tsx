@@ -90,7 +90,7 @@ export default class CaptureJamCounter extends React.PureComponent<any, {
         });
         return (
             <div className={className}>
-                #{this.state.JamCounter.toString().padStart(2,'0')}
+                {this.state.JamCounter.toString().padStart(2,'0')}
             </div>
         )
     }

@@ -67,4 +67,8 @@ ScoresCaptureController.Load = async () : Promise<boolean> => {
     });
 };
 
+APIScoresController.Subscribe(() => {
+    ScoresCaptureController.SetRecords(APIScoresController.Get());
+});
+
 export default ScoresCaptureController;

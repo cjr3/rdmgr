@@ -6,7 +6,7 @@
     opacity: 0;
     transition: opacity 150ms linear, transform 150ms linear;
     background-color: #000000;
-    z-index: 2;
+    z-index: 9;
 }
 
 .main-video.shown {
@@ -28,7 +28,7 @@
 
 .main-video.video-2080 {
     transform: scale(0.33) translateX(-101%);
-    z-index: 0;
+    z-index: 1;
 }
 
 .main-video.video-lt,

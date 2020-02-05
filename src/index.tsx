@@ -5,7 +5,6 @@ import ViewManager from './ViewManager';
 import * as serviceWorker from './serviceWorker';
 import DataController from './controllers/DataController';
 import PeersController from 'controllers/PeersController';
-import UIController from 'controllers/UIController';
 
 declare global {
     interface Window{

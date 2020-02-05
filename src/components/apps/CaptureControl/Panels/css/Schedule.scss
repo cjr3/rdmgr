@@ -36,3 +36,16 @@
         }
     }
 }
+
+
+@media screen and (max-width:960px) and (min-height: 1080px) {
+    .CC-app {
+        .schedule {
+            max-height: 350px;
+            bottom: initial;
+            right: 0;
+            left: initial;
+            max-width: 50%;
+        }
+    }
+}

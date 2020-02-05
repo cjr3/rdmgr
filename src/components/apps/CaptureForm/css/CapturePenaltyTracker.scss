@@ -7,6 +7,7 @@
     grid-template-rows: 48px auto;
     font-family: $base-font-display;
     background-color: #111;
+    z-index: 5;
 
     > h1 {
         text-align: center;
@@ -36,7 +37,6 @@
     }
 
     &.screen {
-        z-index: 10;
         left: 0;
         right: 0;
         bottom: 0;
@@ -75,7 +75,6 @@
         width: 200px;
         transition: transform 150ms ease-in-out;
         transform: translateX(300px);
-        z-index: 10;
 
         .skaters {
             .skater {

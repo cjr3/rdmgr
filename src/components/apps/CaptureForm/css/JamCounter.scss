@@ -6,7 +6,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 999;
+    z-index: 14;
     font-family: $base-font-display;
     font-size: 700px;
     line-height: 650px;
@@ -39,5 +39,12 @@
         &.jamming.showing {
             transform: translateY(0px);
         }
+    }
+}
+
+@media screen and (max-height: 576px) {
+    .capture-jam-counter {
+        font-size: 48vw;
+        line-height: 48vw;
     }
 }
