@@ -114,6 +114,8 @@ interface IClientController extends IController {
     ToggleDisplay:Function;
     ToggleChat:Function;
     ToggleFileBrowser:Function;
+    AddRaffleTicketCharacter:{(value:string)};
+    RemoveRaffleTicketCharacter:Function;
     SetRaffleTicketNumber:{(value:string)};
     onKeyUp:any;
     onPeerdata:Function;
@@ -165,7 +167,9 @@ enum Actions {
     SET_DIALOG = 'SET_DIALOG',
     SET_STATE = 'SET_STATE',
     HIDE_PANELS = 'HIDE_PANELS',
-    SET_RAFFLE_NUMBER = 'SET_RAFFLE_NUMBER'
+    SET_RAFFLE_NUMBER = 'SET_RAFFLE_NUMBER',
+    ADD_RAFFLE_TICKET_CHAR = 'ADD_RAFFLE_TICKET_CHAR',
+    REMOVE_RAFFLE_TICKET_CHAR = 'REMOVE_RAFFLE_TICKET_CHAR',
 };
 
 const InitState:SClientController = {
@@ -321,6 +325,18 @@ const SetRaffleNumber = (state:SClientController, value:string) => {
     return {...state, RaffleTicketNumber:value};
 };
 
+const AddRaffleTicketCharacter = (state:SClientController, value:string) => {
+    if(!value || (state.RaffleTicketNumber && state.RaffleTicketNumber.length >= 8))
+        return state;
+    return {...state, RaffleTicketNumber:state.RaffleTicketNumber + value};
+};
+
+const RemoveRaffleTicketCharacter = (state:SClientController) => {
+    if(state.RaffleTicketNumber && state.RaffleTicketNumber.length >= 1)
+        return {...state, RaffleTicketNumber:state.RaffleTicketNumber.substring(0, state.RaffleTicketNumber.length - 1)};
+    return state;
+};
+
 /**
  * Redux reducer for Client
  * @param state SClientController
@@ -368,6 +384,12 @@ const ClientReducer = (state:SClientController = InitState, action) => {
 
             case Actions.SET_RAFFLE_NUMBER :
                 return SetRaffleNumber(state, action.value);
+
+            case Actions.ADD_RAFFLE_TICKET_CHAR :
+                return AddRaffleTicketCharacter(state, action.value);
+
+            case Actions.REMOVE_RAFFLE_TICKET_CHAR :
+                return RemoveRaffleTicketCharacter(state);
 
             default :
                 return BaseReducer(state, action);
@@ -460,6 +482,7 @@ ClientController.Init = () => {
                 if(MediaQueueController.BuildAPI)
                     MediaQueueController.BuildAPI();
                 window.LocalServer.subscribe(ClientController.updateServer);
+                window.LocalServer.PeersController = PeersController;
             }
         }
     }
@@ -732,7 +755,86 @@ ClientController.onKeyUp = (ev:any) => {
         }
         break;
 
-        default : break;
+        case keycodes.SUBTRACT :
+            RaffleCaptureController.Toggle();
+            return;
+
+        default :
+        
+            if(RaffleCaptureController.GetState().Shown) {
+                let ticket:string = ClientController.GetState().RaffleTicketNumber;
+                switch(ev.keyCode) {
+                    case keycodes.NUM0 :
+                        ClientController.AddRaffleTicketCharacter('0');
+                        return;
+                    case keycodes.NUM1 :
+                        ClientController.AddRaffleTicketCharacter('1');
+                        return;
+                    case keycodes.NUM2 :
+                        ClientController.AddRaffleTicketCharacter('2');
+                        return;
+                    case keycodes.NUM3 :
+                        ClientController.AddRaffleTicketCharacter('3');
+                        return;
+                    case keycodes.NUM4 :
+                        ClientController.AddRaffleTicketCharacter('4');
+                        return;
+                    case keycodes.NUM5 :
+                        ClientController.AddRaffleTicketCharacter('5');
+                        return;
+                    case keycodes.NUM6 :
+                        ClientController.AddRaffleTicketCharacter('6');
+                        return;
+                    case keycodes.NUM7 :
+                        ClientController.AddRaffleTicketCharacter('7');
+                        return;
+                    case keycodes.NUM8 :
+                        ClientController.AddRaffleTicketCharacter('8');
+                        return;
+                    case keycodes.NUM9 :
+                        ClientController.AddRaffleTicketCharacter('9');
+                        return;
+                    case keycodes.SPACEBAR :
+                    case keycodes.ENTER :
+                        if(ticket) {
+                            RaffleController.Add(ticket);
+                            ClientController.SetRaffleTicketNumber('');
+                        }
+                        return;
+            
+                    case keycodes.ADD :
+                        if(!ticket) {
+                            RaffleController.Remove();
+                        } else {
+                            ClientController.RemoveRaffleTicketCharacter();
+                        }
+                        return;
+                    break;
+
+                    case keycodes.BACKSPACE :
+                    case keycodes.DELETE :
+                        ClientController.RemoveRaffleTicketCharacter();
+                        return;
+
+                    case keycodes.MULTIPLY :
+                        RaffleCaptureController.Hide();
+                        ClientController.SetRaffleTicketNumber('');
+                        RaffleController.Clear();
+                    return;
+
+                    case keycodes.DIVIDE :
+                        RaffleController.Remove();
+                    return;
+
+                    default :
+
+                    break;
+                }
+
+                return;
+            }
+        
+        break;
     }
     
     //send keyboard commands to the current application's controller
@@ -753,7 +855,7 @@ ClientController.onPeerdata = async (peer:any, data:any) => {
     switch(data.type) {
         //update the state of a controller
         case 'state' :
-            let record = PeersController.GetRecord(peer.ID);
+            let record = PeersController.Get().find(p => p.PeerID === peer.ID);
             if(record && record.ControlledApps && record.ControlledApps.indexOf(data.app) >= 0) {
                 if(Controllers[data.app] && Controllers[data.app].SetState) {
                     Controllers[data.app].SetState(data.state);
@@ -932,6 +1034,19 @@ ClientController.SetRaffleTicketNumber = async (value:string) => {
     });
 };
 
+ClientController.AddRaffleTicketCharacter = async (value:string) => {
+    ClientController.Dispatch({
+        type:Actions.ADD_RAFFLE_TICKET_CHAR,
+        value:value
+    });
+};
+
+ClientController.RemoveRaffleTicketCharacter = async () => {
+    ClientController.Dispatch({
+        type:Actions.REMOVE_RAFFLE_TICKET_CHAR
+    });
+};
+
 /**
  * State listeners - to send state to the capture window
  */
@@ -1000,7 +1115,7 @@ ClientController.updateVideo = async () => {
     });
 
     if(window && window.LocalServer) {
-        window.LocalServer.SendState(VideoController.Key, Object.assign({}, state));
+        window.LocalServer.SendState(VideoController.Key, VideoController.PrepareStateForSending());
     }
 };
 ClientController.updateRaffle = async () => {

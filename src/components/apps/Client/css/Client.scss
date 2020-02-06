@@ -132,14 +132,69 @@
     }
 }
 
-#root {
-    .display-options {
-        bottom: 48px;
-        max-width: 300px;
+.display-options {
+    bottom: 48px;
+    max-width: 300px;
+}
+
+.client-bar {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    display: flex;
+    height: 48px;
+    flex-flow: row wrap;
+    background-color: $black;
+    justify-content: space-between;
+    overflow:hidden;
+
+    > .app-buttons, 
+    > .record-buttons {
+        > img.icon {
+            padding: 3px;
+            overflow: visible;
+            transition: background-color 150ms ease-in-out;
+            border-radius: 0px;
+        }
+        > img.icon.active {
+            background-color: $purple;
+        }
+    }
+
+    > .capture-status {
+        flex: 1;
+        padding: 3px 16px;
+        display: flex;
+        flex-flow: column wrap;
+        .progress-bar {
+            flex: 0;
+            height: 12px;
+        }
+        > .capture-content {
+            flex: 1;
+
+            > .text {
+                text-align: center;
+                height: 100%;
+                line-height: 32px;
+            }
+        }
     }
 }
 
-@media screen and (min-width: 1600px) {
+@media screen and (max-width:960px) and (min-height: 1080px) {
+    .panel.client {
+        .scorebanner {
+            div.name {
+                display: none;
+            }
+        }
+    }
+}
+
+@media screen and (min-width: 1920px) and (min-height: 1080px) {
     .panel.client {
         > .content {
             top: 48px;
@@ -200,61 +255,11 @@
             }
         }
     }
-}
 
-@media screen and (max-width:960px) and (min-height: 1080px) {
-    .panel.client {
-        .scorebanner {
-            div.name {
-                display: none;
-            }
-        }
-    }
-}
-
-.client-bar {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    margin: auto;
-    display: flex;
-    height: 48px;
-    flex-flow: row wrap;
-    background-color: $black;
-    justify-content: space-between;
-    overflow:hidden;
-
-    > .app-buttons, 
-    > .record-buttons {
-        > img.icon {
-            padding: 3px;
-            overflow: visible;
-            transition: background-color 150ms ease-in-out;
-            border-radius: 0px;
-        }
-        > img.icon.active {
-            background-color: $purple;
-        }
-    }
-
-    > .capture-status {
-        flex: 1;
-        padding: 3px 16px;
-        display: flex;
-        flex-flow: column wrap;
-        .progress-bar {
-            flex: 0;
-            height: 12px;
-        }
-        > .capture-content {
-            flex: 1;
-
-            > .text {
-                text-align: center;
-                height: 100%;
-                line-height: 32px;
-            }
+    .client-bar {
+        height: 64px;
+        .icon {
+            height: 64px;
         }
     }
 }

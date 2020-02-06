@@ -15,144 +15,151 @@ body {
     background-color: #000000;
     font-size: 18px;
     font-family: Arial, Helvetica, sans-serif;
-}
 
-@media screen and (min-width: 1600px) {
-    body.client {
-        width: 1600px;
-        height: 900px;
-        #root {
-            width: 1600px;
-            height: 900px;
-        }
-    }
-}
-
-@media screen and (max-width: 1024px) {
-    body.capture {
-        width: 1024px;
-        height: 576px;
-        #root {
-            width: 1024px;
-            height: 576px;   
-        }
-    }
-}
-
-//stuck to the left/right of 1920x1080
-@media screen and (max-width:960px) and (min-height: 1080px) {
-    body.client {
-        width: 960px;
-        height: 1080px;
-        #root {
-            width: 960px;
-            height: 1080px;
-            padding-bottom: 16px;
-        }
-    }
-}
-
-h1, h2, h3, h4, h5, h6 {
-    margin: 3px 0px 3px 0px;
-}
-
-p {
-    margin: 6px 2px;
-    font-size: 15px;
-}
-
-img {
-    width: auto;
-    height: auto;
-    max-width: 100%;
-    max-height: 100%;
-}
-
-#root {
-    width: 1280px;
-    height: 720px;
-    position: relative;
-    top: 0;
-    left: 0;
-
-    > .panel.client > .content,
-    > .panel.client > .buttons {
-        user-select: none;
-    }
-}
-
-.button-group {
+    #root {
+        width: 1280px;
+        height: 720px;
+        position: relative;
+        top: 0;
+        left: 0;
     
-    display: flex;
-    flex-flow: row wrap;
-    
-    button {
-        flex: 1;
-        min-width: 50px;
+        > .panel.client > .content,
+        > .panel.client > .buttons {
+            user-select: none;
+        }
     }
-}
 
-label.checkbox > img,
-img.checkbox {
-    cursor: pointer;
-    width: 24px;
-    height: 24px;
-    vertical-align: middle;
-    margin: 0px 3px 0px 1px;
-}
+    h1, h2, h3, h4, h5, h6 {
+        margin: 3px 0px 3px 0px;
+    }
+    
+    p {
+        margin: 6px 2px;
+        font-size: 15px;
+    }
+    
+    img {
+        width: auto;
+        height: auto;
+        max-width: 100%;
+        max-height: 100%;
+    }
+    
+    .button-group {
+        
+        display: flex;
+        flex-flow: row wrap;
+        
+        button {
+            flex: 1;
+            min-width: 50px;
+        }
+    }
 
-label.checkbox {
-    cursor:pointer;
-}
+    label.checkbox > img,
+    img.checkbox {
+        cursor: pointer;
+        width: 24px;
+        height: 24px;
+        vertical-align: middle;
+        margin: 0px 3px 0px 1px;
+    }
 
-/* Stack Panel */
-.stack-panel {
-    display: flex;
-    flex-flow: row wrap;
-}
+    label.checkbox {
+        cursor:pointer;
+    }
 
-.stack-panel.vertical {
-    flex-flow: column wrap;
-}
+    /* Stack Panel */
+    .stack-panel {
+        display: flex;
+        flex-flow: row wrap;
+    }
 
-.stack-panel.s10 > * {flex: 0 0 10%;}
-.stack-panel.s5 > * {flex: 0 0 20%;}
-.stack-panel.s4 > * {flex: 0 0 25%;}
-.stack-panel.s3 > * {flex: 0 0 33.333%;}
-.stack-panel.s2 > * {flex: 0 0 50%;}
+    .stack-panel.vertical {
+        flex-flow: column wrap;
+    }
 
-.stack-panel > .checkbox {
-    padding: 6px;
-}
+    .stack-panel.s10 > * {flex: 0 0 10%;}
+    .stack-panel.s5 > * {flex: 0 0 20%;}
+    .stack-panel.s4 > * {flex: 0 0 25%;}
+    .stack-panel.s3 > * {flex: 0 0 33.333%;}
+    .stack-panel.s2 > * {flex: 0 0 50%;}
 
-/* Tables */
-table {
-    max-width: 100%;
-}
+    .stack-panel > .checkbox {
+        padding: 6px;
+    }
 
-table.records {
-    width: 100%;
+    /* Tables */
+    table {
+        max-width: 100%;
+    }
 
-    thead > tr > th {
-        font-weight: bold;
+    table.records {
+        width: 100%;
+
+        thead > tr > th {
+            font-weight: bold;
+            padding: 3px;
+        }
+
+        tbody > tr > td {
+            padding: 5px;
+            text-align: left;
+            background-color: $black;
+        }
+
+        tbody > tr:nth-child(even) > td {
+            background-color: $black-faded;
+        }
+    }
+
+    td {
+        text-align: left;
+        vertical-align: top;
+    }
+    
+    /* Material UI Overrides */
+    .MuiTabs-root {
+        .MuiTab-root {
+            border-bottom: none;
+            font-size: 1.1rem;
+        }
+
+        .MuiTabs-indicator {
+            display: none;
+        }
+
+        .MuiTab-root.Mui-selected {
+            background-color: $green;
+        }
+    }
+
+    .color-picker input[type="text"] {
+        width: 100px;
+    }
+
+    .hidden {
+        display: none !important;
+    }
+
+    .error-message {
+        display: none;
+        color: #900;
+        background-color: #ccc;
+        padding: 3px;
+        border: solid 2px #900;
+        &.shown {
+            display: block;
+        }
+    }
+
+    .form-caption,
+    .form-entry
+    {
         padding: 3px;
     }
-
-    tbody > tr > td {
-        padding: 5px;
-        text-align: left;
-        background-color: $black;
-    }
-
-    tbody > tr:nth-child(even) > td {
-        background-color: $black-faded;
-    }
 }
 
-td {
-    text-align: left;
-    vertical-align: top;
-}
 
 /* Scrollbar */
 
@@ -177,43 +184,27 @@ td {
     background: rgba(151,144,200,0.9);
 }
 
-/* Material UI Overrides */
-.MuiTabs-root {
-    .MuiTab-root {
-        border-bottom: none;
-        font-size: 1.1rem;
-    }
-
-    .MuiTabs-indicator {
-        display: none;
-    }
-
-    .MuiTab-root.Mui-selected {
-        background-color: $green;
+/* 4:3 screen - keep at 16:9 ratio */
+@media screen and (max-width: 1024px) {
+    body.capture {
+        width: 1024px;
+        height: 576px;
+        #root {
+            width: 1024px;
+            height: 576px;   
+        }
     }
 }
 
-.color-picker input[type="text"] {
-    width: 100px;
-}
-
-.hidden {
-    display: none !important;
-}
-
-.error-message {
-    display: none;
-    color: #900;
-    background-color: #ccc;
-    padding: 3px;
-    border: solid 2px #900;
-    &.shown {
-        display: block;
+//stuck to the left/right of 1920x1080
+@media screen and (max-width:960px) and (min-height: 1080px) {
+    body.client {
+        width: 960px;
+        height: 1080px;
+        #root {
+            width: 960px;
+            height: 1080px;
+            padding-bottom: 16px;
+        }
     }
-}
-
-.form-caption,
-.form-entry
-{
-    padding: 3px;
 }

@@ -233,7 +233,7 @@ class RecordEditor extends React.PureComponent<PRecordEditor, SRecordEditor> {
                     this.props.onCancel();
             });
         }).catch((er) => {
-            console.log(er.message);
+            
         });
     }
 

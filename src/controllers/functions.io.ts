@@ -104,7 +104,6 @@ export async function LoadJsonFile(filename:string, sync:boolean = false) : Prom
                 let jdata:any = JSON.parse(data);
                 res(jdata);
             } catch(er) {
-                console.log('Failed to convert json data');
                 rej(er.message);
             }
         }).catch((er) => {
@@ -132,7 +131,6 @@ export async function SaveFile(filename, content, sync:boolean = false) {
         }
     } catch(er) {
         //+show error
-        //console.log(er);
     }
 };
 

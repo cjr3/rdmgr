@@ -246,7 +246,7 @@ class FileBrowserFolderList extends React.PureComponent<{
         ShowOpenDialog({
             properties:['openFile', 'multiSelections']
         }).then(async (files) => {
-            //console.log(files);
+            
             if(files && files.length) {
                 this.setState(() => {
                     return {uploadedFiles:0,filesToUpload:files.length};
@@ -257,7 +257,7 @@ class FileBrowserFolderList extends React.PureComponent<{
                                 this.setState({uploadedFiles:this.state.uploadedFiles+1})
                             })
                             .catch((er) => {
-                                //console.log("FAILED TO UPLOAD!");
+                                
                             });
                     }
                     this.loadMediaFolders();
@@ -419,7 +419,7 @@ class FileBrowserList extends React.PureComponent<{
             LoadFolderFiles(this.props.path).then((files) => {
                 this.setState({files:files});
             }).catch((er) => {
-                //console.log(er);
+
             });
         })
     }

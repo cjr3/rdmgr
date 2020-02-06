@@ -6,6 +6,7 @@ import keycodes from 'tools/keycodes'
 import './css/Raffle.scss'
 import { Unsubscribe } from 'redux';
 import RaffleCaptureController from 'controllers/capture/Raffle';
+import ClientController from 'controllers/ClientController';
 
 /**
  * Component for managing the raffle tickets
@@ -87,8 +88,10 @@ export default class Raffle extends React.PureComponent<any, {
             <IconButton
                 src={IconCheck}
                 onClick={() => {
-                    if(this.TicketItem && this.TicketItem.current)
-                        this.TicketItem.current.sendTicket();
+                    if(ClientController.GetState().RaffleTicketNumber) {
+                        RaffleController.Add(ClientController.GetState().RaffleTicketNumber);
+                        ClientController.SetRaffleTicketNumber('');
+                    }
                 }}
                 key="btn-send"
                 >Submit</IconButton>
@@ -172,77 +175,44 @@ class RaffleTickets extends React.PureComponent<{
 }
 
 class RaffleTicketEntry extends React.PureComponent<any, {
-    value:string;
+    TicketNumber:string;
 }> {
     readonly state = {
-        value:''
+        TicketNumber:ClientController.GetState().RaffleTicketNumber
     }
 
     protected TicketItem:React.RefObject<HTMLInputElement> = React.createRef();
 
+    protected remoteClient?:Unsubscribe;
+
     constructor(props) {
         super(props);
+        this.updateClient = this.updateClient.bind(this);
         this.onChangeTicketNumber = this.onChangeTicketNumber.bind(this);
-        this.onKeyUpTicketNumber = this.onKeyUpTicketNumber.bind(this);
         this.onFocusTicketNumber = this.onFocusTicketNumber.bind(this);
-        this.sendTicket = this.sendTicket.bind(this);
+    }
+
+    protected updateClient() {
+        this.setState({
+            TicketNumber:ClientController.GetState().RaffleTicketNumber
+        });
     }
 
     protected onChangeTicketNumber(ev: React.ChangeEvent<HTMLInputElement>) {
         let value:string = ev.currentTarget.value;
-        this.setState({value:value});
+        ClientController.SetRaffleTicketNumber(value);
     }
 
     protected onFocusTicketNumber(ev: React.FocusEvent<HTMLInputElement>) {
         ev.currentTarget.select();
     }
 
-    protected onKeyUpTicketNumber(ev: React.KeyboardEvent<HTMLInputElement>) {
-        ev.stopPropagation();
-        switch(ev.keyCode) {
-            //enter - send
-            case keycodes.ENTER :
-                this.sendTicket();
-            break;
-
-            //escape - clear
-            case keycodes.ESCAPE :
-                if(this.state.value === '')
-                    RaffleController.Remove();
-                else {
-                    this.setState({value:''});
-                }
-            break;
-
-            case keycodes.F12 :
-                RaffleCaptureController.Toggle();
-            break;
-
-            default :
-            break;
-        }
-    }
-
-    sendTicket() {
-        var value = this.state.value.trim();
-        if(value === '') {
-            RaffleController.Remove();
-        } else {
-            RaffleController.Add(value);
-            this.setState({value:''}, () => {
-                if(this.TicketItem && this.TicketItem.current)
-                    this.TicketItem.current.focus();
-            });
-        }
-    }
-    
-
     /**
      * Adds the given digit to the end of the ticket number.
      * @param {String} digit 
      */
     protected addDigit(digit) {
-        var value = this.state.value;
+        var value = this.state.TicketNumber;
         var ml = 10;
         if(this.TicketItem != null && this.TicketItem.current !== null)
             ml = this.TicketItem.current.maxLength;
@@ -251,27 +221,24 @@ class RaffleTicketEntry extends React.PureComponent<any, {
                 RaffleController.Remove();
                 return;
             }
-            this.setState(() => {
-                return {value:value.substring(0, value.length - 1)};
-            }, () => {
-                if(this.TicketItem != null && this.TicketItem.current !== null)
-                    this.TicketItem.current.focus();
-            });
+            ClientController.RemoveRaffleTicketCharacter();
         } else {
-            if(value.length >= ml)
-                return;
-            this.setState(() => {
-                return {value:value + digit};
-            }, () => {
-                if(this.TicketItem != null && this.TicketItem.current !== null)
-                    this.TicketItem.current.focus();
-            });
+            ClientController.AddRaffleTicketCharacter(digit);
         }
     }
 
     focus() {
         if(this.TicketItem && this.TicketItem.current)
             this.TicketItem.current.focus();
+    }
+
+    componentDidMount() {
+        this.remoteClient = ClientController.Subscribe(this.updateClient);
+    }
+
+    componentWillUnmount() {
+        if(this.remoteClient)
+            this.remoteClient();
     }
 
     render() {
@@ -294,8 +261,8 @@ class RaffleTicketEntry extends React.PureComponent<any, {
                 <div className="digit-buttons">{digits}</div>
                 <input type="text" maxLength={10} 
                     onChange={this.onChangeTicketNumber}
-                    value={this.state.value}
-                    onKeyUp={this.onKeyUpTicketNumber}
+                    value={this.state.TicketNumber}
+                    //onKeyUp={this.onKeyUpTicketNumber}
                     onFocus={this.onFocusTicketNumber}
                     ref={this.TicketItem}
                     />

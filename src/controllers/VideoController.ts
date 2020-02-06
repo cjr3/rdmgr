@@ -464,7 +464,7 @@ VideoController.onKeyUp = async (ev) => {
 };
 
 VideoController.PrepareStateForSending = () => {
-    let cstate:SVideoController = VideoController.GetState();
+    let cstate:SVideoController = Object.assign({}, VideoController.GetState());
     cstate.Source = RemoveMediaPath(cstate.Source);
     cstate.AutoPlay = true;
     if(window && window.LocalServer) {

@@ -76,7 +76,7 @@ const CreateController = (key:string, reducer?:any) : any => {
                     try {
                         StateSavers[controller.Key].Save(JSON.stringify(controller.GetState(), null, 4));
                     } catch(er) {
-                        //console.log(er);
+                        
                     } finally {
                         res(true);
                     }

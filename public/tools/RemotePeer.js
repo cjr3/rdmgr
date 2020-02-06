@@ -47,7 +47,6 @@ class PeerItem {
 
         //triggered when the remote peer emits the on-signal event to this local peer
         this.PeerItem.on('signal', data => {
-            console.log('SIGNAL', JSON.stringify(data));
             //call peer 
         });
 
@@ -107,7 +106,6 @@ class PeerItem {
             return;
 
         if(peer.PeerItem === null && !local) {
-            //console.log(`connecting to ${id}`);
 
             //Connect to peer, sending OUR ID to THEIR Host
             peer.PeerItem = new window.LocalServer.Peer(this.ID, {
@@ -121,13 +119,10 @@ class PeerItem {
 
             //Connected to server - data connection does not have to be open
             peer.PeerItem.on('open', (id) => {
-                //console.log(`${id} connected to remote peer ${peer.ID}`);
-                //this.connectToPeer(id, local);
             });
 
             //When the remote peer creates a data connection TO US
             peer.PeerItem.on('connection', (dcnx) => {
-                //console.log(`${dcnx.peer} created a data connection`);
                 peer.DataConnection = dcnx;
                 peer.DataConnection.on('data', this.onDataReceived.bind(this, peer));
                 peer.DataConnection.on('open', this.onDataOpen.bind(this, peer));
@@ -139,7 +134,6 @@ class PeerItem {
 
             //When the peer calls US
             peer.PeerItem.on('call', (mcnx) => {
-                //console.log(`${mcnx.peer} called`);
                 peer.MediaConnection = mcnx;
                 peer.MediaConnection.on('close', this.onMediaClose.bind(this, peer));
                 peer.MediaConnection.on('stream', this.onMediaStream.bind(this, peer));
@@ -148,7 +142,6 @@ class PeerItem {
 
             //when the remote peer closes THEIR connection to US
             peer.PeerItem.on('close', () => {
-                //console.log(`${peer.ID} closed`);
                 peer.DataConnected = false;
                 peer.MediaConnected = false;
                 if(peer.DataConnection) {
@@ -167,11 +160,9 @@ class PeerItem {
             //when the remote peer is disconnected from the server
             //no further connections can be made to the peer
             peer.PeerItem.on('disconnected', () => {
-                //console.log(`${peer.ID} disconnected`)
             });
 
             peer.PeerItem.on('error', (err) => {
-                //console.log(`${peer.ID} error: ${err.type}`);
                 switch(err.type) {
                     case 'peer-unavailable' :
                         peer.PeerItem = null;
@@ -354,12 +345,10 @@ class PeerItem {
      * @param {Object} dcnx The data connection
      */
     onConnection(dcnx) {
-        console.log(`${dcnx.peer} : onConnection`);
         let peer = this.Peers[dcnx.peer];
 
         //ignore and close data connections from unknown peers
         if(peer === null || peer === undefined) {
-            //console.log('peer is not found');
             //dcnx.close();
             return;
         }
@@ -400,7 +389,6 @@ class PeerItem {
      * the server can no longer find the peer.
      */
     onDisconnected() {
-        console.log(`${this.ID} : onDisconnected`);
     }
 
     /**
@@ -429,17 +417,14 @@ class PeerItem {
     onError(err) {
         switch(err.type) {
             case 'peer-unavailable' :
-                //console.log(`${this.ID} onError: ${err.type}`);
                 if(this.PeerItem) {
                     //this.PeerItem.disconnect();
                 }
             break;
             case 'unavailable-id' :
-                console.log(`${this.ID} onError: ${err.type}`);
                 //this.disconnect();
             break;
             default :
-                console.log(`${this.ID} onError: ${err.type}`);
             break;
         }
     }
@@ -450,7 +435,6 @@ class PeerItem {
      * @param {Object} data 
      */
     onDataReceived(peer, data) {
-        //console.log(`${peer.ID} sent data`);
         switch(data.type) {
             case 'request-call' :
                 this.callPeer(peer.ID);
@@ -465,7 +449,6 @@ class PeerItem {
      * Triggered when the data connection opens.
      */
     onDataOpen(peer) {
-        console.log(`${peer.ID} opened data connection`)
         peer.DataConnected = true;
         window.LocalServer.UpdatePeerDataStatus(peer);
     }
@@ -474,7 +457,6 @@ class PeerItem {
      * Triggered when a peer closes their data connection
      */
     onDataClose(peer) {
-        console.log(`${peer.ID} onDataClose`);
         peer.DataConnected = false;
         window.LocalServer.UpdatePeerDataStatus(peer);
     }
@@ -484,7 +466,6 @@ class PeerItem {
      * @param {Object} error 
      */
     onDataError(peer, error) {
-        console.log(`${peer.ID} onDataError: ${error}`);
         if(peer.DataConnection && peer.DataConnection.open === false) {
             peer.DataConnected = false;
             window.LocalServer.UpdatePeerDataStatus(peer);
@@ -513,7 +494,6 @@ class PeerItem {
      * @param {Object} err 
      */
     onMediaError(peer, err) {
-        //console.log(peer.ID + " encounteed an error on the media stream.");
     }
 
     /**
@@ -523,7 +503,6 @@ class PeerItem {
     send(id, data) {
         let peer = this.Peers[id];
         if(peer && peer.DataConnection && peer.DataConnection.open) {
-            //console.log("Sending data to peer")
             switch(data.type) {
                 case 'state' :
                     data.state = Object.assign({}, window.LocalServer.PrepareObjectForSending( data.state ));

@@ -329,7 +329,6 @@ const SetPosition = (state:SScorekeeperState, side:string, skater:SkaterRecord|n
             )
         ) {
 
-        //console.log(`invalid: ${deck}:${position}`);
         return state;
     } else if(skater === null) {
         return {
@@ -347,8 +346,6 @@ const SetPosition = (state:SScorekeeperState, side:string, skater:SkaterRecord|n
             }
         }
     }
-
-    //console.log(`${currentDeck}:${currentPosition}`);
 
     //record is assigned to a position
     if(currentDeck && currentPosition) {
@@ -381,7 +378,6 @@ const SetPosition = (state:SScorekeeperState, side:string, skater:SkaterRecord|n
 
     } else {
         //assign skater to position
-        //console.log(`${teamKey}:${deck}:${position}:${skater.Name}`);
         return {
             ...state,
             [teamKey]:{

@@ -56,14 +56,6 @@ button:focus {
     background-color: $blood;
 }
 
-@media screen and (min-width: 1600px) {
-    input[type="button"],
-    button {
-        min-height: 56px;
-        font-size: 24px;
-    }
-}
-
 /* Icon+Button */
 .button-icon {
     position: relative;
@@ -125,17 +117,18 @@ button:focus {
             line-height: 24px;
         }
     }
-}
 
-.toggle-button.checked {
-    background-color: #006600;
-}
+    &.checked {
+        background-color: #006600;
+        .icon > img {
+            visibility: visible;
+        }
+    }
 
-.toggle-button:hover {
-    background-color: #009900;
+    &:hover {
+        background-color: #009900;
+    }
 }
-
-.toggle-button.checked .icon > img { visibility: visible; }
 
 /* Icon */
 .icon {
@@ -146,13 +139,6 @@ button:focus {
     cursor: pointer;
     border-radius: 6px;
     transition: background-color 150ms;
-}
-
-@media screen and (min-width: 1600px) {
-    .icon {
-        max-width: 72px;
-        max-height: 72px;
-    }
 }
 
 .icon.active {

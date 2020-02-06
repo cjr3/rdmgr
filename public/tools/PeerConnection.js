@@ -106,7 +106,6 @@ class PeerConnection {
         this.PeerItem.on('error', this.onError);
 
         if(this.LocalID !== this.ID) {
-            console.log(`${this.LocalID} >> ${this.ID}`);
             window.LocalServer.LocalPeer.connectToPeer(this);
         }
     }
@@ -117,7 +116,6 @@ class PeerConnection {
      */
     connectToPeer(peer) {
         //peer.closeDataConnection();
-        console.log(`${this.ID} >>>> ${peer.ID}`);
         peer.DataConnection = this.PeerItem.connect(peer.ID);
         if(peer.DataConnection) {
             peer.DataConnection.on('data', peer.onDataReceived);
@@ -246,7 +244,6 @@ class PeerConnection {
      * Create a new LocalPeer object.
      */
     onClose() {
-        console.log(`${this.ID} : onClose`);
         if(this.ID !== this.LocalID) {
             //this.disconnect();
         }
@@ -258,7 +255,6 @@ class PeerConnection {
      * @param {Object} dcnx The data connection
      */
     onConnection(dcnx) {
-        console.log(`${dcnx.peer} : onConnection`);
         //this.connectData(id);
         if(window.LocalServer.Peers[dcnx.peer]) {
             let peer = window.LocalServer.Peers[dcnx.peer];
@@ -294,7 +290,7 @@ class PeerConnection {
      * the server can no longer find the peer.
      */
     onDisconnected() {
-        console.log(`${this.ID} : onDisconnected`);
+
     }
 
     /**
@@ -323,17 +319,15 @@ class PeerConnection {
     onError(err) {
         switch(err.type) {
             case 'peer-unavailable' :
-                //console.log(`${this.ID} onError: ${err.type}`);
+                
                 if(this.PeerItem) {
                     this.PeerItem.disconnect();
                 }
             break;
             case 'unavailable-id' :
-                console.log(`${this.ID} onError: ${err.type}`);
                 this.disconnect();
             break;
             default :
-                console.log(`${this.ID} onError: ${err.type}`);
             break;
         }
     }
@@ -343,7 +337,6 @@ class PeerConnection {
      * @param {Object} data 
      */
     onDataReceived(data) {
-        console.log(`${this.ID} sent data`);
         window.LocalServer.onDataReceived(this, data);
     }
 
@@ -352,7 +345,6 @@ class PeerConnection {
      */
     onDataOpen() {
         this.DataConnected = true;
-        console.log(`${this.ID} opened data connection`)
         window.LocalServer.UpdatePeerDataStatus(this);
     }
 
@@ -360,8 +352,6 @@ class PeerConnection {
      * Triggered when a peer closes their data connection
      */
     onDataClose() {
-        console.log(`${this.ID} onDataClose`);
-        //this.disconnect();
         this.DataConnected = false;
         window.LocalServer.UpdatePeerDataStatus(this);
     }
@@ -371,9 +361,6 @@ class PeerConnection {
      * @param {Object} error 
      */
     onDataError(error) {
-        console.log(`${this.ID} onDataError`);
-        //console.log(peer.ID + " encountered an error in their data connection: ");
-        //console.log(error);
     }
 
     /**
@@ -398,7 +385,7 @@ class PeerConnection {
      * @param {Object} err 
      */
     onMediaError(err) {
-        //console.log(peer.ID + " encounteed an error on the media stream.");
+        
     }
 
     /**
@@ -427,7 +414,6 @@ class PeerConnection {
                 this.Connecting = true;
                 window.LocalServer.ping(this.Host, this.Port, () => {
                     this.Connecting = false;
-                    console.log(`${this.ID} connectin...`);
                     if(!this.DataConnected)
                         this.connect();
                     this.ping();

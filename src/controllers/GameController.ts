@@ -339,8 +339,6 @@ class GameControllerHandler {
         this.Gamepads = await this.LoadControllers();
         if(e instanceof GamepadEvent && this.Gamepads[e.gamepad.index]) {
             this.Gamepad = this.Gamepads[e.gamepad.index];
-            //if(this.Gamepad !== null)
-                //console.log(this.Gamepad)
         }
     }
 

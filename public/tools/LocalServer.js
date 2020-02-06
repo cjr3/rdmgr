@@ -154,7 +154,6 @@ class P2PServer {
             });
             this.Server.on('connection', (ws) => {
                 ws.on('pong', () => {
-                    //console.log(`ws pong!`);
                 });
 
                 ws.on('message', (msg) => {
@@ -164,12 +163,12 @@ class P2PServer {
                     } catch(er) {
 
                     } finally {
-                        //console.log(j);
+                        
                     }
                 });
 
                 ws.on('error', () => {
-                    //console.log('socketed error!');
+                    
                 })
             });
             this.ExpressApp.use(this.LocalPeer.Path, this.Server);
@@ -183,7 +182,6 @@ class P2PServer {
      * @param {String} id 
      */
     async onConnect(id) {
-        //console.log(`${id} connected to server`);
         this.LocalPeer.receivePeer(id, true);
     }
 
@@ -192,9 +190,6 @@ class P2PServer {
      * @param {String} id 
      */
     async onDisconnect(id) {
-        //console.log(`${id} disconnected from server.`)
-        //this.LocalPeer.disconnectPeer(id);
-        //this.LocalPeer.receivePeer(id);
     }
 
     /**
@@ -240,7 +235,6 @@ class P2PServer {
      * @param {Object} action 
      */
     reducer(state, action) {
-        //console.log(`Updating server store`);
         if(typeof(state) !== "object")
             return Object.assign({}, this.InitState);
 
@@ -357,14 +351,14 @@ class P2PServer {
      * @param {Object} state 
      */
     SendState(app, state) {
-        if(this.controller) {
-            let peers = this.controller.GetPeers(true);
+        if(this.PeersController) {
+            let peers = this.PeersController.Get();
             peers.forEach((peer) => {
                 if(peer.ReceiveApps && peer.ReceiveApps.indexOf(app) >= 0) {
                     this.LocalPeer.send(peer.PeerID, {
                         type:'state',
                         app:app,
-                        state:(this.controller) ? this.controller.PrepareStateForSending(app, state) : state
+                        state:this.PrepareObjectForSending({...state})
                     });
                 }
             });

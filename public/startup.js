@@ -55,7 +55,7 @@ class ElectronStartup {
                     break;
 
                 default :
-                    //console.log(er)
+                
                     break;
             }
         });

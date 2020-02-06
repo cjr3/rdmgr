@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import 'index.scss';
+import './css/1920x1080.scss';
 import ViewManager from './ViewManager';
 import * as serviceWorker from './serviceWorker';
 import DataController from './controllers/DataController';
@@ -30,7 +31,6 @@ declare global {
 }
 
 DataController.Init().then(() => {
-    //console.log('Initialized...')
     DataController.LoadConfig().then(() => {
         PeersController.Load().then(() => {
             DataController.Load().then(() => {
@@ -42,15 +42,14 @@ DataController.Init().then(() => {
                 window.ReactEntryPoint = ReactDOM.render(<ViewManager />, document.getElementById('root'));
                 serviceWorker.unregister();
             }).catch((er) => {
-                //console.log(er);
+                
             })
         }).catch((er) => {
-            //console.log('failed to load peers');
+            
         });
     }).catch((er) => {
-        //console.log(er);
+        
     })
 }).catch(() => {
     //error !? ??!  ?!! !??
-    //console.log('Failed to initialize DataController');
 });

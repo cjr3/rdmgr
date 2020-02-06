@@ -48,7 +48,7 @@ export default class MediaQueueVideo extends React.PureComponent<any, {
                         let vid:any = this.VideoItem.current;
                         vid.stop();
                     } catch(er) {
-                        //console.log(er)
+
                     }
                 }
             }

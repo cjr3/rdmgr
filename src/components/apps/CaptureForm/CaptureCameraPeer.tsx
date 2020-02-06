@@ -108,7 +108,6 @@ export default class CaptureCameraPeer extends React.PureComponent<{
      */
     onPeerStreamError(peer:any, err:any) {
         if(peer.ID === this.state.PeerID) {
-            console.log("peer stream error");
             let parts = peer.ID.split('-');
             let id = parts[0] + "-" + parts[1];
             //conditions ???
