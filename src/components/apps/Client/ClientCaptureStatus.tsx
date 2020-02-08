@@ -180,7 +180,7 @@ export default class ClientCaptureStatus extends React.PureComponent<any, {
                 progress = max;
             let str = this.state.Slideshow.Name + " - " + progress + " / " + max;
             if(this.state.Slideshow.Slides[this.state.Slideshow.Index])
-                str += - this.state.Slideshow.Slides[this.state.Slideshow.Index].Name;
+                str += " " + this.state.Slideshow.Slides[this.state.Slideshow.Index].Name;
             children = <React.Fragment>
                 <div className="text">{str}</div>
             </React.Fragment>

@@ -27,6 +27,7 @@ export default class MediaQueueSlideshow extends React.PureComponent<any, {
         this.updateSlideshow = this.updateSlideshow.bind(this);
         this.updateMedia = this.updateMedia.bind(this);
         this.onDoubleClickSlide = this.onDoubleClickSlide.bind(this);
+        this.onKeyUp = this.onKeyUp.bind(this);
     }
 
     protected async updateSlideshow() {
@@ -51,6 +52,11 @@ export default class MediaQueueSlideshow extends React.PureComponent<any, {
      */
     protected async onDoubleClickSlide(index) {
         SlideshowController.Display(parseInt(index));
+    }
+
+    protected onKeyUp(ev) {
+        ev.stopPropagation();
+        ev.preventDefault();
     }
 
     componentDidMount() {
@@ -82,7 +88,9 @@ export default class MediaQueueSlideshow extends React.PureComponent<any, {
             shown = true;
 
         return (
-            <div className={cnames('record-control slideshow-slides', {shown:(shown)})}>
+            <div className={cnames('record-control slideshow-slides', {shown:(shown)})} 
+                onKeyUp={this.onKeyUp}
+                >
                 <SortPanel
                     items={slides}
                     index={this.state.Index}

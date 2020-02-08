@@ -145,12 +145,13 @@ export default class SlideshowEditor extends React.PureComponent<props, {
                         slides.push({
                             RecordType:"IMG",
                             Name:Basename(files[key]),
-                            Filename:path + "/" + files[key]
+                            Filename:files[key]
                         });
                     break;
                     default : break;
                 }
             }
+            console.log(slides);
             this.setState(() => {
                 return {Slides:slides};
             });

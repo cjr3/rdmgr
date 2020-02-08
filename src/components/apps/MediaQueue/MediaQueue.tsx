@@ -48,12 +48,18 @@ export default class MediaQueue extends React.PureComponent<any, {
     constructor(props) {
         super(props);
         this.updateUI = this.updateUI.bind(this);
+        this.onKeyUp = this.onKeyUp.bind(this);
     }
 
     protected async updateUI() {
         this.setState({
             opened:UIController.GetState().MediaQueue.Shown
         });
+    }
+
+    protected onKeyUp(ev) {
+        ev.stopPropagation();
+        ev.preventDefault();
     }
 
     componentDidMount() {
@@ -83,7 +89,7 @@ export default class MediaQueue extends React.PureComponent<any, {
                     contentName="MEQ-app"
                     className="MEQ-panel">
                     <MediaQueueItems/>
-                    <div className="current-record">
+                    <div className="current-record" onKeyUp={this.onKeyUp}>
                         <MediaQueueVideo/>
                         <MediaQueueSlideshow/>
                         <MediaQueueAnthem/>
