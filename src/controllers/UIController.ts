@@ -5,9 +5,11 @@ import {CreateController, BaseReducer} from './functions.controllers';
 type Panels = 
     'Scoreboard' | 'Chat' | 'Scorekeeper' | 'PenaltyTracker' |
     'Roster' | 'CaptureControl' | 'MediaQueue' | 'DisplayControls' |
-    'ConfigPanel' | 'APILogin';
+    'ConfigPanel' | 'APILogin' | 'DeleteFileDialog' | 'CreateRecordDialog';
 
 export let LoginCallback:any;
+export let DeleteCallback:any;
+export let CreateRecordCallback:any;
 
 interface IUIController extends IController {
     SetCurrentPanel:{(index:Panels, value:string)};
@@ -24,18 +26,27 @@ interface IUIController extends IController {
     ShowLogin:Function;
     HideLogin:Function;
     ToggleLogin:Function;
+    ShowDeleteFileDialog:{(filename:string,cb:any)};
+    HideDeleteFileDialog:Function;
+    ShowCreateRecordDialog:{(filename:string,cb:any)};
+    HideCreateRecordDialog:Function;
 };
 
 export enum Actions {
     SET_CURRENT_PANEL = 'SET_CURRENT_PANEL',
     TOGGLE_DISPLAY = 'TOGGLE_DISPLAY',
-    SET_DISPLAY = 'SET_DISPLAY'
+    SET_DISPLAY = 'SET_DISPLAY',
+    SET_DELETE_FILE_NAME = 'SET_DELETE_FILE_NAME'
 }
 
 interface SUIControllerDisplay {
     Panel:string;
     Shown:boolean;
     Application:boolean;
+}
+
+interface SUIDeleteFile extends SUIControllerDisplay {
+    Filename:string;
 }
 
 interface SUIController {
@@ -49,6 +60,8 @@ interface SUIController {
     DisplayControls:SUIControllerDisplay;
     ConfigPanel:SUIControllerDisplay;
     APILogin:SUIControllerDisplay;
+    DeleteFileDialog:SUIDeleteFile;
+    CreateRecordDialog:SUIControllerDisplay;
 };
 
 export const InitState:SUIController = {
@@ -101,6 +114,17 @@ export const InitState:SUIController = {
         Panel:'',
         Shown:false,
         Application:false
+    },
+    DeleteFileDialog:{
+        Panel:'',
+        Shown:false,
+        Application:false,
+        Filename:''
+    },
+    CreateRecordDialog:{
+        Panel:'',
+        Shown:false,
+        Application:false
     }
 }
 
@@ -138,6 +162,13 @@ const SetDisplay = (state:SUIController, index:Panels, shown:boolean) => {
     return obj;
 };
 
+const SetDeleteFileName = (state:SUIController, filename:string) => {
+    return {...state, DeleteFileDialog:{
+        ...state.DeleteFileDialog,
+        Filename:filename
+    }};
+};
+
 const UIReducer = (state:SUIController = InitState, action:any) => {
     try {
         switch(action.type) {
@@ -147,6 +178,8 @@ const UIReducer = (state:SUIController = InitState, action:any) => {
                 return ToggleDisplay(state, action.index);
             case Actions.SET_DISPLAY :
                 return SetDisplay(state, action.index, action.shown);
+            case Actions.SET_DELETE_FILE_NAME :
+                return SetDeleteFileName(state, action.filename);
             default :
                 return BaseReducer(state, action);
         }
@@ -206,19 +239,41 @@ UIController.ToggleChat = async () => {
 
 UIController.ShowLogin = async(cb?:any) => {
     UIController.SetDisplay('APILogin', true);
-    if(cb)
-        LoginCallback = cb;
+    LoginCallback = cb;
 };
 
 UIController.HideLogin = async() => {
     UIController.SetDisplay('APILogin', false);
+    LoginCallback = null;
 };
 
 UIController.ToggleLogin = async(cb?:any) => {
     UIController.ToggleDisplay('APILogin');
-    if(cb)
-        LoginCallback = cb;
+    LoginCallback = cb;
 };
 
+UIController.ShowDeleteFileDialog = async(filename:string, cb:any) => {
+    UIController.Dispatch({
+        type:Actions.SET_DELETE_FILE_NAME,
+        filename:filename
+    });
+    UIController.SetDisplay('DeleteFileDialog', true);
+    DeleteCallback = cb;
+};
+
+UIController.HideDeleteFileDialog = async() => {
+    UIController.SetDisplay('DeleteFileDialog', false);
+    DeleteCallback = null;
+};
+
+UIController.ShowCreateRecordDialog = async(cb) => {
+    UIController.SetDisplay('CreateRecordDialog', true);
+    CreateRecordCallback = cb;
+};
+
+UIController.HideCreateRecordDialog = async(cb) => {
+    UIController.SetDisplay('CreateRecordDialog', false);
+    CreateRecordCallback = null;
+};
 
 export default UIController;

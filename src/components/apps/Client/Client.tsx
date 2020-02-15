@@ -32,6 +32,7 @@ import {PeerRecordRequest} from 'components/data/PeerEditor';
 import { Unsubscribe } from 'redux';
 import Login from 'components/data/api/Login';
 import UIController from 'controllers/UIController';
+import DeleteFileDialog from 'components/data/DeleteFileDialog';
 
 /**
  * Component for the client control form.
@@ -114,6 +115,7 @@ export default class Client extends React.PureComponent<any, {
                 <ClientDisplayPanel/>
                 <ClientRecordRequest/>
                 <ClientLogin/>
+                <DeleteFileDialog/>
             </React.Fragment>
         );
     }

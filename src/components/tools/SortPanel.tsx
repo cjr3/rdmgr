@@ -26,6 +26,11 @@ export default class SortPanel extends React.PureComponent<{
      * Triggered when the user double-clicks an item
      */
     onDoubleClick?:Function;
+    //triggered on context-menu click (right-click)
+    onContextMenu?:Function;
+    //triggered on shift+click
+    onClick?:Function;
+    max?:number;
 }, {
     /**
      * Index of the current drag item
@@ -58,6 +63,18 @@ export default class SortPanel extends React.PureComponent<{
         this.onDragStart = this.onDragStart.bind(this);
         this.onDrop = this.onDrop.bind(this);
         this.onDoubleClick = this.onDoubleClick.bind(this);
+        this.onContextMenu = this.onContextMenu.bind(this);
+        this.onClick = this.onClick.bind(this);
+    }
+
+    protected async onClick(ev: React.MouseEvent<HTMLDivElement>, index:number){
+        if(this.props.onClick)
+            this.props.onClick(ev, index);
+    }
+
+    protected async onContextMenu(record:any, index:number) {
+        if(this.props.onContextMenu)
+            this.props.onContextMenu(record, index);
     }
 
     /**
@@ -118,7 +135,9 @@ export default class SortPanel extends React.PureComponent<{
      * Triggered when an item is double-clicked.
      * @param {Event} ev 
      */
-    onDoubleClick(ev:React.MouseEvent<HTMLDivElement>) {
+    protected async onDoubleClick(ev:React.MouseEvent<HTMLDivElement>) {
+        if(ev.shiftKey || ev.ctrlKey || ev.altKey)
+            return;
         if(ev.currentTarget.dataset.index !== undefined) {
             let value:number = parseInt( ev.currentTarget.dataset.index );
             if(this.props.onDoubleClick)
@@ -142,27 +161,40 @@ export default class SortPanel extends React.PureComponent<{
      */
     render() {
         let items:Array<React.ReactElement> = [];
-        for(let i=0, len = this.props.items.length; i < len; i++) {
-            let item = this.props.items[i];
-            let className = cnames('sortable', {
-                active:(i === this.props.index),
-                'drop-target':(i === this.state.DropIndex && i !== this.state.DragIndex),
-                'drag-target':(i === this.state.DragIndex && i !== this.state.DropIndex)
-            }, item.className);
-            items.push(<div
-                className={className}
-                key={`item-${i}`}
-                draggable={true}
-                onDragStart={this.onDragStart}
-                onDragOver={this.onDragOver}
-                onDragEnd={this.onDragEnd}
-                onDrop={this.onDrop}
-                onDragLeave={this.onDragLeave}
-                onDoubleClick={this.onDoubleClick}
-                data-index={i}
-                ref={(i === this.props.index) ? this.CurrentItem : null}
-                >{item.label}</div>
-            );
+        if(this.props.items && this.props.items.length) {
+            let max:number = this.props.items.length;
+            if(this.props.max)
+                max = this.props.max;
+            if(max > 100)
+                max = 100;
+            for(let i=0; i < max; i++) {
+                let item = this.props.items[i];
+                let className = cnames('sortable', {
+                    active:(i === this.props.index),
+                    'drop-target':(i === this.state.DropIndex && i !== this.state.DragIndex),
+                    'drag-target':(i === this.state.DragIndex && i !== this.state.DropIndex)
+                }, item.className);
+                items.push(<div
+                    className={className}
+                    key={`item-${i}`}
+                    draggable={true}
+                    onDragStart={this.onDragStart}
+                    onDragOver={this.onDragOver}
+                    onDragEnd={this.onDragEnd}
+                    onDrop={this.onDrop}
+                    onDragLeave={this.onDragLeave}
+                    onDoubleClick={this.onDoubleClick}
+                    onContextMenu={() => {
+                        this.onContextMenu(item, i);
+                    }}
+                    onClick={(ev:React.MouseEvent<HTMLDivElement>) => {
+                        this.onClick(ev, i);
+                    }}
+                    data-index={i}
+                    ref={(i === this.props.index) ? this.CurrentItem : null}
+                    >{item.label}</div>
+                );
+            }
         }
 
         let className:string = cnames('sortable-pane', this.props.className);

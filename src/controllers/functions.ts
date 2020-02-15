@@ -4,7 +4,7 @@ const path = require('path');
 export const AddMediaPath = (src?:string|null) => {
     if(typeof(src) !== "string" || src === '')
         return '';
-    if(src.indexOf('http://') === 0 || src.indexOf('https://') === 0)
+    if(src.indexOf('http://') === 0 || src.indexOf('https://') === 0 || src.charAt(1) == ':')
         return src;
     if(typeof(src) === "string" && src.indexOf(Folders.Media) !== 0)
         return path.join(Folders.Media, src);

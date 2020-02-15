@@ -23,8 +23,7 @@
         width: 100%;
         height: 100%;
         opacity: 0;
-        filter: grayscale(100%);
-        transition: all 500ms;
+        transition: filter 500ms ease-in-out 150ms, opacity 500ms ease-in-out 150ms;
 
         > img {
             position: absolute;
@@ -37,11 +36,10 @@
             max-height: 100%;
             height: 720px;
         }
-    }
 
-    .slide.shown {
-        opacity: 1;
-        filter: grayscale(0%);
+        &.shown {
+            opacity: 1;
+        }
     }
 }
 

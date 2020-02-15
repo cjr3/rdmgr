@@ -21,6 +21,8 @@ interface ISlideshowController extends IController {
     Hide:Function;
     Toggle:Function;
     SetSlides:{(records:Array<any>,id:number,name:string)};
+    RemoveSlide:{(index:number)};
+    AddSlide:{(record:any)};
     SetLoop:{(value:boolean)},
     SwapSlides:{(a:number, b:number, right:boolean)};
     onKeyUp:Function;
@@ -32,7 +34,9 @@ enum Actions {
     SET_SLIDES = 'SET_SLIDES',
     SET_LOOP = 'SET_LOOP',
     SET_INDEX = 'SET_INDEX',
-    SWAP_SLIDES = 'SWAP_SLIDES'
+    SWAP_SLIDES = 'SWAP_SLIDES',
+    ADD_SLIDE = 'ADD_SLIDE',
+    REMOVE_SLIDE = 'REMOVE_SLIDE'
 }
 
 export interface SSlideshowController {
@@ -150,11 +154,15 @@ const SwapSlides = (state:SSlideshowController, a:number, b:number, right:boolea
     return {...state, Slides:slides};
 };
 
-const SetDelay = (state:SSlideshowController, delay:number) => {
-    return {
-        ...state,
-        Delay:delay
-    };
+const RemoveSlide = (state:SSlideshowController, index:number) => {
+    if(!state.Slides[index])
+        return state;
+    let slides:Array<any> = state.Slides.slice();
+    let i:number = state.Index;
+    slides.splice(index, 1);
+    if(i > slides.length)
+        i = 0;
+    return {...state, Index:i, Slides:slides};
 };
 
 /**
@@ -187,6 +195,9 @@ const SlideshowReducer = (state = InitState, action) => {
             //Swaps the slides
             case Actions.SWAP_SLIDES :
                 return SwapSlides(state, action.indexA, action.indexB, action.right);
+
+            case Actions.REMOVE_SLIDE :
+                return RemoveSlide(state, action.index);
 
             default :
                 return BaseReducer(state, action);
@@ -259,6 +270,13 @@ SlideshowController.SwapSlides = async (a:number, b:number, right:boolean = fals
         indexA:a,
         indexB:b,
         right:right
+    });
+};
+
+SlideshowController.RemoveSlide = async (index:number) => {
+    SlideshowController.Dispatch({
+        type:Actions.REMOVE_SLIDE,
+        index:index
     });
 };
 

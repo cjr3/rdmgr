@@ -161,10 +161,8 @@ export default class ClientBar extends React.PureComponent<any, {
         });
 
         let iconConnection = IconOffline;
-        if(this.state.ConnectedPeers > 0)
-            iconConnection = IconOnline;
-
-        const recordicons = [
+        
+        let recordicons = [
             <Icon
                 src={iconConnection}
                 key="btn-network"
@@ -176,18 +174,24 @@ export default class ClientBar extends React.PureComponent<any, {
                 title="Display Options"
                 onClick={ClientController.ToggleDisplay}/>,
             <Icon
-                src={IconChat}
-                key="btn-chat"
-                attention={(this.state.UnreadMessageCount >= 1)}
-                title={`${this.state.UnreadMessageCount} unread messages.`}
-                onClick={UIController.ToggleChat}/>,
-            <Icon
                 src={IconSettings}
                 key="btn-settings"
                 title="Configuration"
                 onClick={ClientController.ToggleConfiguration}
             />
         ];
+
+        if(this.state.ConnectedPeers > 0) {
+            iconConnection = IconOnline;
+            recordicons.unshift(
+                <Icon
+                    src={IconChat}
+                    key="btn-chat"
+                    attention={(this.state.UnreadMessageCount >= 1)}
+                    title={`${this.state.UnreadMessageCount} unread messages.`}
+                    onClick={UIController.ToggleChat}/>,
+            );
+        }
 
         const buttons = [
             <div className="app-buttons" key="app-buttons">{icons}</div>,

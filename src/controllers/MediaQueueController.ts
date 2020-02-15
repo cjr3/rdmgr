@@ -20,6 +20,7 @@ interface IMediaQueueController extends IController {
     Next:Function;
     Prev:Function;
     SetRecord:Function;
+    UpdateRecord:Function;
     Add:Function;
     Remove:Function;
     SwapRecords:Function;
@@ -32,7 +33,8 @@ interface IMediaQueueController extends IController {
 }
 
 export enum Actions {
-    TOGGLE_LOOP = 'TOGGLE_LOOP'
+    TOGGLE_LOOP = 'TOGGLE_LOOP',
+    UPDATE_RECORD = 'UPDATE_RECORD'
 };
 
 export interface SMediaQueueController {
@@ -53,6 +55,14 @@ const ToggleLoop = (state:SMediaQueueController) => {
     return {...state, Loop:!state.Loop};
 };
 
+const UpdateRecord = (state:SMediaQueueController, index:number, record:any) => {
+    if(!state.Records[index])
+        return state;
+    let records:Array<any> = state.Records.slice();
+    records[index] = {...record};
+    return {...state, Records:records};
+}
+
 /**
  * Reducer for the Media Queue
  * @param {Object} state 
@@ -63,6 +73,8 @@ const MediaQueueReducer = (state:SMediaQueueController = InitState, action) => {
         switch(action.type) {
             case Actions.TOGGLE_LOOP :
                 return ToggleLoop(state);
+            case Actions.UPDATE_RECORD :
+                return UpdateRecord(state, action.index, action.record);
             default :
                 return BaseReducer(state, action);
         }
@@ -512,6 +524,14 @@ MediaQueueController.CheckSlideshow = () => {
             }
         }
     }
+};
+
+MediaQueueController.UpdateRecord = async (index:number, record:any) => {
+    MediaQueueController.Dispatch({
+        type:Actions.UPDATE_RECORD,
+        index:index,
+        record:record
+    });
 };
 
 MediaQueueController.onKeyUp = (ev:KeyboardEvent) => {

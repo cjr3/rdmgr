@@ -87,7 +87,8 @@ class ElectronStartup {
             resizable:true,
             webPreferences:{
                 webSecurity:false,
-                nodeIntegration:true
+                nodeIntegration:true,
+                nodeIntegrationInWorker:true
             }
         });
 
@@ -131,7 +132,8 @@ class ElectronStartup {
             title:"RDMGR : Capture Window",
             webPreferences:{
                 webSecurity:false,
-                nodeIntegration:true
+                nodeIntegration:true,
+                nodeIntegrationInWorker:true
             }
         });
         this.CaptureWindow.on('closed', () => {

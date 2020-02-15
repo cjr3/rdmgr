@@ -2,7 +2,7 @@ import vars, { Record } from "tools/vars";
 import {Folders, Files} from './vars';
 //import path from 'path';
 import { IOFileQueue } from "tools/IO";
-import { RemoveMediaPath } from "./functions";
+import { RemoveMediaPath, AddMediaPath } from "./functions";
 let fs = require('fs');
 let path = require('path');
 if(window && window.require) {
@@ -73,6 +73,27 @@ export function Basename(filepath:string) : string {
 
 export async function CanAccessFile(filename:string) {
     return fs.promises.access( filename );
+};
+
+export async function DeleteFile(filename:string) : Promise<boolean> {
+    return new Promise(async (res, rej) => {
+        if(!filename)
+            rej(`Failed to delete file: No filename provided.`);
+        else if(filename.startsWith('http://') || filename.startsWith('https://'))
+            rej('Failed to delete file: Access denied.');
+        else if(filename.startsWith("c:\\Windows"))
+            rej('Failed to delete file: Access denied.');
+        //else if(!await CanAccessFile(filename))
+            //rej(`Failed to delete file ${filename}: Access denied.`);
+        else {
+            fs.unlink(AddMediaPath(filename), (err) => {
+                if(err)
+                    rej(err);
+                else
+                    res(true);
+            });
+        }
+    });
 };
 
 export async function LoadFile(filename:string, sync:boolean = false) : Promise<any> {
@@ -214,28 +235,31 @@ export async function LoadFolder(folder:string = Folders.Media + "/", parent:any
 /**
  * Lists the files for the given path.
  */
-export async function LoadFolderFiles(filename) : Promise<Array<string>> {
+export async function LoadFolderFiles(filename, external:boolean = false) : Promise<Array<string>> {
     return new Promise((res, rej) => {
         if(typeof(filename) === 'string' && filename === '')
             filename = Folders.Media;
-        if(typeof(filename) !== 'string' || filename.indexOf(Folders.Media) !== 0)
-            rej(`Listing files is restricted to the RDMGR media folder: ${filename}`);
-        else {
-            fs.readdir(filename, "utf8", (err, files) => {
-                if(err)
-                    rej(err);
-                else {
-                    let records:Array<string> = [];
-                    for(var key in files) {
-                        let ext = FileExtension(files[key]);
-                        if(ext && ext !== '') {
-                            records.push(filename + "/" + files[key]);
-                        }
-                    }
-                    res(records);
-                }
-            });
+        if(!external) {
+            if(typeof(filename) !== 'string' || filename.indexOf(Folders.Media) !== 0) {
+                rej(`Listing files is restricted to the RDMGR media folder: ${filename}`);
+                return;
+            }
         }
+        
+        fs.readdir(filename, "utf8", (err, files) => {
+            if(err)
+                rej(err);
+            else {
+                let records:Array<string> = [];
+                for(var key in files) {
+                    let ext = FileExtension(files[key]);
+                    if(ext && ext !== '') {
+                        records.push(filename + "/" + files[key]);
+                    }
+                }
+                res(records);
+            }
+        });
     });
 };
 

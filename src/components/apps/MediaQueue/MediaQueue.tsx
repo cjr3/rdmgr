@@ -13,7 +13,9 @@ import {
     Slider,
     Button,
     IconLoop,
-    IconPlay
+    IconPlay,
+    IconFolder,
+    IconSave
 } from 'components/Elements';
 import Panel from 'components/Panel';
 import MediaQueueItems from './MediaQueueItems';
@@ -30,6 +32,9 @@ import SlideshowCaptureController from 'controllers/capture/Slideshow';
 import RosterCaptureController from 'controllers/capture/Roster';
 import AnthemCaptureController from 'controllers/capture/Anthem';
 import Raffle from 'components/apps/Raffle/Raffle';
+import { ShowOpenDialog } from 'controllers/functions';
+import vars, { SlideshowRecord } from 'tools/vars';
+import { LoadFolderFiles, FileExtension, Basename, SaveFile } from 'controllers/functions.io';
 
 /**
  * Component for media to be queued to the capture window,
@@ -114,6 +119,7 @@ class MediaQueueButtons extends React.PureComponent<any, {
     Muted:boolean;
     Volume:number;
     Index:number;
+    Record:any;
 }> {
 
     readonly state = {
@@ -122,6 +128,7 @@ class MediaQueueButtons extends React.PureComponent<any, {
         AnthemShown:SlideshowCaptureController.GetState().Shown,
         RosterShown:RosterCaptureController.GetState().Showm,
         Loop:MediaQueueController.GetState().Loop,
+        Record:MediaQueueController.GetState().Record,
         Index:MediaQueueController.GetState().Index,
         Muted:VideoController.GetState().Muted,
         Volume:VideoController.GetState().Volume
@@ -146,6 +153,8 @@ class MediaQueueButtons extends React.PureComponent<any, {
      */
     protected remoteVideo?:Unsubscribe;
 
+    protected mediaWorker?:Worker;
+
     /**
      * Constructs the component.
      * @param {Object} props 
@@ -160,13 +169,18 @@ class MediaQueueButtons extends React.PureComponent<any, {
         this.updateRosterCapture = this.updateRosterCapture.bind(this);
     }
 
+    protected async onWorkerUpdate(msg:any) {
+        console.log(msg);
+    }
+
     /**
      * Updates the state to match the MediaQueueController
      */
     protected async updateMedia() {
         this.setState({
             Loop:MediaQueueController.GetState().Loop,
-            Index:MediaQueueController.GetState().Index
+            Index:MediaQueueController.GetState().Index,
+            Record:MediaQueueController.GetState().Record
         });
     }
 

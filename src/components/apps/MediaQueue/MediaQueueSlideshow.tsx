@@ -7,16 +7,20 @@ import vars, { SlideshowRecord, VideoRecord, AnthemRecord } from 'tools/vars';
 import { MediaThumbnail } from 'components/Elements';
 import MediaQueueController from 'controllers/MediaQueueController';
 import { Compare } from 'controllers/functions';
+import UIController from 'controllers/UIController';
+import SlideshowsController from 'controllers/SlideshowsController';
 
 export default class MediaQueueSlideshow extends React.PureComponent<any, {
     Slides:Array<any>;
     Index:number;
     Record:SlideshowRecord | VideoRecord | AnthemRecord | undefined | null;
+    PreviewRecord:any;
 }> {
     readonly state = {
         Slides:SlideshowController.GetState().Slides,
         Index:SlideshowController.GetState().Index,
-        Record:MediaQueueController.GetState().Record
+        Record:MediaQueueController.GetState().Record,
+        PreviewRecord:null
     }
 
     protected remoteSlideshow:Unsubscribe|null = null;
@@ -28,13 +32,14 @@ export default class MediaQueueSlideshow extends React.PureComponent<any, {
         this.updateMedia = this.updateMedia.bind(this);
         this.onDoubleClickSlide = this.onDoubleClickSlide.bind(this);
         this.onKeyUp = this.onKeyUp.bind(this);
+        this.onClickSlide = this.onClickSlide.bind(this);
     }
 
     protected async updateSlideshow() {
         let slides:Array<any> = SlideshowController.GetState().Slides;
         let changes:any = {Index:SlideshowController.GetState().Index};
 
-        if(!Compare(slides, this.state.Slides))
+        //if(!Compare(slides, this.state.Slides))
             changes.Slides = slides;
 
         this.setState(changes);
@@ -44,6 +49,29 @@ export default class MediaQueueSlideshow extends React.PureComponent<any, {
         let record = MediaQueueController.GetState().Record;
         if(!Compare(record, this.state.Record))
             this.setState({Record:record});
+    }
+
+    protected async onClickSlide(ev: React.MouseEvent<HTMLDivElement>, index:number) {
+        if(ev.shiftKey && ev.ctrlKey) {
+            UIController.ShowDeleteFileDialog(this.state.Slides[index].Filename, () => {
+                SlideshowController.RemoveSlide(index);
+                if(this.state.Record && this.state.Record.RecordType == vars.RecordType.Slideshow) {
+                    let record:any = {...this.state.Record, Records:this.state.Slides};
+                    record.Records.splice(index, 1);
+                    MediaQueueController.UpdateRecord(this.state.Index, record);
+                    if(record.RecordID > 0) {
+                        SlideshowsController.Update(record);
+                    }
+                }
+            });
+        } else if(ev.shiftKey) {
+            SlideshowController.RemoveSlide(index);
+            if(this.state.Record && this.state.Record.RecordType == vars.RecordType.Slideshow) {
+                let record:any = {...this.state.Record, Records:this.state.Slides};
+                record.Records.splice(index, 1);
+                MediaQueueController.UpdateRecord(this.state.Index, record);
+            }
+        }
     }
 
     /**
