@@ -20,6 +20,12 @@ function endAnimation(v) {
     try {cancelAnimationFrame(v);} catch(er) {}
 }
 
+function compareRecordName(a, b) {
+    if(a && b && a.Name && b.Name)
+        return a.Name.toLowerCase().localeCompare(b.Name.toLowerCase());
+    return 0;
+}
+
 const delay = ms => new Promise(res => setTimeout(res, ms));
 
 export {
@@ -28,5 +34,6 @@ export {
     endInterval,
     startInterval,
     endAnimation,
-    delay
+    delay,
+    compareRecordName
 };

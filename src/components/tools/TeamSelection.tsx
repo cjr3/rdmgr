@@ -3,6 +3,7 @@ import cnames from 'classnames';
 import {TeamRecord} from 'tools/vars';
 import TeamsController from 'controllers/TeamsController';
 import { AddMediaPath } from 'controllers/functions';
+import { compareRecordName } from 'tools/functions';
 
 /**
  * Component for selecting a single team
@@ -31,7 +32,7 @@ export default class TeamSelection extends React.PureComponent<{
     index:number;
 }> {
     readonly state = {
-        teams:TeamsController.Get(),
+        teams:TeamsController.Get().sort(compareRecordName),
         index:0
     }
 
@@ -56,7 +57,7 @@ export default class TeamSelection extends React.PureComponent<{
      * Updates the state to match the controller.
      */
     protected updateData() {
-        this.setState({teams:TeamsController.Get()});
+        this.setState({teams:TeamsController.Get().sort(compareRecordName)});
     }
 
     /**

@@ -25,7 +25,6 @@ import ScoreboardController from 'controllers/ScoreboardController'
 import './css/Scoreboard.scss'
 import { Unsubscribe } from 'redux'
 import UIController from 'controllers/UIController'
-import ScoreboardCaptureController from 'controllers/capture/Scoreboard'
 
 /**
  * Component for the Scoreboard control
@@ -38,16 +37,24 @@ export default class Scoreboard extends React.PureComponent<any, {
     }
 
     protected remoteUI:Unsubscribe|null = null;
+    protected phaseItem:React.RefObject<PhaseControl> = React.createRef<PhaseControl>();
 
     constructor(props) {
         super(props);
         this.updateUI = this.updateUI.bind(this);
+        this.onSelectPhase = this.onSelectPhase.bind(this);
     }
 
     protected async updateUI() {
         this.setState({
             opened:UIController.GetState().Scoreboard.Shown
         });
+    }
+
+    protected onSelectPhase(phase) {
+        if(this.phaseItem && this.phaseItem.current) {
+            this.phaseItem.current.setPhase(phase);
+        }
     }
 
     componentDidMount() {
@@ -80,11 +87,11 @@ export default class Scoreboard extends React.PureComponent<any, {
                     <ScoreboardPhaseName/>
                     <BoardStatus/>
                     <GameClock/>
-                    <PhaseControl/>
+                    <PhaseControl ref={this.phaseItem}/>
                     <ScoreboardJamControls/>
                 </div>
                 <ScoreboardStatusControls/>
-                <ScoreboardPanels/>
+                <ScoreboardPanels onSelectPhase={this.onSelectPhase}/>
             </Panel>
         )
     }
@@ -405,7 +412,9 @@ class ScoreboardButtons extends React.PureComponent<any, {
 /**
  * Component that holds popup panels for the scoreboard
  */
-class ScoreboardPanels extends React.PureComponent<any, {
+class ScoreboardPanels extends React.PureComponent<{
+    onSelectPhase:Function;
+}, {
     panel:string;
 }> {
     readonly state = {
@@ -451,7 +460,10 @@ class ScoreboardPanels extends React.PureComponent<any, {
             <React.Fragment>
                 <PhaseSelection opened={(this.state.panel === 'phase')}
                     onClose={() => {UIController.SetScoreboardPanel('');}}
-                    onSelect={() => {UIController.SetScoreboardPanel('');}}
+                    onSelect={(phase) => {
+                        UIController.SetScoreboardPanel('');
+                        this.props.onSelectPhase(phase);
+                    }}
                     />
                 <TeamPicker opened={(this.state.panel === 'teams')}
                     onClose={() => {UIController.SetScoreboardPanel('');}}

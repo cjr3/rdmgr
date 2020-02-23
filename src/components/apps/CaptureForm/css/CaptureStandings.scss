@@ -16,7 +16,7 @@
 
     > h1 {
         background-color: $navy;
-        border-bottom: solid 3px $gold;
+        border-bottom: solid 3px #FFFFFF;
         margin: 0;
         padding: 16px;
         text-align: center;
@@ -112,7 +112,7 @@
         > h1 {
             font-size: 2vw;
             padding: 8px;
-            border-top: solid 3px $gold;
+            border-top: solid 3px #FFFFFF;
         }
 
         > .standings {

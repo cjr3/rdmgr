@@ -1,6 +1,7 @@
 import React from 'react';
 import {IconButton, IconCheck} from 'components/Elements';
 import Panel from 'components/Panel';
+import DataController from 'controllers/DataController';
 
 type DimensionRecord = {
     width:number;
@@ -46,7 +47,8 @@ export default class CaptureControlMonitor extends React.PureComponent<{
      */
     protected Dimensions:Array<DimensionRecord> = [
         {width:1280,height:720},
-        {width:1024,height:576}
+        {width:1024,height:576},
+        //{width:1920,height:1080}
     ];
 
     /**
@@ -118,10 +120,10 @@ export default class CaptureControlMonitor extends React.PureComponent<{
     protected onChangeSize(ev:React.FormEvent<HTMLSelectElement>) {
         var value = parseInt( ev.currentTarget.value );
         this.setState(() => {
-            var changes:any = {Width:value};
+            var changes:any = {Height:value};
             this.Dimensions.forEach((dim) => {
-                if(dim.width === value)
-                    changes.Height = dim.height;
+                if(dim.height === value)
+                    changes.Width = dim.width;
             });
             return changes;
         });
@@ -136,6 +138,7 @@ export default class CaptureControlMonitor extends React.PureComponent<{
                 let screen = window.require('electron').remote.screen;
                 let monitors = screen.getAllDisplays();
                 let changes:any = {Monitors:monitors};
+                let dstate:any = DataController.GetState();
                 if(monitors.length > 1) {
                     let primary = screen.getPrimaryDisplay();
                     let index = 0;
@@ -180,7 +183,7 @@ export default class CaptureControlMonitor extends React.PureComponent<{
         i = 0;
         this.Dimensions.forEach((dim) => {
             sizes.push(
-                <option value={dim.width} key={`dim-${i}`}>{`${dim.width}x${dim.height}`}</option>
+                <option value={dim.height} key={`dim-${i}`}>{`${dim.width}x${dim.height}`}</option>
             );
             i++;
         });
@@ -210,7 +213,7 @@ export default class CaptureControlMonitor extends React.PureComponent<{
                     </div>
                     <div className="form-section">
                         <p>Dimensions</p>
-                        <select value={this.state.Width} onChange={this.onChangeSize}>{sizes}</select>
+                        <select value={this.state.Height} onChange={this.onChangeSize}>{sizes}</select>
                     </div>
                 </div>
             </Panel>

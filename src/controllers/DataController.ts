@@ -303,22 +303,23 @@ DataController.Load = async () => {
             RosterController.Load(),
             SponsorController.Load(),
             SlideshowController.Load(),
-            UIController.Load()
+            UIController.Load(),
+
+            SlideshowCaptureController.Load(),
+            SponsorCaptureController.Load(),
+            RosterCaptureController.Load(),
+            ScorekeeperCaptureController.Load(),
+            PenaltyCaptureController.Load(),
+            AnnouncerCaptureController.Load(),
+            AnthemCaptureController.Load(),
+            JamClockCaptureController.Load(),
+            JamCounterCaptureController.Load(),
+            ScorebannerCaptureController.Load(),
+            ScoreboardCaptureController.Load(),
+            ScoresCaptureController.Load(),
+            ScheduleCaptureController.Load(),
+            StandingsCaptureController.Load()
         ]).then((res) => {
-            SlideshowCaptureController.Load();
-            SponsorCaptureController.Load();
-            RosterCaptureController.Load();
-            ScorekeeperCaptureController.Load();
-            PenaltyCaptureController.Load();
-            AnnouncerCaptureController.Load();
-            AnthemCaptureController.Load();
-            JamClockCaptureController.Load();
-            JamCounterCaptureController.Load();
-            ScorebannerCaptureController.Load();
-            ScoreboardCaptureController.Load();
-            ScoresCaptureController.Load();
-            ScheduleCaptureController.Load();
-            StandingsCaptureController.Load();
             APIMatchesController.Load();
             APISeasonsController.Load();
             APIBoutsController.Load();

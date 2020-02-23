@@ -14,7 +14,7 @@ import CaptureRaffle from './CaptureRaffle'
 import CaptureScorekeeper from './CaptureScorekeeper'
 import CaptureSponsor from './CaptureSponsor';
 import CaptureAnnouncers from './CaptureAnnouncers';
-import CaptureRoster from './CaptureRoster';
+import CaptureRoster, { CaptureRosterBanner } from './CaptureRoster';
 import CaptureStandings from './CaptureStandings';
 import CaptureSchedule from './CaptureSchedule';
 import CaptureScores from './CaptureScores';
@@ -109,7 +109,7 @@ export default class CaptureForm extends React.Component<any, {
                 <CaptureRaffle/>
                 <CaptureScorekeeper/>
                 <CaptureAnnouncers/>
-                <CaptureRoster/>
+                <CaptureRosterBanner/>
                 <CaptureStandings/>
                 <CaptureSchedule/>
                 <CaptureScores/>

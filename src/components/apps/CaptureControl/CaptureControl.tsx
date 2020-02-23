@@ -128,7 +128,6 @@ class Buttons extends React.PureComponent<{
                 <Button onClick={() => {this.props.onClick('teams')}} active={(this.props.panel === 'teams')}>Teams</Button>
                 <Button onClick={() => {this.props.onClick('roster')}} active={(this.props.panel === 'roster')}>Intros</Button>
                 <Button onClick={() => {this.props.onClick('monitor')}} active={(this.props.panel === 'monitor')}>Monitor</Button>
-                <Button onClick={() => {this.props.onClick('camera')}} active={(this.props.panel === 'camera')}>Camera</Button>
             </React.Fragment>
         )
     }

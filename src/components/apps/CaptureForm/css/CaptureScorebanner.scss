@@ -7,14 +7,17 @@
     left: 0;
     right: 0;
     width: 100%;
-    height: 65px;
+    height: 70px;
     overflow: visible;
     background-color: $black;
     font-family: $base-font-display;
-    opacity: 0;
     z-index: 7;
     transition: transform 350ms linear, opacity 350ms linear;
     transform: translateY(-150px);
+
+    &.shown {
+        transform: translateY(0px);
+    }
 
     .coverblock,
     .jamclock, 
@@ -85,36 +88,34 @@
     }
 
     .board-status {
-        left: 500px;
+        left: 710px;
         width: 185px;
-        height: 35px;
-        bottom: -35px;
+        height: 30px;
+        bottom: 0px;
         text-align: center;
         line-height: 30px;
-        border-radius: 0px 0px 16px 16px;
         transition: transform 150ms linear;
         transform-origin: 0% 0%;
-        transform: translateY(-35px);
-        z-index: 1;
+        transform: scaleX(0);
+        z-index: 3;
 
         &.shown {
-            transform: rotateY(0deg);
-            transform: translateY(0px);
+            transform: scaleX(1);
         }
 
         &.timeout,
         &.review
         {
-            background-image: linear-gradient($blood, rgba(0,0,0,0));
+            background-color: $blood;
         }
         &.injury {
-            background-image: linear-gradient($blue, rgba(0,0,0,0));
+            background-color: $blue;
         }
         &.upheld {
-            background-image: linear-gradient(#666666, rgba(0,0,0,0));
+            background-color: #666666;
         }
         &.overturned {
-            background-image: linear-gradient($green, rgba(0,0,0,0));
+            background-color: $green;
         }
     }
 
@@ -135,14 +136,13 @@
             background-repeat: no-repeat;
             background-position: center center;
             z-index: 2;
-        }
-
-        .team-top .score {
-            position: absolute;
-            margin: auto;
-            top: 0;
-            right: 0;
-            font-size: 58px;
+            .score {
+                position: absolute;
+                margin: auto;
+                top: 0;
+                right: 0;
+                font-size: 58px;
+            }
         }
 
         .jampoints {
@@ -150,58 +150,53 @@
             margin: auto;
             overflow: hidden;
             right: 0;
-            bottom: -40px;
+            bottom: 8px;
             height: 40px;
-            width: 45px;
+            width: 52px;
             padding: 3px;
             text-align: center;
             font-size: 32px;
             padding-left: 6px;
             line-height: 28px;
-            border-radius: 0px 0px 8px 8px;
-            transform-origin: 50% 0%;
-            transform: translateY(-40px);
+            border-radius: 8px 0px 0px 8px;
+            transform-origin: 100% 0%;
+            transform: scaleX(0);
             transition: transform 150ms linear;
-            z-index: 1;
-        }
-
-        .jampoints.shown {
-            transform: translateY(0px);
-            box-shadow: 0px 2px 2px rgba(0,0,0,0.5);
+            z-index: 3;
+            &.shown {
+                transform: scaleX(1);
+            }
         }
 
         .status {
             position: absolute;
             margin: auto;
-            bottom: -30px;
+            bottom: 0px;
             left: 0;
-            width: calc(100% - 45px);
-            height: 30px;
+            width: 100%;
+            height: 8px;
             text-align: center;
             text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
-            border-radius: 0px 0px 8px 8px;
             line-height: 28px;
             transform-origin: 0% 0%;
-            transform: rotateX(90deg);
+            transform: scaleX(0);
             transition: transform 150ms linear;
-        }
+            overflow: hidden;
+            z-index: 2;
+            &.shown {
+                transform: scaleX(1);
+            }
+            &.leadjammer {
+                background-color: #00CC00;
+            }
 
-        .status.shown {
-            transform: rotateY(0deg);
-        }
+            &.powerjam {
+                background-color: #FFCC00;
+            }
 
-        .status.leadjammer {
-            background-image: linear-gradient($green, rgba(0,0,0,0));
-        }
-
-        .status.powerjam {
-            background-image: linear-gradient($powerjam, rgba(0,0,0,0));
-        }
-
-        .status.timeout,
-        .status.challenge
-        {
-            background-image: linear-gradient($blood, rgba(0,0,0,0));
+            &.timeout, &.challenge {
+                background-color: #CC0000;
+            }
         }
 
         .timeouts {
@@ -211,24 +206,23 @@
             bottom: 0;
             width: 100%;
             height: 8px;
+            > div {
+                width: 16px;
+                height: 6px;
+                border-radius: 3px;
+                background-color: #FFFFFF;
+                border: solid 1px $black;
+                float: left;
+            }
         }
 
-        .timeouts > div {
-            width: 16px;
-            height: 6px;
-            border-radius: 3px;
-            background-color: #FFFFFF;
-            border: solid 1px $black;
-            float: left;
+        &.team-A {
+            left: 15px;
         }
-    }
 
-    .team.team-A {
-        left: 15px;
-    }
-
-    .team.team-B {
-        left: 255px;
+        &.team-B {
+            left: 255px;
+        }
     }
 
     &.longjam {
@@ -243,114 +237,137 @@
         .jam-counter {
             left: 955px;
         }
-    }
-}
-
-.capture-SB-banner.shown
-{
-    opacity: 1;
-    transform: translateY(0px);
-}
-
-.capture-SB-banner.noclocks {
-    .jamclock, .gameclock {
-        display: none;
+        .board-status {
+            left: 760px;
+        }
     }
 
-    .phase {
-        left: 600px;
+    &.noclocks {
+        .jamclock, .gameclock {
+            display: none;
+        }
+    
+        .phase {
+            left: 600px;
+        }
+    
+        .jam-counter {
+            left: 520px;
+            width: 70px;
+            background-color: transparent;
+        }
+        .jam-counter:before {
+            content: '#'
+        }
     }
 
-    .jam-counter {
-        left: 520px;
-        width: 70px;
-        background-color: transparent;
-    }
-    .jam-counter:before {
-        content: '#'
-    }
-}
+    @media screen and (min-width:1920px) {
+        height: 125px;
 
-.capture-SB-banner.pos-bottom ,
-.capture-form.sponsor-board > .capture-SB-banner
-{
-    top: initial;
-    bottom: 0;
-    transform: translateY(80px);
-    background-image: none !important;
-
-    .board-status {
-        bottom: initial;
-        top: -60px;
-        left: 0;
-        right: 0;
-        width: 45%;
-        height: 60px;
-        font-size: 48px;
-        line-height: 48px;
-        border-radius: 0px;
-        width: 100%;
-    }
-
-    .board-status.timeout,
-    .board-status.review
-    {
-        background-image: none;
-        background-color: $blood;
-    }
-
-    .board-status.injury {
-        background-image: none;
-        background-color: $blue;
-    }
-
-    .board-status.upheld {
-        background-color: #666666;
-        background-image: none;
-    }
-
-    .board-status.overturned {
-        background-color: $green;
-        background-image: none;
-    }
-
-    .team {
-        .jampoints {
-            bottom: initial;
-            top: 0px;
-            border-radius: 8px 8px 0px 0px;
-            transform: translateY(0px);
+        * {
+            outline: dotted 1px #009900;
         }
 
-        .jampoints.shown {
-            transform: translateY(-40px);
-            box-shadow: 0px -2px 2px rgba(0,0,0,0.5);
-        }
-        
-        .status {
-            bottom: initial;
-            top: -30px;
-            transform-origin: 50% 100%;
-            border-radius: 8px 8px 0px 0px;
-            line-height: 35px;
+        .team {
+            height: 120px;
+            width: 350px;
+            .team-top {
+                height: 125px;
+                .score {
+                    font-size: 4vw;
+                    top: 16px;
+                }
+            }
+
+            &.team-B {
+                left: 375px;
+            }
+
+            .jampoints {
+                bottom: 40px;
+                height: 55px;
+                width: 75px;
+                font-size: 2.5vw;
+                line-height: 2.5vw;
+            }
+
+            .timeouts {
+                height: 10px;
+                bottom: 4px;
+                > div {
+                    height: 10px;
+                    width: 32px;
+                }
+            }
         }
 
-        .status.shown {
-            transform: rotateY(0deg);
+        .jam-counter, .phase, .jamclock, .gameclock {
+            left: initial;
+            right: 0;
+            height: 75px;
+            top: 24px;
+            font-size: 3vw;
+            text-align: center;
         }
 
-        .status.leadjammer {
-            background-image: linear-gradient(rgba(0,0,0,0), $green);
+        .jam-counter {
+            right: 370px;
+            width: 100px;
         }
 
-        .status.powerjam {
-            background-image: linear-gradient(rgba(0,0,0,0), $powerjam);
+        .phase {
+            right: 470px;
+            width: 400px;
         }
 
-        .status.timeout,
-        .status.challenge
-        {
-            background-image: linear-gradient(rgba(0,0,0,0), $blood);
+        .jamclock {
+            right: 870px;
+            width: 100px;
+            padding-right: 8px;
+        }
+
+        .gameclock {
+            right: 970px;
+            width: 220px;
+        }
+
+        .board-status {
+            left: initial;
+            right: 400px;
+            width: 400px;
+            bottom: 0;
+        }
+
+        &.longjam {
+            .gameclock, .jamclock, .jam-counter, .phase {
+                left: initial;
+                right: 0;
+                height: 75px;
+                top: 24px;
+                font-size: 3vw;
+                text-align: center;
+            }
+
+            .jam-counter {
+                right: 300px;
+                width: 100px;
+            }
+    
+            .phase {
+                right: 400px;
+                width: 400px;
+            }
+    
+            .jamclock {
+                right: 800px;
+                width: 160px;
+                padding-right: 8px;
+            }
+    
+            .gameclock {
+                right: 960px;
+                width: 230px;
+            }
         }
     }
 }

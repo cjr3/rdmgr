@@ -70,22 +70,41 @@
 
     &.popup {
         display: none;
-        right: 32px;
-        bottom: 32px;
-        width: 200px;
+        right: 0;
+        top: 0;
+        width: 300px;
         transition: transform 150ms ease-in-out;
         transform: translateX(300px);
 
         .skaters {
+            height: 50px;
+            display: flex;
+            flex-flow: row wrap;
+            justify-content: flex-start;
+            align-content: flex-start;
+            overflow: hidden;
             .skater {
+                border: solid 1px #000;
+                flex: 1 1 35px;
+                line-height: 12px;
+                padding: 0px;
+                display: block;
+                text-align: center;
                 .thumbnail {
                     display: none;
+                }
+                .num {
+                    padding: 6px;
+                }
+                .penalties {
+                    background-color: #333;
+                    padding: 6px;
                 }
             }
         }
         > h1 {
-            font-size: 2vw;
-            padding: 8px;
+            font-size: 1.2vw;
+            border-bottom: none;
         }
         &.shown {
             transform: translateX(0px);
@@ -95,6 +114,7 @@
 
 .capture-form.stream {
     .penalty-tracker {
+        z-index: 7;
         &.screen {
             display: none;
         }

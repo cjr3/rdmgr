@@ -5,6 +5,8 @@ class ElectronStartup {
     constructor() {
         this.Width = 1280;
         this.Height = 720;
+        this.CaptureWidth = this.Width;
+        this.CaptureHeight = this.Height;
         this.BackgroundColor = "#000000";
         this.createWindows = this.createWindows.bind(this);
         this.CaptureWindow = null;
@@ -15,6 +17,25 @@ class ElectronStartup {
         
         this.App = require('electron').app;
         this.BW = require('electron').BrowserWindow;
+
+        try {
+            let fs = require('fs');
+        
+            let path = 'c:/ProgramData/RDMGR';
+            if(process.env.NODE_ENV && (process.env.NODE_ENV == 'development' || process.env.NODE_ENV == 'test')) {
+                path = 'c:/rdmgrdata';
+            }
+    
+            if(fs.accessSync(path + "/files/rdmgr.config.json", fs.constants.R_OK)) {
+                var settings = JSON.parse(fs.readFileSync(path + "/files/rdmgr.config.json"));
+                if(settings && settings.UR && settings.UR.Banner) {
+                    this.CaptureHeight = 70;
+                }
+            }
+        } catch(er) {
+
+        }
+
 
         //start
         this.App.on('ready', () => {
@@ -66,8 +87,7 @@ class ElectronStartup {
      */
     createWindows() {
         this.createControlWindow();
-        //if(this.ShowCaptureWindow)
-            this.createCaptureWindow();
+        this.createCaptureWindow();
     }
 
     /**
@@ -87,8 +107,7 @@ class ElectronStartup {
             resizable:true,
             webPreferences:{
                 webSecurity:false,
-                nodeIntegration:true,
-                nodeIntegrationInWorker:true
+                nodeIntegration:true
             }
         });
 
@@ -123,8 +142,8 @@ class ElectronStartup {
         const path = require('path');
         const url = require('url');
         this.CaptureWindow = new this.BW({
-            width:this.Width,
-            height:this.Height,
+            width:this.CaptureWidth,
+            height:this.CaptureHeight,
             backgroundColor: this.BackgroundColor,
             autoHideMenuBar:true,
             frame:false,
@@ -132,8 +151,7 @@ class ElectronStartup {
             title:"RDMGR : Capture Window",
             webPreferences:{
                 webSecurity:false,
-                nodeIntegration:true,
-                nodeIntegrationInWorker:true
+                nodeIntegration:true
             }
         });
         this.CaptureWindow.on('closed', () => {

@@ -119,47 +119,69 @@
         display: none;
         position: absolute;
         margin: auto;
-        top: 70px;
-        right: 32px;
+        top: 0;
+        left: 0;
     
         .jammers {
-            display: flex;
-            flex-flow: row wrap;
             transform: rotateX(90deg) scaleX(1.5);
             transform-origin: 50% 50%;
             transition: transform 150ms ease-in-out;
+            //outline: dotted 1px #0ff;
+            position: absolute;
+            width: 500px;
+            height: 49px;
+            top: 7px;
+            left: 15px;
     
             > .skater {
-                position: relative;
-                flex: 1;
-                width: 80px;
-                height: 80px;
+                position: absolute;
+                margin: auto;
+                width: 160px;
+                height: 49px;
                 overflow: visible;
                 transform-origin: 50% 50%;
-                transform: translateX(200px);
+                transform: translateY(-100px);
                 transition: all 150ms ease-in-out;
                 opacity: 0;
+                display: flex;
+                flex-flow: row wrap;
+                //background-color: rgba(0,0,0,0.5);
+                background-image: linear-gradient(90deg, #000 25%, rgba(0,0,0,0) 75%);
+
+                //outline: dotted 1px #0ff;
                 &.shown {
-                    transform: translateX(0px);
+                    transform: translateY(0px);
                     opacity: 1;
                 }
     
                 > img {
                     height: 100%;
+                    flex: 0;
                 }
     
                 > label {
-                    position: absolute;
-                    margin: auto;
-                    bottom: 0;
-                    left: 0;
-                    right: 0;
-                    bottom: -24px;
+                    flex: 1;
                     padding: 2px 3px;
                     text-align: center;
                     font-family: $base-font-display;
-                    font-size: 22px;
+                    font-size: 2vw;
+                    line-height: 60px;
+                    height: 100%;
                     text-shadow: 2px 2px 2px rgba(0,0,0,0.5);
+                    align-self: flex-end;
+                    text-align: left;
+                    padding-left: 8px;
+                    background-image: url('~images/icons/star.png');
+                    background-size: 14px;
+                    background-repeat: no-repeat;
+                    background-position: 6px 4px;
+                }
+
+                &:first-child {
+                    left: 0px;
+                }
+                &:nth-child(2) {
+                    left: 240px;
                 }
             }
         }
@@ -177,6 +199,7 @@
 
 .capture-form.stream {
     .capture-scorekeeper {
+        z-index: 7;
         .screen {
             display: none;
         }

@@ -16,6 +16,7 @@ import SlideshowsController from 'controllers/SlideshowsController';
 import RecordList from './RecordList';
 import { FileExtension, Basename, LoadFolderFiles } from 'controllers/functions.io';
 import { MoveElement } from 'controllers/functions';
+import { compareRecordName } from 'tools/functions';
 
 interface props extends PRecordEditor {
     record:SlideshowRecord|null
@@ -263,7 +264,7 @@ export class SlideshowRecordList extends React.PureComponent<{
     Records:Array<SlideshowRecord>;
 }> {
     readonly state = {
-        Records:SlideshowsController.Get()
+        Records:SlideshowsController.Get().sort(compareRecordName)
     }
 
     protected remoteData?:Unsubscribe;
@@ -274,7 +275,7 @@ export class SlideshowRecordList extends React.PureComponent<{
     }
 
     protected updateData() {
-        this.setState({Records:SlideshowsController.Get()});
+        this.setState({Records:SlideshowsController.Get().sort(compareRecordName)});
     }
 
     componentDidMount() {

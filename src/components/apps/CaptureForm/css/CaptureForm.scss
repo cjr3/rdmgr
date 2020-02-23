@@ -28,6 +28,11 @@ html, body {
         -webkit-user-select: none;
         -webkit-app-region: drag;
     }
+
+    &.stream {
+        background-image: none !important;
+        background-color: #FFFF7F;
+    }
 }
 
 @media screen and (max-height: 576px) {

@@ -77,6 +77,7 @@ export default class AnnouncerPanel extends React.PureComponent<{
      */
     protected onClickSubmit() {
         AnnouncerCaptureController.SetAnnouncers(this.state.Announcer1, this.state.Announcer2);
+        this.forceUpdate();
     }
 
     /**

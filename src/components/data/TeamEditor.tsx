@@ -4,6 +4,7 @@ import vars, { TeamRecord } from 'tools/vars';
 import {Unsubscribe} from 'redux';
 import TeamsController from 'controllers/TeamsController';
 import RecordList from './RecordList';
+import { compareRecordName } from 'tools/functions';
 
 interface props extends PRecordEditor {
     record:TeamRecord|null
@@ -37,7 +38,7 @@ export class TeamRecordList extends React.PureComponent<{
     Records:Array<TeamRecord>;
 }> {
     readonly state = {
-        Records:TeamsController.Get()
+        Records:TeamsController.Get().sort(compareRecordName)
     }
 
     protected remoteData?:Unsubscribe;
@@ -48,7 +49,7 @@ export class TeamRecordList extends React.PureComponent<{
     }
 
     protected updateData() {
-        this.setState({Records:TeamsController.Get()});
+        this.setState({Records:TeamsController.Get().sort(compareRecordName)});
     }
 
     componentDidMount() {

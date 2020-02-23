@@ -484,9 +484,14 @@ class TeamJamPoints extends React.PureComponent<{
     render() {
         let className:string = cnames('jampoints', {shown:(this.state.Shown)});
         let style:CSSProperties = {backgroundColor:this.state.Color};
+        let amount:string = '0';
+        if(this.state.Amount < 0)
+            amount = this.state.Amount.toString();
+        else if(this.state.Amount > 0)
+            amount = "+" + this.state.Amount;
         return (
             <div className={className} style={style}>
-                {this.state.Amount}
+                {amount}
             </div>
         )
     }
@@ -558,11 +563,11 @@ class TeamStatus extends React.PureComponent<{
 
         return (
             <React.Fragment>
-                <div className={classNameTimeout}>{vars.Team.StatusText[vars.Team.Status.Timeout]}</div>
-                <div className={classNameChallenge}>{vars.Team.StatusText[vars.Team.Status.Challenge]}</div>
-                <div className={classNameInjury}>{vars.Team.StatusText[vars.Team.Status.Injury]}</div>
-                <div className={classNameLead}>{vars.Team.StatusText[vars.Team.Status.LeadJammer]}</div>
-                <div className={classNamePowerJam}>{vars.Team.StatusText[vars.Team.Status.PowerJam]}</div>
+                <div className={classNameTimeout}></div>
+                <div className={classNameChallenge}></div>
+                <div className={classNameInjury}></div>
+                <div className={classNameLead}></div>
+                <div className={classNamePowerJam}></div>
             </React.Fragment>
         )
     }

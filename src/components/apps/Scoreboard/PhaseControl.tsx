@@ -96,6 +96,16 @@ export default class PhaseControl extends React.PureComponent<any, {
         });
     }
 
+    public setPhase(phase) {
+        if(phase && phase.Duration) {
+            this.setState({
+                PhaseHour:phase.Duration[0],
+                PhaseMinute:phase.Duration[1],
+                PhaseSecond:phase.Duration[2]
+            });
+        }
+    }
+
     /**
      * Start listeners
      */
@@ -117,6 +127,12 @@ export default class PhaseControl extends React.PureComponent<any, {
     render() {
         return (
             <div className="phase-control">
+                <Icon
+                    src={IconFastForward}
+                    title="Next Phase"
+                    onClick={ScoreboardController.IncreasePhase}
+                    onContextMenu={ScoreboardController.DecreasePhase}
+                />
                 <input type="number" onChange={this.onChangeHour} value={this.state.PhaseHour} max={23} min={0}/>
                 {":"}
                 <input type="number" onChange={this.onChangeMinute} value={this.state.PhaseMinute} max={59} min={0}/>

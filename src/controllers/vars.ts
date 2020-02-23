@@ -91,8 +91,7 @@ export enum RecordControllerActions {
 };
 
 //file constants
-let FOLDER_MAIN = '';
-FOLDER_MAIN = 'c:/ProgramData/RDMGR';
+let FOLDER_MAIN = 'c:/ProgramData/RDMGR';
 if(process.env.NODE_ENV && (process.env.NODE_ENV == 'development' || process.env.NODE_ENV == 'test')) {
     FOLDER_MAIN = 'c:/rdmgrdata';
 }

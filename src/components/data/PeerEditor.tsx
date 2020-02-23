@@ -26,6 +26,7 @@ import PeersController from 'controllers/PeersController';
 import { Unsubscribe } from 'redux';
 import RecordList from './RecordList';
 import { Compare } from 'controllers/functions';
+import { compareRecordName } from 'tools/functions';
 
 type PeerControlRecord = {
     name:string;
@@ -642,7 +643,7 @@ export class PeerRecordList extends React.PureComponent<{
     Records:Array<PeerRecord>;
 }> {
     readonly state = {
-        Records:PeersController.Get()
+        Records:PeersController.Get().sort(compareRecordName)
     }
 
     protected remoteData?:Unsubscribe;
@@ -653,7 +654,7 @@ export class PeerRecordList extends React.PureComponent<{
     }
 
     protected updateData() {
-        this.setState({Records:PeersController.Get()});
+        this.setState({Records:PeersController.Get().sort(compareRecordName)});
     }
 
     componentDidMount() {

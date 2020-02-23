@@ -148,9 +148,8 @@
         z-index: 3;
         bottom: 48px;
         margin: auto;
-        transition: opacity 500ms ease-in-out 500ms;
-        opacity: 0;
-        transform: scale(0.65);
+        transition: transform 500ms ease-in-out 500ms;
+        transform: scale(0);
         perspective: 110px;
         .carousel {
             transition-duration: 500ms;
@@ -226,6 +225,7 @@
         .carousel-shadow,
         .carousel-scene {
             opacity: 1;
+            transform: scale(0.65);
         }
     }
 }
@@ -277,5 +277,82 @@
     .capture-roster.shown
     {
         opacity: 0 !important;
+    }
+}
+
+.capture-roster-banner {
+    position: absolute;
+    margin: auto;
+    right: 0;
+    top: 0;
+    width: 780px;
+    height: 70px;
+    overflow: hidden;
+    z-index: 7;
+    transition: transform 500ms, background-color 500ms;
+    transform: translateX(900px);
+    background-color: #000;
+
+    > .logo {
+        position: absolute;
+        margin: auto;
+        right: 0;
+        top: 0;
+        max-height: 70px;
+        background-color: #000;
+        transform: rotateY(90deg);
+        transition: transform 250ms ease-in-out 250ms;
+        &.shown {
+            transform: rotateY(0deg);
+        }
+    }
+
+    > .spacer {
+        position: absolute;
+        background-color: #000;
+        width: 70px;
+        height: 70px;
+        z-index: 1;
+    }
+
+    > .item {
+        position: absolute;
+        margin: auto;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-flow: row wrap;
+        z-index: 2;
+        > img {
+            flex: 0 0 70px;
+            max-height: 70px;
+            transition: transform 500ms;
+            transform: rotateY(90deg);
+        }
+
+        > span {
+            flex: 1;
+            color: #fff;
+            font-size: 2.5vw;
+            line-height: 70px;
+            padding-left: 16px;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 500ms ease-in-out;
+        }
+
+        &.shown {
+            > img {
+                transform: rotateY(0deg);
+            }
+            transform: rotateX(0deg);
+            > span {
+                opacity: 1;
+            }
+        }
+    }
+
+    &.shown {
+        transform: translateX(0px);
     }
 }

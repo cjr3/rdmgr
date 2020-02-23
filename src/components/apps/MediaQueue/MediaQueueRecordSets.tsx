@@ -8,6 +8,7 @@ import SlideshowController from 'controllers/SlideshowController';
 import SponsorController from 'controllers/SponsorController';
 import SponsorCaptureController from 'controllers/capture/Sponsor';
 import { Icon, IconHidden, IconShown, IconRight } from 'components/Elements';
+import { compareRecordName } from 'tools/functions';
 
 export default class MediaQueueRecordSets extends React.PureComponent<any, {
     SponsorShowID:number;
@@ -27,14 +28,14 @@ export default class MediaQueueRecordSets extends React.PureComponent<any, {
         return (
             <div className="recordsets">
             <SponsorSelector/>
-                <RecordSelector
-                    types={this.RecordTypes}
-                    recordType={this.RecordTypes[1]}
-                    highlight={false}
-                    onSelect={(record) => {
-                        MediaQueueController.Add(record);
-                    }}
-                />
+            <RecordSelector
+                types={this.RecordTypes}
+                recordType={this.RecordTypes[1]}
+                highlight={false}
+                onSelect={(record) => {
+                    MediaQueueController.Add(record);
+                }}
+            />
             </div>
         )
     }
@@ -46,7 +47,7 @@ class SponsorSelector extends React.PureComponent<any, {
     Shown:boolean;
 }> {
     readonly state = {
-        Records:SlideshowsController.Get(),
+        Records:SlideshowsController.Get().sort(compareRecordName),
         Shown:SponsorCaptureController.GetState().Shown,
         ID:0
     }
@@ -64,7 +65,7 @@ class SponsorSelector extends React.PureComponent<any, {
     }
 
     protected updateSlideshows() {
-        this.setState({Records:SlideshowsController.Get()});
+        this.setState({Records:SlideshowsController.Get().sort(compareRecordName)});
     }
 
     protected updateCapture() {
@@ -137,7 +138,7 @@ class SponsorSelector extends React.PureComponent<any, {
                 <Icon
                     src={viewIcon}
                     active={this.state.Shown}
-                    title={"Show/Hide Sponsors"}
+                    title={"Show/Hide"}
                     onClick={SponsorCaptureController.Toggle}
                     />
                 <Icon

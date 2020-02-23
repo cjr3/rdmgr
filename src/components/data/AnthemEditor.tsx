@@ -4,6 +4,7 @@ import vars, { AnthemRecord } from 'tools/vars';
 import AnthemsController from 'controllers/AnthemsController';
 import { Unsubscribe } from 'redux';
 import RecordList from './RecordList';
+import { compareRecordName } from 'tools/functions';
 
 interface props extends PRecordEditor {
     record:AnthemRecord|null;
@@ -117,7 +118,7 @@ export class AnthemRecordList extends React.PureComponent<{
     Records:Array<AnthemRecord>;
 }> {
     readonly state = {
-        Records:AnthemsController.Get()
+        Records:AnthemsController.Get().sort(compareRecordName)
     }
 
     protected remoteData?:Unsubscribe;
@@ -128,7 +129,7 @@ export class AnthemRecordList extends React.PureComponent<{
     }
 
     protected updateData() {
-        this.setState({Records:AnthemsController.Get()});
+        this.setState({Records:AnthemsController.Get().sort(compareRecordName)});
     }
 
     componentDidMount() {

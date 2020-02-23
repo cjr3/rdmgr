@@ -4,6 +4,7 @@ import vars, { PenaltyRecord } from 'tools/vars';
 import PenaltiesController from 'controllers/PenaltiesController';
 import { Unsubscribe } from 'redux';
 import RecordList from './RecordList';
+import { compareRecordName } from 'tools/functions';
 
 interface props extends PRecordEditor {
     record:PenaltyRecord|null
@@ -111,7 +112,7 @@ export class PenaltyRecordList extends React.PureComponent<{
     Records:Array<PenaltyRecord>;
 }> {
     readonly state = {
-        Records:PenaltiesController.Get()
+        Records:PenaltiesController.Get().sort(compareRecordName)
     }
 
     protected remoteData?:Unsubscribe;
@@ -122,7 +123,7 @@ export class PenaltyRecordList extends React.PureComponent<{
     }
 
     protected updateData() {
-        this.setState({Records:PenaltiesController.Get()});
+        this.setState({Records:PenaltiesController.Get().sort(compareRecordName)});
     }
 
     componentDidMount() {

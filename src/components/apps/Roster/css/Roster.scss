@@ -69,6 +69,17 @@
                 }
             }
         }
+
+        .team-roles {
+            display: flex;
+            flex-flow: row wrap;
+            > select {
+                flex: 0;
+                &:nth-child(2) {
+                    flex: 1;
+                }
+            }
+        }
     }
 
     .team.team-B {

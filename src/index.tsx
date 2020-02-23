@@ -39,17 +39,18 @@ DataController.Init().then(() => {
                     SB:false,
                     ROS:false
                 };
+
                 window.ReactEntryPoint = ReactDOM.render(<ViewManager />, document.getElementById('root'));
                 serviceWorker.unregister();
             }).catch((er) => {
-                
+                //alert(er)
             })
         }).catch((er) => {
-            
+            //alert(er)
         });
     }).catch((er) => {
-        
+        //alert(er)
     })
-}).catch(() => {
-    //error !? ??!  ?!! !??
+}).catch((er) => {
+    //alert(er);
 });

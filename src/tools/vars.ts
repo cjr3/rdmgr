@@ -251,6 +251,10 @@ export interface SkaterRecord extends Record {
      * Deck the skater is on (Track or Deck)
      */
     Deck?:string;
+    /**
+     * Current role on the roster
+     */
+    Role?:string;
 };
 
 export interface SkaterTeamRecord {

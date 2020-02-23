@@ -111,7 +111,7 @@ export default class PhaseSelection extends React.PureComponent<{
         }
 
         if(this.props.onSelect)
-            this.props.onSelect(index);
+            this.props.onSelect(this.state.Phases[index]);
     }
 
     /**

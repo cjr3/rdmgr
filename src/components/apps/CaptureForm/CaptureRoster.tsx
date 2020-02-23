@@ -1,7 +1,7 @@
 import React, { CSSProperties } from 'react';
 import cnames from 'classnames';
-import RosterController from 'controllers/RosterController';
-import ScoreboardController from 'controllers/ScoreboardController';
+import RosterController, { Sides, SRosterController, SRosterTeam } from 'controllers/RosterController';
+import ScoreboardController, { SScoreboardTeam } from 'controllers/ScoreboardController';
 import vars, { SkaterRecord } from 'tools/vars';
 import Carousel, { CarouselRecord } from 'components/3d/Carousel';
 import './css/CaptureRoster.scss';
@@ -393,5 +393,228 @@ export default class CaptureRoster extends React.PureComponent<any, {
         if(this.state.className === 'fullscreen')
             return this.renderFullscreen();
         return this.renderCamera();
+    }
+}
+
+export class CaptureRosterBanner extends React.PureComponent<any, {
+    LogoA:string;
+    LogoB:string;
+    SrcA:string;
+    SrcB:string;
+    NameA:string;
+    NameB:string;
+    ColorA:string;
+    ColorB:string;
+    CurrentItem:string;
+    CurrentTeam:string;
+    TeamColorA:string;
+    TeamColorB:string;
+    TeamLogoA:string;
+    TeamLogoB:string;
+    Index:number;
+    Shown:boolean;
+    className:string;
+}> {
+    
+    readonly state = {
+        LogoA:ScoreboardController.GetState().TeamA.Thumbnail,
+        LogoB:ScoreboardController.GetState().TeamA.Thumbnail,
+        SrcA:'',
+        SrcB:'',
+        NameA:'',
+        NameB:'',
+        ColorA:'#000000',
+        ColorB:'#000000',
+        CurrentItem:'B',
+        CurrentTeam:RosterController.GetState().CurrenTeam,
+        TeamColorA:ScoreboardController.GetState().TeamA.Color,
+        TeamColorB:ScoreboardController.GetState().TeamB.Color,
+        TeamLogoA:ScoreboardController.GetState().TeamA.Thumbnail,
+        TeamLogoB:ScoreboardController.GetState().TeamB.Thumbnail,
+        Index:0,
+        Shown:RosterCaptureController.GetState().Shown,
+        className:RosterCaptureController.GetState().className
+    }
+    
+    protected remoteRoster?:Unsubscribe;
+    protected remoteCapture?:Unsubscribe;
+    protected remoteScoreboard?:Unsubscribe;
+
+    constructor(props) {
+        super(props);
+        this.updateRoster = this.updateRoster.bind(this);
+        this.updateCapture = this.updateCapture.bind(this);
+        this.updateScoreboard = this.updateScoreboard.bind(this);
+    }
+
+    protected updateScoreboard() {
+        this.setState({
+            TeamColorA:ScoreboardController.GetState().TeamA.Color,
+            TeamColorB:ScoreboardController.GetState().TeamB.Color,
+            TeamLogoA:ScoreboardController.GetState().TeamA.Thumbnail,
+            TeamLogoB:ScoreboardController.GetState().TeamB.Thumbnail,
+        });
+    }
+
+    protected updateRoster() {
+        let state:SRosterController = RosterController.GetState();
+        let team:SRosterTeam = state.TeamA;
+        let steam:SScoreboardTeam = ScoreboardController.GetState().TeamA;
+
+        if(state.CurrentTeam == 'B') {
+            steam = ScoreboardController.GetState().TeamB;
+            team = state.TeamB;
+        }
+
+        let src:string = steam.Thumbnail;
+        let name:string = steam.Name;
+        let logo:string = steam.Thumbnail;
+        let num:string = '';
+        let color:string = steam.Color;
+        let coach:boolean = false;
+        let penalty:boolean = false;
+        let captain:boolean = false;
+        let cocaptain:boolean = false;
+        let skater:SkaterRecord|undefined;
+        
+        if(state.SkaterIndex >= 0) {
+            skater = team.Skaters[state.SkaterIndex];
+            if(skater) {
+                name = skater.Name;
+                if(skater.Thumbnail)
+                    src = skater.Thumbnail;
+                if(skater.Number)
+                    num = skater.Number;
+                coach = (team.Roles.Coach == skater.RecordID) ? true : false;
+                penalty = (team.Roles.Penalty == skater.RecordID) ? true : false;
+                captain = (team.Roles.Captain == skater.RecordID) ? true : false;
+                cocaptain = (team.Roles.CoCaptain == skater.RecordID) ? true : false;
+            }
+        }
+
+        if(skater) {
+            if(num && !coach && !penalty) {
+                name = "#" + num + " " + name;
+            }
+
+            if(!coach && !penalty) {
+                if(captain)
+                    name = "Captain " + name;
+                else if(cocaptain)
+                    name = "Co-Captain " + name;
+            } else {
+                if(coach)
+                    name = 'Coach ' + name;
+                else if(penalty)
+                    name = 'Penalties ' + name;
+            }
+        }
+
+        if(this.state.CurrentItem == 'A')
+        {
+            this.setState({
+                LogoB:logo,
+                SrcB:src,
+                NameB:name,
+                ColorB:color,
+                CurrentItem:'B',
+                CurrentTeam:state.CurrentTeam,
+                Index:state.SkaterIndex
+            });
+        }
+        else
+        {
+            this.setState({
+                LogoA:logo,
+                SrcA:src,
+                NameA:name,
+                ColorA:color,
+                CurrentItem:'A',
+                CurrentTeam:state.CurrentTeam,
+                Index:state.SkaterIndex
+            });
+        }
+    }
+
+    protected updateCapture() {
+        this.setState({
+            Shown:RosterCaptureController.GetState().Shown,
+            className:RosterCaptureController.GetState().className
+        });
+    }
+
+    componentDidMount() {
+        this.remoteCapture = RosterCaptureController.Subscribe(this.updateCapture);
+        this.remoteRoster = RosterController.Subscribe(this.updateRoster);
+        this.updateScoreboard = ScoreboardController.Subscribe(this.updateScoreboard);
+        this.forceUpdate();
+    }
+
+    componentWillUnmount() {
+        if(this.remoteCapture)
+            this.remoteCapture();
+        if(this.remoteRoster)
+            this.remoteRoster();
+        if(this.remoteScoreboard)
+            this.updateScoreboard();
+    }
+    
+    render() {
+        let className:string = cnames('capture-roster-banner', this.state.className, {
+            shown:this.state.Shown
+        });
+
+        let classA:string = cnames('item A', {
+            shown:(this.state.Shown && this.state.CurrentItem == 'A')
+        });
+
+        let classB:string = cnames('item B', {
+            shown:(this.state.Shown && this.state.CurrentItem == 'B')
+        });
+        
+        let srcA:string = '';
+        let nameA:string = '';
+        let colorA:string = '#000000';
+
+        let srcB:string = '';
+        let nameB:string = '';
+        let colorB:string = '#000000';
+
+        if(this.state.SrcA)
+            srcA = AddMediaPath(this.state.SrcA);
+        if(this.state.NameA)
+            nameA = this.state.NameA;
+        if(this.state.ColorA)
+            colorA = this.state.ColorA;
+
+        if(this.state.SrcB)
+            srcB = AddMediaPath(this.state.SrcB);
+        if(this.state.NameB)
+            nameB = this.state.NameB;
+        if(this.state.ColorB)
+            colorB = this.state.ColorB;
+
+        
+        let color:string = this.state.TeamColorA;
+        let logo:string = AddMediaPath(this.state.TeamLogoA);
+        if(this.state.CurrentTeam == 'B') {
+            color = this.state.TeamColorB;
+            logo = AddMediaPath(this.state.TeamLogoB);
+        }
+
+        return (
+            <div className={className} style={{backgroundColor:color}}>
+                <div className="spacer"></div>
+                <div className={classA}>
+                    <img src={srcA} alt="" className={cnames({shown:(srcA)?true:false})}/>
+                    <span>{nameA}</span>
+                </div>
+                <div className={classB}>
+                    <img src={srcB} alt="" className={cnames({shown:(srcB)?true:false})}/>
+                    <span>{nameB}</span>
+                </div>
+                <img src={logo} alt="" className={cnames('logo',{shown:(this.state.Index >= 0)?true:false})}/>
+            </div>
+        );
     }
 }

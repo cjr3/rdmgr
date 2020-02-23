@@ -6,6 +6,7 @@ import SkatersController from 'controllers/SkatersController';
 import TeamsController from 'controllers/TeamsController';
 import { Unsubscribe } from 'redux';
 import RecordList from './RecordList';
+import { compareRecordName } from 'tools/functions';
 
 interface props extends PRecordEditor {
     record:SkaterRecord|null;
@@ -300,7 +301,7 @@ export class SkaterRecordList extends React.PureComponent<{
     Records:Array<SkaterRecord>
 }>{
     readonly state = {
-        Records:SkatersController.Get()
+        Records:SkatersController.Get().sort(compareRecordName)
     }
 
     protected remoteData?:Unsubscribe;
@@ -311,7 +312,7 @@ export class SkaterRecordList extends React.PureComponent<{
     }
 
     protected updateData() {
-        this.setState({Records:SkatersController.Get()});
+        this.setState({Records:SkatersController.Get().sort(compareRecordName)});
     }
 
     componentDidMount() {

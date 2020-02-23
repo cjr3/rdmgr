@@ -8,6 +8,7 @@ import VideosController from 'controllers/VideosController';
 import RecordList from './RecordList';
 import { Basename } from 'controllers/functions.io';
 import { AddMediaPath } from 'controllers/functions';
+import { compareRecordName } from 'tools/functions';
 
 interface PVideoEditor extends PRecordEditor {
     record:VideoRecord|null
@@ -142,7 +143,7 @@ export class VideoRecordList extends React.PureComponent<{
     Records:Array<VideoRecord>;
 }> {
     readonly state = {
-        Records:VideosController.Get()
+        Records:VideosController.Get().sort(compareRecordName)
     }
 
     protected remoteData?:Unsubscribe;
@@ -153,7 +154,7 @@ export class VideoRecordList extends React.PureComponent<{
     }
 
     protected updateData() {
-        this.setState({Records:VideosController.Get()});
+        this.setState({Records:VideosController.Get().sort(compareRecordName)});
     }
 
     componentDidMount() {

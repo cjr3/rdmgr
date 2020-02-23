@@ -1,5 +1,5 @@
 import ScoreboardController from 'controllers/ScoreboardController';
-import {SkaterRecord, TeamRecord, PenaltyRecord} from 'tools/vars';
+import {SkaterRecord, TeamRecord, PenaltyRecord, SkaterTeamRecord} from 'tools/vars';
 import keycodes from 'tools/keycodes';
 import {IController} from './vars';
 import {CreateController, BaseReducer} from './functions.controllers';
@@ -26,7 +26,7 @@ interface IRosterController extends IController {
     SetSkater:{(side:Sides, id:number)};
 
     //Roles
-    SetSkaterRole:{(side:Sides, id:number, role:Roles)};
+    SetRole:{(side:string, id:number, role:string)};
 
     //Penalties (Penalty Tracker)
     updatePenaltyTracker:Unsubscribe;
@@ -60,10 +60,10 @@ export type Sides = "A" | "B";
 export type Roles = '' | 'Coach' | 'Captain' | 'CoCaptain' | 'Penalty';
 
 export interface STeamRoles {
-    Coach:SkaterRecord|null;
-    Penalty:SkaterRecord|null;
-    Captain:SkaterRecord|null;
-    CoCaptain:SkaterRecord|null;
+    Coach:number;
+    Penalty:number;
+    Captain:number;
+    CoCaptain:number;
 }
 
 export interface SRosterTeam {
@@ -90,7 +90,7 @@ export interface SRosterTeam {
     Roles:STeamRoles;
 }
 
-interface SRosterController {
+export interface SRosterController {
     /**
      * Current team to show
      */
@@ -124,10 +124,10 @@ export const InitState:SRosterController = {
         Slide:'',
         Skaters:new Array<SkaterRecord>(),
         Roles:{
-            Coach:null,
-            Penalty:null,
-            Captain:null,
-            CoCaptain:null
+            Coach:0,
+            Penalty:0,
+            Captain:0,
+            CoCaptain:0
         }
     },
     TeamB:{
@@ -137,10 +137,10 @@ export const InitState:SRosterController = {
         Slide:'',
         Skaters:new Array<SkaterRecord>(),
         Roles:{
-            Coach:null,
-            Penalty:null,
-            Captain:null,
-            CoCaptain:null
+            Coach:0,
+            Penalty:0,
+            Captain:0,
+            CoCaptain:0
         }
     },
     RemoteShown:false
@@ -178,18 +178,43 @@ const SetTeam = (state:SRosterController, side:Sides, team:TeamRecord) => {
 
 const SetSkaters = (state:SRosterController, side:Sides, records:Array<SkaterRecord>) => {
     let skaters:Array<SkaterRecord> = records.slice();
-    skaters.forEach((s) => {
-        s.Penalties = new Array<PenaltyRecord>();
-        s.Position = '';
+    let team:SRosterTeam = {...state.TeamA}
+    if(side == 'B')
+        team = {...state.TeamB};
+    team.Roles.Captain = 0;
+    team.Roles.CoCaptain = 0;
+    team.Roles.Coach = 0;
+    team.Roles.Penalty = 0;
+
+    skaters.forEach((skater:SkaterRecord) => {
+        skater.Penalties = new Array<PenaltyRecord>();
+        skater.Position = '';
+        if(skater.Teams && skater.Teams.forEach) {
+            skater.Teams.forEach((steam:SkaterTeamRecord) => {
+                if(steam.TeamID == team.ID) {
+                    if(steam.Captain)
+                        team.Roles.Captain = skater.RecordID;
+                    else if(steam.CoCaptain)
+                        team.Roles.CoCaptain = skater.RecordID;
+                    else if(steam.Coach)
+                        team.Roles.Coach = skater.RecordID;
+                    else if(steam.PenaltyTracker || steam.Manager)
+                        team.Roles.Penalty = skater.RecordID;
+                }
+            });
+        }
     });
+
+    console.log(team.Roles);
+
     if(side === 'A') {
-        return {...state, SkaterIndex:-1, TeamA:{
-            ...state.TeamA,
+        return {...state, CurrentTeam:'A', SkaterIndex:-1, TeamA:{
+            ...team,
             Skaters:skaters
         }};
     } else {
-        return {...state, SkaterIndex:-1, TeamB:{
-            ...state.TeamB,
+        return {...state, CurrentTeam:'A', SkaterIndex:-1, TeamB:{
+            ...team,
             Skaters:skaters
         }};
     }
@@ -457,6 +482,26 @@ const UpdateSkaters = (state:SRosterController, records:Array<SkaterRecord>) => 
     };
 };
 
+const SetRole = (state:SRosterController, side:Sides, role:Roles, id:number) => {
+    if(side == 'A') {
+        return {...state, TeamA:{
+            ...state.TeamA,
+            Roles:{
+                ...state.TeamA.Roles,
+                [role]:id
+            }
+        }};
+    } else {
+        return {...state, TeamB:{
+            ...state.TeamB,
+            Roles:{
+                ...state.TeamB.Roles,
+                [role]:id
+            }
+        }};
+    }
+};
+
 /**
  * Reducer for the Roster
  * @param {Object} state 
@@ -503,6 +548,9 @@ const RosterReducer = (state:SRosterController = InitState, action) => {
 
             case Actions.UPDATE_SKATERS :
                 return UpdateSkaters(state, action.records);
+
+            case Actions.SET_ROLE :
+                return SetRole(state, action.side, action.role, action.id);
             
             default :
                 return BaseReducer(state, action);
@@ -675,6 +723,15 @@ RosterController.onKeyUp = (ev) => {
             RosterCaptureController.Toggle();
         break;
     }
+};
+
+RosterController.SetRole = (side:string, id:number, role:string) => {
+    RosterController.Dispatch({
+        type:Actions.SET_ROLE,
+        side:side,
+        id:id,
+        role:role
+    });
 };
 
 RosterController.BuildAPI = async () => {

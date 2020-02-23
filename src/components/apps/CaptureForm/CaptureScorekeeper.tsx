@@ -178,15 +178,11 @@ class Jammer extends React.PureComponent<{
         } else if(this.state.Shown) {
             src = AddMediaPath(this.state.Logo);
         }
-
-        let style:CSSProperties = {
-            backgroundImage:`linear-gradient(0deg, rgba(0,0,0,0), ${this.state.Color})`
-        };
         
         return (
             <div className={className}>
                 <img src={src} alt=""/>
-                <label style={style}>{num}</label>
+                <label>{num}</label>
             </div>
         )
     }

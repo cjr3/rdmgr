@@ -250,26 +250,33 @@ class RosterTeam extends React.PureComponent<{
     Name:string;
     Color:string;
     RecordID:number;
+    Skaters:Array<SkaterRecord>;
 }> {
     readonly state = {
         Name:'Team',
         Color:'#000000',
-        RecordID:0
+        RecordID:0,
+        Skaters:[],
     }
 
     protected remoteScoreboard?:Unsubscribe;
+    protected remoteRoster?:Unsubscribe;
 
     constructor(props) {
         super(props);
         this.updateScoreboard = this.updateScoreboard.bind(this);
+        this.updateRoster = this.updateRoster.bind(this);
+
         if(this.props.side == 'A') {
             this.state.Name = ScoreboardController.GetState().TeamA.Name;
             this.state.Color = ScoreboardController.GetState().TeamA.Color;
             this.state.RecordID = ScoreboardController.GetState().TeamA.ID;
+            this.state.Skaters = RosterController.GetState().TeamA.Skaters;
         } else {
             this.state.Name = ScoreboardController.GetState().TeamB.Name;
             this.state.Color = ScoreboardController.GetState().TeamB.Color;
             this.state.RecordID = ScoreboardController.GetState().TeamB.ID;
+            this.state.Skaters = RosterController.GetState().TeamB.Skaters;
         }
     }
 
@@ -289,13 +296,28 @@ class RosterTeam extends React.PureComponent<{
         }
     }
 
+    protected updateRoster() {
+        if(this.props.side == 'A') {
+            this.setState({
+                Skaters:RosterController.GetState().TeamA.Skaters
+            });
+        } else {
+            this.setState({
+                Skaters:RosterController.GetState().TeamB.Skaters
+            });
+        }
+    }
+
     componentDidMount() {
         this.remoteScoreboard = ScoreboardController.Subscribe(this.updateScoreboard);
+        this.remoteRoster = RosterController.Subscribe(this.updateRoster);
     }
 
     componentWillUnmount() {
         if(this.remoteScoreboard)
             this.remoteScoreboard();
+        if(this.remoteRoster)
+            this.remoteRoster();
     }
 
     render() {
@@ -311,45 +333,84 @@ class RosterTeam extends React.PureComponent<{
                 <SkaterList 
                     side={this.props.side}
                     teamid={this.state.RecordID}
+                    skaters={this.state.Skaters}
                     />
+                <TeamRole
+                    side={this.props.side}
+                    skaters={this.state.Skaters}
+                />
             </div>
         )
     }
 }
 
-class SkaterList extends React.PureComponent<{
+class TeamRole extends React.PureComponent<{
+    skaters:Array<SkaterRecord>;
     side:Sides;
-    teamid:number;
 }, {
-    Skaters:Array<SkaterRecord>;
+    Coach:number;
+    Penalty:number;
+    Captain:number;
+    CoCaptain:number;
+    CurrentRole:string;
 }> {
     readonly state = {
-        Skaters:new Array<SkaterRecord>()
-    };
+        Coach:0,
+        Penalty:0,
+        Captain:0,
+        CoCaptain:0,
+        CurrentRole:'Coach'
+    }
 
     protected remoteRoster?:Unsubscribe;
 
     constructor(props) {
         super(props);
         this.updateRoster = this.updateRoster.bind(this);
-        if(this.props.side === 'A') {
-            this.state.Skaters = RosterController.GetState().TeamA.Skaters;
-        }
-        else {
-            this.state.Skaters = RosterController.GetState().TeamB.Skaters;
+        this.onChangeRole = this.onChangeRole.bind(this);
+        this.onChangeRoleSkater = this.onChangeRoleSkater.bind(this);
+
+        if(this.props.side == 'A') {
+            this.state.Coach = RosterController.GetState().TeamA.Roles.Coach;
+            this.state.Penalty = RosterController.GetState().TeamA.Roles.Penalty;
+            this.state.Captain = RosterController.GetState().TeamA.Roles.Captain;
+            this.state.CoCaptain = RosterController.GetState().TeamA.Roles.CoCaptain;
+        } else {
+            this.state.Coach = RosterController.GetState().TeamB.Roles.Coach;
+            this.state.Penalty = RosterController.GetState().TeamB.Roles.Penalty;
+            this.state.Captain = RosterController.GetState().TeamB.Roles.Captain;
+            this.state.CoCaptain = RosterController.GetState().TeamB.Roles.CoCaptain;
         }
     }
 
     protected updateRoster() {
-        if(this.props.side === 'A') {
+        if(this.props.side == 'A') {
             this.setState({
-                Skaters:RosterController.GetState().TeamA.Skaters,
+                Coach:RosterController.GetState().TeamA.Roles.Coach,
+                Penalty:RosterController.GetState().TeamA.Roles.Penalty,
+                Captain:RosterController.GetState().TeamA.Roles.Captain,
+                CoCaptain:RosterController.GetState().TeamA.Roles.CoCaptain,
             });
         } else {
             this.setState({
-                Skaters:RosterController.GetState().TeamB.Skaters
+                Coach:RosterController.GetState().TeamB.Roles.Coach,
+                Penalty:RosterController.GetState().TeamB.Roles.Penalty,
+                Captain:RosterController.GetState().TeamB.Roles.Captain,
+                CoCaptain:RosterController.GetState().TeamB.Roles.CoCaptain,
             });
         }
+    }
+    
+    protected onChangeRole(ev: React.ChangeEvent<HTMLSelectElement>) {
+        let value:string = ev.currentTarget.value;
+        this.setState({CurrentRole:value}, () => {
+            this.updateRoster();
+        });
+    }
+
+    protected onChangeRoleSkater(ev: React.ChangeEvent<HTMLSelectElement>) {
+        let id:number = Number.parseInt(ev.currentTarget.value);
+        RosterController.SetRole(this.props.side, id, this.state.CurrentRole);
     }
 
     componentDidMount() {
@@ -360,12 +421,53 @@ class SkaterList extends React.PureComponent<{
         if(this.remoteRoster)
             this.remoteRoster();
     }
+    
+    render() {
+        let roleid:number = 0;
+        let roles:Array<React.ReactElement> = new Array<React.ReactElement>(
+            <option value='Coach' key='opt-coach'>Coach</option>,
+            <option value='Penalty' key='opt-penalty'>Penalties</option>,
+            <option value='Captain' key='opt-captain'>Captain</option>,
+            <option value='CoCaptain' key='opt-cocaptain'>CoCaptain</option>
+        );
+        let skaters:Array<React.ReactElement> = new Array<React.ReactElement>(
+            <option value={0} key='opt-noskater'></option>
+        );
 
+        switch(this.state.CurrentRole.toLowerCase()) {
+            case 'coach' : roleid = this.state.Coach; break;
+            case 'penalty' : roleid = this.state.Penalty; break;
+            case 'captain' : roleid = this.state.Captain; break;
+            case 'cocaptain' : roleid = this.state.CoCaptain; break;
+        }
+
+        if(this.props.skaters) {
+            this.props.skaters.forEach((skater:SkaterRecord) => {
+                skaters.push(
+                    <option value={skater.RecordID} key={`${skater.RecordType}-${skater.RecordID}`}>{skater.Name}</option>
+                );
+            });
+        }
+
+        return (
+            <div className="team-roles">
+                <select size={1} value={this.state.CurrentRole} onChange={this.onChangeRole}>{roles}</select>
+                <select size={1} value={roleid} onChange={this.onChangeRoleSkater}>{skaters}</select>
+            </div>
+        );
+    }
+}
+
+class SkaterList extends React.PureComponent<{
+    side:Sides;
+    teamid:number;
+    skaters:Array<SkaterRecord>;
+}> {
     render() {
         let skaters:Array<any> = new Array<any>();
         
-        if(this.state.Skaters) {
-            this.state.Skaters.forEach((skater, index) => {
+        if(this.props.skaters) {
+            this.props.skaters.forEach((skater, index) => {
                 skaters.push({
                     label:<SkaterItem
                         key={`${skater.RecordType}-${index}`}
@@ -393,22 +495,38 @@ class SkaterItem extends React.PureComponent<{
     side:Sides;
     teamid:number;
 }> {
+
+    protected remoteRoster?:Unsubscribe;
+
+    componentDidMount() {
+        this.remoteRoster = RosterController.Subscribe(() => {
+            this.forceUpdate();
+        });
+    }
+
+    componentWillUnmount() {
+        if(this.remoteRoster)
+            this.remoteRoster();
+    }
+    
     render() {
         let position:string = '';
-        if(this.props.teamid && this.props.skater && this.props.skater.Teams) {
-            for(let key in this.props.skater.Teams) {
-                let team:SkaterTeamRecord = this.props.skater.Teams[key];
-                if(team.TeamID == this.props.teamid) {
-                    if(team.Captain)
-                        position = 'Captain';
-                    else if(team.CoCaptain)
-                        position = 'Co-Captain';
-                    else if(team.Coach)
-                        position = 'Coach / Penalty Manager'
-                }
-                break;
-            }
+        let state:SRosterTeam = RosterController.GetState().TeamA;
+        if(this.props.side == 'B') {
+            state = RosterController.GetState().TeamB;
         }
+
+        if(state.Roles.Coach == this.props.skater.RecordID)
+            position = 'Coach';
+            
+        if(state.Roles.Penalty == this.props.skater.RecordID)
+            position = 'Penalties';
+        
+        if(state.Roles.Captain == this.props.skater.RecordID)
+            position = 'Captain';
+            
+        if(state.Roles.CoCaptain == this.props.skater.RecordID)
+            position = 'Co-Captain';
         
         return (
             <div className="skater-item">
