@@ -155,6 +155,7 @@ export default class ClientBar extends React.PureComponent<any, {
                     onClick={() => {
                         ClientController.SetApplication(app.Key);
                         ClientController.HidePanels();
+                        UIController.SetDisplay('DisplayControls', false);
                     }}
                     />
             );
@@ -177,7 +178,10 @@ export default class ClientBar extends React.PureComponent<any, {
                 src={IconSettings}
                 key="btn-settings"
                 title="Configuration"
-                onClick={ClientController.ToggleConfiguration}
+                onClick={() => {
+                    UIController.SetDisplay('DisplayControls', false);
+                    ClientController.ToggleConfiguration();
+                }}
             />
         ];
 

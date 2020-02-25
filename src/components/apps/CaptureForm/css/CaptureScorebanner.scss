@@ -141,7 +141,8 @@
                 margin: auto;
                 top: 0;
                 right: 0;
-                font-size: 58px;
+                font-size: 4vw;
+                line-height: 60px;
             }
         }
 
@@ -171,10 +172,10 @@
         .status {
             position: absolute;
             margin: auto;
-            bottom: 0px;
+            bottom: -4px;
             left: 0;
             width: 100%;
-            height: 8px;
+            height: 10px;
             text-align: center;
             text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
             line-height: 28px;
@@ -203,7 +204,7 @@
             position: absolute;
             margin: auto;
             left: 0;
-            bottom: 0;
+            bottom: -2px;
             width: 100%;
             height: 8px;
             > div {
@@ -259,13 +260,17 @@
         .jam-counter:before {
             content: '#'
         }
+
+        .board-status {
+            left: 605px;
+        }
     }
 
     @media screen and (min-width:1920px) {
         height: 125px;
 
         * {
-            outline: dotted 1px #009900;
+            //outline: dotted 1px #009900;
         }
 
         .team {
@@ -275,7 +280,7 @@
                 height: 125px;
                 .score {
                     font-size: 4vw;
-                    top: 16px;
+                    top: 28px;
                 }
             }
 
@@ -284,11 +289,11 @@
             }
 
             .jampoints {
-                bottom: 40px;
+                bottom: 30px;
                 height: 55px;
                 width: 75px;
                 font-size: 2.5vw;
-                line-height: 2.5vw;
+                line-height: 2.2vw;
             }
 
             .timeouts {
@@ -298,6 +303,10 @@
                     height: 10px;
                     width: 32px;
                 }
+            }
+
+            .status {
+                height: 18px;
             }
         }
 
@@ -333,7 +342,7 @@
 
         .board-status {
             left: initial;
-            right: 400px;
+            right: 470px;
             width: 400px;
             bottom: 0;
         }
@@ -367,6 +376,26 @@
             .gameclock {
                 right: 960px;
                 width: 230px;
+            }
+        }
+
+        &.noclocks {
+            
+            .phase {
+                right: initial;
+                left: 730px;
+            }
+            .jam-counter {
+                right: initial;
+                left: 1140px;
+                width: 120px;
+            }
+
+            .board-status {
+                right: initial;
+                left: 730px;
+                height: 34px;
+                font-size: 1.25vw;
             }
         }
     }

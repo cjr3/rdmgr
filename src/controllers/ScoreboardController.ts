@@ -1546,7 +1546,7 @@ ScoreboardController.onKeyUp = async (ev:any) => {
 };
 
 ScoreboardController.onGamepadButtonPress = async (buttons:IGamepadButtonMap) => {
-    let state = ScoreboardController.GetState();
+    //let state = ScoreboardController.GetState();
     //X
     if(buttons.X.pressed) {
         if(buttons.L2.pressed && buttons.R2.pressed) {

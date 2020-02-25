@@ -75,7 +75,6 @@ export default class RosterPanel extends React.PureComponent<{
         return (
             <Panel 
                 opened={this.props.opened}
-                popup={true}
                 className="roster"
                 title="Intros"
                 buttons={[<Buttons key='buttons'/>]}

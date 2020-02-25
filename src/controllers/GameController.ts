@@ -3,6 +3,7 @@
  */
 
 import ScoreboardController from './ScoreboardController';
+import RosterController from './RosterController';
 
 export interface GameButton {
     /**
@@ -433,7 +434,12 @@ class GameControllerHandler {
 
         //Button Pressed
         if(buttonPressed) {
-            ScoreboardController.onGamepadButtonPress(GamepadButtonMap);
+            //Y
+            if(GamepadButtonMap.Y.pressed) {
+                RosterController.onGamepadButtonPress(GamepadButtonMap);
+            } else {
+                ScoreboardController.onGamepadButtonPress(GamepadButtonMap);
+            }
         }
 
         //Button Down

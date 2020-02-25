@@ -33,6 +33,7 @@ import { Unsubscribe } from 'redux';
 import Login from 'components/data/api/Login';
 import UIController from 'controllers/UIController';
 import DeleteFileDialog from 'components/data/DeleteFileDialog';
+import { IconButton, IconBoxLeft } from 'components/Elements';
 
 /**
  * Component for the client control form.

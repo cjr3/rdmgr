@@ -8,6 +8,7 @@ import './css/Scores.scss';
 
 export default class ScoresPanel extends React.PureComponent<{
     opened:boolean;
+    onClose:Function;
 }, {
     Records:Array<any>;
     Shown:boolean;
@@ -100,6 +101,7 @@ export default class ScoresPanel extends React.PureComponent<{
                 title="Latest Scores"
                 contentName="matches"
                 buttons={buttons}
+                onClose={this.props.onClose}
             >
                 {matches}
             </Panel>

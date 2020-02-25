@@ -90,7 +90,7 @@
         z-index: 2;
         margin: auto;
         right: 150px;
-        bottom: 90px;
+        bottom: 60px;
         width: 150px;
         max-height: 150px;
         opacity: 0;
@@ -114,7 +114,7 @@
     }
 
     .board-status {
-        z-index: 3;
+        z-index: 4;
         &.shown {
             transform: rotateY(0deg);
         }
@@ -184,20 +184,18 @@
         opacity: 0;
         transform: scale(0,0);
         transition: transform 150ms linear, opacity 150ms linear;
-    }
+        &.shown {
+            transform: scale(1,1);
+            opacity: 1;
+        }
 
-    .jamstate.shown {
-        transform: scale(1,1);
-        opacity: 1;
-    }
-
-    .jamstate.warning {
-        background-image: radial-gradient(#FF0000, #990000, #001100);
-        box-shadow: 0px 0px 35px rgba(255, 0, 0, 0.5);
-    }
-
-    .jamstate.warning.shown {
-        transform: scale(1, 1);
+        &.warning {
+            background-image: radial-gradient(#FF0000, #990000, #001100);
+            box-shadow: 0px 0px 35px rgba(255, 0, 0, 0.5);
+            &.shown {
+                transform: scale(1, 1);
+            }
+        }
     }
 
     .team {
@@ -415,6 +413,149 @@
             bottom: 22px;
             font-size: 96px;
             right: 22px;
+        }
+    }
+
+    @media screen and (min-height: 1080px) {
+        > *  {
+            //outline: dotted 1px #0f0;
+        }
+
+        .jamclock {
+            width: 600px;
+            height: 300px;
+            font-size: 20vw;
+            &.longjam {
+                font-size: 11vw;
+                line-height: 280px;
+            }
+        }
+
+        .team {
+            width: 600px;
+            height: 640px;
+            > * {
+                //outline: dotted 1px #0ff;
+            }
+            .score {
+                top: 310px;
+                height: 240px;
+                font-size: 12vw;
+                line-height: 200px;
+            }
+
+            .timeouts, .challenges {
+                top: initial;
+                bottom: 0;
+                height: 72px;
+                > img {
+                    width: 64px;
+                    height: 64px;
+                }
+            }
+
+            .status {
+                top: 260px;
+                height: 100px;
+                font-size: 3.5vw;
+                &.shown {
+                    transform: translateY(-30px);
+                }
+            }
+
+            .jampoints {
+                top: 360px;
+                height: 8vw;
+                font-size: 8vw;
+                line-height: 7vw;
+                width: 400px;
+            }
+
+            &.team-A {
+                .jampoints.shown {
+                    transform: translateX(180px);
+                }
+            }
+
+            &.team-B {
+                .jampoints.shown {
+                    transform: translateX(-180px);
+
+                }
+            }
+
+            > .logo {
+                height: 300px;
+                > img {
+                    max-height: 300px;
+                }
+            }
+        }
+
+        .jamstate {
+            top: initial;
+            bottom: 300px;
+            width: 75px;
+            height: 75px;
+        }
+
+        .gameclock {
+            width: 600px;
+            font-size: 10vw;
+            height: 200px;
+            line-height: 180px;
+            &.hours {
+                font-size: 8vw;
+            }
+        }
+
+        .jam-counter {
+            width: 600px;
+            height: 100px;
+            font-size: 4.5vw;
+            line-height: 90px;
+        }
+
+        .phase {
+            width: 600px;
+            bottom: 180px;
+            height: 100px;
+            font-size: 4.5vw;
+            line-height: 90px;
+        }
+        
+        .breakclock {
+            right: 50px;
+            bottom: 90px;
+            height: 200px;
+            width: 600px;
+            line-height: 200px;
+            font-size: 10vw;
+            //outline: dotted 1px #0f0;
+        }
+
+        .league-logo {
+            right: 250px;
+            bottom: 75px;
+            width: 200px;
+            max-height: 200px;
+        }
+
+        .board-status {
+            width: 600px;
+            font-size: 4vw;
+            height: 200px;
+            line-height: 180px;
+            
+            &.upheld {
+                font-size: 5vw;
+                line-height: 180px;
+            }
+            
+            &.overturned {
+                font-size: 5vw;
+                line-height: 180px;
+            }
         }
     }
 }

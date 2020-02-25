@@ -19,6 +19,17 @@
     &.shown {
         opacity: 1;
     }
+
+    @media screen and (max-height: 576px) {
+        font-size: 48vw;
+        line-height: 48vw;
+    }
+
+    @media screen and (max-height: 1080px) {
+        font-size: 56vw;
+        line-height: 48vw;
+        padding-left: 128px;
+    }
 }
 
 .capture-form.stream {
@@ -39,12 +50,5 @@
         &.jamming.showing {
             transform: translateY(0px);
         }
-    }
-}
-
-@media screen and (max-height: 576px) {
-    .capture-jam-counter {
-        font-size: 48vw;
-        line-height: 48vw;
     }
 }

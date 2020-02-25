@@ -136,6 +136,18 @@ export default class CaptureVideo extends React.PureComponent<any,{
      */
     render() {
         let classNames:string = cnames('main-video', {shown:(this.state.Shown)}, this.state.className);
+        let width:number = 1280;
+        let height:number = 720;
+        if(window && window.outerWidth) {
+            width = window.outerWidth;
+            height = window.outerHeight;
+        }
+
+        if(width != 1280 && width != 1920) {
+            width = 1280;
+            height = 720;
+        }
+
         return (
             <Video
                 className={classNames}
@@ -148,8 +160,8 @@ export default class CaptureVideo extends React.PureComponent<any,{
                 ref={this.VideoItem}
                 autoplay={this.state.AutoPlay}
                 loop={this.state.Loop}
-                width={1280}
-                height={720}
+                width={width}
+                height={height}
                 onEnded={this.onEnded}
                 onTimeUpdate={this.onTimeUpdate}
                 onPlay={this.onPlay}

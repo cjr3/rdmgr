@@ -174,7 +174,7 @@ class Jammer extends React.PureComponent<{
             src = AddMediaPath(this.state.Skater.Thumbnail);
             if(!src)
                 src = AddMediaPath(this.state.Logo);
-            num = this.state.Skater.Number;
+            num = "#" + this.state.Skater.Number;
         } else if(this.state.Shown) {
             src = AddMediaPath(this.state.Logo);
         }
@@ -182,7 +182,10 @@ class Jammer extends React.PureComponent<{
         return (
             <div className={className}>
                 <img src={src} alt=""/>
-                <label>{num}</label>
+                <label>
+                    <div>Jammer</div>
+                    <div>{num}</div>
+                </label>
             </div>
         )
     }

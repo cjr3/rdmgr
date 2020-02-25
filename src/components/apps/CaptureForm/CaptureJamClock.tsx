@@ -77,7 +77,8 @@ export default class CaptureJamClock extends React.PureComponent<any, {
         let className:string = cnames('capture-jam-clock', {
             shown:(this.state.Shown),
             warning:(this.state.JamSecond <= vars.Clock.Warning),
-            danger:(this.state.JamSecond <= vars.Clock.Danger)
+            danger:(this.state.JamSecond <= vars.Clock.Danger),
+            longjam:(this.state.JamSecond > 60 || this.state.MaxJamSeconds > 60)
         });
 
         let text:string = this.state.JamSecond.toString().padStart(2,'0');

@@ -118,6 +118,7 @@ interface IClientController extends IController {
     RemoveRaffleTicketCharacter:Function;
     SetRaffleTicketNumber:{(value:string)};
     onKeyUp:any;
+    onKeyDown:any;
     onPeerdata:Function;
     onSelectFile:Function;
     onExit:Function;
@@ -466,6 +467,7 @@ ClientController.Init = () => {
     if(window) {
         //global keyboard control
         window.addEventListener('keyup', ClientController.onKeyUp);
+        window.addEventListener('keydown', ClientController.onKeyDown);
 
         //local server
         if(window.initControlServer) {
@@ -622,6 +624,12 @@ ClientController.ToggleFileBrowser = async () => {
     });
 };
 
+let downKeys:any = {};
+
+ClientController.onKeyDown = (ev:any) => {
+    downKeys[ev.keyCode] = true;
+};
+
 /**
  * Handles keyboard events
  */
@@ -629,6 +637,9 @@ ClientController.onKeyUp = (ev:any) => {
 
     let state:SClientController = ClientController.GetState();
     let name:string = ev.target.tagName.toLowerCase();
+
+    if(downKeys[ev.keyCode])
+        delete downKeys[ev.keyCode];
     
     //ignore any and all keyboard events when the user has
     //focus on an input element
@@ -648,15 +659,12 @@ ClientController.onKeyUp = (ev:any) => {
 
         break;
     }
+
+    if(downKeys[keycodes.RWINDOW] || downKeys[keycodes.LWINDOW])
+        return;
     
     //global keyup options - do not map these to controllers
     switch(ev.keyCode) {
-        //ignore when windows/super/meta key is held down
-        case keycodes.RWINDOW :
-        case keycodes.LWINDOW : {
-            return;
-        }
-        break;
 
         //toggle current applications display
         case keycodes.ESCAPE : {

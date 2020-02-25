@@ -66,6 +66,17 @@
                 }
             }
         }
+
+        @media screen and (min-height: 1080px) {
+            > h1 {
+                font-size: 4vw;
+            }
+            .skaters {
+                .skater {
+                    font-size: 8vw;
+                }
+            }
+        }
     }
 
     &.popup {
@@ -88,17 +99,21 @@
                 flex: 1 1 35px;
                 line-height: 12px;
                 padding: 0px;
-                display: block;
+                display: flex;
+                flex-flow: column wrap;
                 text-align: center;
                 .thumbnail {
                     display: none;
                 }
                 .num {
                     padding: 6px;
+                    flex: 0;
                 }
                 .penalties {
                     background-color: #333;
                     padding: 6px;
+                    overflow: hidden;
+                    flex: 1;
                 }
             }
         }
@@ -108,6 +123,26 @@
         }
         &.shown {
             transform: translateX(0px);
+        }
+
+        @media screen and (min-width: 1920px) {
+            width: 600px;
+            transform: translateX(600px);
+            > * {
+                //outline: dotted 1px #00FF00;
+            }
+            > h1 {
+                font-size: 1.5vw;
+            }
+
+            > .skaters {
+                height: 90px;
+                .skater {
+                    font-size: 1.5vw;
+                    flex: 1 1 50px;
+                    line-height: 1.5vw;
+                }
+            }
         }
     }
 }

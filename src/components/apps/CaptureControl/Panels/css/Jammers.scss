@@ -37,8 +37,9 @@
 @media screen and (max-width:960px) and (min-height: 1080px) {
     .CC-app {
         > .jammers {
-            top: calc(50% - 92px);
-            right: 2px;
+            top: initial;
+            bottom: calc(100% - 338px);
+            right: 0px;
             height: 100px;
             width: 200px;
             > .jammer {

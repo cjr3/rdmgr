@@ -5,11 +5,14 @@ import './css/CaptureStandings.scss';
 import StandingsCaptureController from 'controllers/capture/Standings';
 import DataController from 'controllers/DataController';
 import { AddMediaPath } from 'controllers/functions';
+import { ordinalSuffix } from 'tools/functions';
 
 /**
  * Displays the standings
  */
-export default class CaptureStandings extends React.PureComponent<any, {
+class Standings extends React.PureComponent<{
+    className:string;
+}, {
     /**
      * Determines if the component is shown or not
      */
@@ -93,12 +96,13 @@ export default class CaptureStandings extends React.PureComponent<any, {
             let max:number = 8;
             this.state.Records.forEach((record, index) => {
                 if(index < max) {
+                    let position:any = ordinalSuffix(record.Position);
                     teams.push(
                         <div className="team" key={`${record.RecordType}-${record.RecordID}`}>
                             <div className="logo">
                                 <img src={record.Thumbnail} alt=""/>
                             </div>
-                            <div className="standing">{record.Position}</div>
+                            <div className="standing">{position}</div>
                             <div className="win-loss">{record.Wins} - {record.Losses}</div>
                             <div className="points">{record.Points}</div>
                         </div>
@@ -108,9 +112,9 @@ export default class CaptureStandings extends React.PureComponent<any, {
         }
 
         return (
-            <div className={cnames('capture-standings', {shown:(shown)})}>
+            <div className={cnames(this.props.className, {shown:(shown)})}>
                 <h1>Standings</h1>
-                <div className="standings">
+                <div className="teams">
                     <div className="team" key="standings-header">
                         <div className="logo">
                             <img src={logo} alt=""/>
@@ -124,4 +128,12 @@ export default class CaptureStandings extends React.PureComponent<any, {
             </div>
         );
     }
+}
+
+export default function CaptureStandings() {
+    return <Standings className="capture-standings"/>
+}
+
+export function StandingsBanner() {
+    return <Standings className="standings-banner"/>
 }

@@ -36,6 +36,9 @@
                     .num {
                         background-repeat: no-repeat;
                         background-image: url('~images/icons/star.png');
+                        @media screen and (min-height: 1080px) {
+                            background-size: 64px;
+                        }
                     }
                 }
                 &:nth-child(2) {
@@ -43,6 +46,9 @@
                     .num {
                         background-repeat: no-repeat;
                         background-image: url('~images/icons/diagstripe.png');
+                        @media screen and (min-height: 1080px) {
+                            background-size: 64px;
+                        }
                     }
                 }
                 &:nth-child(3) {grid-area: 3 / 1;}
@@ -51,11 +57,15 @@
                 display: grid;
                 grid-template-columns: 150px auto;
                 grid-template-rows: 100%;
+                @media screen and (min-height:1080px) {
+                    grid-template-columns: 215px auto;
+                }
                 .thumbnail {
                     grid-area: 1 / 1;
                     > img {
                         transition: transform 150ms linear 350ms;
                         transform: rotateY(90deg);
+                        width: 100%;
                     }
                 }
 
@@ -91,6 +101,9 @@
             &:nth-child(2) {
                 > .skater {
                     grid-template-columns: auto 150px;
+                    @media screen and (min-height:1080px) {
+                        grid-template-columns: auto 215px;
+                    }
                     .num, .thumbnail {
                         transform: translateX(2000px);
                     }
@@ -153,7 +166,7 @@
                     transform: translateY(0px);
                     opacity: 1;
                 }
-    
+
                 > img {
                     height: 100%;
                     flex: 0;
@@ -165,7 +178,6 @@
                     text-align: center;
                     font-family: $base-font-display;
                     font-size: 2vw;
-                    line-height: 60px;
                     height: 100%;
                     text-shadow: 2px 2px 2px rgba(0,0,0,0.5);
                     align-self: flex-end;
@@ -175,6 +187,10 @@
                     background-size: 14px;
                     background-repeat: no-repeat;
                     background-position: 6px 4px;
+                    > div:first-of-type {
+                        font-size: 1vw;
+                        padding: 2px 0px 2px 16px;
+                    }
                 }
 
                 &:first-child {
@@ -182,6 +198,25 @@
                 }
                 &:nth-child(2) {
                     left: 240px;
+                }
+            }
+        }
+
+        @media screen and (min-width: 1920px) {
+            .jammers {
+                height: 80px;
+                top: 24px;
+                > .skater {
+                    height: 80px;
+                    width: 350px;
+                    background-image: linear-gradient(90deg, #000, rgba(0,0,0,0));
+                    //outline: dotted 1px #00FF00;
+                    > label {
+                        background-size: 24px;
+                    }
+                    &:nth-child(2) {
+                        left: 360px;
+                    }
                 }
             }
         }

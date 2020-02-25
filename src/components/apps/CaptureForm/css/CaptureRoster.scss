@@ -287,7 +287,6 @@
     top: 0;
     width: 780px;
     height: 70px;
-    overflow: hidden;
     z-index: 7;
     transition: transform 500ms, background-color 500ms;
     transform: translateX(900px);
@@ -302,6 +301,7 @@
         background-color: #000;
         transform: rotateY(90deg);
         transition: transform 250ms ease-in-out 250ms;
+        z-index: 3;
         &.shown {
             transform: rotateY(0deg);
         }
@@ -328,6 +328,7 @@
             max-height: 70px;
             transition: transform 500ms;
             transform: rotateY(90deg);
+            background-color: #000;
         }
 
         > span {
@@ -354,5 +355,23 @@
 
     &.shown {
         transform: translateX(0px);
+    }
+
+    @media screen and (min-width:1920px) {
+        width: 1150px;
+        top: 27px;
+        transform: translateX(1200px);
+        > .item {
+            > img {
+                flex: 0 0 115px;
+                max-height: 115px;
+                margin-top: -25px;
+            }
+        }
+
+        > .logo {
+            max-height: 115px;
+            margin-top: -25px;
+        }
     }
 }

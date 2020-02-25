@@ -7,7 +7,9 @@ import ScheduleCaptureController from 'controllers/capture/Schedule';
 /**
  * Component for displaying the bout schedule
  */
-export default class CaptureSchedule extends React.PureComponent<any, {
+class Schedule extends React.PureComponent<{
+    className:string;
+}, {
     /**
      * Determines if this component is shown or not
      */
@@ -71,42 +73,48 @@ export default class CaptureSchedule extends React.PureComponent<any, {
      * Renders the component
      */
     render() {
-        let matches:Array<React.ReactElement> = new Array<React.ReactElement>();
-        let shown:boolean = false;
-        if(this.state.Records && this.state.Records.length >= 1) {
-            shown = this.state.Shown;
-            let max:number = 6;
-            this.state.Records.forEach((record, index) => {
-                if(index < max) {
-                    let tdate = new Date(Date.parse(record.BoutDate));
-                    let sdate:string = tdate.toLocaleDateString('en-us', {
-                        month:'2-digit',
-                        day:'2-digit'
-                    });
-                    matches.push(
-                        <div className="match" key={`${record.RecordType}-${record.RecordID}`}>
-                            <div className="team-logo">
-                                <img src={record.TeamA.Thumbnail} alt=""/>
-                            </div>
-                            <div className="date">
-                                {sdate}
-                            </div>
-                            <div className="team-logo">
-                                <img src={record.TeamB.Thumbnail} alt=""/>
-                            </div>
-                        </div>
-                    );
-                }
-            });
-        }
-
+        let shown:boolean = (this.state.Records && this.state.Records.length) ? this.state.Shown : false;
         return (
-            <div className={cnames('capture-schedule', {shown:(shown)})}>
+            <div className={cnames(this.props.className, {shown:(shown)})}>
                 <h1>Schedule</h1>
-                <div className="matches">
-                    {matches}
-                </div>
+                <Matches matches={this.state.Records} max={8}/>
             </div>
         );
     }
+}
+
+export default function CaptureSchedule() {
+    return <Schedule className="capture-schedule"/>;
+};
+
+export function ScheduleBanner() {
+    return <Schedule className="schedule-banner"/>
+};
+
+function Matches(props:{matches:Array<any>, max:number}) {
+    let matches:Array<React.ReactElement> = new Array<React.ReactElement>();
+    props.matches.forEach((record:any, index) => {
+        if(index < props.max) {
+            let tdate = new Date(Date.parse(record.BoutDate));
+            let sdate:string = tdate.toLocaleDateString('en-us', {
+                month:'2-digit',
+                day:'2-digit'
+            });
+            matches.push(
+                <div className="match" key={`${record.RecordType}-${record.RecordID}`}>
+                    <div className="team-logo">
+                        <img src={record.TeamA.Thumbnail} alt=""/>
+                    </div>
+                    <div className="date">
+                        {sdate}
+                    </div>
+                    <div className="team-logo">
+                        <img src={record.TeamB.Thumbnail} alt=""/>
+                    </div>
+                </div>
+            );
+        }
+    });
+
+    return (<div className="matches">{matches}</div>);
 }

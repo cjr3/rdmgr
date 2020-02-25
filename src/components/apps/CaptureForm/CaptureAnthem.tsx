@@ -161,14 +161,15 @@ export class CaptureAnthemBanner extends React.PureComponent<any, {
         let style:CSSProperties = {};
         if(this.state.BackgroundImage)
             style.backgroundImage = "url('" + AddMediaPath(this.state.BackgroundImage) + "')";
+        let className = cnames('anthem-banner', {
+            shown:this.state.Shown
+        });
         return (
-            <PopupBanner
-                shown={this.state.Shown}
-                className="anthem-banner"
-                style={style}
-                >
-                <div className="name">{this.state.Name}</div>
-            </PopupBanner>
+            <div className={className} style={style}>
+                <div className="content">
+                    <div className="name">{this.state.Name}</div>
+                </div>
+            </div>
         );
     }
 }

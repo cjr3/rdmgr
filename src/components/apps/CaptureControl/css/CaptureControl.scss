@@ -266,7 +266,7 @@
     .CC-app {
         .scoreboard {
             top: initial;
-            height: calc(100% - 380px);
+            height: calc(100% - 340px);
             width: 50%;
             .scorebanner {
                 .phase-control {
@@ -277,15 +277,15 @@
 
         > .announcers {
             max-width: 50%;
+            top: 0;
+            bottom: initial;
+            left: 0;
+            right: initial;
         }
         > .anthem {
             max-width: 50%;
-        }
-
-        > .roster {
-            width: 50%;
-            max-height: calc(100% - 380px);
-            top: initial;
+            top: 0;
+            bottom: initial;
         }
     }
 }

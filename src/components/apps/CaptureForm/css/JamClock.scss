@@ -28,6 +28,21 @@
     &.danger {
         color: $danger;
     }
+
+    @media screen and (max-height: 576px) {
+        font-size: 48vw;
+        line-height: 48vw;
+    }
+
+    @media screen and (max-height: 1080px) {
+        font-size: 56vw;
+        line-height: 48vw;
+        padding-left: 128px;
+        &.longjam {
+            font-size: 40vw;
+            padding-left: 48px;
+        }
+    }
 }
 
 .capture-form.stream {
@@ -47,12 +62,5 @@
         &.warning, &.danger {
             transform: translateY(0px);
         }
-    }
-}
-
-@media screen and (max-height: 576px) {
-    .capture-jam-clock {
-        font-size: 48vw;
-        line-height: 48vw;
     }
 }

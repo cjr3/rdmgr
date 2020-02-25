@@ -1,47 +1,66 @@
 @import 'src/css/vars.scss';
 
-.popup-banner.announcers {
-    z-index: 12;
-    background-size: 64px auto;
-    > .content {
-        display: grid;
-        opacity: 0;
-        transition: opacity 150ms 0ms ease-in-out;
-        grid-template-columns: 48px auto;
-        > .icon {
-            grid-area: 1 / 1;
-            align-self: center;
+.capture-form {
+    .announcer-banner {
+        z-index: 12;
+        background-size: 70px auto;
+        background-repeat: no-repeat;
+        background-position: 100% 50%;
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 500px;
+        height: 70px;
+        background-color: $navy;
+        transform: translateX(1000px);
+        transition: transform 500ms ease-in-out 250ms;
+        &.shown {
+            transform: translateX(0px);
+        }
+    
+        > .content {
+            display: grid;
+            opacity: 0;
+            transition: opacity 150ms ease-in-out 500ms;
+            grid-template-columns: 48px auto 70px;
+            height: 70px;
             > .icon {
-                height: 48px;
+                grid-area: 1 / 1;
+                align-self: center;
+                > .icon {
+                    height: 48px;
+                }
+            }
+    
+            > .names {
+                grid-area: 1 / 2 / 1;
+                padding: 16px;
+                font-size: 3vw;
+                text-align: center;
+            }
+        }
+    
+        &.shown {
+            > .content {
+                transition-duration: 500ms;
+                transition-delay: 500ms;
+                opacity: 1;
             }
         }
 
-        > .names {
-            grid-area: 1 / 2;
-            padding: 16px;
-            font-size: 3vw;
-            text-align: center;
+        @media screen and (min-height: 1080px) {
+            width: 650px;
+            top: 25px;
         }
     }
-
-    &.shown {
-        > .content {
-            transition-duration: 500ms;
-            transition-delay: 500ms;
-            opacity: 1;
-        }
-    }
-}
-
-.capture-form.stream {
-    .popup-banner.announcers {
-        width: 480px;
-        bottom: 32px;
-        height: 64px;
-        > .content {
-            > .names {
-                text-align: left;
-                font-size: 1.5vw;
+    
+    &.stream {
+        .announcer-banner {
+            > .content {
+                > .names {
+                    line-height: 35px;
+                    font-size: 1.8vw;
+                }
             }
         }
     }

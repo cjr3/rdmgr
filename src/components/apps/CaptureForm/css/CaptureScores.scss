@@ -1,130 +1,211 @@
 @import 'src/css/vars.scss';
-
-.capture-scores {
-    position: absolute;
-    margin: auto;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    font-family: $base-font-display;
-    background-color: #111;
-    transition: opacity 500ms ease-in-out;
-    opacity: 0;
-    overflow: hidden;
-    z-index: 4;
-
-    > h1 {
-        background-color: $navy;
-        border-bottom: solid 3px white;
-        margin: 0;
-        padding: 16px;
-        text-align: center;
-        font-size: 4vw;
-        transform: rotateY(90deg);
-        transition: transform 150ms ease-in-out 500ms;
-    }
-
-    > .matches {
-        display: flex;
-        flex-flow: row wrap;
-        justify-content: center;
-        > .match {
-            overflow: hidden;
-            width: 100%;
-            grid-area: 1/1;
-            display: grid;
-            grid-template-columns: 10% 40% 40% 10%;
-            transform: rotateX(90deg);
-            transition: transform 150ms ease-in-out 500ms;
-            &:nth-child(even) {
-                background-color: #222;
-            }
-
-            .team {
-                grid-area: 1/2;
-
-                &:nth-child(2) {
-                    grid-area: 1/3;
-                }
-                display: grid;
-                grid-template-columns: 50% 50%;
-                height: 100px;
-                > .logo {
-                    text-align: center;
-                    > img {
-                        padding: 8px;
-                    }
-                }
-
-                > .score {
-                    font-size: 6vw;
-                    text-align: center;
-                }
-            }
-        }
-    }
-    
-    &.shown {
-        transition: opacity 150ms ease-in-out 300ms;
-        opacity: 1;
-        > h1 {
-            transform: rotateY(0deg);
-        }
-        > .matches {
-            > .match {
-                transform: rotateX(0deg);
-                &:nth-child(1) {transition-delay: 500ms;}
-                &:nth-child(2) {transition-delay: 600ms;}
-                &:nth-child(3) {transition-delay: 700ms;}
-                &:nth-child(4) {transition-delay: 800ms;}
-                &:nth-child(5) {transition-delay: 900ms;}
-                &:nth-child(6) {transition-delay: 1000ms;}
-            }
-        }
-    }
-}
-
-.capture-form.stream {
+.capture-form {
     .capture-scores {
-        right: initial;
-        top: initial;
-        bottom: 32px;
-        left: 32px;
-        width: 360px;
-
-        opacity: 1;
-        transform: rotateY(90deg);
-        transition: transform 150ms ease-in-out;
-
-        &.shown {
-            transition: transform 150ms ease-in-out 300ms;
-            transform: rotateY(0deg);
-        }
+        position: absolute;
+        margin: auto;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        font-family: $base-font-display;
+        background-color: #111;
+        transition: opacity 500ms ease-in-out;
+        opacity: 0;
+        z-index: 4;
 
         > h1 {
-            font-size: 2vw;
-            padding: 8px;
-            border-top: solid 3px white;
+            background-color: $navy;
+            border-bottom: solid 3px white;
+            margin: 0;
+            padding: 16px;
+            text-align: center;
+            font-size: 4vw;
+            transform: rotateY(90deg);
+            transition: transform 150ms ease-in-out 500ms;
         }
 
         > .matches {
+            display: flex;
+            flex-flow: row wrap;
+            justify-content: center;
             > .match {
+                overflow: hidden;
                 width: 100%;
-                height: 50px;
-                > .team {
+                grid-area: 1/1;
+                display: grid;
+                grid-template-columns: 10% 10% 35% 35% 10%;
+                transform: rotateX(90deg);
+                transition: transform 150ms ease-in-out 500ms;
+                &:nth-child(even) {
+                    background-color: #222;
+                }
+
+                .date {
+                    grid-area: 1/2;
+                    font-size: 3vw;
+                    line-height: 100px;
+                }
+
+                .team {
+                    grid-area: 1/3;
+                    display: grid;
+                    grid-template-columns: 50% 50%;
+                    height: 100px;
                     > .logo {
+                        grid-area: 2/1;
+                        text-align: center;
                         > img {
-                            max-height: 50px;
-                            padding: 2px;
+                            padding: 8px;
                         }
                     }
+
                     > .score {
-                        font-size: 2.5vw;
-                        line-height: 50px;
+                        grid-area: 2/2;
+                        font-size: 6vw;
+                        text-align: center;
+                    }
+
+                    &:nth-child(2) {
+                        grid-area: 1/4;
+                        > .logo {
+                            grid-area: 2/2;
+                        }
+
+                        > .score {
+                            grid-area: 2/1;
+                        }
                     }
                 }
             }
+        }
+        
+        &.shown {
+            transition: opacity 150ms ease-in-out 300ms;
+            opacity: 1;
+            > h1 {
+                transform: rotateY(0deg);
+            }
+            > .matches {
+                > .match {
+                    transform: rotateX(0deg);
+                    &:nth-child(1) {transition-delay: 500ms;}
+                    &:nth-child(2) {transition-delay: 600ms;}
+                    &:nth-child(3) {transition-delay: 700ms;}
+                    &:nth-child(4) {transition-delay: 800ms;}
+                    &:nth-child(5) {transition-delay: 900ms;}
+                    &:nth-child(6) {transition-delay: 1000ms;}
+                }
+            }
+        }
+    }
+
+    .scores-banner {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 70px;
+        background-color: $navy;
+        z-index: 10;
+        margin: auto;
+        display: none;
+        flex-flow: row wrap;
+        font-family: $base-font-display;
+
+        transform: translateY(-200px);
+        transition: transform 500ms ease-in-out 250ms;
+        &.shown {
+            transform: translateY(0px);
+        }
+
+        > h1 {
+            flex: 0 0 200px;
+            text-align: center;
+            line-height: 65px;
+            margin: 0;
+        }
+
+        > .matches {
+            flex: 1;
+            display: flex;
+            flex-flow: row wrap;
+            overflow: hidden;
+            > .match {
+                flex: 1;
+                height: 70px;
+                display: grid;
+                background-color: $navy;
+                grid-template-columns: 50% 50%;
+                grid-template-rows: 25px 45px;
+                text-align: center;
+                &:nth-child(odd) {
+                    background-color: #181818;
+                }
+                > .date {
+                    grid-area: 1 / 1 / 2 / span 2;
+                    line-height: 25px;
+                    background-color: $navy;
+                }
+
+                > .team {
+                    display: grid;
+                    grid-template-columns: 50% 50%;
+                    grid-area: 2/1;
+                    line-height: 40px;
+                    > .logo {
+                        grid-column: 1;
+                    }
+
+                    > .score {
+                        grid-column: 2;
+                        font-size: 2vw;
+                    }
+                    &:nth-child(3) {
+                        grid-area: 2/2;
+                        > .logo {
+                            grid-column: 2;
+                        }
+
+                        > .score {
+                            grid-column: 1;
+                        }
+                    }
+                }
+            }
+        }
+
+        @media screen and (min-height: 1080px) {
+            height: 125px;
+            > h1 {
+                line-height: 135px;
+            }
+
+            > .matches {
+                > .match {
+                    grid-template-rows: 50px 75px;
+                    height: 125px;
+                    > .date {
+                        line-height: 50px;
+                        font-size: 1.6vw;
+                    }
+
+                    > .team {
+                        > .score {
+                            line-height: 65px;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    &.stream {
+        .capture-scores {
+            display: none;
+        }
+
+        .scores-banner {
+            display: flex;
         }
     }
 }

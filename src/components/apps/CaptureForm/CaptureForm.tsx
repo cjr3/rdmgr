@@ -15,9 +15,9 @@ import CaptureScorekeeper from './CaptureScorekeeper'
 import CaptureSponsor from './CaptureSponsor';
 import CaptureAnnouncers from './CaptureAnnouncers';
 import CaptureRoster, { CaptureRosterBanner } from './CaptureRoster';
-import CaptureStandings from './CaptureStandings';
-import CaptureSchedule from './CaptureSchedule';
-import CaptureScores from './CaptureScores';
+import CaptureStandings, { StandingsBanner } from './CaptureStandings';
+import CaptureSchedule, { ScheduleBanner } from './CaptureSchedule';
+import CaptureScores, { ScoresBanner } from './CaptureScores';
 import { Unsubscribe } from 'redux';
 import { AddMediaPath } from 'controllers/functions';
 import './css/CaptureForm.scss';
@@ -111,8 +111,11 @@ export default class CaptureForm extends React.Component<any, {
                 <CaptureAnnouncers/>
                 <CaptureRosterBanner/>
                 <CaptureStandings/>
+                <StandingsBanner/>
                 <CaptureSchedule/>
+                <ScheduleBanner/>
                 <CaptureScores/>
+                <ScoresBanner/>
             </div>
         );
     }

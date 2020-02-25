@@ -1,0 +1,44 @@
+@import '~css/vars.scss';
+
+.CC-app {
+    .standings {
+        &.panel {
+            max-width: 400px;
+        }
+        .content {
+            .records {
+                font-size: 22px;
+                .record {
+                    display: grid;
+                    grid-template-columns: 50px 100px 100px auto;
+                    &:nth-child(even) {
+                        background-color: #111;
+                    }
+                    .place {
+                        grid-area: 1/2;
+                        text-align: center;
+                        line-height: 50px;
+                    }
+        
+                    .logo {
+                        grid-area: 1/1;
+                        text-align: center;
+                        > img {
+                            max-height: 50px;
+                        }
+                    }
+        
+                    .winloss {
+                        grid-area: 1/3;
+                        line-height: 50px;
+                    }
+        
+                    .pts {
+                        grid-area: 1/4;
+                        line-height: 50px;
+                    }
+                }
+            }
+        }
+    }
+}

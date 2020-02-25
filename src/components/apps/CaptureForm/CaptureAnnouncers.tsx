@@ -92,18 +92,19 @@ export default class CaptureAnnouncers extends React.PureComponent<any, {
             style.backgroundImage = `url('${AddMediaPath(this.state.LeagueLogo)}')`;
 
         return (
-            <PopupBanner
-                className={cnames('announcers', this.state.className)}
-                shown={this.state.Shown}
+            <div
+                className={cnames('announcer-banner', this.state.className, {shown:this.state.Shown})}
                 style={style}
                 >
-                <div className="icon">
-                    <Icon src={IconMic}/>
+                <div className="content">
+                    <div className="icon">
+                        <Icon src={IconMic}/>
+                    </div>
+                    <div className="names">
+                        {name}
+                    </div>
                 </div>
-                <div className="names">
-                    {name}
-                </div>
-            </PopupBanner>
+            </div>
         )
     }
 }

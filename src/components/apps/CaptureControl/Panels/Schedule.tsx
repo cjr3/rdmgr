@@ -9,6 +9,7 @@ import ScheduleCaptureController from 'controllers/capture/Schedule';
 
 export default class SchedulePanel extends React.PureComponent<{
     opened:boolean;
+    onClose:Function;
 }, {
     Records:Array<any>;
     Loading:boolean;
@@ -100,6 +101,7 @@ export default class SchedulePanel extends React.PureComponent<{
                 opened={this.props.opened}
                 buttons={buttons}
                 className="schedule"
+                onClose={this.props.onClose}
                 >
                 <div className="matches">{matches}</div>
             </Panel>

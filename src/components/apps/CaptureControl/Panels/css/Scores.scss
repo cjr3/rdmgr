@@ -1,10 +1,6 @@
 .CC-app {
     .scores {
-        max-width: 300px;
-        right: 550px;
-        max-height: 100%;
-        left: initial;
-        top: initial;
+        max-width: 400px;
         > .title .icon {display: none;}
         > .matches {
             .match-item {
@@ -36,19 +32,6 @@
                     }
                 }
             }
-        }
-    }
-}
-
-
-@media screen and (max-width:960px) and (min-height: 1080px) {
-    .CC-app {
-        .scores {
-            max-height: 350px;
-            bottom: initial;
-            left: 0;
-            right: initial;
-            max-width: 50%;
         }
     }
 }

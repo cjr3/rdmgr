@@ -17,6 +17,7 @@ import AnthemPanel from './Panels/Anthem';
 import JammersPanel from './Panels/Jammers';
 import SchedulePanel from './Panels/Schedule';
 import ScoresPanel from './Panels/Scores';
+import StandingsPanel from './Panels/Standings';
 
 /**
  * Component for determining what is displayed on the capture window.
@@ -78,8 +79,18 @@ export default class CaptureControl extends React.PureComponent<any, {
                 <ScoreboardPanel/>
                 <AnthemPanel opened={true}/>
                 <AnnouncerPanel opened={true}/>
-                <SchedulePanel opened={true}/>
-                <ScoresPanel opened={true}/>
+                <SchedulePanel 
+                    opened={(this.state.CurrentPanel === 'schedule')}
+                    onClose={this.onClosePanel}
+                    />
+                <ScoresPanel
+                    opened={(this.state.CurrentPanel === 'latest-scores')}
+                    onClose={this.onClosePanel}
+                />
+                <StandingsPanel
+                    opened={(this.state.CurrentPanel === 'standings')}
+                    onClose={this.onClosePanel}
+                />
                 <JammersPanel/>
                 <PostScoresPanel
                     opened={(this.state.CurrentPanel === 'scores')}
@@ -100,15 +111,7 @@ export default class CaptureControl extends React.PureComponent<any, {
                     onClose={this.onClosePanel}
                     onSubmit={this.onClosePanel}
                     />
-                <CaptureControlMonitor
-                    opened={(this.state.CurrentPanel == 'monitor')}
-                    onClose={this.onClosePanel}
-                    onSubmit={this.onClosePanel}
-                    />
-                <RosterPanel
-                    opened={(this.state.CurrentPanel == 'roster')}
-                    onClose={this.onClosePanel}
-                    />
+                <RosterPanel opened={true} onClose={() => {}}/>
             </Panel>
         );
     }
@@ -123,11 +126,11 @@ class Buttons extends React.PureComponent<{
         return (
             <React.Fragment>
                 <ToggleIcons/>
-                <Button onClick={() => {this.props.onClick('scores')}} active={(this.props.panel === 'scores')}>Post Scores</Button>
+                <Button onClick={() => {this.props.onClick('latest-scores')}} active={(this.props.panel === 'latest-scores')}>Scores</Button>
+                <Button onClick={() => {this.props.onClick('schedule')}} active={(this.props.panel === 'schedule')}>Schedule</Button>
+                <Button onClick={() => {this.props.onClick('standings')}} active={(this.props.panel === 'standings')}>Standings</Button>
                 <Button onClick={() => {this.props.onClick('phase')}} active={(this.props.panel === 'phase')}>Quarter</Button>
                 <Button onClick={() => {this.props.onClick('teams')}} active={(this.props.panel === 'teams')}>Teams</Button>
-                <Button onClick={() => {this.props.onClick('roster')}} active={(this.props.panel === 'roster')}>Intros</Button>
-                <Button onClick={() => {this.props.onClick('monitor')}} active={(this.props.panel === 'monitor')}>Monitor</Button>
             </React.Fragment>
         )
     }

@@ -135,7 +135,7 @@ export default class Video extends React.PureComponent<{
             return;
 
         if(this.props.status === vars.Video.Status.Playing) {
-            this.VideoItem.current.play();
+            try {this.VideoItem.current.play();}catch(er){}
         }
 
         if(this.props.onCanPlayThrough)
@@ -155,7 +155,7 @@ export default class Video extends React.PureComponent<{
      */
     onLoadedMetaData() {
         if(this.props.autoplay && this.VideoItem !== null && this.VideoItem.current !== null) {
-            this.VideoItem.current.play();
+            try { this.VideoItem.current.play();}catch(er){}
         }
     }
 
@@ -284,8 +284,9 @@ export default class Video extends React.PureComponent<{
      * Pause video
      */
     async pause() {
-        if(this.VideoItem !== null && this.VideoItem.current !== null)
-            this.VideoItem.current.pause();
+        if(this.VideoItem !== null && this.VideoItem.current !== null) {
+            try { this.VideoItem.current.pause(); } catch(er) {}
+        }
     }
 
     /**

@@ -11,6 +11,7 @@ import SkatersController from './SkatersController';
 import { Unsubscribe } from 'redux';
 import PenaltyController, { SPenaltyController } from './PenaltyController';
 import ScorekeeperController, { SScorekeeperState } from './ScorekeeperController';
+import { IGamepadButtonMap } from './GameController';
 
 interface IRosterController extends IController {
     //Skater Records
@@ -39,6 +40,7 @@ interface IRosterController extends IController {
 
     //misc
     onKeyUp:Function;
+    onGamepadButtonPress:Function;
 };
 
 enum Actions {
@@ -204,8 +206,6 @@ const SetSkaters = (state:SRosterController, side:Sides, records:Array<SkaterRec
             });
         }
     });
-
-    console.log(team.Roles);
 
     if(side === 'A') {
         return {...state, CurrentTeam:'A', SkaterIndex:-1, TeamA:{
@@ -722,6 +722,20 @@ RosterController.onKeyUp = (ev) => {
         case keycodes.V :
             RosterCaptureController.Toggle();
         break;
+    }
+};
+
+RosterController.onGamepadButtonPress = async (buttons:IGamepadButtonMap) => {
+    //Y
+    if(buttons.Y.pressed) {
+        if(buttons.L2.pressed) {
+            RosterCaptureController.Toggle();
+        } else if(buttons.R2.pressed) {
+            RosterController.Prev();
+        } else {
+            RosterController.Next();
+        }
+        return;
     }
 };
 
