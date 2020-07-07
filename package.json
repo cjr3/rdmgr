@@ -63,7 +63,7 @@
   },
   "description": "Banked Track Roller Derby A/V Production Software",
   "devDependencies": {
-    "electron": "^6.1.7",
+    "electron": "^7.2.4",
     "electron-builder": "^21.2.0"
   },
   "build": {
