@@ -95,7 +95,6 @@ export default class PostScoresPanel extends React.PureComponent<{
                 popup={true}
                 className="scores-panel"
                 contentName="rdmgr-api-scores"
-                opened={this.props.opened}
                 buttons={buttons}
                 error={this.state.error}
                 title={this.state.title}

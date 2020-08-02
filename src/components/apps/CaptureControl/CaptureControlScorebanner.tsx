@@ -393,7 +393,6 @@ class ScoresPanel extends React.PureComponent<{
             <Panel
                 popup={true}
                 className="scores-panel"
-                opened={this.props.opened}
                 buttons={buttons}
                 error={this.state.error}
                 title={this.state.title}

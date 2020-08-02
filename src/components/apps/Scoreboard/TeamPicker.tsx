@@ -118,7 +118,6 @@ export default class TeamPicker extends React.PureComponent<{
 
         return (
             <Panel 
-                opened={this.props.opened}
                 title="Team Selection" 
                 contentName="team-picker"
                 className="team-panel"

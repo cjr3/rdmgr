@@ -238,7 +238,6 @@ export default class SlideshowEditor extends React.PureComponent<props, {
                 recordType={vars.RecordType.Slideshow}
                 buttons={buttons}
                 onSubmit={this.onSubmit}
-                opened={this.props.opened}
                 {...this.props}
                 >
                 <tr>
