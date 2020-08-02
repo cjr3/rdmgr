@@ -37,11 +37,11 @@ export default class Carousel extends React.PureComponent<{
         let cdeg:number = 0;
         this.props.images.forEach((cell, index) => {
             let ttz = tz;
-            if(this.props.index == index) {
+            if(this.props.index === index) {
                 ttz += 20;
             }
             let transform:string = "rotateY(" + ry + "deg) translateZ(" + ttz + "px)";
-            if(this.props.index == index) {
+            if(this.props.index === index) {
                 if(this.props.transform)
                     transform += " " + this.props.transform;
             }
@@ -56,12 +56,12 @@ export default class Carousel extends React.PureComponent<{
                 style = Object.assign(style, this.props.style);
 
             let className = cnames('carousel-cell', {
-                current:(this.props.index == index),
+                current:(this.props.index === index),
                 past:(index < this.props.index),
                 future:(index > this.props.index),
             });
 
-            if(this.props.index == index)
+            if(this.props.index === index)
                 cdeg = ry * -1;
 
             cells.push(

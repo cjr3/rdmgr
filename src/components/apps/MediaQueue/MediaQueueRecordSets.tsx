@@ -4,7 +4,6 @@ import MediaQueueController from 'controllers/MediaQueueController';
 import RecordSelector from 'components/data/RecordSelector';
 import SlideshowsController from 'controllers/SlideshowsController';
 import { Unsubscribe } from 'redux';
-import SlideshowController from 'controllers/SlideshowController';
 import SponsorController from 'controllers/SponsorController';
 import SponsorCaptureController from 'controllers/capture/Sponsor';
 import { Icon, IconHidden, IconShown, IconRight } from 'components/Elements';
@@ -80,7 +79,7 @@ class SponsorSelector extends React.PureComponent<any, {
         }
 
         this.setState({ID:value}, () => {
-            let record:SlideshowRecord = this.state.Records.find(r => r.RecordID == this.state.ID);
+            let record:SlideshowRecord = this.state.Records.find(r => r.RecordID === this.state.ID);
             if(record && record.Records) {
                 SponsorController.SetSlides(record.Records, record.RecordID);
                 SponsorController.Start();

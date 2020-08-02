@@ -25,7 +25,7 @@ export default class Status extends React.PureComponent<{
     updateScoreboard() {
         let cstate = ScoreboardController.GetState();
         let status = cstate.TeamA.Status;
-        if(this.props.side == cstate.TeamB.Side)
+        if(this.props.side === cstate.TeamB.Side)
             status = cstate.TeamB.Status;
         if(status !== this.state.status) {
             this.setState({status:status});

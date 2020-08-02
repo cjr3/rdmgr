@@ -67,10 +67,10 @@ export default class GameClock extends React.PureComponent<any, {
         let setTenths:boolean = false;
         this.setState(() => {
             var cstate = ScoreboardController.GetState();
-            if(cstate.GameState != vars.Clock.Status.Running
-                && cstate.GameHour == cstate.PhaseHour
-                && cstate.GameMinute == cstate.PhaseMinute
-                && cstate.GameSecond == cstate.PhaseSecond
+            if(cstate.GameState !== vars.Clock.Status.Running
+                && cstate.GameHour === cstate.PhaseHour
+                && cstate.GameMinute === cstate.PhaseMinute
+                && cstate.GameSecond === cstate.PhaseSecond
                 ) {
                 setTenths = true;
             }

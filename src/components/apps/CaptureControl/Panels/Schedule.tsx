@@ -112,19 +112,12 @@ export default class SchedulePanel extends React.PureComponent<{
 class MatchItem extends React.PureComponent<{
     record:any;
 }> {
-    constructor(props) {
-        super(props);
-    }
-
     render() {
-        let title:string = '';
         let teamALogo:string = '';
         let teamBLogo:string = '';
         let mdate:string = '';
 
         if(this.props.record) {
-            if(this.props.record.Name)
-                title = this.props.record.Name;
             if(this.props.record.TeamA && this.props.record.TeamA.Thumbnail)
                 teamALogo = this.props.record.TeamA.Thumbnail;
             if(this.props.record.TeamB && this.props.record.TeamB.Thumbnail)

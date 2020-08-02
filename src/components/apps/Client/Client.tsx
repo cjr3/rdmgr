@@ -33,7 +33,9 @@ import { Unsubscribe } from 'redux';
 import Login from 'components/data/api/Login';
 import UIController from 'controllers/UIController';
 import DeleteFileDialog from 'components/data/DeleteFileDialog';
-import { IconButton, IconBoxLeft } from 'components/Elements';
+import ScorekeeperReels from 'components/apps/Scorekeeper/Reels';
+
+//import RDMGR from 'rdmgr-lib';
 
 /**
  * Component for the client control form.
@@ -100,6 +102,8 @@ export default class Client extends React.PureComponent<any, {
             //CaptureController.Init();
             GameController.Init();
         });
+
+        //console.log(RDMGR.Test());
     }
 
     /**
@@ -117,6 +121,7 @@ export default class Client extends React.PureComponent<any, {
                 <ClientRecordRequest/>
                 <ClientLogin/>
                 <DeleteFileDialog/>
+                <ScorekeeperReels/>
             </React.Fragment>
         );
     }

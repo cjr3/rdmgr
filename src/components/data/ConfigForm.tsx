@@ -106,7 +106,7 @@ export default class ConfigForm extends React.PureComponent<{
     }
 
     protected setRecordType(type:string) {
-        if(!type || type == this.state.RecordType)
+        if(!type || type === this.state.RecordType)
             this.setState({RecordType:''});
         else
             this.setState({RecordType:type});
@@ -150,7 +150,7 @@ export default class ConfigForm extends React.PureComponent<{
 
     render() {
         let active:boolean = false;
-        if(this.state.AnthemSinger && this.state.RecordType == vars.RecordType.Anthem)
+        if(this.state.AnthemSinger && this.state.RecordType === vars.RecordType.Anthem)
             active = true;
 
         let className:string = cnames('CFG-app', {
@@ -180,62 +180,62 @@ export default class ConfigForm extends React.PureComponent<{
                 <div className="forms">
                     <AnthemEditor
                         record={this.state.AnthemSinger}
-                        opened={(this.state.RecordType == vars.RecordType.Anthem && this.state.AnthemSinger != null)}
+                        opened={(this.state.RecordType === vars.RecordType.Anthem && this.state.AnthemSinger != null)}
                         onCancel={() => this.setState({AnthemSinger:null})}
                         />
                     <PeerEditor
                         record={this.state.Peer}
-                        opened={(this.state.RecordType == vars.RecordType.Peer && this.state.Peer != null)}
+                        opened={(this.state.RecordType === vars.RecordType.Peer && this.state.Peer != null)}
                         onCancel={() => this.setState({Peer:null})}
                         />
                     <PenaltyEditor
                         record={this.state.Penalty}
-                        opened={(this.state.RecordType == vars.RecordType.Penalty && this.state.Penalty != null)}
+                        opened={(this.state.RecordType === vars.RecordType.Penalty && this.state.Penalty != null)}
                         onCancel={() => this.setState({Penalty:null})}
                         />
                     <PhaseEditor
                         record={this.state.Phase}
-                        opened={(this.state.RecordType == vars.RecordType.Phase && this.state.Phase != null)}
+                        opened={(this.state.RecordType === vars.RecordType.Phase && this.state.Phase != null)}
                         onCancel={() => this.setState({Phase:null})}
                         />
                     <SkaterEditor
                         record={this.state.Skater}
-                        opened={(this.state.RecordType == vars.RecordType.Skater && this.state.Skater != null)}
+                        opened={(this.state.RecordType === vars.RecordType.Skater && this.state.Skater != null)}
                         onCancel={() => this.setState({Skater:null})}
                         />
                     <TeamEditor
                         record={this.state.Team}
-                        opened={(this.state.RecordType == vars.RecordType.Team && this.state.Team != null)}
+                        opened={(this.state.RecordType === vars.RecordType.Team && this.state.Team != null)}
                         onCancel={() => this.setState({Team:null})}
                         />
                     <SlideshowEditor
                         record={this.state.Slideshow}
-                        opened={(this.state.RecordType == vars.RecordType.Slideshow && this.state.Slideshow != null)}
+                        opened={(this.state.RecordType === vars.RecordType.Slideshow && this.state.Slideshow != null)}
                         onCancel={() => this.setState({Slideshow:null})}
                         />
                     <VideoEditor
                         record={this.state.Video}
-                        opened={(this.state.RecordType == vars.RecordType.Video && this.state.Video != null)}
+                        opened={(this.state.RecordType === vars.RecordType.Video && this.state.Video != null)}
                         onCancel={() => this.setState({Video:null})}
                         />
                     <ConfigFormScoreboard
-                        opened={(this.state.RecordType == 'SCOREBOARD')}
+                        opened={(this.state.RecordType === 'SCOREBOARD')}
                         onCancel={() => this.setState({RecordType:''})}
                         onSubmit={() => this.setState({RecordType:''})}
                         />
                     <ConfirgFormAPI
-                        opened={(this.state.RecordType == 'API')}
+                        opened={(this.state.RecordType === 'API')}
                         onCancel={() => this.setState({RecordType:''})}
                         onSubmit={() => this.setState({RecordType:''})}
                         />
                     <MiscConfigForm
-                        opened={(this.state.RecordType == 'MISC')}
+                        opened={(this.state.RecordType === 'MISC')}
                         onCancel={() => this.setState({RecordType:''})}
                         onSubmit={() => this.setState({RecordType:''})}
                         />
                     <RDMGRMatchPanel
                         record={this.state.Match}
-                        opened={(this.state.RecordType == 'MAT' && this.state.Match != null)}
+                        opened={(this.state.RecordType === 'MAT' && this.state.Match !== null)}
                         onCancel={() => {this.setState({RecordType:'', Match:null})}}
                         onSave={() => {
                             this.setState({RecordType:'', Match:null});
@@ -254,56 +254,56 @@ export default class ConfigForm extends React.PureComponent<{
                     </div>
                     <div className="lists">
                         <AnthemRecordList
-                            shown={(this.state.RecordType == vars.RecordType.Anthem)}
+                            shown={(this.state.RecordType === vars.RecordType.Anthem)}
                             record={this.state.AnthemSinger}
                             onSelect={(record:AnthemRecord) => {this.setState({AnthemSinger:record})}}
                             keywords={this.state.Keywords}
                             />
                         <PeerRecordList
-                            shown={(this.state.RecordType == vars.RecordType.Peer)}
+                            shown={(this.state.RecordType === vars.RecordType.Peer)}
                             record={this.state.Peer}
                             onSelect={(record:PeerRecord) => {this.setState({Peer:record})}}
                             keywords={this.state.Keywords}
                             />
                         <PenaltyRecordList
-                            shown={(this.state.RecordType == vars.RecordType.Penalty)}
+                            shown={(this.state.RecordType === vars.RecordType.Penalty)}
                             record={this.state.Penalty}
                             onSelect={(record:PenaltyRecord) => {this.setState({Penalty:record})}}
                             keywords={this.state.Keywords}
                             />
                         <PhaseRecordList
-                            shown={(this.state.RecordType == vars.RecordType.Phase)}
+                            shown={(this.state.RecordType === vars.RecordType.Phase)}
                             record={this.state.Phase}
                             onSelect={(record:PhaseRecord) => {this.setState({Phase:record})}}
                             keywords={this.state.Keywords}
                             />
                         <SkaterRecordList
-                            shown={(this.state.RecordType == vars.RecordType.Skater)}
+                            shown={(this.state.RecordType === vars.RecordType.Skater)}
                             record={this.state.Skater}
                             onSelect={(record:SkaterRecord) => {this.setState({Skater:record})}}
                             keywords={this.state.Keywords}
                             />
                         <SlideshowRecordList
-                            shown={(this.state.RecordType == vars.RecordType.Slideshow)}
+                            shown={(this.state.RecordType === vars.RecordType.Slideshow)}
                             record={this.state.Slideshow}
                             onSelect={(record:SlideshowRecord) => {this.setState({Slideshow:record})}}
                             keywords={this.state.Keywords}
                             />
                         <TeamRecordList
-                            shown={(this.state.RecordType == vars.RecordType.Team)}
+                            shown={(this.state.RecordType === vars.RecordType.Team)}
                             record={this.state.Team}
                             onSelect={(record:TeamRecord) => {this.setState({Team:record})}}
                             keywords={this.state.Keywords}
                             />
                         <VideoRecordList
-                            shown={(this.state.RecordType == vars.RecordType.Video)}
+                            shown={(this.state.RecordType === vars.RecordType.Video)}
                             record={this.state.Video}
                             onSelect={(record:VideoRecord) => {this.setState({Video:record})}}
                             keywords={this.state.Keywords}
                             />
 
                         <RDMGRMatchList
-                            shown={(this.state.RecordType == 'MAT')}
+                            shown={(this.state.RecordType === 'MAT')}
                             record={this.state.Match}
                             onSelect={(record:MatchRecord) => {this.setState({Match:record})}}
                             keywords={this.state.Keywords}
@@ -313,7 +313,7 @@ export default class ConfigForm extends React.PureComponent<{
                         <Icon 
                             src={IconFlag}
                             title="Anthem Singers"
-                            active={(this.state.RecordType == vars.RecordType.Anthem)}
+                            active={(this.state.RecordType === vars.RecordType.Anthem)}
                             onClick={() => this.setRecordType(vars.RecordType.Anthem)}
                             />
                         <Icon
@@ -321,7 +321,7 @@ export default class ConfigForm extends React.PureComponent<{
                             title="Matches"
                             active={(this.state.RecordType === 'MAT')}
                             onClick={() => {
-                                if(this.state.RecordType != 'MAT') {
+                                if(this.state.RecordType !== 'MAT') {
                                     APIMatchesController.Load();
                                     APITeamsController.Load();
                                 }
@@ -331,61 +331,61 @@ export default class ConfigForm extends React.PureComponent<{
                         <Icon 
                             src={IconWhistle}
                             title="Penalties"
-                            active={(this.state.RecordType == vars.RecordType.Penalty)}
+                            active={(this.state.RecordType === vars.RecordType.Penalty)}
                             onClick={() => this.setRecordType(vars.RecordType.Penalty)}
                             />
                         <Icon 
                             src={IconStopwatch}
                             title="Quarters/Phases"
-                            active={(this.state.RecordType == vars.RecordType.Phase)}
+                            active={(this.state.RecordType === vars.RecordType.Phase)}
                             onClick={() => this.setRecordType(vars.RecordType.Phase)}
                             />
                         <Icon 
                             src={IconSkater}
                             title="Skaters"
-                            active={(this.state.RecordType == vars.RecordType.Skater)}
+                            active={(this.state.RecordType === vars.RecordType.Skater)}
                             onClick={() => this.setRecordType(vars.RecordType.Skater)}
                             />
                         <Icon 
                             src={IconTeam}
                             title="Teams"
-                            active={(this.state.RecordType == vars.RecordType.Team)}
+                            active={(this.state.RecordType === vars.RecordType.Team)}
                             onClick={() => this.setRecordType(vars.RecordType.Team)}
                             />
                         <Icon 
                             src={IconSlideshow}
                             title="Slideshows"
-                            active={(this.state.RecordType == vars.RecordType.Slideshow)}
+                            active={(this.state.RecordType === vars.RecordType.Slideshow)}
                             onClick={() => this.setRecordType(vars.RecordType.Slideshow)}
                             />
                         <Icon 
                             src={IconMovie}
                             title="Videos"
-                            active={(this.state.RecordType == vars.RecordType.Video)}
+                            active={(this.state.RecordType === vars.RecordType.Video)}
                             onClick={() => this.setRecordType(vars.RecordType.Video)}
                             />
                         <Icon 
                             src={IconOffline}
                             title="Network/Peers"
-                            active={(this.state.RecordType == vars.RecordType.Peer)}
+                            active={(this.state.RecordType === vars.RecordType.Peer)}
                             onClick={() => this.setRecordType(vars.RecordType.Peer)}
                             />
                         <Icon 
                             src={IconSkate}
                             title="Scoreboard"
-                            active={(this.state.RecordType == 'SCOREBOARD')}
+                            active={(this.state.RecordType === 'SCOREBOARD')}
                             onClick={() => this.setRecordType('SCOREBOARD')}
                             />
                         <Icon 
                             src={IconQueue}
                             title="API"
-                            active={(this.state.RecordType == 'API')}
+                            active={(this.state.RecordType === 'API')}
                             onClick={() => this.setRecordType('API')}
                             />
                         <Icon 
                             src={IconPalette}
                             title="Misc"
-                            active={(this.state.RecordType == 'MISC')}
+                            active={(this.state.RecordType === 'MISC')}
                             onClick={() => this.setRecordType('MISC')}
                             />
                     </div>

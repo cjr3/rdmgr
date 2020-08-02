@@ -1,6 +1,6 @@
 import React, { CSSProperties } from 'react';
 import cnames from 'classnames';
-import RosterController, { Sides, SRosterController, SRosterTeam } from 'controllers/RosterController';
+import RosterController, { SRosterController, SRosterTeam } from 'controllers/RosterController';
 import ScoreboardController, { SScoreboardTeam } from 'controllers/ScoreboardController';
 import vars, { SkaterRecord } from 'tools/vars';
 import Carousel, { CarouselRecord } from 'components/3d/Carousel';
@@ -139,7 +139,7 @@ export default class CaptureRoster extends React.PureComponent<any, {
         if(!Compare(skatersB, this.state.SkatersB))
             changes.SkatersB = skatersB;
 
-        if(cstate.SkaterIndex != this.state.SkaterIndex) {
+        if(cstate.SkaterIndex !== this.state.SkaterIndex) {
             if(cstate.SkaterIndex === -1)
                 changes.CurrentSlide = 'B';
             else if(this.state.CurrentSlide === 'A')
@@ -292,7 +292,7 @@ export default class CaptureRoster extends React.PureComponent<any, {
         let thumbnails:Array<CarouselRecord> = new Array<CarouselRecord>();
         let twidth:number = 150;
         let carouselClass = "caro";
-        if(this.state.SkaterIndex == -1)
+        if(this.state.SkaterIndex === -1)
             carouselClass = "cube";
         
         if(this.state.CurrentTeam === 'B') {
@@ -461,7 +461,7 @@ export class CaptureRosterBanner extends React.PureComponent<any, {
         let team:SRosterTeam = state.TeamA;
         let steam:SScoreboardTeam = ScoreboardController.GetState().TeamA;
 
-        if(state.CurrentTeam == 'B') {
+        if(state.CurrentTeam === 'B') {
             steam = ScoreboardController.GetState().TeamB;
             team = state.TeamB;
         }
@@ -485,10 +485,10 @@ export class CaptureRosterBanner extends React.PureComponent<any, {
                     src = skater.Thumbnail;
                 if(skater.Number)
                     num = skater.Number;
-                coach = (team.Roles.Coach == skater.RecordID) ? true : false;
-                penalty = (team.Roles.Penalty == skater.RecordID) ? true : false;
-                captain = (team.Roles.Captain == skater.RecordID) ? true : false;
-                cocaptain = (team.Roles.CoCaptain == skater.RecordID) ? true : false;
+                coach = (team.Roles.Coach === skater.RecordID) ? true : false;
+                penalty = (team.Roles.Penalty === skater.RecordID) ? true : false;
+                captain = (team.Roles.Captain === skater.RecordID) ? true : false;
+                cocaptain = (team.Roles.CoCaptain === skater.RecordID) ? true : false;
             }
         }
 
@@ -510,7 +510,7 @@ export class CaptureRosterBanner extends React.PureComponent<any, {
             }
         }
 
-        if(this.state.CurrentItem == 'A')
+        if(this.state.CurrentItem === 'A')
         {
             this.setState({
                 LogoB:logo,
@@ -565,39 +565,33 @@ export class CaptureRosterBanner extends React.PureComponent<any, {
         });
 
         let classA:string = cnames('item A', {
-            shown:(this.state.Shown && this.state.CurrentItem == 'A')
+            shown:(this.state.Shown && this.state.CurrentItem === 'A')
         });
 
         let classB:string = cnames('item B', {
-            shown:(this.state.Shown && this.state.CurrentItem == 'B')
+            shown:(this.state.Shown && this.state.CurrentItem === 'B')
         });
         
         let srcA:string = '';
         let nameA:string = '';
-        let colorA:string = '#000000';
 
         let srcB:string = '';
         let nameB:string = '';
-        let colorB:string = '#000000';
 
         if(this.state.SrcA)
             srcA = AddMediaPath(this.state.SrcA);
         if(this.state.NameA)
             nameA = this.state.NameA;
-        if(this.state.ColorA)
-            colorA = this.state.ColorA;
 
         if(this.state.SrcB)
             srcB = AddMediaPath(this.state.SrcB);
         if(this.state.NameB)
             nameB = this.state.NameB;
-        if(this.state.ColorB)
-            colorB = this.state.ColorB;
 
         
         let color:string = this.state.TeamColorA;
         let logo:string = AddMediaPath(this.state.TeamLogoA);
-        if(this.state.CurrentTeam == 'B') {
+        if(this.state.CurrentTeam === 'B') {
             color = this.state.TeamColorB;
             logo = AddMediaPath(this.state.TeamLogoB);
         }

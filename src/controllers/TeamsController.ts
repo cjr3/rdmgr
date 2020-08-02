@@ -64,7 +64,7 @@ TeamsController.GetTeamSkaters = (id:number, sorted:boolean = true) : Array<Skat
     let records:Array<SkaterRecord> = SkatersController.Get();
     records.forEach((skater:SkaterRecord) => {
         if(skater.Teams && skater.Teams.length >= 1) {
-            let team:SkaterTeamRecord|undefined = skater.Teams.find(r => r.TeamID == id);
+            let team:SkaterTeamRecord|undefined = skater.Teams.find(r => r.TeamID === id);
             if(team) {
                 skaters.push(Object.assign({}, skater, {
                     Teams:[team],

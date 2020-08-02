@@ -8,7 +8,7 @@ import AnthemCaptureController from 'controllers/capture/Anthem';
 import RosterCaptureController from 'controllers/capture/Roster';
 import SlideshowCaptureController from 'controllers/capture/Slideshow';
 import VideoCaptureController from 'controllers/capture/Video';
-import { IController, Files } from './vars';
+import { IController } from './vars';
 import { CreateController, BaseReducer } from './functions.controllers';
 import { AddMediaPath, PrepareObjectForSending, MoveElement } from './functions';
 import VideosController from './VideosController';

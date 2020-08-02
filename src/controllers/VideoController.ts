@@ -1,7 +1,7 @@
 import keycodes from 'tools/keycodes';
 import vars from 'tools/vars';
 
-import {IController, Files} from './vars';
+import {IController } from './vars';
 import {CreateController, BaseReducer} from './functions.controllers';
 import VideoCaptureController from './capture/Video';
 import { RemoveMediaPath, AddMediaPath, PrepareObjectForSending } from './functions';
@@ -166,16 +166,8 @@ const PlayNow = (state:SVideoController, source:string, muted:boolean = false) =
     };
 };
 
-const Play = (state:SVideoController) => {
-    return {...state, Status:vars.Video.Status.Playing};
-};
-
 const Stop = (state:SVideoController) => {
     return {...state, Status:vars.Video.Status.Stopped, CurrentTime:0};
-};
-
-const Pause = (state:SVideoController) => {
-    return {...state, Status:vars.Video.Status.Paused};
 };
 
 const Mute = (state:SVideoController) => {
@@ -201,7 +193,7 @@ const ToggleMute = (state:SVideoController) => {
 const TogglePlayPause = (state:SVideoController) => {
     if(!state.Source)
         return state;
-    if(state.Status != vars.Video.Status.Playing)
+    if(state.Status !== vars.Video.Status.Playing)
         return {...state, Status:vars.Video.Status.Playing};
     return {...state, Status:vars.Video.Status.Paused};
 };
@@ -215,7 +207,7 @@ const ToggleAuto = (state:SVideoController) => {
 };
 
 const NextFrame = (state:SVideoController) => {
-    if(state.Status == vars.Video.Status.Playing)
+    if(state.Status === vars.Video.Status.Playing)
         return state;
     if(state.CurrentTime >= state.Duration)
         return state;
@@ -223,25 +215,9 @@ const NextFrame = (state:SVideoController) => {
 };
 
 const PrevFrame = (state:SVideoController) => {
-    if(state.Status == vars.Video.Status.Playing || state.CurrentTime <= 0)
+    if(state.Status === vars.Video.Status.Playing || state.CurrentTime <= 0)
         return state;
     return SetTime(state, state.CurrentTime - state.FrameSpeed);
-};
-
-const IncreaseVolume = (state:SVideoController, amount:number) => {
-    return SetVolumne(state, state.Volume + amount);
-};
-
-const DecreaseVolume = (state:SVideoController, amount:number) => {
-    return SetVolumne(state, state.Volume - amount);
-};
-
-const IncreaseRate = (state:SVideoController, amount:number) => {
-    return SetRate(state, state.Rate + amount);
-};
-
-const DecreaseRate = (state:SVideoController, amount:number) => {
-    return SetRate(state, state.Rate - amount);
 };
 
 const SetStatus = (state:SVideoController, status:number) => {

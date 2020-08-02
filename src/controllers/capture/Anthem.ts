@@ -1,7 +1,6 @@
 import {CreateController, BaseReducer} from './functions';
 import vars, { AnthemRecord } from 'tools/vars';
 import { ICaptureController, SCaptureControllerState } from './vars';
-import { Files } from 'controllers/vars';
 
 interface IAnthemController extends ICaptureController {
     SetRecord:Function;

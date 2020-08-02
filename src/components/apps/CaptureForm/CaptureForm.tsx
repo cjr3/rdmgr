@@ -14,7 +14,7 @@ import CaptureRaffle from './CaptureRaffle'
 import CaptureScorekeeper from './CaptureScorekeeper'
 import CaptureSponsor from './CaptureSponsor';
 import CaptureAnnouncers from './CaptureAnnouncers';
-import CaptureRoster, { CaptureRosterBanner } from './CaptureRoster';
+import { CaptureRosterBanner } from './CaptureRoster';
 import CaptureStandings, { StandingsBanner } from './CaptureStandings';
 import CaptureSchedule, { ScheduleBanner } from './CaptureSchedule';
 import CaptureScores, { ScoresBanner } from './CaptureScores';

@@ -6,7 +6,7 @@
 import keycodes from 'tools/keycodes';
 import {SlideshowRecord} from 'tools/vars';
 
-import {IController, Files} from './vars';
+import {IController} from './vars';
 import {CreateController, BaseReducer} from './functions.controllers';
 import SlideshowCaptureController from './capture/Slideshow';
 import SlideshowsController from './SlideshowsController';
@@ -124,13 +124,6 @@ const DisplaySlide = (state:SSlideshowController, index:number) => {
     return {
         ...state,
         Index:getCorrectIndex(index, state.Slides.length, state.Loop)
-    };
-};
-
-const StartSlideshow = (state:SSlideshowController) => {
-    return {
-        ...state,
-        Index:0
     };
 };
 

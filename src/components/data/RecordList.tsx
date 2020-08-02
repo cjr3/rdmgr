@@ -21,10 +21,6 @@ export default class RecordList extends React.Component<{
         records:[]
     }
 
-    constructor(props) {
-        super(props);
-    }
-
     /**
      * Determines if the component should update or not.
      * - Returns false if the passed 'records' property is different.
@@ -39,7 +35,7 @@ export default class RecordList extends React.Component<{
             return true;
         if(nextProps.recordid !== this.props.recordid)
             return true;
-        if(nextProps.className != this.props.className)
+        if(nextProps.className !== this.props.className)
             return true;
         if(Compare(nextProps.records, this.props.records)) {
             return false;
@@ -74,7 +70,7 @@ export default class RecordList extends React.Component<{
                 }
                 
                 let className = cnames({
-                    active:(record.RecordID == this.props.recordid),
+                    active:(record.RecordID === this.props.recordid),
                     hidden:hidden
                 });
                 items.push(

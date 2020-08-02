@@ -1,21 +1,15 @@
 import React from 'react';
 import AnnouncerCaptureController from 'controllers/capture/Announcer';
 import AnthemCaptureController from 'controllers/capture/Anthem';
-import RosterCaptureController from 'controllers/capture/Roster';
 import PenaltyCaptureController from 'controllers/capture/Penalty';
 import ScorekeeperCaptureController from 'controllers/capture/Scorekeeper';
 import ScoresCaptureController from 'controllers/capture/Scores';
 import ScheduleCaptureController from 'controllers/capture/Schedule';
 import StandingsCaptureController from 'controllers/capture/Standings';
-import ScoreboardCaptureController, { ScorebannerCaptureController } from 'controllers/capture/Scoreboard';
+import { ScorebannerCaptureController } from 'controllers/capture/Scoreboard';
 import { Unsubscribe } from 'redux';
-import { Icon, IconMic, IconFlag, IconWhistle, IconSkate, IconTeam, IconClipboard, IconStreamOff, IconButton, IconX } from 'components/Elements';
-
-import AnnouncerPanel from './Announcer';
-import AnthemPanel from './Anthem';
-import CameraPanel from './Camera';
+import { Icon, IconMic, IconFlag, IconWhistle, IconClipboard } from 'components/Elements';
 import PenaltyTrackerPanel from './PenaltyTracker';
-import RosterPanel from './Roster';
 import CameraCaptureController from 'controllers/capture/Camera';
 import Positions from 'components/apps/Scorekeeper/Positions';
 

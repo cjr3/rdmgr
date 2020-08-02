@@ -55,7 +55,7 @@ export default class MediaQueueSlideshow extends React.PureComponent<any, {
         if(ev.shiftKey && ev.ctrlKey) {
             UIController.ShowDeleteFileDialog(this.state.Slides[index].Filename, () => {
                 SlideshowController.RemoveSlide(index);
-                if(this.state.Record && this.state.Record.RecordType == vars.RecordType.Slideshow) {
+                if(this.state.Record && this.state.Record.RecordType === vars.RecordType.Slideshow) {
                     let record:any = {...this.state.Record, Records:this.state.Slides};
                     record.Records.splice(index, 1);
                     MediaQueueController.UpdateRecord(this.state.Index, record);
@@ -66,7 +66,7 @@ export default class MediaQueueSlideshow extends React.PureComponent<any, {
             });
         } else if(ev.shiftKey) {
             SlideshowController.RemoveSlide(index);
-            if(this.state.Record && this.state.Record.RecordType == vars.RecordType.Slideshow) {
+            if(this.state.Record && this.state.Record.RecordType === vars.RecordType.Slideshow) {
                 let record:any = {...this.state.Record, Records:this.state.Slides};
                 record.Records.splice(index, 1);
                 MediaQueueController.UpdateRecord(this.state.Index, record);
@@ -112,7 +112,7 @@ export default class MediaQueueSlideshow extends React.PureComponent<any, {
             });
         });
 
-        if(this.state.Record && this.state.Record.RecordType == vars.RecordType.Slideshow)
+        if(this.state.Record && this.state.Record.RecordType === vars.RecordType.Slideshow)
             shown = true;
 
         return (

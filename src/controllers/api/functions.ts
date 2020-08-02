@@ -7,12 +7,6 @@ let API_ENDPOINT_VALIDATE:string = '';
 let API_ENDPOINT_AUTH:string = '';
 let API_ENDPOINT:string = '';
 
-//RDMGR
-let RDMGR_API_ENDPOINT:string = '';
-let RDMGR_AUTH_TOKEN:string = '';
-let RDMGR_AUTH_ENDPOINT:string = '';
-let RDMGR_VALIDATE_ENDPOINT:string = '';
-
 //YouTube DATA
 let YOUTUBE_DATA_API_KEY:string = '';
 
@@ -245,7 +239,7 @@ export const LoadMatches = async (options:any = null) : Promise<any> => {
 };
 
 const GetRecordIndex = (records:Array<any>, id:number) => {
-    return records.findIndex((r => r.RecordID == id));
+    return records.findIndex((r => r.RecordID === id));
 }
 
 export const SetRecords = (state:SAPIController, records:Array<any>) => {

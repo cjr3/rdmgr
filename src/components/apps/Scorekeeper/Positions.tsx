@@ -117,7 +117,7 @@ export function SkaterItem(props:{skater:SkaterRecord|null,color:string}) {
         return (
             <div className="skater" style={{backgroundColor:props.color}}>
                 <div className="thumbnail">
-                    <img src={src}/>
+                    <img src={src} alt=""/>
                 </div>
                 <div className="num">{num}</div>
                 <div className="name">{name}</div>

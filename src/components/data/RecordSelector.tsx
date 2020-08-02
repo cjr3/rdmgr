@@ -9,7 +9,6 @@ import {TeamRecordList} from './TeamEditor';
 import {SlideshowRecordList} from './SlideshowEditor';
 import {VideoRecordList} from './VideoEditor';
 import { Icon, IconFlag, IconOffline, IconWhistle, IconSkater, IconSlideshow, IconTeam, IconStopwatch, IconMovie, IconPlus } from 'components/Elements';
-import DataController from 'controllers/DataController';
 import AnthemsController from 'controllers/AnthemsController';
 import PeersController from 'controllers/PeersController';
 import PenaltiesController from 'controllers/PenaltiesController';
@@ -165,9 +164,9 @@ export default class RecordSelector extends React.PureComponent<{
             children.push(
                 <AnthemRecordList
                     key={`list-${vars.RecordType.Anthem}`}
-                    shown={(this.state.RecordType == vars.RecordType.Anthem)}
+                    shown={(this.state.RecordType === vars.RecordType.Anthem)}
                     keywords={this.props.keywords}
-                    record={((this.props.highlight == undefined || this.props.highlight == true) ? this.state.Anthem : null)}
+                    record={((this.props.highlight === undefined || this.props.highlight === true) ? this.state.Anthem : null)}
                     onSelect={this.onSelectAnthem}
                 />
             );
@@ -175,7 +174,7 @@ export default class RecordSelector extends React.PureComponent<{
                 <Icon
                     key={`icon-${vars.RecordType.Anthem}`}
                     src={IconFlag}
-                    active={(this.state.RecordType == vars.RecordType.Anthem)}
+                    active={(this.state.RecordType === vars.RecordType.Anthem)}
                     onClick={() => {this.setState({RecordType:vars.RecordType.Anthem})}}
                     title={`Anthem Singers`}
                 />
@@ -187,9 +186,9 @@ export default class RecordSelector extends React.PureComponent<{
             children.push(
                 <PenaltyRecordList
                     key={`list-${vars.RecordType.Penalty}`}
-                    shown={(this.state.RecordType == vars.RecordType.Penalty)}
+                    shown={(this.state.RecordType === vars.RecordType.Penalty)}
                     keywords={this.props.keywords}
-                    record={((this.props.highlight == undefined || this.props.highlight == true) ? this.state.Penalty : null)}
+                    record={((this.props.highlight === undefined || this.props.highlight === true) ? this.state.Penalty : null)}
                     onSelect={this.onSelectPenalty}
                 />
             );
@@ -197,7 +196,7 @@ export default class RecordSelector extends React.PureComponent<{
                 <Icon
                     key={`icon-${vars.RecordType.Penalty}`}
                     src={IconWhistle}
-                    active={(this.state.RecordType == vars.RecordType.Penalty)}
+                    active={(this.state.RecordType === vars.RecordType.Penalty)}
                     onClick={() => {this.setState({RecordType:vars.RecordType.Penalty})}}
                     title={`Penalties`}
                 />
@@ -209,9 +208,9 @@ export default class RecordSelector extends React.PureComponent<{
             children.push(
                 <PhaseRecordList
                     key={`list-${vars.RecordType.Phase}`}
-                    shown={(this.state.RecordType == vars.RecordType.Phase)}
+                    shown={(this.state.RecordType === vars.RecordType.Phase)}
                     keywords={this.props.keywords}
-                    record={((this.props.highlight == undefined || this.props.highlight == true) ? this.state.Phase : null)}
+                    record={((this.props.highlight === undefined || this.props.highlight === true) ? this.state.Phase : null)}
                     onSelect={this.onSelectPhase}
                 />
             );
@@ -219,7 +218,7 @@ export default class RecordSelector extends React.PureComponent<{
                 <Icon
                     key={`icon-${vars.RecordType.Phase}`}
                     src={IconStopwatch}
-                    active={(this.state.RecordType == vars.RecordType.Phase)}
+                    active={(this.state.RecordType === vars.RecordType.Phase)}
                     onClick={() => {this.setState({RecordType:vars.RecordType.Phase})}}
                     title={`Phases/Quarters`}
                 />
@@ -231,9 +230,9 @@ export default class RecordSelector extends React.PureComponent<{
             children.push(
                 <SkaterRecordList
                     key={`list-${vars.RecordType.Skater}`}
-                    shown={(this.state.RecordType == vars.RecordType.Skater)}
+                    shown={(this.state.RecordType === vars.RecordType.Skater)}
                     keywords={this.props.keywords}
-                    record={((this.props.highlight == undefined || this.props.highlight == true) ? this.state.Skater : null)}
+                    record={((this.props.highlight === undefined || this.props.highlight === true) ? this.state.Skater : null)}
                     onSelect={this.onSelectSkater}
                 />
             );
@@ -241,7 +240,7 @@ export default class RecordSelector extends React.PureComponent<{
                 <Icon
                     key={`icon-${vars.RecordType.Skater}`}
                     src={IconSkater}
-                    active={(this.state.RecordType == vars.RecordType.Skater)}
+                    active={(this.state.RecordType === vars.RecordType.Skater)}
                     onClick={() => {this.setState({RecordType:vars.RecordType.Skater})}}
                     title={`Skaters`}
                 />
@@ -253,9 +252,9 @@ export default class RecordSelector extends React.PureComponent<{
             children.push(
                 <TeamRecordList
                     key={`list-${vars.RecordType.Team}`}
-                    shown={(this.state.RecordType == vars.RecordType.Team)}
+                    shown={(this.state.RecordType === vars.RecordType.Team)}
                     keywords={this.props.keywords}
-                    record={((this.props.highlight == undefined || this.props.highlight == true) ? this.state.Team : null)}
+                    record={((this.props.highlight === undefined || this.props.highlight === true) ? this.state.Team : null)}
                     onSelect={this.onSelectTeam}
                 />
             );
@@ -263,7 +262,7 @@ export default class RecordSelector extends React.PureComponent<{
                 <Icon
                     key={`icon-${vars.RecordType.Team}`}
                     src={IconTeam}
-                    active={(this.state.RecordType == vars.RecordType.Team)}
+                    active={(this.state.RecordType === vars.RecordType.Team)}
                     onClick={() => {this.setState({RecordType:vars.RecordType.Team})}}
                     title={`Teams`}
                 />
@@ -275,9 +274,9 @@ export default class RecordSelector extends React.PureComponent<{
             children.push(
                 <SlideshowRecordList
                     key={`list-${vars.RecordType.Slideshow}`}
-                    shown={(this.state.RecordType == vars.RecordType.Slideshow)}
+                    shown={(this.state.RecordType === vars.RecordType.Slideshow)}
                     keywords={this.props.keywords}
-                    record={((this.props.highlight == undefined || this.props.highlight == true) ? this.state.Slideshow : null)}
+                    record={((this.props.highlight === undefined || this.props.highlight === true) ? this.state.Slideshow : null)}
                     onSelect={this.onSelectSlideshow}
                 />
             );
@@ -285,7 +284,7 @@ export default class RecordSelector extends React.PureComponent<{
                 <Icon
                     key={`icon-${vars.RecordType.Slideshow}`}
                     src={IconSlideshow}
-                    active={(this.state.RecordType == vars.RecordType.Slideshow)}
+                    active={(this.state.RecordType === vars.RecordType.Slideshow)}
                     onClick={() => {this.setState({RecordType:vars.RecordType.Slideshow})}}
                     title={`Slideshows`}
                 />
@@ -297,9 +296,9 @@ export default class RecordSelector extends React.PureComponent<{
             children.push(
                 <VideoRecordList
                     key={`list-${vars.RecordType.Video}`}
-                    shown={(this.state.RecordType == vars.RecordType.Video)}
+                    shown={(this.state.RecordType === vars.RecordType.Video)}
                     keywords={this.props.keywords}
-                    record={((this.props.highlight == undefined || this.props.highlight == true) ? this.state.Video : null)}
+                    record={((this.props.highlight === undefined || this.props.highlight === true) ? this.state.Video : null)}
                     onSelect={this.onSelectVideo}
                 />
             );
@@ -307,7 +306,7 @@ export default class RecordSelector extends React.PureComponent<{
                 <Icon
                     key={`icon-${vars.RecordType.Video}`}
                     src={IconMovie}
-                    active={(this.state.RecordType == vars.RecordType.Video)}
+                    active={(this.state.RecordType === vars.RecordType.Video)}
                     onClick={() => {this.setState({RecordType:vars.RecordType.Video})}}
                     title={`Videos`}
                 />
@@ -319,9 +318,9 @@ export default class RecordSelector extends React.PureComponent<{
             children.push(
                 <PeerRecordList
                     key={`list-${vars.RecordType.Peer}`}
-                    shown={(this.state.RecordType == vars.RecordType.Peer)}
+                    shown={(this.state.RecordType === vars.RecordType.Peer)}
                     keywords={this.props.keywords}
-                    record={((this.props.highlight == undefined || this.props.highlight == true) ? this.state.Peer : null)}
+                    record={((this.props.highlight === undefined || this.props.highlight === true) ? this.state.Peer : null)}
                     onSelect={this.onSelectPeer}
                 />
             );
@@ -329,7 +328,7 @@ export default class RecordSelector extends React.PureComponent<{
                 <Icon
                     key={`icon-${vars.RecordType.Peer}`}
                     src={IconOffline}
-                    active={(this.state.RecordType == vars.RecordType.Peer)}
+                    active={(this.state.RecordType === vars.RecordType.Peer)}
                     onClick={() => {this.setState({RecordType:vars.RecordType.Peer})}}
                     title={`Peers/Network`}
                 />

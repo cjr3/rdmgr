@@ -161,27 +161,8 @@ export default class RosterSkaterList extends React.PureComponent<any, {
         }
     }
 
-    protected async addSkaterToTeam(side:string, skater) {
-        let aindex:number = this.state.TeamASkaters.findIndex((s) => {
-            return (s.RecordID === skater.RecordID);
-        });
-        let bindex:number = this.state.TeamBSkaters.findIndex((s) => {
-            return (s.RecordID === skater.RecordID);
-        });
-
-        if(side === 'A') {
-            if(aindex < 0)
-                RosterController.AddSkater('A', skater);
-            else
-                RosterController.RemoveSkater('A', skater);
-            RosterController.RemoveSkater('B', skater);
-        } else {
-            if(bindex < 0)
-                RosterController.AddSkater('B', skater);
-            else
-                RosterController.RemoveSkater('B', skater);
-            RosterController.RemoveSkater('A', skater);
-        }
+    protected async addSkaterToTeam(side:Sides, skater) {
+        RosterController.ToggleSkater(side, skater);
     }
 
     /**
@@ -193,11 +174,10 @@ export default class RosterSkaterList extends React.PureComponent<any, {
     protected async addSkater(side:Sides) {
         let num:string = this.state.JerseyNumber;
         let name:string = this.state.SkaterName;
-        let pos:string = this.state.SkaterPosition;
 
         let found:boolean = this.state.Skaters.some((skater) => {
             let add:boolean = false;
-            if(name && skater.Name.toLowerCase() == name.toLowerCase()) {
+            if(name && skater.Name.toLowerCase() === name.toLowerCase()) {
                 if(!num) {
                     add = true;
                 } else {
@@ -301,7 +281,8 @@ export default class RosterSkaterList extends React.PureComponent<any, {
                             src={(aindex >= 0) ? IconX : IconLeft}
                             active={(aindex >= 0)}
                             onClick={() => {
-                                this.addSkaterToTeam('A', skater);
+                                //this.addSkaterToTeam('A', skater);
+                                RosterController.ToggleSkater('A', skater);
                             }}
                         />
                         <div className="number">{num}</div>
@@ -310,7 +291,8 @@ export default class RosterSkaterList extends React.PureComponent<any, {
                             src={(bindex >= 0) ? IconX : IconRight}
                             active={(bindex >= 0)}
                             onClick={() => {
-                                this.addSkaterToTeam('B', skater);
+                                //this.addSkaterToTeam('B', skater);
+                                RosterController.ToggleSkater('B', skater);
                             }}
                         />
                     </div>

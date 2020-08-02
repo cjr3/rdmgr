@@ -4,6 +4,20 @@
 
 import ScoreboardController from './ScoreboardController';
 import RosterController from './RosterController';
+import AnnouncerCaptureController from './capture/Announcer';
+import AnthemCaptureController from './capture/Anthem';
+import PenaltyCaptureController from './capture/Penalty';
+import RaffleCaptureController from './capture/Raffle';
+import RosterCaptureController from './capture/Roster';
+import ScheduleCaptureController from './capture/Schedule';
+import ScoresCaptureController from './capture/Scores';
+import SlideshowCaptureController from './capture/Slideshow';
+import StandingsCaptureController from './capture/Standings';
+import ScorekeeperController from './ScorekeeperController';
+import UIController from './UIController';
+import { SkaterRecord } from 'tools/vars';
+import ClientController from './ClientController';
+import DataController from './DataController';
 
 export interface GameButton {
     /**
@@ -274,12 +288,59 @@ export const GamepadAxisMap:IGamepadAxes = {
     }
 }
 
+let reelA:any = 0;
+let reelB:any = 0;
+
+const SpinScorekeeperReel = (side:string, direction:boolean) => {
+    let skaters:Array<SkaterRecord> = RosterController.GetState().TeamA.Skaters;
+    let index:number = ClientController.GetState().RosterTeamAIndex;
+    if(side === 'B') {
+        skaters = RosterController.GetState().TeamB.Skaters;
+        index = ClientController.GetState().RosterTeamBIndex;
+    }
+
+    skaters = skaters.filter(skater => (typeof(skater.Number) === 'string' && skater.Number));
+    if(direction) {
+        index--;
+    } else {
+        index++;
+    }
+
+    if(index >= skaters.length) {
+        index = -1;
+    } else if(index < -1) {
+        index = skaters.length - 1;
+    }
+
+    if(index < -1)
+        index = -1;
+
+    try {
+        if(side === 'A')
+            clearTimeout(reelA);
+        else
+            clearTimeout(reelB);
+    }catch(er){}
+
+    if(side === 'A') {
+        reelA = setTimeout(() => {
+            ClientController.SetRosterIndex(side, index);
+        }, 100);
+    } else {
+        reelB = setTimeout(() => {
+            ClientController.SetRosterIndex(side, index);
+        }, 100);
+    }
+};
+
 class GameControllerHandler {
 
     /**
      * 
      */
     protected Timer:number = 0;
+
+    protected StickTimer:any = 0;
 
     /**
      * Gamepad object
@@ -349,7 +410,7 @@ class GameControllerHandler {
      */
     protected async onGamePadDisconnected(e:any|GamepadEvent) {
         this.Gamepads = await this.LoadControllers();
-        if(e instanceof GamepadEvent && this.Gamepad !== null && e.gamepad.id == this.Gamepad.id) {
+        if(e instanceof GamepadEvent && this.Gamepad !== null && e.gamepad.id === this.Gamepad.id) {
             this.Gamepad = null;
         }
     }
@@ -384,6 +445,23 @@ class GameControllerHandler {
             if(GamepadButtonMap[key].frames > 60)
                 GamepadButtonMap[key].frames = 1;
         }
+    }
+
+    protected resetSticks() {
+        try {
+            clearTimeout(this.StickTimer);
+        } catch(er) {
+
+        }
+        return;
+        /*
+        this.StickTimer = setTimeout(() => {
+            GamepadAxisMap.LSTICK.x = 0;
+            GamepadAxisMap.LSTICK.y = 0;
+            GamepadAxisMap.RSTICK.x = 0;
+            GamepadAxisMap.RSTICK.y = 0;
+        }, 1500);
+        */
     }
 
     /**
@@ -426,35 +504,113 @@ class GameControllerHandler {
             GamepadAxisMap.LSTICK.y = parseFloat(this.Gamepad.axes[1].toFixed(2));
             GamepadAxisMap.RSTICK.x = parseFloat(this.Gamepad.axes[2].toFixed(2));
             GamepadAxisMap.RSTICK.y = parseFloat(this.Gamepad.axes[3].toFixed(2));
-            if(GamepadAxisMap.LSTICK.x != lx || GamepadAxisMap.LSTICK.y != ly
-                || GamepadAxisMap.RSTICK.x != rx || GamepadAxisMap.RSTICK.y != ry) {
+            if(GamepadAxisMap.LSTICK.x !== lx || GamepadAxisMap.LSTICK.y !== ly
+                || GamepadAxisMap.RSTICK.x !== rx || GamepadAxisMap.RSTICK.y !== ry) {
                 stickMoved = true;
             }
         }
 
+        let sendToScoreboard:boolean = true;
+        let streamMode:boolean = DataController.GetMiscRecord('StreamMode');
         //Button Pressed
         if(buttonPressed) {
-            //Y
-            if(GamepadButtonMap.Y.pressed) {
-                RosterController.onGamepadButtonPress(GamepadButtonMap);
-            } else {
+            //Roster Control
+            if(streamMode && GamepadButtonMap.Y.pressed) {
+                //RosterController.onGamepadButtonPress(GamepadButtonMap);
+                sendToScoreboard = false;
+            } else if(streamMode && GamepadButtonMap.R3.pressed) {
+                ScorekeeperController.ShiftDecks();
+                sendToScoreboard = false;
+            } else if(streamMode && GamepadButtonMap.R2.pressed && GamepadButtonMap.B.pressed) {
+                AnnouncerCaptureController.Hide();
+                AnthemCaptureController.Hide();
+                PenaltyCaptureController.Hide();
+                RaffleCaptureController.Hide();
+                RosterCaptureController.Hide();
+                ScheduleCaptureController.Hide();
+                ScoresCaptureController.Hide();
+                SlideshowCaptureController.Hide();
+                StandingsCaptureController.Hide();
+                ClientController.SetRosterIndex('A', -1);
+                ClientController.SetRosterIndex('B', -1);
+                ScorekeeperController.SetPosition('A', null, 'Jammer', 'Track')
+                ScorekeeperController.SetPosition('B', null, 'Jammer', 'Track')
+                sendToScoreboard = false;
+            } else if(streamMode && GamepadButtonMap.B.pressed) {
+                if(UIController.GetState().ScorekeeperReel.Shown
+                    && (
+                        ClientController.GetState().RosterTeamAIndex >= 0 
+                        || ClientController.GetState().RosterTeamBIndex >= 0 
+                    )) {
+                    ScorekeeperController.ShiftDecks();
+                    ClientController.SetRosterIndex('A', -1);
+                    ClientController.SetRosterIndex('B', -1);
+                } else {
+                    UIController.ToggleScorekeeperReel();
+                }
+
+                sendToScoreboard = false;
+            } else if(streamMode && GamepadButtonMap.A.pressed) {
+                if(UIController.GetState().ScorekeeperReel.Shown) {
+                    let skatersA:Array<SkaterRecord> = RosterController.GetState().TeamA.Skaters;
+                    let skatersB:Array<SkaterRecord> = RosterController.GetState().TeamB.Skaters;
+                    let aIndex:number = ClientController.GetState().RosterTeamAIndex;
+                    let bIndex:number = ClientController.GetState().RosterTeamBIndex;
+
+                    if(aIndex < 0 || aIndex >= skatersA.length || !skatersA[aIndex]) {
+                        ScorekeeperController.SetPosition('A', null, 'Jammer', 'Track')
+                    } else {
+                        ScorekeeperController.SetPosition('A', skatersA[aIndex], 'Jammer', 'Track')
+                    }
+                    
+                    if(bIndex < 0 || bIndex >= skatersB.length || !skatersB[bIndex]) {
+                        ScorekeeperController.SetPosition('B', null, 'Jammer', 'Track')
+                    } else {
+                        ScorekeeperController.SetPosition('B', skatersB[bIndex], 'Jammer', 'Track')
+                    }
+                    sendToScoreboard = false;
+                }
+                UIController.SetDisplay('ScorekeeperReel', false);
+            } 
+
+            if(streamMode && UIController.GetState().ScorekeeperReel.Shown) {
+                if(GamepadButtonMap.LEFT.pressed) {
+                    if(GamepadButtonMap.R2.pressed)
+                        SpinScorekeeperReel('A', true);
+                    else
+                        SpinScorekeeperReel('A', false);
+                    sendToScoreboard = false;
+                }
+                
+                if(GamepadButtonMap.RIGHT.pressed) {
+                    if(GamepadButtonMap.R2.pressed)
+                        SpinScorekeeperReel('B', true);
+                    else
+                        SpinScorekeeperReel('B', false);
+                    sendToScoreboard = false;
+                }
+            }
+
+            if(sendToScoreboard) {
                 ScoreboardController.onGamepadButtonPress(GamepadButtonMap);
             }
         }
 
         //Button Down
         if(buttonDown) {
-            ScoreboardController.onGamepadButtonDown(GamepadButtonMap);
+            //if(sendToScoreboard)
+                //ScoreboardController.onGamepadButtonDown(GamepadButtonMap);
         }
 
         //Button Released
         if(buttonReleased) {
-            ScoreboardController.onGamepadButtonUp(GamepadButtonMap);
+            //if(sendToScoreboard)
+                //ScoreboardController.onGamepadButtonUp(GamepadButtonMap);
         }
 
         //moved control sticks
         if(stickMoved) {
-            ScoreboardController.onGamepadAxis(GamepadAxisMap);
+            
         }
 
         this.resetButtons();

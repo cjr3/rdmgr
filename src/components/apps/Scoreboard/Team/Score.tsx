@@ -49,7 +49,7 @@ export default class Score extends React.PureComponent<{
             color = state.TeamB.Color;
         }
 
-        if(this.state.amount != score || this.state.color !== color) {
+        if(this.state.amount !== score || this.state.color !== color) {
             this.setState({
                 amount:score,
                 color:color

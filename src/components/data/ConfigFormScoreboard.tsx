@@ -178,7 +178,7 @@ export default class ConfigFormScoreboard extends React.PureComponent<{
      * @param prevProps 
      */
     componentDidUpdate(prevProps) {
-        if(prevProps.opened != this.props.opened) {
+        if(prevProps.opened !== this.props.opened) {
             if(this.props.opened)
                 this.load();
         }

@@ -29,6 +29,8 @@ interface IRosterController extends IController {
     //Roles
     SetRole:{(side:string, id:number, role:string)};
 
+    ToggleSkater:{(side:Sides,record:SkaterRecord)};
+
     //Penalties (Penalty Tracker)
     updatePenaltyTracker:Unsubscribe;
 
@@ -55,7 +57,8 @@ enum Actions {
     SET_ROLE = 'SET_ROLE',
     UPDATE_PENALTY_TRACKER = 'UPDATE_PENALTY_TRACKER',
     UPDATE_SCOREKEEPER = 'UPDATE_SCOREKEEPER',
-    UPDATE_SKATERS = 'UPDATE_SKATERS'
+    UPDATE_SKATERS = 'UPDATE_SKATERS',
+    TOGGLE_SKATER = 'TOGGLE_SKATER'
 };
 
 export type Sides = "A" | "B";
@@ -149,7 +152,7 @@ export const InitState:SRosterController = {
 };
 
 const GetSkaterIndex = (records:Array<SkaterRecord>, id:number) => {
-    return records.findIndex(r => r.RecordID == id);
+    return records.findIndex(r => r.RecordID === id);
 };
 
 const SetTeam = (state:SRosterController, side:Sides, team:TeamRecord) => {
@@ -181,7 +184,7 @@ const SetTeam = (state:SRosterController, side:Sides, team:TeamRecord) => {
 const SetSkaters = (state:SRosterController, side:Sides, records:Array<SkaterRecord>) => {
     let skaters:Array<SkaterRecord> = records.slice();
     let team:SRosterTeam = {...state.TeamA}
-    if(side == 'B')
+    if(side === 'B')
         team = {...state.TeamB};
     team.Roles.Captain = 0;
     team.Roles.CoCaptain = 0;
@@ -193,7 +196,7 @@ const SetSkaters = (state:SRosterController, side:Sides, records:Array<SkaterRec
         skater.Position = '';
         if(skater.Teams && skater.Teams.forEach) {
             skater.Teams.forEach((steam:SkaterTeamRecord) => {
-                if(steam.TeamID == team.ID) {
+                if(steam.TeamID === team.ID) {
                     if(steam.Captain)
                         team.Roles.Captain = skater.RecordID;
                     else if(steam.CoCaptain)
@@ -224,49 +227,80 @@ const SetCurrentSkater = (state:SRosterController, side:Sides, index:number) => 
     return {...state, CurrentTeam:side, SkaterIndex:index};
 };
 
-const AddSkater = (state:SRosterController, side:Sides, record:SkaterRecord) => {
-    if(GetSkaterIndex(state.TeamA.Skaters, record.RecordID) >= 0 || GetSkaterIndex(state.TeamB.Skaters, record.RecordID) >= 0)
-        return state;
+const ToggleSkater = (state:SRosterController, side:Sides, record:SkaterRecord) => {
     if(side === 'A') {
-        let skaters:Array<SkaterRecord> = state.TeamA.Skaters.slice();
-        skaters.push(record);
-        return {...state, 
-            TeamA:{
-                ...state.TeamA,
-                Skaters:skaters
-            }
-        };
+        let s:SRosterController = RemoveSkater(state, 'B', record.RecordID);
+        if(GetSkaterIndex(s.TeamA.Skaters, record.RecordID) >= 0)
+            return {...s, TeamA:{...s.TeamA, Skaters:s.TeamA.Skaters.filter(r => r.RecordID !== record.RecordID)}};
+        return {...s, TeamA:{...s.TeamA, Skaters:[...s.TeamA.Skaters, record]}};
+    } else if(side === 'B') {
+        let s:SRosterController = RemoveSkater(state, 'A', record.RecordID);
+        if(GetSkaterIndex(s.TeamB.Skaters, record.RecordID) >= 0)
+            return {...s, TeamB:{...s.TeamB, Skaters:s.TeamB.Skaters.filter(r => r.RecordID !== record.RecordID)}};
+        return {...s, TeamB:{...s.TeamB, Skaters:[...s.TeamB.Skaters, record]}};
     } else {
-        let skaters:Array<SkaterRecord> = state.TeamB.Skaters.slice();
-        skaters.push(record);
-        return {...state, 
-            TeamB:{
-                ...state.TeamB,
-                Skaters:skaters
-            }
-        };
+        return state;
     }
 };
 
-const RemoveSkater = (state:SRosterController, side:Sides, record:SkaterRecord) => {
-    if(side == 'A') {
-        let index:number = GetSkaterIndex(state.TeamA.Skaters, record.RecordID);
+const AddSkater = (state:SRosterController, side:Sides, record:SkaterRecord) => {
+    if(side !== 'A' && side !== 'B')
+        return state;
+
+    if(side === 'A') {
+        let skaters:Array<SkaterRecord> = state.TeamA.Skaters.slice();
+        if(GetSkaterIndex(skaters, record.RecordID) >= 0)
+            return state;
+        skaters.push(record);
+        if(GetSkaterIndex(state.TeamB.Skaters, record.RecordID) >= 0) {
+            return {...state, TeamA:{
+                ...state.TeamA,
+                Skaters:skaters
+            }, TeamB:{
+                ...state.TeamB,
+                Skaters:state.TeamB.Skaters.filter(r => r.RecordID !== record.RecordID)
+            }};
+        }
+
+        return {...state, TeamA:{...state.TeamA, Skaters:skaters}};
+    } else {
+        let skaters:Array<SkaterRecord> = state.TeamB.Skaters.slice();
+        if(GetSkaterIndex(skaters, record.RecordID) >= 0)
+            return state;
+        skaters.push(record);
+        if(GetSkaterIndex(state.TeamA.Skaters, record.RecordID) >= 0) {
+            return {...state, TeamB:{
+                ...state.TeamB,
+                Skaters:skaters
+            }, TeamA:{
+                ...state.TeamA,
+                Skaters:state.TeamA.Skaters.filter(r => r.RecordID !== record.RecordID)
+            }};
+        }
+
+        return {...state, TeamB:{...state.TeamB, Skaters:skaters}};
+    }
+};
+
+const RemoveSkater = (state:SRosterController, side:Sides, id:number) => {
+    if(side === 'A') {
+        let index:number = GetSkaterIndex(state.TeamA.Skaters, id);
         if(index < 0)
             return state;
         return {...state, 
             TeamA:{
                 ...state.TeamA,
-                Skaters:state.TeamA.Skaters.filter(r => r.RecordID != record.RecordID)
+                Skaters:state.TeamA.Skaters.filter(r => r.RecordID !== id)
             }
         };
     } else {
-        let index:number = GetSkaterIndex(state.TeamB.Skaters, record.RecordID);
+        let index:number = GetSkaterIndex(state.TeamB.Skaters, id);
         if(index < 0)
             return state;
         return {...state, 
             TeamB:{
                 ...state.TeamB,
-                Skaters:state.TeamB.Skaters.filter(r => r.RecordID != record.RecordID)
+                Skaters:state.TeamB.Skaters.filter(r => r.RecordID !== id)
             }
         };
     }
@@ -293,7 +327,7 @@ const SwapSakters = (state:SRosterController, side:Sides, a:number, b:number, ri
 const NextSkater = (state:SRosterController) => {
     let index:number = state.SkaterIndex + 1;
     let side:Sides = state.CurrentTeam;
-    if(side == 'A') {
+    if(side === 'A') {
         if(index >= state.TeamA.Skaters.length) {
             index = -1;
             side = 'B';
@@ -328,7 +362,7 @@ const UpdatePenaltyTracker = (state:SRosterController, pt:SPenaltyController) =>
     let skatersA:Array<SkaterRecord> = state.TeamA.Skaters.slice();
     let skatersB:Array<SkaterRecord> = state.TeamB.Skaters.slice();
     skatersA.forEach((skater:SkaterRecord) => {
-        let pskater:SkaterRecord|undefined = pt.Skaters.find((r) => r.RecordID == skater.RecordID);
+        let pskater:SkaterRecord|undefined = pt.Skaters.find((r) => r.RecordID === skater.RecordID);
         if(pskater) {
             skater.Penalties = pskater.Penalties;
         } else {
@@ -337,7 +371,7 @@ const UpdatePenaltyTracker = (state:SRosterController, pt:SPenaltyController) =>
     });
     skatersB.forEach((skater:SkaterRecord) => {
         skater.Penalties = new Array<PenaltyRecord>();
-        let pskater:SkaterRecord|undefined = pt.Skaters.find((r) => r.RecordID == skater.RecordID);
+        let pskater:SkaterRecord|undefined = pt.Skaters.find((r) => r.RecordID === skater.RecordID);
         if(pskater) {
             skater.Penalties = pskater.Penalties;
         } else {
@@ -372,7 +406,7 @@ const UpdateScorekeeper = (state:SRosterController, sk:SScorekeeperState) => {
             let deck:string = '';
             for(let key in sk.TeamA.Track) {
                 let sskater:SkaterRecord = sk.TeamA.Track[key];
-                if(sskater && sskater.RecordID == skater.RecordID) {
+                if(sskater && sskater.RecordID === skater.RecordID) {
                     position = key;
                     deck = 'Track';
                     break;
@@ -383,7 +417,7 @@ const UpdateScorekeeper = (state:SRosterController, sk:SScorekeeperState) => {
     
                 for(let key in sk.TeamA.Deck) {
                     let sskater:SkaterRecord = sk.TeamA.Deck[key];
-                    if(sskater && sskater.RecordID == skater.RecordID) {
+                    if(sskater && sskater.RecordID === skater.RecordID) {
                         position = key;
                         deck = 'Deck';
                         break;
@@ -401,7 +435,7 @@ const UpdateScorekeeper = (state:SRosterController, sk:SScorekeeperState) => {
             let deck:string = '';
             for(let key in sk.TeamB.Track) {
                 let sskater:SkaterRecord = sk.TeamB.Track[key];
-                if(sskater && sskater.RecordID == skater.RecordID) {
+                if(sskater && sskater.RecordID === skater.RecordID) {
                     position = key;
                     deck = 'Track';
                     break;
@@ -412,7 +446,7 @@ const UpdateScorekeeper = (state:SRosterController, sk:SScorekeeperState) => {
     
                 for(let key in sk.TeamB.Deck) {
                     let sskater:SkaterRecord = sk.TeamB.Deck[key];
-                    if(sskater && sskater.RecordID == skater.RecordID) {
+                    if(sskater && sskater.RecordID === skater.RecordID) {
                         position = key;
                         deck = 'Deck';
                         break;
@@ -443,7 +477,7 @@ const UpdateSkaters = (state:SRosterController, records:Array<SkaterRecord>) => 
     let skatersB:Array<SkaterRecord> = state.TeamB.Skaters.slice();
     skatersA.forEach((skater, index) => {
         if(skater.RecordID > 0) {
-            let record:SkaterRecord|undefined = records.find((r) => r.RecordID == skater.RecordID);
+            let record:SkaterRecord|undefined = records.find((r) => r.RecordID === skater.RecordID);
             if(record) {
                 skatersA[index] = {
                     ...skater,
@@ -457,7 +491,7 @@ const UpdateSkaters = (state:SRosterController, records:Array<SkaterRecord>) => 
     
     skatersB.forEach((skater, index) => {
         if(skater.RecordID > 0) {
-            let record:SkaterRecord|undefined = records.find((r) => r.RecordID == skater.RecordID);
+            let record:SkaterRecord|undefined = records.find((r) => r.RecordID === skater.RecordID);
             if(record) {
                 skatersB[index] = {
                     ...skater,
@@ -483,7 +517,7 @@ const UpdateSkaters = (state:SRosterController, records:Array<SkaterRecord>) => 
 };
 
 const SetRole = (state:SRosterController, side:Sides, role:Roles, id:number) => {
-    if(side == 'A') {
+    if(side === 'A') {
         return {...state, TeamA:{
             ...state.TeamA,
             Roles:{
@@ -516,19 +550,19 @@ const RosterReducer = (state:SRosterController = InitState, action) => {
 
             //set a team's skaters
             case Actions.SET_SKATERS :
-                return SetSkaters(state, action.team, action.records);
+                return SetSkaters(state, action.side, action.records);
 
             //Sets the current skater to display from the roster
             case Actions.SET_CURRENT_SKATER :
-                return SetCurrentSkater(state, action.team, action.index);
+                return SetCurrentSkater(state, action.side, action.index);
 
             //add a skater to a team
             case Actions.ADD_SKATER :
-                return AddSkater(state, action.team, action.record);
+                return AddSkater(state, action.side, action.record);
 
             //remove a skater from a team
             case Actions.REMOVE_SKATER :
-                return RemoveSkater(state, action.team, action.record);
+                return RemoveSkater(state, action.side, action.id);
 
             //Swaps skaters on a given team
             case Actions.SWAP_SKATERS :
@@ -551,6 +585,9 @@ const RosterReducer = (state:SRosterController = InitState, action) => {
 
             case Actions.SET_ROLE :
                 return SetRole(state, action.side, action.role, action.id);
+
+            case Actions.TOGGLE_SKATER :
+                return ToggleSkater(state, action.side, action.record);
             
             default :
                 return BaseReducer(state, action);
@@ -588,10 +625,10 @@ RosterController.SwapSkaters = async (side:Sides, a:number, b:number, right:bool
     });
 };
 
-RosterController.SetSkaters = async (team:Sides, records:Array<SkaterRecord>) => {
+RosterController.SetSkaters = async (side:Sides, records:Array<SkaterRecord>) => {
     RosterController.Dispatch({
         type:Actions.SET_SKATERS,
-        team:team,
+        side:side,
         records:records
     })
 };
@@ -599,6 +636,14 @@ RosterController.SetSkaters = async (team:Sides, records:Array<SkaterRecord>) =>
 RosterController.LoadSkaters = async () => {
     RosterController.SetSkaters('A', TeamsController.GetTeamSkaters(ScoreboardController.GetState().TeamA.ID, true));
     RosterController.SetSkaters('B', TeamsController.GetTeamSkaters(ScoreboardController.GetState().TeamB.ID, true));
+};
+
+RosterController.ToggleSkater = async (side:Sides, record:SkaterRecord) => {
+    RosterController.Dispatch({
+        type:Actions.TOGGLE_SKATER,
+        side:side,
+        record:record
+    })
 };
 
 RosterController.Next = async () => {

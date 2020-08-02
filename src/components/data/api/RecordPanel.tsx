@@ -3,7 +3,6 @@ import Panel, { PPanelProps } from 'components/Panel';
 import cnames from 'classnames';
 import { IconButton, IconLoop, IconSave, IconNo } from 'components/Elements';
 import { IAPIController, TeamRecord, Record } from 'controllers/api/vars';
-import { Compare } from 'controllers/functions';
 import APITeamsController from 'controllers/api/Teams';
 import { Unsubscribe } from 'redux';
 import UIController from 'controllers/UIController';
@@ -94,7 +93,7 @@ export default class RDMGRRecordPanel extends React.PureComponent<RDMGRRecordPro
     }
 
     componentDidUpdate(prevProps) {
-        if(prevProps.RecordID != this.props.RecordID) {
+        if(prevProps.RecordID !== this.props.RecordID) {
             this.load();
         }
     }
@@ -210,7 +209,7 @@ class RecordSelect extends React.PureComponent<{
                     </option>
                 );
 
-                if(record.RecordID == value && record.Thumbnail) {
+                if(record.RecordID === value && record.Thumbnail) {
                     src = record.Thumbnail;
                     alt = record.Name;
                 }

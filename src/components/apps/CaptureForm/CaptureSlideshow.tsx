@@ -58,12 +58,12 @@ export default class CaptureSlideshow extends React.PureComponent<any, {
             SlideshowID:SlideshowController.GetState().SlideshowID
         };
 
-        if(changes.SlideshowID != this.state.SlideshowID) {
+        if(changes.SlideshowID !== this.state.SlideshowID) {
             this.SourceA = '';
             this.SourceB = '';
             changes.CurrentSlide = 'A';
-        } else if(changes.Index != this.state.Index) {
-            changes.CurrentSlide = (this.state.CurrentSlide == 'A') ? 'B' : 'A';
+        } else if(changes.Index !== this.state.Index) {
+            changes.CurrentSlide = (this.state.CurrentSlide === 'A') ? 'B' : 'A';
         }
 
         this.setState(changes);

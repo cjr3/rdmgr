@@ -1,11 +1,9 @@
 import React from 'react';
 import cnames from 'classnames';
-import Panel, {PPanelProps} from 'components/Panel';
-import { TeamRecord, MatchRecord, BoutRecord } from 'controllers/api/vars';
+import {PPanelProps} from 'components/Panel';
+import { MatchRecord, BoutRecord } from 'controllers/api/vars';
 import { Unsubscribe } from 'redux';
-import APITeamsController from 'controllers/api/Teams';
-import { IconButton, IconLoop, ToggleButton } from 'components/Elements';
-import RecordsPanel, { TeamSelect, SeasonSelect, BoutsSelect } from './RecordPanel';
+import RecordsPanel, { TeamSelect } from './RecordPanel';
 import APIMatchesController from 'controllers/api/Matches';
 import RecordList from '../RecordList';
 import { Compare } from 'controllers/functions';

@@ -17,7 +17,7 @@ export default class Logo extends React.PureComponent<{
     constructor(props) {
         super(props);
         let src:string = ScoreboardController.GetState().TeamA.Thumbnail;
-        if(this.props.side == 'B' )
+        if(this.props.side === 'B' )
             src = ScoreboardController.GetState().TeamB.Thumbnail;
         this.state.Thumbnail = src;
         this.updateScoreboard = this.updateScoreboard.bind(this);
@@ -25,7 +25,7 @@ export default class Logo extends React.PureComponent<{
 
     protected updateScoreboard() {
         let src:string = ScoreboardController.GetState().TeamA.Thumbnail;
-        if(this.props.side == 'B' )
+        if(this.props.side === 'B' )
             src = ScoreboardController.GetState().TeamB.Thumbnail;
         this.setState({Thumbnail:src});
     }

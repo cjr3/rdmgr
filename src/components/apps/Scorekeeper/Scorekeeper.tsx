@@ -1,10 +1,9 @@
-import React, { CSSProperties } from 'react'
+import React from 'react'
 import Panel from 'components/Panel'
-import cnames from 'classnames';
 import ScoreboardController, {SScoreboardTeam} from 'controllers/ScoreboardController'
-import ScorekeeperController, {SScorekeeperState, SScorekeeperTeam, SScorekeeperTeamDeckStatus, SScorekeeperTeamDeck} from 'controllers/ScorekeeperController'
+import ScorekeeperController, {SScorekeeperState} from 'controllers/ScorekeeperController'
 import RosterController from 'controllers/RosterController';
-import {Button, IconButton, Icon, IconShown, IconHidden, IconUp} from 'components/Elements';
+import {IconButton, IconShown, IconHidden, IconUp} from 'components/Elements';
 import { SkaterRecord } from 'tools/vars';
 import './css/Scorekeeper.scss';
 import UIController from 'controllers/UIController';

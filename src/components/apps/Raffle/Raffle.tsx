@@ -190,12 +190,70 @@ class RaffleTicketEntry extends React.PureComponent<any, {
         this.updateClient = this.updateClient.bind(this);
         this.onChangeTicketNumber = this.onChangeTicketNumber.bind(this);
         this.onFocusTicketNumber = this.onFocusTicketNumber.bind(this);
+        this.onKeyUpTicketNumber = this.onKeyUpTicketNumber.bind(this);
+        this.onKeyDownTicketNumber = this.onKeyDownTicketNumber.bind(this);
     }
 
     protected updateClient() {
         this.setState({
             TicketNumber:ClientController.GetState().RaffleTicketNumber
         });
+    }
+
+    protected onKeyDownTicketNumber(ev) {
+        switch(ev.keyCode) {
+            case keycodes.ADD :
+            case keycodes.BACKSPACE :
+            case keycodes.DELETE :
+            case keycodes.DIVIDE :
+            case keycodes.MULTIPLY :
+            case keycodes.SUBTRACT :
+                ev.preventDefault();
+                break;
+        }
+    }
+
+    protected onKeyUpTicketNumber(ev) {
+        ev.stopPropagation();
+        switch(ev.keyCode) {
+            case keycodes.ADD :
+                if(!this.state.TicketNumber) {
+                    RaffleController.Remove();
+                } else {
+                    ClientController.RemoveRaffleTicketCharacter();
+                }
+                ev.preventDefault();
+                break;
+            
+            case keycodes.BACKSPACE :
+            case keycodes.DELETE :
+                ClientController.RemoveRaffleTicketCharacter();
+                ev.preventDefault();
+                break;
+
+            case keycodes.MULTIPLY :
+                RaffleCaptureController.Hide();
+                ClientController.SetRaffleTicketNumber('');
+                RaffleController.Clear();
+                ev.preventDefault();
+                break;
+
+            case keycodes.DIVIDE :
+                RaffleController.Remove();
+                ev.preventDefault();
+                break;
+
+            case keycodes.SUBTRACT :
+                RaffleCaptureController.Toggle();
+            break;
+
+            case keycodes.ENTER :
+                if(this.state.TicketNumber) {
+                    RaffleController.Add(this.state.TicketNumber);
+                    ClientController.SetRaffleTicketNumber('');
+                }
+            break;
+        }
     }
 
     protected onChangeTicketNumber(ev: React.ChangeEvent<HTMLInputElement>) {
@@ -213,9 +271,6 @@ class RaffleTicketEntry extends React.PureComponent<any, {
      */
     protected addDigit(digit) {
         var value = this.state.TicketNumber;
-        var ml = 10;
-        if(this.TicketItem != null && this.TicketItem.current !== null)
-            ml = this.TicketItem.current.maxLength;
         if(digit === 'X') {
             if(value.length < 1) {
                 RaffleController.Remove();
@@ -262,7 +317,8 @@ class RaffleTicketEntry extends React.PureComponent<any, {
                 <input type="text" maxLength={10} 
                     onChange={this.onChangeTicketNumber}
                     value={this.state.TicketNumber}
-                    //onKeyUp={this.onKeyUpTicketNumber}
+                    onKeyUp={this.onKeyUpTicketNumber}
+                    onKeyDown={this.onKeyDownTicketNumber}
                     onFocus={this.onFocusTicketNumber}
                     ref={this.TicketItem}
                     />

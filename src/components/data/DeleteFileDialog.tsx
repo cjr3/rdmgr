@@ -3,7 +3,7 @@ import './css/Dialogs.scss';
 import Panel from 'components/Panel';
 import UIController, {DeleteCallback} from 'controllers/UIController';
 import { Basename, DeleteFile } from 'controllers/functions.io';
-import { IconButton, IconCheck, IconDelete, IconNo } from 'components/Elements';
+import { IconButton, IconDelete, IconNo } from 'components/Elements';
 import { Unsubscribe } from 'redux';
 
 export default class DeleteFileDialog extends React.PureComponent<any, {

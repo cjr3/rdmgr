@@ -13,7 +13,7 @@ const GetNextRecordID = (records:Array<Record>) => {
 };
 
 const GetRecordIndex = (records:Array<Record>, record:Record) => {
-    return records.findIndex(r => r.RecordID == record.RecordID);
+    return records.findIndex(r => r.RecordID === record.RecordID);
 };
 
 const AddRecord = (records:Array<Record>, record:Record) => {
@@ -25,12 +25,12 @@ const AddRecord = (records:Array<Record>, record:Record) => {
 };
 
 const AddControllerRecord = async (controller:IRecordController, record:Record) : Promise<boolean> => {
-    return new Promise((res, rej) => {
+    return new Promise((res) => {
         controller.GetStore().dispatch({
             type:RecordControllerActions.ADD,
             record:record
         });
-        res(true);
+        return res(true);
     });
 };
 
@@ -38,15 +38,16 @@ const DeleteRecord = (records:Array<Record>, record:Record) => {
     let index:number = GetRecordIndex(records, record);
     if(index < 0)
         return [...records];
-    return records.filter(r => r.RecordID != record.RecordID);
+    return records.filter(r => r.RecordID !== record.RecordID);
 };
 
 const DeleteControllerRecord = async (controller:IRecordController, record:Record) : Promise<boolean> => {
-    return new Promise((res, rej) => {
+    return new Promise((res) => {
         controller.GetStore().dispatch({
             type:RecordControllerActions.DELETE,
             record:record
         });
+        return res(true);
     });
 }
 
@@ -66,7 +67,7 @@ const UpdateControllerRecord = async (controller:IRecordController, record:Recor
             type:RecordControllerActions.UPDATE,
             record:record
         });
-        res(true);
+        return res(true);
     });
 };
 
@@ -81,8 +82,8 @@ const LoadControllerRecords = async (controller:IRecordController, filter?:Funct
             GetRecordsFromFile(RecordSavers[controller.RecordType].FileName).then((records:Array<any>) => {
                 if(filter)
                     filter(records);
-                controller.Set(records).then(response => {
-                    res(response);
+                return controller.Set(records).then(response => {
+                    return res(response);
                 }).catch(() => {
                     rej(`Failed to set records`);
                 });
@@ -99,7 +100,7 @@ const SaveControllerRecords = async (controller:IRecordController) : Promise<boo
     return new Promise(async (res, rej) => {
         let response:boolean|string = await SaveRecordsFile(controller.RecordType, controller.Get());
         if(response === true)
-            res(true);
+            return res(true);
         else
             rej(response);
     });
@@ -124,9 +125,8 @@ const SetControllerRecords = async (controller:IRecordController, records:Array<
  */
 const SaveRecord = async (controller:IRecordController, record:Record, filter?:Function) : Promise<boolean> => {
     return new Promise((res, rej) => {
-        if(record.RecordType != controller.RecordType) {
+        if(record.RecordType !== controller.RecordType) {
             rej("Failed to save record: Incompatible RecordType.");
-            return;
         }
 
         if(record.RecordID <= 0) {
@@ -139,7 +139,7 @@ const SaveRecord = async (controller:IRecordController, record:Record, filter?:F
 
         SaveRecordsFile(record.RecordType, records).then(() => {
             controller.Update(record);
-            res(true);
+            return res(true);
         }).catch((er) => {
             rej(er);
         });
@@ -151,20 +151,16 @@ export const BaseReducer = (state:any, action:any) => {
         switch(action.type) {
             case RecordControllerActions.ADD :
                 return {...state, Records:AddRecord(state.Records, action.record)}
-            break;
             case RecordControllerActions.UPDATE :
                 return {...state, Records:UpdateRecordInSet(state.Records, action.record)};
-            break;
             case RecordControllerActions.DELETE :
                 return {...state, Records:DeleteRecord(state.Records, action.record)}
-            break;
             case RecordControllerActions.SET :
                 return {...state, Records:action.records};
             case RecordControllerActions.SET_STATE :
                 return {...state, ...action.state}
             default :
                 return state;
-            break;
         }
     } catch(er) {
         return state;
@@ -234,7 +230,7 @@ const CreateController = (recordtype:string, filename:string, reducer?:any) : an
         },
     
         GetRecord(id:number) : any {
-            return controller.Get().find((r:any) => r.RecordID == id);
+            return controller.Get().find((r:any) => r.RecordID === id);
         },
     
         GetStore() : Store<IRecordControllerState, any> {

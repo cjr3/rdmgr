@@ -121,16 +121,7 @@ class MatchItem extends React.PureComponent<{
      * Renders the component
      */
     render() {
-        let mdate:string = "";
         let title:string = 'Click to Save Scores';
-        if(this.MatchDate) {
-            mdate = this.MatchDate.toLocaleDateString('en-us', {
-                month:'2-digit',
-                day:'2-digit',
-                year:'numeric'
-            });
-        }
-
         let iconSaving:string = IconSave;
         if(this.state.errorMessage) {
             iconSaving = IconNo;
@@ -146,7 +137,7 @@ class MatchItem extends React.PureComponent<{
                 </div>
                 <div className="team-a">
                     <div className="logo">
-                        <img src={this.props.record.TeamA.Thumbnail} title={this.props.record.TeamA.Name}/>
+                        <img src={this.props.record.TeamA.Thumbnail} title={this.props.record.TeamA.Name} alt=""/>
                     </div>
                     <div className="score">
                         <input
@@ -162,7 +153,7 @@ class MatchItem extends React.PureComponent<{
                 </div>
                 <div className="team-b">
                     <div className="logo">
-                        <img src={this.props.record.TeamB.Thumbnail} title={this.props.record.TeamB.Name}/>
+                        <img src={this.props.record.TeamB.Thumbnail} title={this.props.record.TeamB.Name} alt=""/>
                     </div>
                     <div className="score">
                         <input

@@ -209,7 +209,7 @@ export default class Clock extends React.Component<{
     }
 
     setTenths(amount:number) {
-        if(this.props.status != vars.Clock.Status.Running)
+        if(this.props.status !== vars.Clock.Status.Running)
             this.setState({tenths:amount});
     }
 
@@ -311,7 +311,7 @@ export default class Clock extends React.Component<{
             str += this.state.minute.toString().padStart(2,'0') + ":";
             str += this.state.second.toString().padStart(2,'0');
         } else {
-            if(this.state.second > 60 || (this.props.maxseconds !== undefined && !Number.isNaN(this.props.maxseconds)) && this.props.maxseconds > 60) {
+            if(this.state.second > 60 || ((this.props.maxseconds !== undefined && !Number.isNaN(this.props.maxseconds)) && this.props.maxseconds > 60)) {
                 let minutes = 0;
                 let seconds = this.state.second;
                 while(seconds >= 60) {

@@ -38,7 +38,7 @@ export const InitState:SPenaltyController = {
 const GetSkaterIndex = (records:Array<SkaterRecord>, record:SkaterRecord) : number => {
     if(records.length <= 0)
         return 0;
-    return records.findIndex(s => s.RecordID == record.RecordID);
+    return records.findIndex(s => s.RecordID === record.RecordID);
 };
 
 const AddSkater = (state:SPenaltyController, record:SkaterRecord) => {
@@ -50,24 +50,24 @@ const AddSkater = (state:SPenaltyController, record:SkaterRecord) => {
 
 const RemoveSkater = (state:SPenaltyController, id:number) => {
     let records:Array<SkaterRecord> = state.Skaters;
-    let index:number = records.findIndex(r => r.RecordID == id);
+    let index:number = records.findIndex(r => r.RecordID === id);
     if(index < 0)
         return state;
-    if(state.Skater && state.Skater.RecordID == id) {
+    if(state.Skater && state.Skater.RecordID === id) {
         return {
             ...state,
-            Skaters:records.filter(r => r.RecordID != id),
+            Skaters:records.filter(r => r.RecordID !== id),
             Skater:null
         }
     }
-    return {...state, Skaters:records.filter(r => r.RecordID != id)};
+    return {...state, Skaters:records.filter(r => r.RecordID !== id)};
 };
 
 const UpdateSkater = (state:SPenaltyController, record:SkaterRecord, penalties:Array<PenaltyRecord>) => {
     if(penalties.length <= 0)
         return RemoveSkater(state, record.RecordID);
     let skaters:Array<SkaterRecord> = state.Skaters.slice();
-    let index:number = skaters.findIndex(r => r.RecordID == record.RecordID);
+    let index:number = skaters.findIndex(r => r.RecordID === record.RecordID);
     if(index < 0) {
         skaters.push({
             ...record,
@@ -77,7 +77,7 @@ const UpdateSkater = (state:SPenaltyController, record:SkaterRecord, penalties:A
         skaters[index].Penalties = penalties;
     }
 
-    if(state.Skater && state.Skater.RecordID == record.RecordID) {
+    if(state.Skater && state.Skater.RecordID === record.RecordID) {
         return {
             ...state,
             Skaters:skaters,
@@ -104,7 +104,7 @@ const UpdateSkaters = (state:SPenaltyController, records:Array<SkaterRecord>) =>
     if(cskater)
         cskater = {...cskater};
     skaters.forEach((skater, index) => {
-        let rindex:number = records.findIndex(r => r.RecordID == skater.RecordID);
+        let rindex:number = records.findIndex(r => r.RecordID === skater.RecordID);
         if(rindex >= 0) {
             //let penalties = skater.Penalties;
             //let position = skater.Position;
@@ -115,7 +115,7 @@ const UpdateSkaters = (state:SPenaltyController, records:Array<SkaterRecord>) =>
                 Position:skaters[index].Position
             }
 
-            if(cskater && skater.RecordID == cskater.RecordID) {
+            if(cskater && skater.RecordID === cskater.RecordID) {
                 cskater.Penalties = skaters[index].Penalties;
             }
         }
@@ -137,7 +137,7 @@ const SetSkaters = (state:SPenaltyController, records:Array<SkaterRecord>) => {
 
 const SetCurrentSkater = (state:SPenaltyController, record:SkaterRecord|null) => {
     if(record) {
-        if(state.Skater && state.Skater.RecordID == record.RecordID) {}
+        if(state.Skater && state.Skater.RecordID === record.RecordID) {}
         else {
             return {...state, Skater:{...record}};
         }

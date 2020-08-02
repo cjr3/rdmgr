@@ -1,11 +1,12 @@
-import {IController, Files} from './vars';
+import {IController} from './vars';
 import {CreateController, BaseReducer} from './functions.controllers';
 
 
 type Panels = 
     'Scoreboard' | 'Chat' | 'Scorekeeper' | 'PenaltyTracker' |
     'Roster' | 'CaptureControl' | 'MediaQueue' | 'DisplayControls' |
-    'ConfigPanel' | 'APILogin' | 'DeleteFileDialog' | 'CreateRecordDialog';
+    'ConfigPanel' | 'APILogin' | 'DeleteFileDialog' | 'CreateRecordDialog' |
+    'ScorekeeperReel';
 
 export let LoginCallback:any;
 export let DeleteCallback:any;
@@ -26,6 +27,7 @@ interface IUIController extends IController {
     ShowLogin:Function;
     HideLogin:Function;
     ToggleLogin:Function;
+    ToggleScorekeeperReel:Function;
     ShowDeleteFileDialog:{(filename:string,cb:any)};
     HideDeleteFileDialog:Function;
     ShowCreateRecordDialog:{(filename:string,cb:any)};
@@ -62,6 +64,7 @@ interface SUIController {
     APILogin:SUIControllerDisplay;
     DeleteFileDialog:SUIDeleteFile;
     CreateRecordDialog:SUIControllerDisplay;
+    ScorekeeperReel:SUIControllerDisplay;
 };
 
 export const InitState:SUIController = {
@@ -125,12 +128,17 @@ export const InitState:SUIController = {
         Panel:'',
         Shown:false,
         Application:false
+    },
+    ScorekeeperReel:{
+        Panel:'',
+        Shown:false,
+        Application:false
     }
 }
 
 const SetCurrentPanel = (state:SUIController, index:Panels, value:string) => {
     let current:string = state[index].Panel;
-    if(current == value)
+    if(current === value)
         current = '';
     else
         current = value;
@@ -250,6 +258,10 @@ UIController.HideLogin = async() => {
 UIController.ToggleLogin = async(cb?:any) => {
     UIController.ToggleDisplay('APILogin');
     LoginCallback = cb;
+};
+
+UIController.ToggleScorekeeperReel = async() => {
+    UIController.ToggleDisplay('ScorekeeperReel');
 };
 
 UIController.ShowDeleteFileDialog = async(filename:string, cb:any) => {

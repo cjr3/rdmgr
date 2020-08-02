@@ -81,12 +81,12 @@ export default class Scoreboard extends React.PureComponent<{
             MaxChallenges:cstate.MaxChallenges
         }
 
-        if(this.state.TeamAID != cstate.TeamA.ID) {
+        if(this.state.TeamAID !== cstate.TeamA.ID) {
             changes.TeamAName = cstate.TeamA.Name;
             changes.TeamAColor = cstate.TeamA.Color;
         }
 
-        if(this.state.TeamBID != cstate.TeamB.ID) {
+        if(this.state.TeamBID !== cstate.TeamB.ID) {
             changes.TeamBAName = cstate.TeamB.Name;
             changes.TeamBColor = cstate.TeamB.Color;
         }
@@ -278,13 +278,13 @@ export default class Scoreboard extends React.PureComponent<{
     render() {
         let cstate = ScoreboardController.GetState();
         let changed:boolean = false;
-        if(this.state.JamCounter != cstate.JamCounter
-            || this.state.TeamAScore != cstate.TeamA.Score
-            || this.state.TeamBScore != cstate.TeamB.Score
-            || this.state.TeamATimeouts != cstate.TeamA.Timeouts
-            || this.state.TeamBTimeouts != cstate.TeamB.Timeouts
-            || this.state.TeamAChallenges != cstate.TeamA.Challenges
-            || this.state.TeamBChallenges != cstate.TeamB.Challenges
+        if(this.state.JamCounter !== cstate.JamCounter
+            || this.state.TeamAScore !== cstate.TeamA.Score
+            || this.state.TeamBScore !== cstate.TeamB.Score
+            || this.state.TeamATimeouts !== cstate.TeamA.Timeouts
+            || this.state.TeamBTimeouts !== cstate.TeamB.Timeouts
+            || this.state.TeamAChallenges !== cstate.TeamA.Challenges
+            || this.state.TeamBChallenges !== cstate.TeamB.Challenges
             ) {
             changed = true;
         }

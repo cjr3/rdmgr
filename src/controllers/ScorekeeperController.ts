@@ -96,27 +96,27 @@ export const InitState:SScorekeeperState = {
 };
 
 const GetSkaterTeam = (state:SScorekeeperState, id:number) : SScorekeeperTeam|null => {
-    for(var key in state.TeamA.Track) {
+    for(let key in state.TeamA.Track) {
         let skater:SkaterRecord|null = state.TeamA.Track[key];
-        if(skater != null && skater.RecordID == id)
+        if(skater !== null && skater.RecordID === id)
             return state.TeamA;
     }
 
-    for(var key in state.TeamA.Deck) {
+    for(let key in state.TeamA.Deck) {
         let skater:SkaterRecord|null = state.TeamA.Deck[key];
-        if(skater != null && skater.RecordID == id)
+        if(skater !== null && skater.RecordID === id)
             return state.TeamA;
     }
 
-    for(var key in state.TeamB.Track) {
+    for(let key in state.TeamB.Track) {
         let skater:SkaterRecord|null = state.TeamB.Track[key];
-        if(skater != null && skater.RecordID == id)
+        if(skater !== null && skater.RecordID === id)
             return state.TeamB;
     }
     
-    for(var key in state.TeamB.Deck) {
+    for(let key in state.TeamB.Deck) {
         let skater:SkaterRecord|null = state.TeamB.Deck[key];
-        if(skater != null && skater.RecordID == id)
+        if(skater !== null && skater.RecordID === id)
             return state.TeamB;
     }
 
@@ -125,18 +125,18 @@ const GetSkaterTeam = (state:SScorekeeperState, id:number) : SScorekeeperTeam|nu
 
 const GetSkaterDeck = (state:SScorekeeperState, id:number) : SScorekeeperTeamDeck|null => {
     let team:SScorekeeperTeam|null = GetSkaterTeam(state, id);
-    if(team == null)
+    if(team === null)
         return null;
 
-    for(var key in team.Track) {
+    for(let key in team.Track) {
         let skater:SkaterRecord|null = team.Track[key];
-        if(skater != null && skater.RecordID == id)
+        if(skater !== null && skater.RecordID === id)
             return team.Track;
     }
 
-    for(var key in team.Deck) {
+    for(let key in team.Deck) {
         let skater:SkaterRecord|null = team.Deck[key];
-        if(skater != null && skater.RecordID == id)
+        if(skater !== null && skater.RecordID === id)
             return team.Deck;
     }
 
@@ -145,11 +145,11 @@ const GetSkaterDeck = (state:SScorekeeperState, id:number) : SScorekeeperTeamDec
 
 const GetSkaterPosition = (state:SScorekeeperState, id:number) : string => {
     let deck:SScorekeeperTeamDeck|null = GetSkaterDeck(state, id);
-    if(deck == null)
+    if(deck === null)
         return '';
     for(let key in deck) {
         let skater:SkaterRecord|null = deck[key];
-        if(skater != null && skater.RecordID == id) {
+        if(skater !== null && skater.RecordID === id) {
             return key;
         }
     }
@@ -177,7 +177,7 @@ const SetPosition = (state:SScorekeeperState, side:string, skater:SkaterRecord|n
     if(skater !== null) {
         for(let key in state[teamKey].Track) {
             let s:SkaterRecord|null = state[teamKey].Track[key];
-            if(s && s.RecordID == skater.RecordID) {
+            if(s && s.RecordID === skater.RecordID) {
                 currentDeck = 'Track';
                 currentPosition = key;
             }
@@ -186,7 +186,7 @@ const SetPosition = (state:SScorekeeperState, side:string, skater:SkaterRecord|n
         if(!currentPosition && !currentDeck) {
             for(let key in state[teamKey].Deck) {
                 let s:SkaterRecord|null = state[teamKey].Deck[key];
-                if(s && s.RecordID == skater.RecordID) {
+                if(s && s.RecordID === skater.RecordID) {
                     currentDeck = 'Deck';
                     currentPosition = key;
                 }
@@ -257,7 +257,7 @@ const SetPosition = (state:SScorekeeperState, side:string, skater:SkaterRecord|n
                 let cskater = state[teamKey][deck][position];
                 if(state[teamKey].Current.Deck && state[teamKey].Current.Position) {
                     //move skater to current position
-                    if(state[teamKey].Current.Deck == deck) {
+                    if(state[teamKey].Current.Deck === deck) {
 
                         return {
                             ...state,
@@ -320,12 +320,12 @@ const SetPosition = (state:SScorekeeperState, side:string, skater:SkaterRecord|n
     }
     
     //invalid deck or position, or none available
-    if((deck != 'Track' && deck != 'Deck') || 
-        (position != 'Jammer' 
-            && position != 'Pivot'
-            && position != 'Blocker1'
-            && position != 'Blocker2'
-            && position != 'Blocker3'
+    if((deck !== 'Track' && deck !== 'Deck') || 
+        (position !== 'Jammer' 
+            && position !== 'Pivot'
+            && position !== 'Blocker1'
+            && position !== 'Blocker2'
+            && position !== 'Blocker3'
             )
         ) {
 
@@ -351,7 +351,7 @@ const SetPosition = (state:SScorekeeperState, side:string, skater:SkaterRecord|n
     if(currentDeck && currentPosition) {
 
         //record is assigned to the target position (ignore)
-        if(deck == currentDeck && currentPosition == position) {
+        if(deck === currentDeck && currentPosition === position) {
             return state;
         }
 
@@ -396,14 +396,14 @@ const SetPosition = (state:SScorekeeperState, side:string, skater:SkaterRecord|n
 };
 
 const StarPass = (state:SScorekeeperState, side:Sides) => {
-    if(side == 'A') {
+    if(side === 'A') {
         return {...state,
             TeamA:{
                 ...state.TeamA, 
                 Track:{
                     ...state.TeamA.Track,
-                    Jammer:(state.TeamA.Track.Pivot != null) ? {...state.TeamA.Track.Pivot} : null,
-                    Pivot:(state.TeamA.Track.Jammer != null) ? {...state.TeamA.Track.Jammer} : null,
+                    Jammer:(state.TeamA.Track.Pivot !== null) ? {...state.TeamA.Track.Pivot} : null,
+                    Pivot:(state.TeamA.Track.Jammer !== null) ? {...state.TeamA.Track.Jammer} : null,
                 }
             }
         }
@@ -413,8 +413,8 @@ const StarPass = (state:SScorekeeperState, side:Sides) => {
                 ...state.TeamB, 
                 Track:{
                     ...state.TeamB.Track,
-                    Jammer:(state.TeamB.Track.Pivot != null) ? {...state.TeamB.Track.Pivot} : null,
-                    Pivot:(state.TeamB.Track.Jammer != null) ? {...state.TeamB.Track.Jammer} : null,
+                    Jammer:(state.TeamB.Track.Pivot !== null) ? {...state.TeamB.Track.Pivot} : null,
+                    Pivot:(state.TeamB.Track.Jammer !== null) ? {...state.TeamB.Track.Jammer} : null,
                 }
             }
         }
@@ -477,8 +477,8 @@ const ShiftDecks = (state:SScorekeeperState) => {
 };
 
 const SetCurrentPosition = (state:SScorekeeperState, side:Sides, deck:string, position:string) => {
-    if(side == 'A') {
-        if(state.TeamA.Current.Deck == deck && state.TeamA.Current.Position == position) {
+    if(side === 'A') {
+        if(state.TeamA.Current.Deck === deck && state.TeamA.Current.Position === position) {
             deck = '';
             position = '';
         }
@@ -492,7 +492,7 @@ const SetCurrentPosition = (state:SScorekeeperState, side:Sides, deck:string, po
             }
         }
     } else {
-        if(state.TeamB.Current.Deck == deck && state.TeamB.Current.Position == position) {
+        if(state.TeamB.Current.Deck === deck && state.TeamB.Current.Position === position) {
             deck = '';
             position = '';
         }
@@ -521,7 +521,7 @@ const UpdateSkaters = (state:SScorekeeperState, records:Array<SkaterRecord>) => 
     for(let key in trackA) {
         let skater:SkaterRecord = trackA[key];
         if(skater) {
-            let uskater:SkaterRecord|undefined = records.find((r) => r.RecordID == skater.RecordID);
+            let uskater:SkaterRecord|undefined = records.find((r) => r.RecordID === skater.RecordID);
             if(uskater) {
                 trackA[key] = {
                     ...trackA[key],
@@ -537,7 +537,7 @@ const UpdateSkaters = (state:SScorekeeperState, records:Array<SkaterRecord>) => 
     for(let key in deckA) {
         let skater:SkaterRecord = deckA[key];
         if(skater) {
-            let uskater:SkaterRecord|undefined = records.find((r) => r.RecordID == skater.RecordID);
+            let uskater:SkaterRecord|undefined = records.find((r) => r.RecordID === skater.RecordID);
             if(uskater) {
                 deckA[key] = {
                     ...deckA[key],
@@ -553,7 +553,7 @@ const UpdateSkaters = (state:SScorekeeperState, records:Array<SkaterRecord>) => 
     for(let key in trackB) {
         let skater:SkaterRecord = trackB[key];
         if(skater) {
-            let uskater:SkaterRecord|undefined = records.find((r) => r.RecordID == skater.RecordID);
+            let uskater:SkaterRecord|undefined = records.find((r) => r.RecordID === skater.RecordID);
             if(uskater) {
                 trackB[key] = {
                     ...trackB[key],
@@ -569,7 +569,7 @@ const UpdateSkaters = (state:SScorekeeperState, records:Array<SkaterRecord>) => 
     for(let key in deckB) {
         let skater:SkaterRecord = deckB[key];
         if(skater) {
-            let uskater:SkaterRecord|undefined = records.find((r) => r.RecordID == skater.RecordID);
+            let uskater:SkaterRecord|undefined = records.find((r) => r.RecordID === skater.RecordID);
             if(uskater) {
                 deckB[key] = {
                     ...deckB[key],

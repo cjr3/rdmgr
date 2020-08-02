@@ -3,7 +3,6 @@ import { SkaterRecord } from 'tools/vars';
 import ScoreboardController from 'controllers/ScoreboardController';
 import ScorekeeperController from 'controllers/ScorekeeperController';
 import { Unsubscribe } from 'redux';
-import Panel from 'components/Panel';
 import { AddMediaPath } from 'controllers/functions';
 import './css/Jammers.scss';
 

@@ -1,6 +1,6 @@
 import {Store, Unsubscribe, createStore} from 'redux';
 import {IController, ControllerActions} from './vars';
-import { LoadJsonFile, SaveFile, StateSavers } from './functions.io';
+import { LoadJsonFile, StateSavers } from './functions.io';
 
 const SetState = (state:any, values:object) => {
     return {...state, ...values};

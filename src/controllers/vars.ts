@@ -1,10 +1,4 @@
 import { Record } from "tools/vars";
-let os = require('os');
-if(window && window.require) {
-    os = window.require('os');
-}
-
-const USER_PATH = os.homedir();
 
 export interface IController {
     /**
@@ -92,7 +86,7 @@ export enum RecordControllerActions {
 
 //file constants
 let FOLDER_MAIN = 'c:/ProgramData/RDMGR';
-if(process.env.NODE_ENV && (process.env.NODE_ENV == 'development' || process.env.NODE_ENV == 'test')) {
+if(process.env.NODE_ENV && (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test')) {
     FOLDER_MAIN = 'c:/rdmgrdata';
 }
 

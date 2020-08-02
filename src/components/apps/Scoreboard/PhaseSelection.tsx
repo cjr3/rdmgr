@@ -150,7 +150,7 @@ export default class PhaseSelection extends React.PureComponent<{
                 <Button
                 key={`${phase.RecordType}-${phase.RecordID}`}
                 onClick={() => {this.onSelect(i)}}
-                active={(this.state.PhaseID == phase.RecordID)}
+                active={(this.state.PhaseID === phase.RecordID)}
                 >
                     <div>{phase.Name}</div>
                     <div>{time}</div>
@@ -161,7 +161,6 @@ export default class PhaseSelection extends React.PureComponent<{
         return (
             <Panel 
                 popup={true}
-                opened={this.props.opened}
                 contentName="phase-selection"
                 className="phase-selection-panel"
                 title="Set Quarter and Game Clock"

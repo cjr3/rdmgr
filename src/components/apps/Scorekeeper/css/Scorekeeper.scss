@@ -264,3 +264,122 @@
         }
     }
 }
+
+.scorekeeper-reels {
+    position: absolute;
+    margin: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: $navy;
+    width: 100%;
+    height: 0px;
+    transition: transform 250ms ease-in-out, height 0ms ease-in-out 500ms;
+    transform: translateY(300px);
+    overflow: hidden;
+    display: flex;
+    flex-flow: row wrap;
+
+    > .skater-reel {
+        flex: 1 0 50%;
+        overflow: hidden;
+        position: relative;
+        height: 150px;
+        background-color: #000;
+        &:nth-child(2) {
+            > .logo {
+                right: 0;
+            }
+            > .skaters {
+                left: 0;
+            }
+        }
+        > .logo {
+            position: absolute;
+            margin: auto;
+            width: 150px;
+            height: 150px;
+            z-index: 2;
+            background-color: #000;
+        }
+        > .skaters {
+            position: absolute;
+            overflow: hidden;
+            margin: auto;
+            z-index: 1;
+            left: 150px;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            transition: transform 150ms ease-in-out;
+            > .skater {
+                width: 150px;
+                height: 150px;
+                background-color: #000;
+                float: left;
+                position: relative;
+                transition: opacity 150ms ease-in-out;
+                opacity: 0.8;
+                &.active {
+                    opacity: 1;
+                    > .number {
+                        background-color: #090;
+                    }
+                }
+                > .thumbnail {
+                    > img {
+                        max-height: 150px;
+                    }
+                }
+    
+                > .number {
+                    position: absolute;
+                    margin: auto;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background-color: rgba(0,0,0,0.5);
+                    padding: 6px;
+                    font-family: $base-font-display;
+                    font-size: 4vw;
+                    text-align: center;
+                }
+            }
+        }
+    }
+
+    @media screen and (width: 960px) and (height:1080px) {
+        > .skater-reel {
+            > .logo {
+                width: 75px;
+                height: 75px;
+                opacity: 0.5;
+            }
+            > .skaters {
+                left: 0;
+            }
+        }
+    }
+
+    &.shown {
+        height: 150px;
+        transition: transform 250ms ease-in-out, height 0ms ease-in-out 0ms;
+        transform: translateY(-45px);
+    }
+
+    @media screen and (min-width: 1920px) {
+        > .skater-reel {
+            > .skaters {
+                > .skater {
+                    > .number {
+                        font-size: 2.5vw;
+                    }
+                }
+            }
+        }
+
+        &.shown {
+            transform: translateY(-65px);
+        }
+    }
+}

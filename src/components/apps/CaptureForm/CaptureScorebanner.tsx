@@ -190,27 +190,27 @@ class BoardStatus extends React.PureComponent<any, {
 
         let classNameTimeout = cnames('board-status', {
             timeout:true,
-            shown:(this.state.Status == vars.Scoreboard.Status.Timeout)
+            shown:(this.state.Status === vars.Scoreboard.Status.Timeout)
         });
 
         let classNameInjury = cnames('board-status', {
             injury:true,
-            shown:(this.state.Status == vars.Scoreboard.Status.Injury)
+            shown:(this.state.Status === vars.Scoreboard.Status.Injury)
         });
         
         let classNameReview = cnames('board-status', {
             review:true,
-            shown:(this.state.Status == vars.Scoreboard.Status.Review)
+            shown:(this.state.Status === vars.Scoreboard.Status.Review)
         });
 
         let classNameOverturned = cnames('board-status', {
             overturned:true,
-            shown:(this.state.Status == vars.Scoreboard.Status.Overturned)
+            shown:(this.state.Status === vars.Scoreboard.Status.Overturned)
         });
 
         let classNameUpheld = cnames('board-status', {
             upheld:true,
-            shown:(this.state.Status == vars.Scoreboard.Status.Upheld)
+            shown:(this.state.Status === vars.Scoreboard.Status.Upheld)
         });
 
         return (
@@ -242,7 +242,7 @@ class TeamElement extends React.PureComponent<{
     constructor(props) {
         super(props);
         this.updateScoreboard = this.updateScoreboard.bind(this);
-        if(this.props.side == 'A') {
+        if(this.props.side === 'A') {
             this.state.Thumbnail = ScoreboardController.GetState().TeamA.Thumbnail;
             this.state.ScoreboardThumbnail = ScoreboardController.GetState().TeamA.ScoreboardThumbnail;
         } else {
@@ -252,7 +252,7 @@ class TeamElement extends React.PureComponent<{
     }
 
     protected updateScoreboard() {
-        if(this.props.side == 'A') {
+        if(this.props.side === 'A') {
             this.setState({
                 Thumbnail:ScoreboardController.GetState().TeamA.Thumbnail,
                 ScoreboardThumbnail:ScoreboardController.GetState().TeamA.ScoreboardThumbnail
@@ -275,9 +275,7 @@ class TeamElement extends React.PureComponent<{
     }
 
     render() {
-        
         let style:CSSProperties = {};
-        let sstyle:CSSProperties = {};
         if(this.state.ScoreboardThumbnail) {
             style.backgroundImage = "url('" + AddMediaPath(this.state.ScoreboardThumbnail) + "')";
         } else if(this.state.Thumbnail) {
@@ -333,7 +331,7 @@ class TeamScore extends React.PureComponent<{
     protected updateScoreboard() {
         try {clearTimeout(this.Timer);}catch(er){}
         let state = ScoreboardController.GetState();
-        if(this.props.side == 'A') {
+        if(this.props.side === 'A') {
             this.setState({
                 ScoreboardThumbnail:state.TeamA.ScoreboardThumbnail,
                 Color:state.TeamA.Color
@@ -394,7 +392,7 @@ class TeamTimeouts extends React.PureComponent<{
     constructor(props) {
         super(props);
         this.updateScoreboard = this.updateScoreboard.bind(this);
-        if(this.props.side == 'A') {
+        if(this.props.side === 'A') {
             this.state.Amount = ScoreboardController.GetState().TeamA.Timeouts;
         } else {
             this.state.Amount = ScoreboardController.GetState().TeamB.Timeouts;
@@ -402,7 +400,7 @@ class TeamTimeouts extends React.PureComponent<{
     }
 
     protected updateScoreboard() {
-        if(this.props.side == 'A') {
+        if(this.props.side === 'A') {
             this.setState({Amount:ScoreboardController.GetState().TeamA.Timeouts});
         } else {
             this.setState({Amount:ScoreboardController.GetState().TeamB.Timeouts});
@@ -438,7 +436,7 @@ class TeamJamPoints extends React.PureComponent<{
 }> {
     readonly state = {
         Amount:0,
-        Shown:(ScoreboardController.GetState().ConfirmStatus == 1),
+        Shown:(ScoreboardController.GetState().ConfirmStatus === 1),
         Color:'#000'
     }
 
@@ -447,7 +445,7 @@ class TeamJamPoints extends React.PureComponent<{
     constructor(props) {
         super(props);
         this.updateScoreboard = this.updateScoreboard.bind(this);
-        if(this.props.side == 'A') {
+        if(this.props.side === 'A') {
             this.state.Amount = ScoreboardController.GetState().TeamA.JamPoints;
             this.state.Color = ScoreboardController.GetState().TeamA.Color;
         } else {
@@ -461,13 +459,13 @@ class TeamJamPoints extends React.PureComponent<{
             this.setState({
                 Amount:ScoreboardController.GetState().TeamA.JamPoints,
                 Color:ScoreboardController.GetState().TeamA.Color,
-                Shown:(ScoreboardController.GetState().ConfirmStatus == 1)
+                Shown:(ScoreboardController.GetState().ConfirmStatus === 1)
             });
         } else {
             this.setState({
                 Amount:ScoreboardController.GetState().TeamB.JamPoints,
                 Color:ScoreboardController.GetState().TeamB.Color,
-                Shown:(ScoreboardController.GetState().ConfirmStatus == 1)
+                Shown:(ScoreboardController.GetState().ConfirmStatus === 1)
             });
         }
     }
@@ -538,27 +536,27 @@ class TeamStatus extends React.PureComponent<{
 
         let classNameTimeout = cnames('status', {
             timeout:true,
-            shown:(this.state.Status == vars.Team.Status.Timeout)
+            shown:(this.state.Status === vars.Team.Status.Timeout)
         });
 
         let classNameChallenge = cnames('status', {
             challenge:true,
-            shown:(this.state.Status == vars.Team.Status.Challenge)
+            shown:(this.state.Status === vars.Team.Status.Challenge)
         });
         
         let classNameLead = cnames('status', {
             leadjammer:true,
-            shown:(this.state.Status == vars.Team.Status.LeadJammer)
+            shown:(this.state.Status === vars.Team.Status.LeadJammer)
         });
 
         let classNamePowerJam = cnames('status', {
             powerjam:true,
-            shown:(this.state.Status == vars.Team.Status.PowerJam)
+            shown:(this.state.Status === vars.Team.Status.PowerJam)
         });
 
         let classNameInjury = cnames('status', {
             injury:true,
-            shown:(this.state.Status == vars.Team.Status.Injury)
+            shown:(this.state.Status === vars.Team.Status.Injury)
         });
 
         return (

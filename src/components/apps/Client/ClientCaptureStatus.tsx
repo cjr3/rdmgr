@@ -3,7 +3,6 @@ import vars from 'tools/vars';
 import CaptureStatus, {SCaptureStatus} from 'tools/CaptureStatus';
 import {SCaptureControllerState} from 'controllers/capture/vars';
 import { ProgressBar } from 'components/Elements';
-import {SCaptureController} from 'controllers/CaptureController';
 import SlideshowController, {SSlideshowController} from 'controllers/SlideshowController';
 import SponsorController, {SSponsorController} from 'controllers/SponsorController';
 import VideoController, {SVideoController} from 'controllers/VideoController';

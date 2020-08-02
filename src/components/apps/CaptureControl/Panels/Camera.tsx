@@ -144,7 +144,7 @@ export default class CameraPanel extends React.PureComponent<{
         let iconVisibile:string = IconHidden;
         if(this.state.Shown)
             iconVisibile = IconShown;
-        let changed:boolean = (this.state.DeviceID == CameraController.GetState().DeviceID) ? false : true;
+        let changed:boolean = (this.state.DeviceID === CameraController.GetState().DeviceID) ? false : true;
         let cameras:Array<React.ReactElement> = [
             <Button
                 key="btn-no-camera"

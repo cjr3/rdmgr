@@ -3,7 +3,6 @@ import PenaltyController from 'controllers/PenaltyController';
 import { SkaterRecord, PenaltyRecord } from 'tools/vars';
 import PenaltiesController from 'controllers/PenaltiesController';
 import PenaltyCaptureController from 'controllers/capture/Penalty';
-import Panel from 'components/Panel';
 import { Unsubscribe } from 'redux';
 
 /**
@@ -108,20 +107,6 @@ export default class PenaltyTrackerPanel extends React.PureComponent<any, {
      * Renders the component.
      */
     render() {
-        const buttons = [
-            <input
-                key="txt-duration"
-                type="number"
-                size={2}
-                maxLength={2}
-                min={5}
-                max={20}
-                step={1}
-                value={this.state.Duration}
-                onChange={this.onChangeDuration}
-                />
-        ];
-
         let skaters:Array<React.ReactElement> = new Array<React.ReactElement>();
         this.state.Skaters.forEach((skater, index) => {
             let codes:Array<string> = [];

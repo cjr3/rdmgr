@@ -5,13 +5,13 @@ import DataController from 'controllers/DataController'
 import vars, { PhaseRecord, TeamRecord } from 'tools/vars'
 import keycodes from 'tools/keycodes'
 import RosterController from './RosterController';
-import { IGamepadButtonMap, IGamepadAxes } from './GameController';
+import { IGamepadButtonMap } from './GameController';
 import PhasesController from 'controllers/PhasesController';
 
-import {IController, Files} from './vars';
+import {IController} from './vars';
 import {CreateController, BaseReducer} from './functions.controllers';
 import TeamsController from './TeamsController';
-import { PrepareObjectForSending, Compare } from './functions';
+import { PrepareObjectForSending } from './functions';
 
 export type Sides = 'A' | 'B';
 
@@ -377,7 +377,7 @@ const SetState = (state:SScoreboardState, values) => {
     if(!Number.isNaN(values.MaxChallenges))
         maxChallenges = values.MaxChallenges;
 
-    if(state.JamState == vars.Clock.Status.Ready) {
+    if(state.JamState === vars.Clock.Status.Ready) {
         obj.JamSecond = obj.MaxJamSeconds;
     }
 
@@ -854,7 +854,7 @@ const SetTeamScore = (state:SScoreboardState, side:Sides, score:number, jpoints?
 };
 
 const SetTeamJamPoints = (state:SScoreboardState, side:Sides, amount:number) => {
-    if(side == 'A') {
+    if(side === 'A') {
         return {...state, TeamA:{...state.TeamA, JamPoints:amount}};
     } else {
         return {...state, TeamB:{...state.TeamB, JamPoints:amount}};
@@ -899,10 +899,10 @@ const SetTeamStatus = (state:SScoreboardState, side:Sides, status:number) => {
     let bseconds = state.MaxBreakSeconds;
 
     if(side === 'A') {
-        if(status == state.TeamA.Status)
+        if(status === state.TeamA.Status)
             status = vars.Team.Status.Normal;
             
-        if(status == vars.Team.Status.Timeout || status == vars.Team.Status.Challenge)
+        if(status === vars.Team.Status.Timeout || status === vars.Team.Status.Challenge)
             bseconds = state.MaxTimeoutSeconds;
 
         return {...state, 
@@ -911,10 +911,10 @@ const SetTeamStatus = (state:SScoreboardState, side:Sides, status:number) => {
             TeamB:{...state.TeamB, Status:vars.Team.Status.Normal}
         };
     } else {
-        if(status == state.TeamB.Status)
+        if(status === state.TeamB.Status)
             status = vars.Team.Status.Normal;
 
-        if(status == vars.Team.Status.Timeout || status == vars.Team.Status.Challenge)
+        if(status === vars.Team.Status.Timeout || status === vars.Team.Status.Challenge)
             bseconds = state.MaxTimeoutSeconds;
 
         return {...state, 
@@ -1041,33 +1041,6 @@ const ScoreboardReducer = (state:SScoreboardState = InitState, action) => {
         return state;
     }
 }
-
-/**
- * Updates the scoreboard state to match the configuration
- * - MaxJamSeconds is ignored until there is a board reset
- */
-const updateData = async function() {
-    let data:any = DataController.GetMiscRecord('ScoreboardConfig');
-    if(data !== null && data !== undefined) {
-        data = Object.assign({}, data);
-        if(data.MaxJamSeconds !== undefined)
-            delete data.MaxJamSeconds;
-        let state = ScoreboardController.GetState();
-        let compare = {
-            MaxBreakSeconds:state.MaxBreakSeconds,
-            //MaxJamSeconds:state.MaxJamSeconds,
-            MaxTimeouts:state.MaxTimeouts,
-            MaxChallenges:state.MaxChallenges,
-            MaxTimeoutSeconds:state.MaxTimeoutSeconds,
-            MaxChallengeSeconds:state.MaxChallengeSeconds,
-            JamChangeMode:state.JamChangeMode
-        };
-
-        if(!Compare(data, compare)) {
-            ScoreboardController.SetState(data);
-        }
-    }
-};
 
 const ScoreboardController:IScoreboardController = CreateController('SB', ScoreboardReducer);
 ScoreboardController.Init = () => {
@@ -1668,8 +1641,6 @@ ScoreboardController.onGamepadButtonPress = async (buttons:IGamepadButtonMap) =>
 };
 
 ScoreboardController.onGamepadButtonDown = async (buttons:IGamepadButtonMap) => {
-    
-    let state = ScoreboardController.GetState();
     //LEFT
     if(buttons.LEFT.pressed && buttons.LEFT.frames%12 === 0) {
         if(buttons.L2.pressed) {

@@ -66,12 +66,12 @@ export default class CaptureSponsor extends React.Component<any, {
             RecordID:SponsorController.GetState().RecordID
         };
 
-        if(changes.RecordID != this.state.RecordID) {
+        if(changes.RecordID !== this.state.RecordID) {
             this.SourceA = '';
             this.SourceB = '';
             changes.CurrentSlide = 'A';
-        } else if(changes.Index != this.state.Index) {
-            changes.CurrentSlide = (this.state.CurrentSlide == 'A') ? 'B' : 'A';
+        } else if(changes.Index !== this.state.Index) {
+            changes.CurrentSlide = (this.state.CurrentSlide === 'A') ? 'B' : 'A';
         }
 
         this.setState(changes);

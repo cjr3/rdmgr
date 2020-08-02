@@ -19,7 +19,7 @@ export default class Icons extends React.PureComponent<{
     constructor(props) {
         super(props);
         this.state.Status = ScoreboardController.GetState().TeamA.Status;
-        if(this.props.side == 'B')
+        if(this.props.side === 'B')
             this.state.Status = ScoreboardController.GetState().TeamB.Status;
         this.updateScoreboard = this.updateScoreboard.bind(this);
         this.onClickChallenge = this.onClickChallenge.bind(this);
@@ -32,7 +32,7 @@ export default class Icons extends React.PureComponent<{
 
     protected updateScoreboard() {
         let status = ScoreboardController.GetState().TeamA.Status;
-        if(this.props.side == 'B')
+        if(this.props.side === 'B')
             status = ScoreboardController.GetState().TeamB.Status;
         this.setState({Status:status});
     }
@@ -81,20 +81,20 @@ export default class Icons extends React.PureComponent<{
                     src={IconNo}
                     onClick={this.onClickTimeout}
                     title="Timeout"
-                    active={(this.state.Status ==  vars.Team.Status.Timeout)}
+                    active={(this.state.Status ===  vars.Team.Status.Timeout)}
                 />
                 <IconButton
                     src={IconFlag}
                     onClick={this.onClickChallenge}
                     title="Challenge"
-                    active={(this.state.Status ==  vars.Team.Status.Challenge)}
+                    active={(this.state.Status ===  vars.Team.Status.Challenge)}
                 />
                 <IconButton
                     src={IconBolt}
                     onClick={this.onClickLeadJammer}
                     onContextMenu={this.onContextMenuLeadJammer}
                     title="Lead Jammer"
-                    active={(this.state.Status ==  vars.Team.Status.LeadJammer || this.state.Status == vars.Team.Status.PowerJam)}
+                    active={(this.state.Status === vars.Team.Status.LeadJammer || this.state.Status === vars.Team.Status.PowerJam)}
                 />
                 <IconButton
                     src={IconNo}

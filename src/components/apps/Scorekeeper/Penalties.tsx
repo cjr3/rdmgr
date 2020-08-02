@@ -18,7 +18,7 @@ export default class Penalties extends React.PureComponent<{
     constructor(props) {
         super(props);
         this.updateRoster = this.updateRoster.bind(this);
-        if(this.props.side == 'A') {
+        if(this.props.side === 'A') {
             this.state.Skaters = RosterController.GetState().TeamA.Skaters;
         } else {
             this.state.Skaters = RosterController.GetState().TeamB.Skaters;
@@ -26,7 +26,7 @@ export default class Penalties extends React.PureComponent<{
     }
 
     protected updateRoster() {
-        if(this.props.side == 'A') {
+        if(this.props.side === 'A') {
             this.setState({Skaters:RosterController.GetState().TeamA.Skaters});
         } else {
             this.setState({Skaters:RosterController.GetState().TeamB.Skaters});

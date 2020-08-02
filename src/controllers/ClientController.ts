@@ -100,6 +100,8 @@ interface SClientController {
      */
     DialogMessage:string;
     RaffleTicketNumber:string;
+    RosterTeamAIndex:number;
+    RosterTeamBIndex:number;
 };
 
 interface IClientController extends IController {
@@ -117,6 +119,7 @@ interface IClientController extends IController {
     AddRaffleTicketCharacter:{(value:string)};
     RemoveRaffleTicketCharacter:Function;
     SetRaffleTicketNumber:{(value:string)};
+    SetRosterIndex:{(side:string,index:number)};
     onKeyUp:any;
     onKeyDown:any;
     onPeerdata:Function;
@@ -171,6 +174,7 @@ enum Actions {
     SET_RAFFLE_NUMBER = 'SET_RAFFLE_NUMBER',
     ADD_RAFFLE_TICKET_CHAR = 'ADD_RAFFLE_TICKET_CHAR',
     REMOVE_RAFFLE_TICKET_CHAR = 'REMOVE_RAFFLE_TICKET_CHAR',
+    SET_ROSTER_INDEX = 'SET_ROSTER_INDEX'
 };
 
 const InitState:SClientController = {
@@ -198,7 +202,9 @@ const InitState:SClientController = {
     FileBrowserShown:false,
     DialogShown:false,
     DialogMessage:'',
-    RaffleTicketNumber:''
+    RaffleTicketNumber:'',
+    RosterTeamAIndex:-1,
+    RosterTeamBIndex:-1
 };
 
 const Controllers:any = {
@@ -338,6 +344,12 @@ const RemoveRaffleTicketCharacter = (state:SClientController) => {
     return state;
 };
 
+const SetRosterIndex = (state:SClientController, side:string, index:number) => {
+    if(side === 'A')
+        return {...state, RosterTeamAIndex:index};
+    return {...state, RosterTeamBIndex:index};
+};
+
 /**
  * Redux reducer for Client
  * @param state SClientController
@@ -391,6 +403,9 @@ const ClientReducer = (state:SClientController = InitState, action) => {
 
             case Actions.REMOVE_RAFFLE_TICKET_CHAR :
                 return RemoveRaffleTicketCharacter(state);
+
+            case Actions.SET_ROSTER_INDEX :
+                return SetRosterIndex(state, action.side, action.index);
 
             default :
                 return BaseReducer(state, action);
@@ -500,7 +515,7 @@ ClientController.Init = () => {
  */
 ClientController.SetApplication = async (key:string) => {
     let state = ClientController.GetState();
-    if(state.CurrentApplication != key) {
+    if(state.CurrentApplication !== key) {
         ClientController.Dispatch({
             type:Actions.SET_APPLICATION,
             key:key
@@ -508,34 +523,28 @@ ClientController.SetApplication = async (key:string) => {
         DataController.SaveMiscRecord('DefaultApp', key);
 
         switch(key) {
-            case ScoreboardController.Key : {
+            case ScoreboardController.Key :
                 UIController.ShowScoreboard();
-            }
             break;
 
-            case 'CC' : {
+            case 'CC' :
                 UIController.ShowCaptureController();
-            }
             break;
 
-            case PenaltyController.Key : {
+            case PenaltyController.Key :
                 UIController.ShowPenaltyTracker();
-            }
             break;
 
-            case ScorekeeperController.Key : {
+            case ScorekeeperController.Key :
                 UIController.ShowScorekeeper();
-            }
             break;
 
-            case RosterController.Key : {
+            case RosterController.Key :
                 UIController.ShowRoster();
-            }
             break;
 
-            case MediaQueueController.Key : {
+            case MediaQueueController.Key :
                 UIController.ShowMediaQueue();
-            }
             break;
             default : 
                 UIController.ShowScoreboard();
@@ -667,108 +676,88 @@ ClientController.onKeyUp = (ev:any) => {
     switch(ev.keyCode) {
 
         //toggle current applications display
-        case keycodes.ESCAPE : {
+        case keycodes.ESCAPE :
             switch(state.CurrentApplication) {
                 //Main Scoreboard
-                case ScoreboardController.Key : {
+                case ScoreboardController.Key :
                     ScoreboardCaptureController.Toggle();
-                }
                 break;
 
                 //Scorebanner
-                case 'CC' : {
+                case 'CC' :
                     if(ev.ctrlKey)
                         ScoreboardCaptureController.Toggle();
                     else
                         ScorebannerCaptureController.Toggle();
-                }
                 break;
 
                 //Penalty Tracker
-                case PenaltyController.Key : {
+                case PenaltyController.Key :
                     PenaltyCaptureController.Toggle();
-                }
                 break;
 
                 //Scorekeeper
-                case ScorekeeperController.Key : {
+                case ScorekeeperController.Key :
                     ScorekeeperCaptureController.Toggle();
-                }
                 break;
 
                 //Roster
-                case RosterController.Key : {
+                case RosterController.Key :
                     RosterCaptureController.Toggle();
-                }
                 break;
 
                 default : break;
             }
             return;
-        }
-        break;
 
         //Main Scoreboard
-        case keycodes.F1 : {
+        case keycodes.F1 :
             ClientController.SetApplication(ScoreboardController.Key);
             return;
-        }
-        break;
 
         //Capture Controller
-        case keycodes.F2 : {
+        case keycodes.F2 :
             ClientController.SetApplication('CC');
             return;
-        }
-        break;
 
         //Penalty Tracker 
-        case keycodes.F3 : {
+        case keycodes.F3 :
             ClientController.SetApplication(PenaltyController.Key);
             return;
-        }
-        break;
 
         //Scorekeeper 
-        case keycodes.F4 : {
+        case keycodes.F4 :
             ClientController.SetApplication(ScorekeeperController.Key);
             return;
-        }
-        break;
 
         //Roster
-        case keycodes.F5 : {
+        case keycodes.F5 :
             ClientController.SetApplication(RosterController.Key);
             return;
-        }
-        break;
 
         //Media Queue
-        case keycodes.F6 : {
+        case keycodes.F6 :
             ClientController.SetApplication(MediaQueueController.Key);
             return;
-        }
-        break;
 
         //fullscreen - ignore
-        case keycodes.F11 : {
-            return;
-        }
-        break;
+        case keycodes.F11 : return;
 
         //Open Chat
-        case keycodes.F12 : {
+        case keycodes.F12 :
             ClientController.ToggleChat();
             return;
-        }
-        break;
 
         case keycodes.SUBTRACT :
             RaffleCaptureController.Toggle();
             return;
 
+        case keycodes.MULTIPLY :
+            RaffleController.Clear();
+            RaffleCaptureController.Hide();
+            return;
+
         default :
-        
             if(RaffleCaptureController.GetState().Shown) {
                 let ticket:string = ClientController.GetState().RaffleTicketNumber;
                 switch(ev.keyCode) {
@@ -817,7 +806,6 @@ ClientController.onKeyUp = (ev:any) => {
                             ClientController.RemoveRaffleTicketCharacter();
                         }
                         return;
-                    break;
 
                     case keycodes.BACKSPACE :
                     case keycodes.DELETE :
@@ -838,8 +826,6 @@ ClientController.onKeyUp = (ev:any) => {
 
                     break;
                 }
-
-                return;
             }
         
         break;
@@ -1015,7 +1001,7 @@ ClientController.updateServer = async () => {
                     ControlledApps:[]
                 });
                 for(let pkey in records) {
-                    if(records[pkey].PeerID == peer.ID) {
+                    if(records[pkey].PeerID === peer.ID) {
                         connected[peer.ID].ControlledApps = records[pkey].ControlledApps;
                     }
                 }
@@ -1052,6 +1038,14 @@ ClientController.AddRaffleTicketCharacter = async (value:string) => {
 ClientController.RemoveRaffleTicketCharacter = async () => {
     ClientController.Dispatch({
         type:Actions.REMOVE_RAFFLE_TICKET_CHAR
+    });
+};
+
+ClientController.SetRosterIndex = async (side:string, index:number) => {
+    ClientController.Dispatch({
+        type:Actions.SET_ROSTER_INDEX,
+        side:side,
+        index:index
     });
 };
 

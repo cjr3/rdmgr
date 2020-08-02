@@ -21,8 +21,6 @@ export const InitState:IStateAnnouncer = {
     AutoHide:false
 };
 
-let Timer:any = 0;
-
 enum Actions {
     SET_ANNOUNCERS = "SET_ANNOUNCERS"
 }

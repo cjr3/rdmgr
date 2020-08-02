@@ -115,7 +115,7 @@ export default class TeamSelection extends React.PureComponent<{
                 break;
             }
         }
-        if(index != this.state.index && index >= 0) {
+        if(index !== this.state.index && index >= 0) {
             this.setState({index:index});
         }
     }

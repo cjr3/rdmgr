@@ -1,7 +1,6 @@
 import { Store, createStore } from 'redux';
 import { SCaptureControllerState, Actions, ICaptureController } from './vars';
-import { LoadJsonFile, RecordSavers, StateSavers } from 'controllers/functions.io';
-import { delay } from 'tools/functions';
+import { LoadJsonFile, StateSavers } from 'controllers/functions.io';
 
 let DurationTimer:any = 0;
 let DelayTimer:any = 0;

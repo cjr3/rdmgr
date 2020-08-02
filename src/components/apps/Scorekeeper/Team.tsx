@@ -6,7 +6,6 @@ import { Unsubscribe } from 'redux';
 import ScoreboardController from 'controllers/ScoreboardController';
 import { SkaterRecord } from 'tools/vars';
 import RosterController from 'controllers/RosterController';
-import { Compare } from 'controllers/functions';
 
 export default class Team extends React.PureComponent<{
     side:Sides;
@@ -55,7 +54,7 @@ class TeamName extends React.PureComponent<{
     constructor(props) {
         super(props);
         this.updateSocreboard = this.updateSocreboard.bind(this);
-        if(this.props.side == 'B') {
+        if(this.props.side === 'B') {
             this.state.Name = ScoreboardController.GetState().TeamB.Name;
             this.state.Color = ScoreboardController.GetState().TeamB.Color;
         }
@@ -114,7 +113,7 @@ class SkaterRecords extends React.PureComponent<{
         this.updateScoreboard = this.updateScoreboard.bind(this);
         this.updateScorekeeper = this.updateScorekeeper.bind(this);
         this.onSelectSkater = this.onSelectSkater.bind(this);
-        if(this.props.side == 'A') {
+        if(this.props.side === 'A') {
             this.state.Records = RosterController.GetState().TeamA.Skaters;
             this.state.Track = ScorekeeperController.GetState().TeamA.Track;
             this.state.Deck = ScorekeeperController.GetState().TeamA.Deck;
@@ -144,7 +143,7 @@ class SkaterRecords extends React.PureComponent<{
     protected async updateScorekeeper() {
         let track:SScorekeeperTeamDeck = ScorekeeperController.GetState().TeamA.Track;
         let deck:SScorekeeperTeamDeck = ScorekeeperController.GetState().TeamA.Deck;
-        if(this.props.side == 'B') {
+        if(this.props.side === 'B') {
             track = ScorekeeperController.GetState().TeamB.Track;
             deck = ScorekeeperController.GetState().TeamB.Deck;
         }
@@ -186,8 +185,8 @@ class SkaterRecords extends React.PureComponent<{
         this.state.Records.forEach((skater:SkaterRecord) => {
             if(skater.Number !== '' && skater.Number !== null) {
                 let className = cnames({
-                    active:(skater.Position && skater.Deck == 'Track'),
-                    ondeck:(skater.Position && skater.Deck == 'Deck'),
+                    active:(skater.Position && skater.Deck === 'Track'),
+                    ondeck:(skater.Position && skater.Deck === 'Deck'),
                     jammer:(skater.Position && skater.Position === 'Jammer'),
                     pivot:(skater.Position && skater.Position === 'Pivot'),
                     penalized:(skater.Penalties && skater.Penalties.length >= 1)
@@ -238,14 +237,14 @@ class SkaterDeck extends React.PureComponent<{
 
     protected async updateScorekeeper() {
         let cstate:SScorekeeperState = ScorekeeperController.GetState();
-        if(this.props.side == 'A') {
-            if(this.props.deck == 'Track') {
+        if(this.props.side === 'A') {
+            if(this.props.deck === 'Track') {
                 this.setState({...cstate.TeamA.Track});
             } else {
                 this.setState({...cstate.TeamA.Deck});
             }
         } else {
-            if(this.props.deck == 'Track') {
+            if(this.props.deck === 'Track') {
                 this.setState({...cstate.TeamB.Track});
             } else {
                 this.setState({...cstate.TeamB.Deck});

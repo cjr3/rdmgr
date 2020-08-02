@@ -31,7 +31,7 @@ import { AddMediaPath, RemoveMediaPath } from './functions';
 import { RecordSavers, LoadJsonFile, StateSavers } from './functions.io';
 import ScoreboardCaptureController, { JamClockCaptureController, JamCounterCaptureController, ScorebannerCaptureController } from './capture/Scoreboard';
 import ScorekeeperCaptureController from './capture/Scorekeeper';
-import { SetAuthEndpoint, SetEndpoint, SetValidateEndpoint, SetAuthToken } from './api/functions';
+import { SetAuthEndpoint, SetEndpoint, SetValidateEndpoint } from './api/functions';
 import SponsorCaptureController from './capture/Sponsor';
 import SlideshowCaptureController from './capture/Slideshow';
 import SlideshowController from './SlideshowController';
@@ -210,21 +210,21 @@ DataController.Init = () => {
 };
 
 DataController.RegisterSaveStates = () => {
-    for(var key in RecordSavers) {
+    for(let key in RecordSavers) {
         RecordSavers[key].Start();
     }
 
-    for(var key in StateSavers) {
+    for(let key in StateSavers) {
         StateSavers[key].Start();
     }
 };
 
 DataController.UnregisterSaveStates = () => {
-    for(var key in RecordSavers) {
+    for(let key in RecordSavers) {
         RecordSavers[key].Pause();
     }
 
-    for(var key in StateSavers) {
+    for(let key in StateSavers) {
         StateSavers[key].Pause();
     }
 };
@@ -238,41 +238,32 @@ DataController.SaveRecord = async (record:any) => {
 
         case vars.RecordType.Anthem :
             return AnthemsController.SaveRecord(record);
-        break;
 
         case vars.RecordType.Peer :
             return PeersController.SaveRecord(record);
-        break;
 
         case vars.RecordType.Penalty :
             return PenaltiesController.SaveRecord(record);
-        break;
 
         case vars.RecordType.Phase :
             return PhasesController.SaveRecord(record);
-        break;
 
         case vars.RecordType.Skater :
             return SkatersController.SaveRecord(record);
-        break;
 
         case vars.RecordType.Slideshow :
             return SlideshowsController.SaveRecord(record);
-        break;
 
         case vars.RecordType.Team :
             return TeamsController.SaveRecord(record);
-        break;
 
         case vars.RecordType.Video :
             return VideosController.SaveRecord(record);
-        break;
 
         default :
             return new Promise((res) => {
                 res(false);
             });
-        break;
     }
 };
 

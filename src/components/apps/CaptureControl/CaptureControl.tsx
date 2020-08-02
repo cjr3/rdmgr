@@ -1,7 +1,6 @@
 import React from 'react'
 import {Button} from 'components/Elements';
 import Panel from 'components/Panel'
-import CaptureControlMonitor from './CaptureControlMonitor';
 import './css/CaptureControl.scss'
 import UIController from 'controllers/UIController';
 import { Unsubscribe } from 'redux';
@@ -46,7 +45,7 @@ export default class CaptureControl extends React.PureComponent<any, {
     }
 
     protected setPanel(value:string) {
-        if(!value || this.state.CurrentPanel == value)
+        if(!value || this.state.CurrentPanel === value)
             this.setState({CurrentPanel:''});
         else
             this.setState({CurrentPanel:value});

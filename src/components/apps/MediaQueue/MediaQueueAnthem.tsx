@@ -4,7 +4,7 @@ import vars, { SlideshowRecord, VideoRecord, AnthemRecord } from 'tools/vars';
 import MediaQueueController from 'controllers/MediaQueueController';
 import DataController from 'controllers/DataController';
 import { Unsubscribe } from 'redux';
-import { Compare, AddMediaPath } from 'controllers/functions';
+import { AddMediaPath } from 'controllers/functions';
 
 export default class MediaQueueAnthem extends React.PureComponent<any, {
     Record:SlideshowRecord | VideoRecord | AnthemRecord | undefined | null;

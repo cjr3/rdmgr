@@ -1,4 +1,4 @@
-import {IController, Files} from './vars';
+import {IController} from './vars';
 import {CreateController, BaseReducer} from './functions.controllers';
 
 interface ISponsorController extends IController {

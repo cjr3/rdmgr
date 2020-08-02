@@ -1,16 +1,15 @@
 import React from 'react';
 import cnames from 'classnames';
-import PenaltyController, {SPenaltyController, Sides} from 'controllers/PenaltyController';
+import PenaltyController, {Sides} from 'controllers/PenaltyController';
 import ScoreboardController from 'controllers/ScoreboardController';
 import RosterController from 'controllers/RosterController';
 import Panel from 'components/Panel';
-import {Button, IconButton, Icon, IconDelete, IconX, IconHidden, IconShown, IconCheck} from 'components/Elements'
+import {Button, IconButton, Icon, IconDelete, IconX, IconHidden, IconShown} from 'components/Elements'
 import './css/PenaltyTracker.scss';
 import { SkaterRecord, PenaltyRecord } from 'tools/vars';
 import UIController from 'controllers/UIController';
 import { Unsubscribe } from 'redux';
 import PenaltiesController from 'controllers/PenaltiesController';
-import SkatersController from 'controllers/SkatersController';
 import PenaltyCaptureController from 'controllers/capture/Penalty';
 
 /**
@@ -120,12 +119,12 @@ export default class PenaltyTracker extends React.PureComponent<any, {
             penalties.push(penalty);
         }
         else {
-            let index:number = current.findIndex((r) => r.RecordID == penalty.RecordID);
+            let index:number = current.findIndex((r) => r.RecordID === penalty.RecordID);
             if(index < 0) {
                 penalties = current.slice();
                 penalties.push(penalty);
             } else {
-                penalties = current.filter((r) => (r.RecordID != penalty.RecordID));
+                penalties = current.filter((r) => (r.RecordID !== penalty.RecordID));
             }
         }
 
@@ -341,7 +340,7 @@ class PenaltyTrackerTeam extends React.PureComponent<{
         this.state.Skaters.forEach((skater) => {
             if(skater.Number) {
                 let className = cnames({
-                    active:(this.state.Skater && this.state.Skater.RecordID == skater.RecordID),
+                    active:(this.state.Skater && this.state.Skater.RecordID === skater.RecordID),
                     jammer:(skater.Position && skater.Position === 'Jammer'),
                     pivot:(skater.Position && skater.Position === 'Pivot'),
                     penalized:(skater.Penalties && skater.Penalties.length >= 1)

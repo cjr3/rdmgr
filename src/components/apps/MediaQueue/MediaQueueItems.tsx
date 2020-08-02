@@ -3,10 +3,9 @@ import cnames from 'classnames';
 import {Unsubscribe} from 'redux';
 import vars, { AnthemRecord, VideoRecord, SlideshowRecord } from 'tools/vars';
 import SortPanel from 'components/tools/SortPanel';
-import { Icon, IconMovie, IconX, MediaThumbnail, IconFlag, IconTeam } from 'components/Elements';
+import { Icon, IconMovie, IconX, IconFlag, IconTeam } from 'components/Elements';
 import MediaQueueController from 'controllers/MediaQueueController';
 import { Compare, AddMediaPath } from 'controllers/functions';
-import Raffle from 'components/apps/Raffle/Raffle';
 import AnthemCaptureController from 'controllers/capture/Anthem';
 
 export default class MediaQueueItems extends React.PureComponent<any, {
@@ -127,12 +126,9 @@ export default class MediaQueueItems extends React.PureComponent<any, {
                 break;
 
                 case vars.RecordType.Roster :
-                    let src:string = '';
-                    if(record.Thumbnail)
-                        src = AddMediaPath(record.Thumbnail);
                     items.push({
                         label:<React.Fragment key={`${record.RecordType}-${index}`}>
-                            <Icon src={IconTeam}/>}
+                            <Icon src={IconTeam}/>
                             <div className="slide-title">{record.Name}</div>
                             <Icon src={IconX} 
                                 className="remove"
@@ -155,7 +151,7 @@ export default class MediaQueueItems extends React.PureComponent<any, {
                     index={this.state.Index}
                     onDrop={MediaQueueController.SwapRecords}
                     onDoubleClick={(index:number) => {
-                        if(this.state.Records[index] && this.state.Records[index].RecordType == vars.RecordType.Anthem) {
+                        if(this.state.Records[index] && this.state.Records[index].RecordType === vars.RecordType.Anthem) {
                             AnthemCaptureController.SetClass('');
                         }
                         MediaQueueController.SetRecord(index);

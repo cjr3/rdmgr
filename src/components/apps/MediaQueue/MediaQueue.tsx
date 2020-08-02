@@ -13,9 +13,7 @@ import {
     Slider,
     Button,
     IconLoop,
-    IconPlay,
-    IconFolder,
-    IconSave
+    IconPlay
 } from 'components/Elements';
 import Panel from 'components/Panel';
 import MediaQueueItems from './MediaQueueItems';
@@ -32,9 +30,6 @@ import SlideshowCaptureController from 'controllers/capture/Slideshow';
 import RosterCaptureController from 'controllers/capture/Roster';
 import AnthemCaptureController from 'controllers/capture/Anthem';
 import Raffle from 'components/apps/Raffle/Raffle';
-import { ShowOpenDialog } from 'controllers/functions';
-import vars, { SlideshowRecord } from 'tools/vars';
-import { LoadFolderFiles, FileExtension, Basename, SaveFile } from 'controllers/functions.io';
 
 /**
  * Component for media to be queued to the capture window,

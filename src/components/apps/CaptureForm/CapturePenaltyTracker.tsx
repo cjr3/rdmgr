@@ -7,7 +7,6 @@ import PenaltyCaptureController from 'controllers/capture/Penalty';
 import { Unsubscribe } from 'redux';
 import RosterController from 'controllers/RosterController';
 import ScoreboardController from 'controllers/ScoreboardController';
-import { AddMediaPath } from 'controllers/functions';
 
 export default class CapturePenaltyTracker extends React.PureComponent {
     render() {
@@ -119,18 +118,12 @@ function SkaterItem(props:{skater:SkaterRecord}) {
         });
         if(codes.length) {
             let color:string = 'transparent';
-            let src:string = '';
-            if(RosterController.GetState().TeamA.Skaters.findIndex(r => r.RecordID == props.skater.RecordID) >= 0)
+            if(RosterController.GetState().TeamA.Skaters.findIndex(r => r.RecordID === props.skater.RecordID) >= 0)
                 color = ScoreboardController.GetState().TeamA.Color;
-            else if(RosterController.GetState().TeamB.Skaters.findIndex(r => r.RecordID == props.skater.RecordID) >= 0)
+            else if(RosterController.GetState().TeamB.Skaters.findIndex(r => r.RecordID === props.skater.RecordID) >= 0)
                 color = ScoreboardController.GetState().TeamB.Color;
 
             let style:CSSProperties = {backgroundColor:color};
-
-            if(props.skater.Thumbnail) {
-                src = AddMediaPath(props.skater.Thumbnail);
-            }
-
             return (
                 <div className="skater" style={style}>
                     <div className="num">{props.skater.Number}</div>

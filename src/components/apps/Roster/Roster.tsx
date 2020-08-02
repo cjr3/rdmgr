@@ -7,12 +7,11 @@ import SortPanel from 'components/tools/SortPanel';
 import RosterSkaterList from './RosterSkaterList';
 import cnames from 'classnames';
 import keycodes from 'tools/keycodes';
-import { SkaterRecord, SkaterTeamRecord } from 'tools/vars';
+import { SkaterRecord } from 'tools/vars';
 import './css/Roster.scss';
 import UIController from 'controllers/UIController';
 import { Unsubscribe } from 'redux';
 import SkatersController from 'controllers/SkatersController';
-import { AddMediaPath } from 'controllers/functions';
 
 /**
  * Component for building the roster of skaters and coaches on the track
@@ -267,7 +266,7 @@ class RosterTeam extends React.PureComponent<{
         this.updateScoreboard = this.updateScoreboard.bind(this);
         this.updateRoster = this.updateRoster.bind(this);
 
-        if(this.props.side == 'A') {
+        if(this.props.side === 'A') {
             this.state.Name = ScoreboardController.GetState().TeamA.Name;
             this.state.Color = ScoreboardController.GetState().TeamA.Color;
             this.state.RecordID = ScoreboardController.GetState().TeamA.ID;
@@ -297,7 +296,7 @@ class RosterTeam extends React.PureComponent<{
     }
 
     protected updateRoster() {
-        if(this.props.side == 'A') {
+        if(this.props.side === 'A') {
             this.setState({
                 Skaters:RosterController.GetState().TeamA.Skaters
             });
@@ -370,7 +369,7 @@ class TeamRole extends React.PureComponent<{
         this.onChangeRole = this.onChangeRole.bind(this);
         this.onChangeRoleSkater = this.onChangeRoleSkater.bind(this);
 
-        if(this.props.side == 'A') {
+        if(this.props.side === 'A') {
             this.state.Coach = RosterController.GetState().TeamA.Roles.Coach;
             this.state.Penalty = RosterController.GetState().TeamA.Roles.Penalty;
             this.state.Captain = RosterController.GetState().TeamA.Roles.Captain;
@@ -384,7 +383,7 @@ class TeamRole extends React.PureComponent<{
     }
 
     protected updateRoster() {
-        if(this.props.side == 'A') {
+        if(this.props.side === 'A') {
             this.setState({
                 Coach:RosterController.GetState().TeamA.Roles.Coach,
                 Penalty:RosterController.GetState().TeamA.Roles.Penalty,
@@ -512,20 +511,20 @@ class SkaterItem extends React.PureComponent<{
     render() {
         let position:string = '';
         let state:SRosterTeam = RosterController.GetState().TeamA;
-        if(this.props.side == 'B') {
+        if(this.props.side === 'B') {
             state = RosterController.GetState().TeamB;
         }
 
-        if(state.Roles.Coach == this.props.skater.RecordID)
+        if(state.Roles.Coach === this.props.skater.RecordID)
             position = 'Coach';
             
-        if(state.Roles.Penalty == this.props.skater.RecordID)
+        if(state.Roles.Penalty === this.props.skater.RecordID)
             position = 'Penalties';
         
-        if(state.Roles.Captain == this.props.skater.RecordID)
+        if(state.Roles.Captain === this.props.skater.RecordID)
             position = 'Captain';
             
-        if(state.Roles.CoCaptain == this.props.skater.RecordID)
+        if(state.Roles.CoCaptain === this.props.skater.RecordID)
             position = 'Co-Captain';
         
         return (

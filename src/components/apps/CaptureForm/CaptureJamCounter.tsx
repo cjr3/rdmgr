@@ -85,7 +85,7 @@ export default class CaptureJamCounter extends React.PureComponent<any, {
     render() {
         let className:string = cnames('capture-jam-counter', {
             shown:this.state.Shown,
-            jamming:(this.state.JamState == vars.Clock.Status.Running),
+            jamming:(this.state.JamState === vars.Clock.Status.Running),
             showing:((this.state.MaxJamSeconds - this.state.JamSeconds) <= this.state.Duration)
         });
         return (

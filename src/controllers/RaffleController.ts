@@ -1,7 +1,6 @@
-import {IController, Files} from './vars';
+import {IController} from './vars';
 import {CreateController, BaseReducer} from './functions.controllers';
 import { PrepareObjectForSending } from './functions';
-import keycodes from 'tools/keycodes';
 
 interface IRaffleController extends IController {
     Add:Function;
@@ -31,7 +30,7 @@ const AddTicket = (state:SRaffleController, ticket:string) => {
         tickets.shift();
     }
     tickets.push(ticket);
-    return {...state, Tickets:tickets.filter(t => (t != ''))};
+    return {...state, Tickets:tickets.filter(t => (t !== ''))};
 };
 
 const RemoveTicket = (state:SRaffleController, index?:number) => {
@@ -46,7 +45,7 @@ const RemoveTicket = (state:SRaffleController, index?:number) => {
     
     if(state.Tickets[index] === undefined)
         return state;
-    return {...state, Tickets:state.Tickets.filter((t, i) => (i != index && t != ''))};
+    return {...state, Tickets:state.Tickets.filter((t, i) => (i !== index && t !== ''))};
 };
 
 const RemoveLastTicket = (state:SRaffleController) => {

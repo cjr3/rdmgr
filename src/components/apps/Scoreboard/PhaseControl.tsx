@@ -81,7 +81,7 @@ export default class PhaseControl extends React.PureComponent<any, {
      * Triggered when the user sets the game clock time.
      */
     protected onSetGameTime() {
-        if(this.state.GameState != vars.Clock.Status.Running)
+        if(this.state.GameState !== vars.Clock.Status.Running)
             ScoreboardController.SetGameTime(this.state.PhaseHour, this.state.PhaseMinute, this.state.PhaseSecond);
     }
 

@@ -67,7 +67,7 @@ export default class SkaterEditor extends React.PureComponent<props, {
      * @param {Number} id 
      */
     protected addTeam(id:number) {
-        let index:number = this.state.SkaterTeams.findIndex(team => team.TeamID == id);
+        let index:number = this.state.SkaterTeams.findIndex(team => team.TeamID === id);
         if(index < 0) {
             this.setState((state) => {
                 let teams = state.SkaterTeams.slice();
@@ -93,7 +93,7 @@ export default class SkaterEditor extends React.PureComponent<props, {
      * @param {Number} id 
      */
     protected removeTeam(id:number) {
-        let index:number = this.state.SkaterTeams.findIndex(team => team.TeamID == id);
+        let index:number = this.state.SkaterTeams.findIndex(team => team.TeamID === id);
 
         if(index >= 0) {
             this.setState((state) => {
@@ -190,7 +190,6 @@ export default class SkaterEditor extends React.PureComponent<props, {
     render() {
         let teams:Array<React.ReactElement> = [];
         if(this.state.Teams) {
-            let items = Object.entries(this.state.Teams);
             this.state.Teams.forEach((team) => {
                 let captain:boolean = false;
                 let cocaptain:boolean = false;

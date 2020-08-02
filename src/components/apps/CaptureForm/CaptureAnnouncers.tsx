@@ -4,7 +4,6 @@ import {IconMic, Icon} from 'components/Elements';
 import './css/CaptureAnnouncer.scss';
 import AnnouncerCaptureController from 'controllers/capture/Announcer';
 import { Unsubscribe } from 'redux';
-import PopupBanner from 'components/2d/PopupBanner';
 import DataController from 'controllers/DataController';
 import { AddMediaPath } from 'controllers/functions';
 

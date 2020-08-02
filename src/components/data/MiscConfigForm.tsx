@@ -1,7 +1,7 @@
 import React from 'react';
 import Panel from 'components/Panel';
 import DataController from 'controllers/DataController';
-import { IconButton, IconNo, ToggleButton, Button } from 'components/Elements';
+import { ToggleButton, Button } from 'components/Elements';
 import MediaPreview from 'components/tools/MediaPreview';
 import ScoreboardCaptureController, { ScorebannerCaptureController, JamCounterCaptureController, JamClockCaptureController } from 'controllers/capture/Scoreboard';
 import AnnouncerCaptureController from 'controllers/capture/Announcer';
@@ -17,7 +17,6 @@ import SlideshowCaptureController from 'controllers/capture/Slideshow';
 import ScoresCaptureController from 'controllers/capture/Scores';
 import StandingsCaptureController from 'controllers/capture/Standings';
 import SponsorCaptureController from 'controllers/capture/Sponsor';
-import CaptureControlMonitor from 'components/apps/CaptureControl/CaptureControlMonitor';
 
 /**
  * Component for misc configuration
@@ -499,7 +498,6 @@ class MonitorPanel extends React.PureComponent<any, {
                 let screen = window.require('electron').remote.screen;
                 let monitors = screen.getAllDisplays();
                 let changes:any = {Monitors:monitors};
-                let dstate:any = DataController.GetState();
                 if(monitors.length > 1) {
                     let primary = screen.getPrimaryDisplay();
                     let index = 0;

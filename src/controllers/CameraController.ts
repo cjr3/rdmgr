@@ -1,5 +1,5 @@
 import {CreateController, BaseReducer} from './functions.controllers';
-import { IController, Files } from './vars';
+import { IController } from './vars';
 
 interface ICameraController extends IController {
     
@@ -76,7 +76,7 @@ CameraController.Set = async (deviceId:string) : Promise<boolean> => {
             res(true);
         } else {
             let devices:Array<MediaDeviceInfo> = CameraController.GetState().Cameras;
-            let device:MediaDeviceInfo|undefined = devices.find(d => d.deviceId == deviceId);
+            let device:MediaDeviceInfo|undefined = devices.find(d => d.deviceId === deviceId);
             if(device) {
                 CameraController.GetStore().dispatch({
                     type:Actions.SET_DEVICE_ID,

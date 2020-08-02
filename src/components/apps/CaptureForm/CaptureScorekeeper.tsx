@@ -102,7 +102,7 @@ class Jammer extends React.PureComponent<{
         super(props);
         this.updateScorekeeper = this.updateScorekeeper.bind(this);
         this.updateScoreboard = this.updateScoreboard.bind(this);
-        if(this.props.side == 'A') {
+        if(this.props.side === 'A') {
             this.state.Skater = ScorekeeperController.GetState().TeamA.Track.Jammer;
             this.state.Logo = ScoreboardController.GetState().TeamA.Thumbnail;
             this.state.Color = ScoreboardController.GetState().TeamA.Color;
@@ -141,7 +141,7 @@ class Jammer extends React.PureComponent<{
     }
 
     protected updateScoreboard() {
-        if(this.props.side == 'A') {
+        if(this.props.side === 'A') {
             this.setState({
                 Logo:ScoreboardController.GetState().TeamA.Thumbnail,
                 Color:ScoreboardController.GetState().TeamA.Color
@@ -287,7 +287,7 @@ class SkaterScreen extends React.PureComponent<{
         super(props);
         this.updateScoreboard = this.updateScoreboard.bind(this);
         this.updateScorekeeper = this.updateScorekeeper.bind(this);
-        if(this.props.side == 'B') {
+        if(this.props.side === 'B') {
             this.state.Logo = ScoreboardController.GetState().TeamB.Thumbnail;
             this.state.Color = ScoreboardController.GetState().TeamB.Color;
         }
@@ -296,7 +296,7 @@ class SkaterScreen extends React.PureComponent<{
     protected updateScorekeeper() {
         try {clearTimeout(this.Timer);} catch(er) {}
         let skater:any = ScorekeeperController.GetState().TeamA.Track[this.props.position];
-        if(this.props.side == 'B') {
+        if(this.props.side === 'B') {
             skater = ScorekeeperController.GetState().TeamB.Track[this.props.position];
         }
 
@@ -306,7 +306,7 @@ class SkaterScreen extends React.PureComponent<{
             }, () => {
                 this.Timer = setTimeout(() => {
                     let skater:any = ScorekeeperController.GetState().TeamA.Track[this.props.position];
-                    if(this.props.side == 'B') {
+                    if(this.props.side === 'B') {
                         skater = ScorekeeperController.GetState().TeamB.Track[this.props.position];
                     }
                     this.setState({Skater:skater})
@@ -323,7 +323,7 @@ class SkaterScreen extends React.PureComponent<{
                 Logo:ScoreboardController.GetState().TeamA.Thumbnail,
                 Color:ScoreboardController.GetState().TeamA.Color
             });
-        } else if(this.props.side == 'B') {
+        } else if(this.props.side === 'B') {
             this.setState({
                 Logo:ScoreboardController.GetState().TeamB.Thumbnail,
                 Color:ScoreboardController.GetState().TeamB.Color
@@ -375,42 +375,4 @@ class SkaterScreen extends React.PureComponent<{
             </div>
         )
     }
-}
-
-function _SkaterScreen(props:{record:any, color:string}) {
-
-    let style:CSSProperties = {
-        backgroundImage:'none'
-    };
-
-    if(props.color) {
-        style.backgroundImage = `linear-gradient(#000, ${props.color})`;
-    }
-
-    if(!props.record) {
-        return (
-            <div className="skater no-skater" style={style}>
-                <div className="thumbnail"></div>
-                <div className="num"></div>
-            </div>
-        );
-    }
-
-    let skater:SkaterRecord = props.record;
-
-    let src:string = '';
-    if(skater.Thumbnail) {
-        src = AddMediaPath(skater.Thumbnail);
-    }
-    
-    return (
-        <div className="skater" style={style}>
-            <div className="thumbnail">
-                <img src={src} alt=""/>
-            </div>
-            <div className="num">
-                {skater.Number}
-            </div>
-        </div>
-    );
 }

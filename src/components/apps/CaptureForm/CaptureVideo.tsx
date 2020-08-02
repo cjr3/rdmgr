@@ -143,7 +143,7 @@ export default class CaptureVideo extends React.PureComponent<any,{
             height = window.outerHeight;
         }
 
-        if(width != 1280 && width != 1920) {
+        if(width !== 1280 && width !== 1920) {
             width = 1280;
             height = 720;
         }

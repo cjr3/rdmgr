@@ -1,5 +1,5 @@
 import {CreateController, BaseReducer} from './functions.controllers';
-import {IController, Files} from './vars';
+import {IController } from './vars';
 
 interface IChatController extends IController {
     AddMessage:Function;

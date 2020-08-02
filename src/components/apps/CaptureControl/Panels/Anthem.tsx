@@ -1,11 +1,9 @@
 import React, { CSSProperties } from 'react';
 import  {
-    IconX,
     IconCheck,
     IconButton,
     IconHidden,
-    IconShown,
-    IconSave
+    IconShown
 } from 'components/Elements';
 import AnthemsController from 'controllers/AnthemsController';
 import { AnthemRecord } from 'tools/vars';
@@ -164,7 +162,7 @@ export default class AnthemPanel extends React.PureComponent<{
             <option key="singer-def" value="0">(none)</option>
         );
         let iconToggle:string = (this.state.Shown) ? IconShown : IconHidden;
-        let changed:boolean = (this.state.Name != this.state.CurrentName) ? true : false;
+        let changed:boolean = (this.state.Name !== this.state.CurrentName) ? true : false;
         let style:CSSProperties = {visibility:'hidden'};
         if(this.state.RecordID <= 0)
             style.visibility = 'visible';

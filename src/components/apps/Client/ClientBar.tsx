@@ -2,7 +2,6 @@ import React from 'react';
 import cnames from 'classnames';
 import { 
     IconSkate,
-    IconMonitor, 
     IconWhistle, 
     IconClipboard,
     IconTeam,
@@ -113,7 +112,6 @@ export default class ClientBar extends React.PureComponent<any, {
     }
 
     protected async updateUI() {
-        let state = UIController.GetState();
         
     }
 

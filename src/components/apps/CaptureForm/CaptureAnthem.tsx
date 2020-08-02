@@ -5,7 +5,6 @@ import DataController from 'controllers/DataController';
 import AnthemCaptureController from 'controllers/capture/Anthem';
 import { Unsubscribe } from 'redux';
 import { AddMediaPath } from 'controllers/functions';
-import PopupBanner from 'components/2d/PopupBanner';
 
 /**
  * Component for displaying national anthem singer info on the capture window.

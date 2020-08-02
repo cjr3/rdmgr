@@ -9,8 +9,7 @@ import {
     IconButton,
     IconLoop,
     IconLeft,
-    IconRight,
-    IconSubtract
+    IconRight
 } from 'components/Elements';
 import { Unsubscribe } from 'redux';
 import vars, { SkaterRecord } from 'tools/vars';
