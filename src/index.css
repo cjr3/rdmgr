@@ -1,0 +1,25 @@
+* {
+    box-sizing: border-box;
+    outline: dotted 1px rgba(255, 255, 255, 0.2);
+}
+
+html, body {
+    overflow: hidden;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    height: 100%;
+}
+
+body {
+    background-color: #000;
+    color: #fff;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+body > div:first-child {
+    overflow: hidden;
+    width: 1280px;
+    height: 720px;
+    position: relative;
+}

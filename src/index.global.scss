@@ -1,0 +1,1849 @@
+* {
+    box-sizing: border-box;
+    // outline: dotted 1px rgba(255, 255, 255, 0.2);
+}
+
+$rdPurple: rgb(32, 26, 51);
+$rdPurpleLight: rgb(54, 47, 78);
+$rdGreen: #090;
+$rdOrange: #C90;
+$rdRed: #600;
+$rdBlue: #09C;
+$rdDark: #222;
+$fg: #fff;
+$bg: #000;
+
+html, body {
+    overflow: hidden;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    height: 100%;
+}
+
+body {
+    background-color: $bg;
+    color: $fg;
+    font-family: Arial;
+}
+
+#root {
+    overflow: hidden;
+    width: 1280px;
+    height: 720px;
+    position: relative;
+}
+
+.app-control {
+    display: grid;
+    grid-template-rows: 32px 1fr auto;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    > .titlebar {
+        grid-row: 1;
+        background-color: $rdDark;
+        display: flex;
+        flex-flow: row nowrap;
+        font-size: 18px;
+
+        > .close-icon {
+            button {
+                user-select: initial;
+                background-color: $rdRed;
+            }
+        }
+
+        > .teams {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 50% 50%;
+            user-select: none;
+            -webkit-app-region: drag;
+            > .team {
+                display: grid;
+                grid-template-columns: 1fr 100px;
+                > span {
+                    padding: 6px;
+                    &:first-of-type {
+                        text-overflow: ellipsis;
+                        word-wrap: none;
+                        line-height: 24px;
+                    }
+                    &:last-of-type {
+                        text-align: center;
+                        font-weight: bold;
+                        line-height: 24px;
+                    }
+                }
+            }
+        }
+
+        > .phase {
+            -webkit-app-region: drag;
+            padding: 6px;
+            flex: 0 0 150px;
+            text-align: center;
+            line-height: 24px;
+            user-select: none;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        > .game-clock {
+            padding: 6px;
+            flex: 0 0 100px;
+            text-align: center;
+            line-height: 24px;
+            user-select: none;
+            -webkit-app-region: drag;
+        }
+
+        > .jam-clock {
+            padding: 6px;
+            flex: 0 0 100px;
+            text-align: center;
+            line-height: 24px;
+            user-select: none;
+            -webkit-app-region: drag;
+        }
+
+        > .jam-counter {
+            padding: 6px;
+            flex: 0 0 100px;
+            text-align: center;
+            line-height: 24px;
+            user-select: none;
+            -webkit-app-region: drag;
+        }
+
+        > .board-status {
+            padding: 6px;
+            flex: 0 0 200px;
+            text-align: center;
+            line-height: 24px;
+            user-select: none;
+            -webkit-app-region: drag;
+        }
+    }
+
+    > .content {
+        grid-row: 2;
+        background-color:$bg;
+        overflow: hidden;
+        position: relative;
+
+        > .app {
+            display: none;
+            grid-template-rows: 1fr auto;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: relative;
+            > .content {
+                grid-row: 1;
+                position: relative;
+                overflow: hidden;
+            }
+            > .buttons {
+                grid-row: 2;
+                text-align: right;
+                display: flex;
+                flex-flow: row wrap;
+                justify-content: flex-end;
+                background-color: $rdPurple;
+                .button, .icon {
+                    vertical-align: top;
+                }
+            }
+    
+            &.active {
+                display: grid;
+            }
+        }
+    }
+
+    > .taskbar {
+        grid-row: 3;
+        background-color: $rdDark;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        > .app-icons {
+            grid-column: 1;
+        }
+        > .status {
+            grid-column: 2;
+            position: relative;
+            overflow: hidden;
+            > .section {
+                transition: transform 150ms ease-in-out;
+                transform: rotateX(90deg);
+                background-color: $rdDark;
+                height: 48px;
+                width: 100%;
+                overflow: hidden;
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                margin: auto;
+                background-color: #000000;
+                z-index: 1;
+                &.active {
+                    transform: rotateX(0deg);
+                }
+
+                &.video {
+                    display: grid;
+                    grid-template-columns: 100px 1fr 200px;
+                    justify-content: center;
+                    align-items: center;
+                    > .status {
+                        justify-self: center;
+                    }
+                    > .progress {
+                        padding: 0px 12px;
+                        input[type="range"] {
+                            width: 100%;
+                        }
+                    }
+                    > .time {
+                        padding: 0px 6px;
+                    }
+                }
+
+                &.scorekeeper {
+                    display: grid;
+                    grid-template-columns: 50% 50%;
+                    height: 48px;
+                    > .skater {
+                        display: grid;
+                        grid-template-columns: 48px 1fr;
+                        height: 48px;
+                        > .thumb {
+                            > img {
+                                height: 48px;
+                                width: auto;
+                            }
+                        }
+                        > .label {
+                            text-align: center;
+                            line-height: 48px;
+                        }
+                    }
+                }
+            }
+        }
+        > .misc-icons {
+            grid-column: 3;
+        }
+    }
+}
+
+.collapsable {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    > .title {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        user-select: none;
+        cursor: pointer;
+        border: solid 1px $rdDark;
+        // > .icon {
+        //     padding: 0px 3px;
+        //     min-width: 34px;
+        //     height: 34px;
+        //     border: none;
+        //     > img {
+        //         width: 34px;
+        //     }
+        // }
+        > .label {
+            padding: 8px;
+        }
+    }
+    > .content {
+        display: none;
+        overflow: hidden auto;
+    }
+    &.active {
+        > .title {
+            border-color: $rdPurple;
+        }
+        > .content {
+            display: block;
+        }
+    }
+}
+
+.scoreboard-control {
+    > .content {
+        display: grid;
+        grid-template-columns: 33% 34% 33%;
+        grid-template-rows: 1fr auto;
+        > .team-a {
+            grid-column: 1;
+        }
+
+        > .center-controls {
+            grid-column: 2;
+            user-select: none;
+            display: flex;
+            flex-flow: column nowrap;
+            padding: 8px;
+            .jam-clock {
+                font-size: 158px;
+                text-align: center;
+                flex: 1;
+            }
+
+            .jam-break {
+                display: grid;
+                grid-template-columns: 50% 50%;
+            }
+
+            .break-clock {
+                flex: 0;
+                font-size: 32px;
+                display: grid;
+                grid-template-columns: 1fr auto auto;
+                align-items: center;
+                cursor: pointer;
+                transition: background-color 150ms linear;
+                > span {
+                    grid-column: 1;
+                    padding: 6px;
+                }
+                > .clock-view {
+                    grid-column: 2;
+                    padding: 6px;
+                }
+                > button {
+                    grid-column: 3;
+                    justify-self: flex-end;
+                    margin-right: 2px;
+                }
+                &:hover {
+                    background-color: rgba(255, 255, 255, 0.1);
+                }
+            }
+
+            .jam-counter {
+                display: grid;
+                grid-template-columns: auto auto;
+                font-size: 32px;
+                > span {
+                    padding: 6px;
+                    cursor: pointer
+                }
+                > .value {
+                    border: solid 2px #fff;
+                    border-radius: 6px;
+                    text-align: center;
+                    transition: background-color 150ms ease-in-out;
+                }
+                &:hover {
+                    > .value {
+                        background-color: rgba(255, 255, 255, 0.1);
+                    }
+                }
+            }
+
+            > .game-clock {
+                display: grid;
+                grid-template-columns: 1fr auto;
+                font-size: 48px;
+                text-align: center;
+                > .clock-view {
+                    cursor: pointer;
+                }
+            }
+            .game-clock-editor {
+                grid-column: 1/-1;
+                display: grid;
+                grid-template-columns: repeat(7, auto);
+                padding: 12px 0px;
+                justify-content: center;
+                input[type="number"] {
+                    font-size: 32px;
+                    width: 72px;
+                }
+                &.active {
+                    opacity: 0.15;
+                }
+            }
+
+            > .phase, > .status {
+                cursor: pointer;
+                font-size: 24px;
+                text-align: center;
+                padding: 8px;
+                text-transform: uppercase;
+                margin: 6px 0px;
+            }
+
+            > .phase {
+                border: solid 2px #fff;
+                padding: 6px;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: background-color 150ms linear;
+                &:hover {
+                    background-color: rgba(255, 255, 255, 0.1);
+                }
+            }
+
+            > .status {
+                border-radius: 8px;
+                min-height: 48px;
+            }
+        }
+
+        > .team-b {
+            grid-column: 3;
+        }
+
+        > .team {
+            padding: 8px;
+            position: relative;
+            user-select: none;
+            font-size: 24px;
+            > .score-logo {
+                display: flex;
+                flex-flow: row nowrap;
+                height: 150px;
+                align-content: center;
+                justify-content: center;
+                > .logo {
+                    flex: 0 0 150px;
+                    text-align: center;
+                    > img {
+                        vertical-align: middle;
+                        max-width: 150px;
+                        max-height: 150px;
+                        padding: 8px;
+                    }
+                }
+                > .score {
+                    flex: 1;
+                    font-size: 108px;
+                    font-weight: bold;
+                    font-family: Arial;
+                    cursor: pointer;
+                    padding: 8px;
+                    background-color: $bg;
+                    > .value {
+                        border: solid 3px #fff;
+                        border-radius: 16px;
+                        vertical-align: middle;
+                        text-align: center;
+                    }
+                }
+            }
+
+            > .controls {
+                // > .counter-input {
+                //     > .value {
+                //         width: 50px;
+                //         text-align: right;
+                //     }
+                // }
+
+                // display: flex;
+                // flex-flow: column nowrap;
+                padding-right: 12px;
+
+                > .counter-button {
+                    display: grid;
+                    grid-template-columns: 1fr 150px;
+                    // flex: 0 0 33%;
+                    margin-bottom: 12px;
+                    > .value {
+                        width: 100%;
+                        display: block;
+                        border-radius: 8px;
+                        border: solid 2px #fff;
+                        font-size: 48px;
+                        cursor: pointer;
+                        text-align: center;
+                        transition: background-color 150ms ease-in-out;
+                        &:hover {
+                            background-color: rgba(255, 255, 255, 0.1);
+                        }
+                    }
+                    > .caption {
+                        text-align: right;
+                        padding: 12px;
+                    }
+                }
+            }
+
+            > .status {
+                text-align: center;
+                min-height: 40px;
+                > .label {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    padding: 6px;
+                    border-radius: 0px 0px 16px 16px;
+                    transform: translateY(-200px);
+                    transition: transform 150ms linear, background-color 150ms linear;
+                    &.challenge, &.timeout {
+                        background-color: $rdRed;
+                    }
+
+                    &.lead {
+                        background-color: $rdGreen;
+                    }
+
+                    &.power {
+                        background-color: $rdOrange;
+                    }
+                }
+                &.active {
+                    > .label {
+                        transform: translateY(0);
+                    }
+                }
+            }
+            > .name {
+                position: relative;
+                text-align: center;
+                text-overflow: ellipsis;
+                word-wrap: break-word;
+                height: 32px;
+                overflow: hidden;
+                > .input {
+                    position: absolute;
+                    background-color: $bg;
+                    display: grid;
+                    grid-template-columns: 1fr auto;
+                    left: 0;
+                    right: 0;
+                    top: 0;
+                    bottom: 0;
+                    input[type="text"] {
+                        grid-column: 1;
+                        text-align: center;
+                        padding: 0px;
+                    }
+                    > button {
+                        grid-column: 2;
+                        min-height: 0px;
+                    }
+                }
+            }
+
+            &.team-b {
+                > .score-logo {
+                    > .logo {
+                        order: 1;
+                    }
+                    > .score {
+                        order: 0;
+                    }
+                }
+
+                > .controls {
+                    padding-right: 0px;
+                    padding-left: 12px;
+                    // > .counter-input {
+                    //     justify-content: flex-start;
+                    //     > .value {
+                    //         order: 2;
+                    //     }
+
+                    //     > .caption {
+                    //         order: 3;
+                    //     }
+                    // }
+                    .counter-button {
+                        grid-template-columns: 150px 1fr;
+                        > .caption {
+                            order: 2;
+                            text-align: left;
+                        }
+                    }
+                }
+
+                > .buttons {
+                    right: initial;
+                    left: 0;
+                    flex-flow: row-reverse nowrap;
+                }
+            }
+        }
+
+        > .bottom-controls {
+            grid-column: 1/-1;
+            grid-row: 2;
+            display: grid;
+            grid-template-columns: 33% 34% 33%;
+            > .team-buttons {
+                grid-row: 2;
+                display: flex;
+                flex-flow: row nowrap;
+                padding: 0px 12px;
+                &.team-a {
+                    grid-column: 1;
+                    justify-self: flex-end;
+                }
+                &.team-b {
+                    grid-column: 3;
+                    flex-flow: row-reverse nowrap;
+                    justify-self: flex-start;
+                }
+            }
+    
+    
+            > .jam-control {
+                grid-column: 2;
+                grid-row: 2;
+                padding: 6px;
+                text-align: center;
+                > button {
+                    width: 100%;
+                    background-color: $rdDark;
+                    border: solid 1px #fff;
+                    font-weight:bold;
+                }
+                &.running {
+                    > button {
+                        color: $rdOrange;
+                    }
+                }
+            }
+        }
+        
+    }
+}
+
+.roster-control {
+    > .content {
+        display: grid;
+        grid-template-columns: 400px auto 400px;
+        overflow: hidden;
+        > .team {
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            overflow: hidden;
+            > .name {
+                padding: 8px;
+            }
+            > .skaters {
+                overflow: hidden scroll;
+                height: 100%;
+            }
+            > .roles {
+                display: grid;
+                grid-template-columns: auto 1fr;
+                > select {
+                    font-size: 18px;
+                }
+            }
+        }
+
+        > .skater-list {
+            height: 100%;
+            grid-column: 2;
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            overflow: hidden;
+            > .title {
+                background-color: $rdPurple;
+                padding: 6px;
+            }
+            > .skaters {
+                overflow: hidden scroll;
+                grid-row: 2;
+                > .skater {
+                    > .icon {
+                        background-color: transparent;
+                    }
+                }
+            }
+
+            > .entry {
+                display: grid;
+                grid-template-columns: 1fr;
+                grid-row: 3;
+                input[type="text"] {
+                    font-size: 24px;
+                    user-select: initial;
+                }
+            }
+        }
+
+        > .team:last-of-type {
+            grid-column: 3;
+        }
+
+        .skater {
+            display: grid;
+            grid-template-columns: 75px 1fr auto auto auto;
+            border: solid 1px $rdPurple;
+            user-select: none;
+            > .name, > .num {
+                padding: 6px;
+            }
+            > .num {
+                overflow: hidden;
+                text-align: right;
+            }
+            > .icon {
+                border: none;
+                &:disabled {
+                    visibility: hidden;
+                }
+            }
+            &.dragging {
+                border-color: $rdRed;
+            }
+            &.dropping, &.active {
+                border-color: $rdGreen;
+            }
+        }
+    }
+}
+
+input[type="color"] {
+    -webkit-border-horizontal-spacing: 0px;
+    -webkit-border-vertical-spacing: 0px;
+    background-color: #000000;
+    padding: 0px;
+    margin: 0px;
+    border: none !important;
+    height: 36px;
+    width: 100%;
+    cursor: pointer;
+}
+
+.penalty-control {
+    > .content {
+        display: grid;
+        grid-template-columns: 50% 50%;
+        grid-template-rows: 50% 50%;
+        user-select: none;
+        > .team {
+            grid-column: 1;
+            padding: 8px;
+            display: grid;
+            grid-template-rows: auto 1fr;
+            &:nth-child(1) {
+                grid-row: 1;
+            }
+            &:nth-child(2) {
+                grid-row: 2;
+            }
+
+            > .name {
+                padding: 8px;
+                grid-row: 1;
+            }
+
+            > .skaters {
+                grid-row: 2;
+                display: flex;
+                flex-flow: row wrap;
+                position: relative;
+                padding-top: 6px;
+                align-content: flex-start;
+                > .thumbnail {
+                    width: 75px;
+                    height: 75px;
+                    margin: 1px;
+                    border: solid 3px $rdPurple;
+                    border-radius: 8px;
+                    padding: 3px;
+                    overflow: hidden;
+                    cursor: pointer;
+                    transition: box-shadow 150ms linear, border-color 150ms linear;
+                    &.active {
+                        border-color: $rdRed;
+                    }
+                    &.selected {
+                        border-color: $rdGreen;
+                        box-shadow: 0px 0px 10px 5px rgba(0,0,0,1);
+                        z-index: 1;
+                    }
+
+                    > .num {
+                        position: absolute;
+                        right: 0;
+                        left: 0;
+                        bottom: 0;
+                        padding: 3px;
+                        z-index: 1;
+                        font-size: 24px;
+                        font-weight: bold;
+                        background-color: rgba(0,0,0,0.3);
+                        text-align: center;
+                    }
+                }
+            }
+        }
+
+        > .penalty-side {
+            grid-column: 2;
+            grid-row: 1/-1;
+            display: flex;
+            flex-flow: column nowrap;
+            > .penalty-list {
+                padding: 8px;
+                overflow: hidden scroll;
+                display: flex;
+                flex-flow: row wrap;
+                grid-row: 1;
+                > .penalty {
+                    cursor: pointer;
+                    display: grid;
+                    grid-template-columns: 48px 1fr;
+                    flex: 1 0 33%;
+                    overflow: hidden;
+                    border: solid 1px $rdPurple;
+                    > .code {
+                        grid-column: 1;
+                        padding: 3px;
+                        font-size: 24px;
+                        height: 48px;
+                        overflow: hidden;
+                    }
+                    > .name {
+                        grid-column: 2;
+                        padding: 3px;
+                        font-size: 14px;
+                    }
+                }
+            }
+    
+            > .bench {
+                grid-row: 2;
+                display: flex;
+                flex-flow: row wrap;
+                > .skater {
+                    flex: 0 0 50%;
+                    display: grid;
+                    grid-template-columns: auto 1fr auto;
+                    cursor: pointer;
+                    font-size: 24px;
+                    border: solid 1px $rdPurple;
+                    &.active {
+                        background-color: $rdGreen;
+                    }
+                    > .icon {
+                        grid-column: 1;
+                        padding: 3px;
+                        min-width: none;
+                        min-height: none;
+                        height: 48px;
+                        width: auto;
+                        border: none;
+                        > img {
+                            width: auto;
+                            height: 100%;
+                        }
+                    }
+                    > .name {
+                        grid-column: 2;
+                        padding: 6px;
+                    }
+
+                    > .codes {
+                        padding: 6px;
+                        text-align: right;
+                    }
+                }
+            }
+        }
+    
+    }
+}
+
+.scorekeeper-control {
+    > .content {
+        display: grid;
+        grid-template-columns: 50% 50%;
+        > .team {
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            > .decks {
+                padding: 16px;
+                > .deck {
+                    display: flex;
+                    flex-flow: row wrap;
+                    justify-content: space-between;
+                    > .title {
+                        flex: 1 0 100%;
+                        padding: 6px;
+                        text-align: center;
+                    }
+                    > .thumbnail {
+                        border: dotted 1px #999;
+                        &.active {
+                            border: solid 1px $rdGreen;
+                        }
+                    }
+                }
+
+            }
+
+            > .name {
+                padding: 8px;
+            }
+
+            > .skaters {
+                display: flex;
+                flex-flow: row wrap;
+                justify-content: flex-start;
+                padding: 16px;
+            }
+            
+            .thumbnail {
+                flex: 0 0 75px;
+                height: 75px;
+                position: relative;
+                margin: 1px;
+                user-select: none;
+                border: solid 1px transparent;
+                cursor: pointer;
+                &.active {
+                    border-color: $rdGreen;
+                }
+                > .num {
+                    position: absolute;
+                    z-index: 1;
+                    right: 0;
+                    bottom: 0;
+                    left: 0;
+                    padding: 3px;
+                    background-image: linear-gradient(transparent, rgba(0,0,0,1));
+                    text-align: center;
+                    font-weight: bold;
+                    font-size: 22px;
+                    text-shadow: 3px 3px 3px rgba(0,0,0,0.5);
+                }
+                > img {
+                    transition: opacity 150ms linear;
+                }
+                > .icon {
+                    position: absolute;
+                    left: 3px;
+                    top: 3px;
+                    z-index: 1;
+                    display: block;
+                    opacity: 1;
+                    width: 24px;
+                    height: 24px;
+                    min-width: 0px;
+                    background-color: transparent;
+                    opacity: 0.5;
+                    > img {
+                        width: 24px;
+                        height: 24px;
+                    }
+                }
+                &:hover {
+                    > .icon {
+                        opacity: 1;
+                    }
+                    > img {
+                        opacity: 0.7;
+                    }
+                }
+            }
+        }
+    }
+
+    &.jammerOnly {
+        > .content {
+            > .team {
+                > .decks {
+                    padding: 8px 16px;
+                    .deck {
+                        > .title {
+                            display: none;
+                        }
+                        justify-content: center;
+                        .thumbnail {
+                            display: none;
+                            &:nth-of-type(2) {
+                                display: block;
+                                width: 100px;
+                                height: 100px;
+                                flex: 0 0 100px;
+                            }
+                        }
+                    }
+                    .deck:nth-child(2) {
+                        display: none;
+                    }
+                }
+                > .skaters {
+                    > .thumbnail {
+                        flex: 0 0 100px;
+                        width: 100px;
+                        height: 100px;
+                    }
+                }
+            }
+        }
+    }
+}
+
+button, .button {
+    border: none;
+    background-color: $rdPurple;
+    color: $fg;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background-color 125ms linear;
+    font-size: 1.2rem;
+    text-align: center;
+    border: solid 1px $bg;
+    user-select: none;
+    &:focus, &:active {
+        outline: none;
+    }
+    &:hover {
+        background-color: $rdPurpleLight;
+        background-image: linear-gradient(rgba(0,0,0,0), rgba(255,0,0,0.05));
+    }
+
+    &.active {
+        background-color: $rdGreen;
+        background-image: linear-gradient(rgba(0,0,0,0.05), rgba(255,0,0,0.3));
+    }
+
+    &:disabled {
+        cursor: default;
+        > img {
+            opacity: 0.7;
+        }
+    }
+
+    &.icon {
+        position: relative;
+        display: inline-flex;
+        flex-flow: row nowrap;
+        align-items: center;
+        &:not(.asButton) {
+            padding: 2px;
+            width: auto;
+            min-width: 48px;
+            height: 48px;
+            background-color: $bg;
+            > img {
+                width: 38px;
+                margin: auto;
+                height: auto;
+                user-select: none;
+            }
+        }
+
+        &.asButton {
+            text-transform: uppercase;
+            > img {
+                height: 24px;
+                // margin-right: 6px;
+                width: auto;
+                vertical-align: middle;
+            }
+        }
+    }
+}
+
+.transform-container {
+    overflow: hidden;
+    position: relative;
+}
+
+input[type="text"], input[type="number"], textarea {
+    background-color: $rdDark;
+    color: $fg;
+    font-size: 1.2rem;
+    outline: none;
+}
+
+textarea {
+    font-family: Arial;
+    max-width: 100%;
+    max-height: 480px;
+}
+
+input[type="number"] {
+    text-align: right;
+}
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+      margin-left: 8px;
+}
+
+select {
+    background-color: $rdDark;
+    color: $fg;
+    min-width: 100px;
+    font-size: 1.1rem;
+    padding: 6px;
+    > option {
+        font-size: 1.1rem;
+        padding: 6px 6px 12px 6px;
+    }
+    &:only-child {
+        width: 100%;
+    }
+    &:focus, &:active {
+        outline: none;
+    }
+}
+
+.counter-input {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-end;
+    > span {
+        padding: 6px;
+    }
+}
+
+.grid-5050 {
+    display: grid;
+    grid-template-columns: 50% 50%;
+    > *:first-child {
+        grid-column: 1;
+    }
+
+    > *:last-child {
+        grid-column: 2;
+    }
+}
+
+//panels
+.panel-container, .dialog-container {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 1;
+    background-color: rgba(255, 255, 255, 0.05);
+    display: none;
+    &.active {
+        display: block;
+    }
+}
+
+.panel {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+    background-color: $bg;
+    overflow: hidden;
+    display: none;
+    &.active {
+        display: block;
+    }
+    > .panel-body {
+        overflow: hidden;
+        max-height: 400px;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        > .panel-title {
+            background-color: $rdPurple;
+            display: flex;
+            flex-flow: row nowrap;
+            grid-row: 1;
+            > .title {
+                flex: 1;
+                padding: 6px;
+            }
+            > button {
+                width: 24px;
+                height: 24px;
+                background-color: transparent;
+                border: none;
+                > img {
+                    width: 16px;
+                    height: auto;
+                }
+            }
+        }
+
+        > .panel-content {
+            grid-row: 2;
+            min-width: 300px;
+            min-height: 200px;
+            height: 100%;
+            overflow: hidden auto;
+            position: relative;
+        }
+
+        > .panel-footer {
+            grid-row: 3;
+            display: flex;
+            flex-flow: row nowrap;
+            justify-content: flex-end;
+            background-color: $rdPurple;
+            > button.icon {
+                background-color: $rdPurple;
+                height: auto;
+                padding-right: 8px;
+                padding-left: 8px;
+                > img {
+                    max-height: 24px;
+                    width: auto;
+                }
+            }
+        }
+    }
+}
+
+.dialog {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    bottom: 16px;
+    left: 16px;
+    background: $bg;
+    border-radius: 8px;
+    box-shadow: 3px 3px 3px rgba(255, 255, 255, 0.2);
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    z-index: 2;
+    margin: auto;
+    > .dialog-title {
+        padding: 8px;
+        grid-row: 1;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        > .title {
+            grid-column: 1;
+        }
+        > .close-icon {
+            grid-column: 2;
+            padding: 0px;
+            width: 24px;
+            height: 24px;
+            > img {
+                width: 24px;
+                height: 24px;
+            }
+        }
+    }
+
+    > .dialog-body {
+        grid-row: 2;
+        overflow: auto scroll;
+        padding: 8px;
+    }
+
+    > .dialog-footer {
+        text-align: right;
+        padding: 8px;
+    }
+}
+
+.flex-cols {
+    display: flex;
+    flex-flow: row nowrap;
+}
+
+.flex-fill {
+    flex: 1;
+}
+
+.flex-nofille {
+    flex: 0;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.text-center {
+    text-align: center;
+}
+
+table.table {
+    width: 100%;
+    > thead {
+        > tr {
+            > th {
+                padding: 4px 6px;
+                text-align: left;
+                font-weight: normal;
+                vertical-align: top;
+            }
+        }
+    }
+    > tbody {
+        > tr {
+            > td {
+                padding: 6px;
+                vertical-align: top;
+                > input[type="text"]:only-child, 
+                > input[type="number"]:only-child,
+                > select:only-child {
+                    width: 100%;
+                    max-width: 100%;
+                }
+                > textarea:only-child {
+                    width: 100%;
+                    resize: vertical;
+                }
+            }
+
+            &:nth-child(even) {
+                background-color: rgba(255, 255, 255, 0.03);
+            }
+        }
+    }
+}
+
+.pad-6 {
+    padding: 6px;
+}
+
+.record-list {
+    display: grid;
+    grid-template-rows: 1fr auto;
+    overflow: hidden;
+    > .records {
+        grid-row: 1;
+        overflow: auto scroll;
+        padding: 0px 6px;
+        > button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            font-size: 1em;
+            background-color: $bg;
+            color: $fg;
+            border: solid 1px #666;
+            &:hover {
+                background-color: #222;
+            }
+        }
+    }
+    > .search {
+        grid-row: 2;
+        padding: 6px 0px;
+        input[type="text"] {
+            width: 100%;
+        }
+    }
+}
+
+.record-form {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    height: 100%;
+    > .title {
+        grid-row: 1;
+    }
+
+    > .content {
+        grid-row:2;
+        overflow: auto scroll;
+    }
+
+    > .buttons {
+        grid-row: 3;
+        text-align: right;
+        background-color: $rdPurpleLight;
+    }
+
+    .thumbnail {
+        cursor: pointer;
+        background-color: transparent;
+        transition: background-color 150ms linear;
+        &:hover {
+            background-color: #222;
+        }
+    }
+}
+
+label {
+    user-select: none;
+}
+
+.thumbnail {
+    width: 150px;
+    height: 150px;
+    position: relative;
+    > img {
+        width: auto;
+        margin: auto;
+        max-width: 100%;
+        max-height: 100%;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        top: 0;
+    }
+
+    > span.label {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        background-color: rgba(0,0,0,0.2);
+        padding: 6px;
+    }
+
+    > button {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        background-color: transparent;
+        border: none;
+        opacity: 0;
+        transition: opacity 150ms linear;
+        &:hover {
+            opacity: 1 !important;
+        }
+    }
+
+    &:hover {
+        > button {
+            opacity: 0.5;
+        }
+    }
+
+    &.media-thumbnail {
+        cursor: pointer;
+        transition: background-color 150ms ease-in-out;
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+    }
+}
+
+.slide-sorter {
+    display: flex;
+    flex-flow: row wrap;
+    > .thumbnail {
+        flex: 0 0 150px;
+        border: solid 1px #333;
+        transition: border 150ms linear;
+        cursor: pointer;
+        &:hover {
+            border-color: #FFCC00;
+        }
+        &.active {
+            border-color: $rdGreen;
+        }
+    }
+}
+
+.mediaqueue-control {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    grid-template-rows: 1fr auto;
+    > .menu {
+        height: 100%;
+        display: flex;
+        flex-flow: column nowrap;
+        // grid-template-rows: repeat(3, auto) 1fr;
+        grid-row: 1;
+        grid-column: 1;
+        > * {
+            flex: 0;
+        }
+        > .record-list {
+            flex: 1;
+            > .records {
+                padding: 3px;
+            }
+        }
+    }
+
+    > .content {
+        grid-column: 2;
+        grid-row: 1;
+        > .mq-control {
+            display: none;
+            overflow: hidden scroll;
+            height: 100%;
+            &.active {
+                display: block;
+            }
+        }
+
+        > .slideshow-control {
+            grid-template-rows: 1fr auto;
+            &.active {
+                display: grid;
+            }
+            > .slideshow {
+                grid-row: 1;
+                .thumbnail {
+                    width: 100px;
+                    height: 100px;
+                    flex: 1 1 100px !important;
+                    margin: 0px !important;
+                    user-select: none;
+                    border-width: 3px;
+                }
+            }
+            > .controls {
+                grid-row: 2;
+                background-color: $rdPurple;
+                text-align: right;
+            }
+        }
+
+        > .video-control {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: none;
+            &.active {
+                display: block;
+            }
+            > .preview {
+                position: absolute;
+                left: 0;
+                right: 0;
+                margin: auto;
+                width: 100%;
+                height: 100%;
+                > .video-view {
+                    text-align: center;
+                    transition: opacity 150ms ease-in-out;
+                    width: 100%;
+                    height: 100%;
+                    padding: 16px;
+                    > video, > div:first-child {
+                        border: solid 1px #333;
+                        // width: 640px;
+                        // height: 480px;
+                        position: absolute;
+                        left: 16px;
+                        right: 16px;
+                        top: 16px;
+                        bottom: 16px;
+                        margin: auto;
+                        width: calc(100% - 32px);
+                        height: calc(100% - 32px);
+                        > iframe {
+                            width: 100%;
+                            height: 100%;
+                        }
+                    }
+
+                    > .video-controls {
+                        position: absolute;
+                        opacity: 0;
+                        transition: opacity 150ms ease-in-out 100ms, background-color 150ms ease-in-out 100ms;
+                        // outline: dotted 1px #00ff00;
+                        height: 48px;
+                        margin: auto;
+                        bottom: 0;
+                        top: 0;
+                        right: 0;
+                        transform-origin: 100% 100%;
+                        transform:  translateX(-64px) rotateZ(90deg);
+                        .icon {
+                            border: none;
+                            background-color: transparent;
+                            transform: rotateZ(-90deg);
+                        }
+
+                        input[type="range"] {
+                            transform: rotateZ(180deg);
+                        }
+                    }
+                }
+
+                &:hover {
+                    .video-controls {
+                        opacity: 1;
+                        background-color: rgba(0,0,0,0.5);
+                    }
+                }
+
+                &.playing {
+                    > .video-view {
+                        opacity: 0.25;
+                        > .video-controls {
+                            opacity: 0 !important;
+                        }
+                    }
+                }
+            }
+        }
+
+        > .obs-media-control {
+            height: 100%;
+            overflow: hidden auto;
+            display: none;
+            &.active {
+                display: block;
+            }
+            .scene-item {
+                > .scene-name {
+                    padding: 8px;
+                    font-weight: bold;
+                }
+                .source-item {
+                    display: grid;
+                    grid-template-columns: 1fr auto;
+                    > .name {
+                        padding: 8px;
+                    }
+                    &:nth-child(odd) {
+                        background-color: rgba(100,100,100,0.1);
+                    }
+                    > .icons {
+                        .icon {
+                            background-color: transparent;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    > .icons {
+        grid-row: 2;
+        grid-column: 1;
+        background-color: $rdPurple;
+        > .icon {
+            background-color: transparent;
+        }
+    }
+
+    > .buttons {
+        grid-row: 2;
+        grid-column: 2;
+        // padding-right: 16px;
+        input[type="range"] {
+            margin-right: 16px;
+        }
+        .icon {
+            background-color: transparent;
+            // border: none;
+        }
+    }
+}
+
+.scorekeeper-reel {
+    display: grid;
+    grid-template-columns: 50% 50%;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #000000;
+    transform: translateY(300px);
+    transition: transform 150ms ease-in-out;
+    &.active {
+        transform: translateY(0px);
+    }
+
+
+    > .team {
+        overflow: hidden;
+        display: grid;
+        grid-template-rows: auto 1fr;
+        font-size: 24px;
+        > .name {
+            text-align: center;
+            padding: 6px;
+            text-transform: uppercase;
+        }
+        &.team-B {
+            > .skaters {
+                flex-flow: row-reverse nowrap;
+            }
+        }
+        > .skaters {
+            height: 150px;
+            overflow: hidden;
+            display: flex;
+            flex-flow: row nowrap;
+            > .skater {
+                position: relative;
+                &:first-of-type {
+                    flex: 1;
+                }
+                flex: 0 0 150px;
+                height: 150px;
+                opacity: 0.25;
+                transition: opacity 150ms ease-in-out;
+                &.active {
+                    opacity: 1;
+                }
+                > .num {
+                    position: absolute;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background-image: linear-gradient(rgba(0,0,0,0), rgba(0,0,0,1));
+                    z-index: 2;
+                    padding: 6px;
+                    text-align: center;
+                    font-weight: bold;
+                    font-size: 36px;
+                }
+                > .thumb {
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    bottom: 0;
+                    left: 0;
+                    > img {
+                        position: absolute;
+                        top: 0;
+                        right: 0;
+                        bottom: 0;
+                        left: 0;
+                        margin: auto;
+                        max-width: 150px;
+                        max-height: 150px;
+                    }
+                }
+            }
+        }
+    }
+}
+
+//application split mode
+.app-control.split {
+    > .content {
+        display: grid;
+        grid-template-columns: 50% 50%;
+        > .scoreboard-control {
+            display: grid;
+            grid-column: 1;
+            > .content {
+                grid-template-columns: 50% 50%;
+                grid-template-rows: auto 1fr auto;
+                .team.team-a {
+                    grid-column: 1;
+                    grid-row: 1;
+                }
+
+                .team.team-b {
+                    grid-column: 2;
+                    grid-row: 1;
+                }
+
+                .team {
+                    position: relative;
+                    .score-logo {
+                        height: 125px;
+                        .logo {
+                            flex: 0 0 100px;
+                            align-self: center;
+                            img {
+                                min-width: 100px;
+                                max-height: 100px;
+                            }
+                        }
+
+                        .score {
+                            font-size: 78px;
+                        }
+                    }
+                }
+
+                .center-controls {
+                    grid-column: 1/-1;
+                    grid-row: 2;
+                }
+
+                .bottom-controls {
+                    grid-row: 3;
+                    grid-column: 1/-1;
+                }
+            }
+
+            > .buttons {
+                background-color: $rdPurple;
+                display: flex;
+                flex-flow: row wrap;
+                > .button, .icon {
+                    font-size: 16px;
+                    flex: 1;
+                }
+            }
+        }
+
+        > .roster-control, 
+        > .penalty-control,
+        > .scorekeeper-control,
+        > .mediaqueue-control
+        {
+            grid-column: 2;
+        }
+
+        > .roster-control {
+            > .content {
+                display: block;
+                > .team, > .skaters {
+                    height: 100%;
+                }
+            }
+        }
+
+        > .penalty-control {
+            > .content {
+                grid-template-columns: initial;
+                grid-template-rows: 50% 50%;
+                > .team {
+                    grid-row: 1;
+                    grid-column: 1;
+                    padding: 0px;
+                }
+                > .penalty-side {
+                    grid-column: 1;
+                    grid-row: 2;
+                    .penalty {
+                        flex: 0 0 48px;
+                        > span {
+                            display: none;
+                        }
+                    }
+
+                    .bench > .skater {
+                        flex: 0 0 33%;
+                    }
+                }
+            }
+        }
+
+        > .scorekeeper-control {
+            > .content {
+                > .team {
+                    display: flex;
+                    flex-flow: column nowrap;
+                    > .skaters {
+                        padding: 0px;
+                        > .thumbnail {
+                            flex: 0 0 75px;
+                            width: 75px;
+                            height: 75px;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@import './banner.global.scss';
+@import './stream.global.scss';
+@import './index.640.scss';
+@import './index.1280.scss';
+@import './index.1920.scss';

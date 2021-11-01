@@ -1,0 +1,295 @@
+//stream capture styles
+//no element overlays another, and have fixed heights and widths
+
+.app-capture.stream {
+    > .capture-penalty {
+        top: 90px;
+        left: 10px;
+        height: 250px;
+        min-height: 50px;
+        width: 250px;
+        font-size: 22px;
+        background-color: #000000;
+        transition: transform 150ms ease-in-out;
+        // transform: rotateY(90deg);
+        transform: initial;
+        // outline: solid 1px #00FF00;
+        // outline-offset: 0px;
+        padding: 3px;
+        overflow: hidden;
+        opacity: 1;
+        > .title {
+            padding: 3px;
+            border-bottom: none;
+        }
+        > .skaters {
+            display: block;
+            > .skater {
+                grid-template-columns: auto 1fr;
+                border: none;
+                border-bottom: solid 1px #333;
+                > .num, > .codes {
+                    padding: 3px 12px;
+                }
+                > .codes {
+                    text-align: right;
+                }
+                &:last-of-type {
+                    border-bottom: none;
+                }
+            }
+        }
+    }
+
+    > .capture-raffle {
+        left: 270px;
+        top: 260px;
+        right: initial;
+        bottom: initial;
+        height: 80px;
+        width: 640px;
+        // outline: dotted 1px #00FF00;
+        overflow: hidden;
+        flex-flow: row-reverse nowrap;
+        padding: 16px 6px;
+        background-image: none !important;
+        opacity: 1;
+        // outline: solid 1px #00FF00;
+        // outline-offset: 0px;
+        > .ticket {
+            height: 100%;
+            flex: 1;
+            font-size: 28px;
+            line-height: initial;
+            padding: 8px;
+            text-shadow: 1px 1px 2px rgba(150,0,0,0.5);
+            margin: 0px 6px;
+            background-size: contain;
+        }
+    }
+
+    > .capture-anthem {
+        background-color: transparent;
+        top: 90px;
+        bottom: initial;
+        left: 270px;
+        right: initial;
+        margin: auto;
+        overflow: hidden;
+        height: 70px;
+        width: 640px;
+        opacity: 1;
+        transition: opacity 150ms ease-in-out, transform 150ms ease-in-out;
+        // transform: translateX(3000px);
+        // outline: solid 1px #00FF00;
+        // outline-offset: 0px;
+        
+        > .flag {
+            grid-template-columns: auto 1fr;
+            background-color: rgba(255, 255, 255, 0.5);
+
+            > .photo {
+                background-color: rgba(255, 255, 255, 0.3);
+                padding: 0px;
+                width: auto;
+                height: auto;
+                max-width: 70px;
+                max-height: 70px;
+                > img {
+                    transform: initial;
+                    // transform: rotateY(90deg);
+                    transition: transform 150ms 300ms ease-in-out;
+                }
+            }
+            > .name {
+                border-radius: initial;
+                background-color: rgba(255, 255, 255, 0.3);
+                padding: 8px;
+                text-align: left;
+                margin: 0px;
+                grid-row: 1/-1;
+                font-size: 48px;
+                color: #fff;
+                text-shadow: 2px 2px 3px #000000;
+            }
+            > .bio {
+                display: none;
+            }
+        }
+
+        // &.active {
+        //     // transform: translateX(0px);
+        //     > .flag {
+        //         > .photo > img {
+        //             transform: rotateY(0deg);
+        //         }
+        //     }
+        // }
+    }
+
+    > .capture-announcer {
+        top: 175px;
+        right: initial;
+        left: 270px;
+        bottom: initial;
+        border: none;
+        width: 640px;
+        max-width: 640px;
+        background-color: #000000;
+        // outline: solid 1px #00FF00;
+        // outline-offset: 0px;
+        transform: initial;
+        > .title {
+            display: none;
+        }
+        > .names {
+            padding: 6px;
+        }
+    }
+
+    > .capture-standings {
+        left: initial;
+        bottom: initial;
+        height: 80px;
+        overflow: hidden;
+        opacity: 1;
+        transition: transform 250ms ease-in-out;
+        transform: translateX(3000px);
+        position: absolute;
+        // outline: solid 1px #00FF00;
+        &.active {
+            transform: translateX(0px);
+        }
+        > .title {
+            font-size: 12px;
+            padding:0px;
+            position: absolute;
+            transform-origin: 0% 50%;
+            transform: rotateZ(90deg);
+            top: 0;
+            left: 12px;
+            z-index: 3;
+            // display: none;
+        }
+        > .teams {
+            display: flex;
+            flex-flow: row nowrap;
+            max-width: 100%;
+            padding-left: 16px;
+            > .team {
+                display: block;
+                position: relative;
+                font-size: 24px;
+                width: 80px;
+                > .logo {
+                    > img {
+                        max-width: 70px;
+                        max-height: 70px;
+                    }
+                }
+                > .wins, > .points {
+                    display: none;
+                }
+                > .position {
+                    position: absolute;
+                    right: 0px;
+                    bottom: 6px;
+                    left: 0;
+                    padding: 3px;
+                    text-shadow: 3px 3px 3px rgba(0,0,0,1);
+                    text-align: center;
+                    background-image: linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.5));
+                }
+            }
+        }
+    }
+
+    > .capture-schedule {
+        left: initial;
+        bottom: initial;
+        height: 80px;
+        overflow: hidden;
+        opacity: 1;
+        transition: transform 250ms ease-in-out;
+        transform: translateX(3000px);
+        &.active {
+            transform: translateX(0px);
+        }
+        > .title {
+            font-size: 18px;
+            padding: 8px 8px 12px 8px;
+        }
+        > .bouts {
+            max-width: 100%;
+            width: auto;
+            font-size: 18px;
+            flex-flow: row nowrap;
+            > .bout-item {
+                flex: 0;
+                border: none;
+                display: block;
+                &:nth-child(even) {
+                    background-color: #333333;
+                }
+                > .date {
+                    padding: 8px;
+                    white-space: nowrap;
+                    min-width: 100px;
+                }
+                > .matches {
+                    display: none;
+                }
+            }
+        }
+    }
+
+    > .capture-roster {
+        left: initial;
+        bottom: initial;
+        height: 80px;
+        overflow: hidden;
+        width: 100%;
+        max-width: 640px;
+        background-color: transparent;
+        > .roster-item {
+            display: grid;
+            grid-template-columns: 80px 1fr;
+            opacity: 1;
+            transition: transform 0.25s ease-in-out;
+            transform: translateY(100px);
+            &.active {
+                transition: transform 0.25s ease-in-out 0.5s;
+                transform: translateY(0px);
+                > .thumb {
+                    > img {
+                        transition: transform 0.25s ease-in-out 1s;
+                        transform: rotateY(0deg);
+                    }
+                }
+            }
+            > .overlay {
+                display: none;
+            }
+            > .name {
+                display: block;
+                padding: 8px;
+                font-size: 32px;
+                align-self: center;
+            }
+            > .thumb {
+                position: relative;
+                width: 80px;
+                height: 80px;
+                padding: 5px;
+                top: initial;
+                right: initial;
+                bottom: initial;
+                left: initial;
+                > img {
+                    transition: transform 0.25s ease-in-out 1s;
+                    transform: rotateY(90deg);
+                }
+            }
+        }
+    }
+}

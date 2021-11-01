@@ -1,0 +1,59 @@
+
+
+@media (max-width:1070px) {
+    #root {
+        background-color: #ffffff;
+    }
+    .app-capture {
+        .capture-scoreboard {
+            margin: auto;
+            grid-template-columns: 250px 1fr 250px;
+            > .board-status {
+                > .value {
+                    font-size: 32px;
+                }
+            }
+            > .team {
+                grid-template-rows: 200px 125px auto 1fr;
+                > .logo {
+                    > img {
+                        max-width: 200px;
+                        max-height: 200px;
+                    }
+                }
+                > .score {
+                    > .value {
+                        font-size: 96px;
+                        line-height: 125px;
+                    }
+                    > .jam-points {
+                        &.active {
+                            transform: translateX(75px);
+                        }
+                        > .value {
+                            font-size: 48px;
+                        }
+                    }
+                }
+
+                &.team-B {
+                    > .score {
+                        > .jam-points {
+                            &.active {
+                                transform: translateX(-75px);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        .capture-raffle {
+            padding: 32px 64px;
+            > .ticket {
+                flex: 0 0 180px;
+                background-size: cover;
+            }
+        }
+    }
+}
