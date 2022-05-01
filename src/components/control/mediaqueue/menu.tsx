@@ -5,9 +5,10 @@ import { Slideshow, Slideshows } from 'tools/slideshows/functions';
 import { RecordType, VideoStatus } from 'tools/vars';
 import { Videos } from 'tools/videos/functions';
 import { RecordList } from '../data/records/list';
-import { AnnouncerControl } from '../sections/announcers';
+import { RaffleControl } from '../raffle';
+// import { AnnouncerControl } from '../sections/announcers';
 import { AutoSlideshowControl } from './autoslideshow';
-import { AnnouncerSection, MediaQueueSections } from './sections';
+import { AnnouncerSection } from './sections';
 
 interface Props {
     recordId:number;
@@ -73,6 +74,9 @@ const MediaQueueMenu:React.FunctionComponent<Props> = props => {
             recordId={props.recordId}
             recordType={props.recordType}
             onSelectRecord={onSelectRecord}
+        />
+        <RaffleControl
+
         />
     </div>
 }

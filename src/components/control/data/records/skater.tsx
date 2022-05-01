@@ -201,43 +201,43 @@ const TeamItem:React.FunctionComponent<TeamProps> = props => {
     return <>
         <tr>
             <td>
-                <label>
+                <label className='form-control'>
                     <input type='checkbox' checked={props.active} onChange={onCheckTeam}/>
                     {props.teamName}
                 </label>
             </td>
             <td>
-                <label>
+                <label className='form-control'>
                     <input type='checkbox' disabled={!props.active} checked={props.captain} onChange={onCheckCaptain}/>
                     Captain
                 </label>
             </td>
             <td>
-                <label>
+                <label className='form-control'>
                     <input type='checkbox' disabled={!props.active} checked={props.cocaptain} onChange={onCheckCoCaptain}/>
                     Co-Captain
                 </label>
             </td>
             <td>
-                <label>
+                <label className='form-control'>
                     <input type='checkbox' disabled={!props.active} checked={props.jammer} onChange={onCheckJammer}/>
                     Jammer
                 </label>
             </td>
             <td>
-                <label>
+                <label className='form-control'>
                     <input type='checkbox' disabled={!props.active} checked={props.blocker} onChange={onCheckBlocker}/>
                     Blocker
                 </label>
             </td>
             <td>
-                <label>
+                <label className='form-control'>
                     <input type='checkbox' disabled={!props.active} checked={props.pivot} onChange={onCheckPivot}/>
                     Pivot
                 </label>
             </td>
             <td>
-                <label>
+                <label className='form-control'>
                     <input type='checkbox' disabled={!props.active} checked={props.coach} onChange={onCheckCoach}/>
                     Coach
                 </label>
@@ -248,10 +248,12 @@ const TeamItem:React.FunctionComponent<TeamProps> = props => {
             <>
                 <tr>
                     <td></td>
-                    <td>Alt Name</td>
-                    <td colSpan={6}>
-                        #<TextInput value={props.number} onChangeValue={onChangeNumber} maxLength={10} size={10}/>
-                        <TextInput value={props.name} onChangeValue={onChangeName}/>
+                    <td colSpan={7}>
+                        <div className='input-group'>
+                            <span className='input-group-text'>Alt #/Name</span>
+                            <TextInput className='form-control' value={props.number} onChangeValue={onChangeNumber} maxLength={10} size={10} style={{flex:'0 0 100px'}}/>
+                            <TextInput className='form-control' value={props.name} onChangeValue={onChangeName}/>
+                        </div>
                     </td>
                 </tr>
             </>

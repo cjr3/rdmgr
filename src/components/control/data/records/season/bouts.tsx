@@ -60,6 +60,7 @@ const BoutItem:React.FunctionComponent<{record:Bout;index:number;onChange:{(reco
         <td width={100}>
             <div>
                 <TextInput
+                    className='form-control'
                     size={10}
                     value={start}
                     onChangeValue={setDateStart}
@@ -68,6 +69,7 @@ const BoutItem:React.FunctionComponent<{record:Bout;index:number;onChange:{(reco
             </div>
             <div>
                 <TextInput
+                    className='form-control'
                     size={10}
                     value={end}
                     onChangeValue={setDateEnd}

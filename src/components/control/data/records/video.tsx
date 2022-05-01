@@ -90,11 +90,14 @@ class Main extends React.PureComponent<Props, State> {
             <tr>
                 <td>File</td>
                 <td>
-                    <TextInput
-                        value={this.state.filename}
-                        onChangeValue={this.onChangeFilename}
-                    />
-                    <button onClick={this.onClickBrowse}>Browse...</button>
+                    <div className='input-group'>
+                        <button onClick={this.onClickBrowse}>Browse...</button>
+                        <TextInput
+                            className='form-control'
+                            value={this.state.filename}
+                            onChangeValue={this.onChangeFilename}
+                        />
+                    </div>
                 </td>
             </tr>
         </BaseRecordForm>

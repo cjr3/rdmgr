@@ -124,6 +124,7 @@ class SeasonForm extends React.PureComponent<Props, State> {
                 <td>Start</td>
                 <td>
                     <TextInput
+                        className='form-control'
                         value={this.state.dateStart}
                         onChangeValue={this.onChangeDateStart}
                         placeholder='mm/dd/yyyy'
@@ -136,6 +137,7 @@ class SeasonForm extends React.PureComponent<Props, State> {
                 <td>End</td>
                 <td>
                     <TextInput
+                        className='form-control'
                         value={this.state.dateEnd}
                         onChangeValue={this.onChangeDateEnd}
                         placeholder='mm/dd/yyyy'

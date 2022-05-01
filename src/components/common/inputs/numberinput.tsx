@@ -44,6 +44,7 @@ const NumberInput:React.FunctionComponent<Props> = props => {
     const onFocus = React.useCallback((ev:React.FocusEvent<HTMLInputElement>) => ev.currentTarget.select(), []);
 
     return <input
+        className='form-control'
         onFocus={onFocus}
         onKeyDown={onKey}
         onKeyUp={onKey}

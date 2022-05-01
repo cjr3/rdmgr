@@ -1,7 +1,7 @@
 {
   "name": "rdmgr",
   "productName": "Roller Derby Manager",
-  "version": "2021.11.14",
+  "version": "2022.04.30",
   "description": "Roller Derby Scoreboard and AV Production",
   "main": "./main.prod.js",
   "author": {

@@ -72,16 +72,16 @@ const StandingItem:React.FunctionComponent<{
             <TeamSelector value={teamId} onSelectValue={onSelectTeam}/>
         </td>
         <td>
-            <NumberInput value={position} onChangeValue={setPosition} size={5} min={0} max={999}/>
+            <NumberInput className='form-control' value={position} onChangeValue={setPosition} size={5} min={0} max={999}/>
         </td>
         <td>
-            <NumberInput value={wins} onChangeValue={setWins} size={5} min={0} max={999}/>
+            <NumberInput className='form-control' value={wins} onChangeValue={setWins} size={5} min={0} max={999}/>
         </td>
         <td>
-            <NumberInput value={losses} onChangeValue={setLosses} size={5} min={0} max={999}/>
+            <NumberInput className='form-control' value={losses} onChangeValue={setLosses} size={5} min={0} max={999}/>
         </td>
         <td>
-            <NumberInput value={points} onChangeValue={setPoints} size={5} min={0} max={9999}/>
+            <NumberInput className='form-control' value={points} onChangeValue={setPoints} size={5} min={0} max={9999}/>
         </td>
     </tr>
 };

@@ -32,6 +32,7 @@ class Main extends React.PureComponent<Props, State> {
         const {onChangeValue, ...rprops} = {...this.props};
         return <input
             size={30}
+            className='form-control'
             onContextMenu={ev => ev.stopPropagation()}
             onChange={this.onChange}
             onFocus={this.onFocus}

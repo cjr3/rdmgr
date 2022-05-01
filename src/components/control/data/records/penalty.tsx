@@ -62,11 +62,11 @@ class Main extends React.PureComponent<Props, State> {
             <tr>
                 <td>Type</td>
                 <td>
-                    <label>
+                    <label className='form-control'>
                         <input type='checkbox' checked={this.state.penaltyType === 'P'} onChange={this.onSelectPenaltyTypeDefault}/>
                         Basic
                     </label>
-                    <label onClick={this.onSelectPenaltyTypeExpulsion}>
+                    <label className='form-control' onClick={this.onSelectPenaltyTypeExpulsion}>
                         <input type='checkbox' checked={this.state.penaltyType === 'X'} onChange={this.onSelectPenaltyTypeExpulsion}/>
                         Expulsion
                     </label>

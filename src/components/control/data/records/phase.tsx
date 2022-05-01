@@ -77,15 +77,48 @@ class Main extends React.PureComponent<Props, State> {
             <tr>
                 <td>Time</td>
                 <td>
-                    <NumberInput value={this.state.hour} onChangeValue={this.onChangeHour} min={0} max={23}/> :
-                    <NumberInput value={this.state.minute} onChangeValue={this.onChangeMinute} min={0} max={59}/> :
-                    <NumberInput value={this.state.second} onChangeValue={this.onChangeSecond} min={0} max={59}/>
+                    <div className='input-group'>
+                        <NumberInput 
+                            className='form-control' 
+                            value={this.state.hour} 
+                            min={0} 
+                            max={23}
+                            style={{flex:'0 0 100px'}}
+                            placeholder='HH'
+                            onChangeValue={this.onChangeHour} 
+                            /> :
+                        <NumberInput 
+                            className='form-control' 
+                            value={this.state.minute} 
+                            min={0} 
+                            max={59}
+                            style={{flex:'0 0 100px'}}
+                            placeholder='MM'
+                            onChangeValue={this.onChangeMinute}
+                        /> :
+                        <NumberInput 
+                            className='form-control' 
+                            value={this.state.second} 
+                            min={0} 
+                            max={59}
+                            placeholder='SS'
+                            style={{flex:'0 0 100px'}}
+                        onChangeValue={this.onChangeSecond} 
+                        />
+                    </div>
                 </td>
             </tr>
             <tr>
                 <td>Quarter</td>
                 <td>
-                    <NumberInput value={this.state.quarter} onChangeValue={this.onChangeQuarter} min={0} max={4}/>
+                    <NumberInput 
+                        className='form-control'
+                        value={this.state.quarter}
+                        min={0} 
+                        max={4}
+                        style={{width:'100px'}}
+                        onChangeValue={this.onChangeQuarter}
+                        />
                 </td>
             </tr>
         </BaseRecordForm>

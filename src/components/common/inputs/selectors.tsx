@@ -56,6 +56,7 @@ class TeamSelector extends React.PureComponent<Props<Team>, State> {
         records.sort((a, b) => compareStrings(a.Name, b.Name))
         const {onSelectValue, ...rprops} = {...this.props}
         return <select 
+            className='form-control'
             onKeyUp={this.onKey}
             onKeyDown={this.onKey}
             onKeyPress={this.onKey}

@@ -77,15 +77,15 @@ class Main extends React.PureComponent<Props, State> {
         const skaters = Skaters.GetRecords();
         records.sort((a, b) => compareStrings(a.Name, b.Name, 'ASC'));
         const skaterId = (Roster.GetRoleSkater(this.props.side, this.state.role))?.RecordID || 0
-        return <div className='roles'>
-            <select size={1} onChange={this.onSelectRole}>
+        return <div className='input-group'>
+            <select className='form-control' size={1} onChange={this.onSelectRole}>
                 {
                     roles.map(role => {
                         return <option value={role.value} key={`role-${role.value}`}>{role.label}</option>
                     })
                 }
             </select>
-            <select size={1} onChange={this.onSelectSkater} value={skaterId}>
+            <select className='form-control' size={1} onChange={this.onSelectSkater} value={skaterId}>
                 <option value={0}>(Not Assigned)</option>
                 {
                     records.map(record => {

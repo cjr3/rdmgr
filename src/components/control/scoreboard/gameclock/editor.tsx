@@ -39,9 +39,30 @@ const GameClockEditor:React.FunctionComponent<Props> = props => {
 
     const disabled = status === ClockStatus.RUNNING ? true : false;
     return <div {...props} className={classNames('game-clock-editor', props.className, {active:disabled})}>
-        <NumberInput value={hour} onChangeValue={setHour} min={0} max={23} size={3} disabled={disabled}/> :
-        <NumberInput value={minute} onChangeValue={setMinute} min={0} max={59} size={3} disabled={disabled}/> :
-        <NumberInput value={second} onChangeValue={setSecond} min={0} max={59} size={3} disabled={disabled}/>
+        <NumberInput 
+            className='form-control'
+            value={hour} 
+            min={0} 
+            max={23} 
+            disabled={disabled}
+            onChangeValue={setHour}
+             /> :
+        <NumberInput 
+            className='form-control'
+            value={minute} 
+            onChangeValue={setMinute} 
+            min={0} 
+            max={59} 
+            disabled={disabled}
+        /> :
+        <NumberInput 
+            className='form-control'
+            value={second} 
+            onChangeValue={setSecond} 
+            min={0} 
+            max={59} 
+            disabled={disabled}
+            />
         <IconCheck onClick={onClickSet} title='Set Time' disabled={disabled}/>
     </div>
 }

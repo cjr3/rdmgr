@@ -108,6 +108,7 @@ class Main extends React.PureComponent<Props, State> {
                 <td>Host</td>
                 <td>
                     <TextInput 
+                        className='form-control'
                         value={this.state.host} 
                         onChangeValue={this.onChangeHost} 
                         maxLength={32}
@@ -119,10 +120,12 @@ class Main extends React.PureComponent<Props, State> {
                 <td>Port</td>
                 <td>
                     <NumberInput
+                        className='form-control'
                         value={this.state.port}
                         onChangeValue={this.onChangePort}
                         min={0}
                         max={65535}
+                        style={{width:'150px'}}
                         title='Enter a port between 49152 - 65535'
                     />
                 </td>
@@ -132,7 +135,7 @@ class Main extends React.PureComponent<Props, State> {
                 <td>
                     {
                         apps.map(a => {
-                            return <label key={`app-${a.code}`}>
+                            return <label className='form-control' key={`app-${a.code}`}>
                                 <input 
                                     type='checkbox' 
                                     checked={this.state.receive.indexOf(a.code) >= 0}
@@ -149,7 +152,7 @@ class Main extends React.PureComponent<Props, State> {
                 <td>
                     {
                         apps.map(a => {
-                            return <label key={`app-${a.code}`}>
+                            return <label className='form-control' key={`app-${a.code}`}>
                                 <input 
                                     type='checkbox' 
                                     checked={this.state.send.indexOf(a.code) >= 0}

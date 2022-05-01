@@ -121,6 +121,7 @@ class Main extends React.PureComponent<Props, State> {
                     }
                 </div>
             </div>
+            <div className='team-name'>{this.state.name}</div>
         </div>
     }
 }

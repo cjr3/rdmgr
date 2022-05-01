@@ -170,6 +170,7 @@ class Main extends React.PureComponent<Props, State> {
             </div>
             <div className='search'>
                 <TextInput
+                    className='form-control'
                     placeholder='Search...'
                     value={this.state.keywords}
                     onChangeValue={this.onChangeKeywords}

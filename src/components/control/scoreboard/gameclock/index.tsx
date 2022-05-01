@@ -10,6 +10,9 @@ interface Props {
     
 }
 
+/**
+ * Component for gameclock control.
+ */
 class Main extends React.PureComponent<Props> {
     protected timer:any = 0;
     protected ShowTenths = false;

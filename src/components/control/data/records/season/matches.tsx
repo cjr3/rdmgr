@@ -85,18 +85,18 @@ const MatchItem:React.FunctionComponent<{
             <TeamSelector onSelectValue={onSelectTeamA} value={teamAID}/>
         </td>
         <td>
-            <NumberInput value={teamAScore} onChangeValue={setTeamAScore} size={5} min={0} max={999}/>
+            <NumberInput className='form-control' value={teamAScore} onChangeValue={setTeamAScore} size={5} min={0} max={999}/>
         </td>
         <td>vs</td>
         <td>
             <TeamSelector onSelectValue={onSelectTeamB} value={teamBID}/>
         </td>
         <td>
-            <NumberInput value={teamBScore} onChangeValue={setTeamBScore} size={5} min={0} max={999}/>
+            <NumberInput className='form-control' value={teamBScore} onChangeValue={setTeamBScore} size={5} min={0} max={999}/>
         </td>
         <td>Time</td>
         <td>
-            <TextInput value={time} onChangeValue={setTime} size={6} placeholder={'00:00'} maxLength={5}/>
+            <TextInput className='form-control' value={time} onChangeValue={setTime} size={6} placeholder={'00:00'} maxLength={5}/>
         </td>
     </tr>
 }

@@ -19,6 +19,7 @@ interface Props {
     recordId:number;
     recordType:RecordType;
     showCode?:boolean;
+    showColor?:boolean;
     showDescription?:boolean;
     showMedia?:boolean;
     showNumber?:boolean;
@@ -314,7 +315,12 @@ class Main extends React.PureComponent<Props, State> {
                         <tr>
                             <td width={100}>Name</td>
                             <td>
-                                <TextInput value={this.state.Name || ''} onChangeValue={this.onChangeName} placeholder='Full Name'/>
+                                <TextInput 
+                                    className='form-control'
+                                    maxLength={255}
+                                    value={this.state.Name || ''} 
+                                    onChangeValue={this.onChangeName} 
+                                    placeholder='Full Name'/>
                             </td>
                         </tr>
                         {
@@ -322,7 +328,13 @@ class Main extends React.PureComponent<Props, State> {
                             <tr>
                                 <td>Short Name</td>
                                 <td>
-                                    <TextInput value={this.state.ShortName || ''} onChangeValue={this.onChangeShortName} placeholder='Short Name'/>
+                                    <TextInput 
+                                        className='form-control'
+                                        maxLength={50}
+                                        value={this.state.ShortName || ''} 
+                                        placeholder='Short Name'
+                                        onChangeValue={this.onChangeShortName} 
+                                        />
                                 </td>
                             </tr>
                         }
@@ -331,7 +343,13 @@ class Main extends React.PureComponent<Props, State> {
                             <tr>
                                 <td>Number</td>
                                 <td>
-                                    <TextInput value={this.state.Number || ''} onChangeValue={this.onChangeNumber} placeholder='Jersey #'/>
+                                    <TextInput 
+                                        className='form-control'
+                                        maxLength={20}
+                                        value={this.state.Number || ''} 
+                                        placeholder='Jersey #'
+                                        onChangeValue={this.onChangeNumber} 
+                                        />
                                 </td>
                             </tr>
                         }
@@ -340,7 +358,35 @@ class Main extends React.PureComponent<Props, State> {
                             <tr>
                                 <td>Code</td>
                                 <td>
-                                    <TextInput value={this.state.Code || ''} onChangeValue={this.onChangeCode}/>
+                                    <TextInput
+                                        className='form-control'
+                                        maxLength={10}
+                                        value={this.state.Code || ''} 
+                                        onChangeValue={this.onChangeCode}/>
+                                </td>
+                            </tr>
+                        }
+                        {
+                            (this.props.showColor !== false) &&
+                            <tr>
+                                <td>Color</td>
+                                <td>
+                                    <div className='input-group'>
+                                        <TextInput 
+                                            className='form-control'
+                                            value={this.state.Color || ''} 
+                                            maxLength={20}
+                                            placeholder='#000000'
+                                            style={{flex:'0 0 150px'}}
+                                            onChangeValue={this.onChangeColor}/>
+                                        <button 
+                                            style={{
+                                            backgroundColor:this.state.Color || '#000000',
+                                            border:'solid 1px #666666',
+                                            color: '#fff',
+                                            flex:'0 0 100px'
+                                        }}></button>
+                                    </div>
                                 </td>
                             </tr>
                         }
@@ -349,7 +395,13 @@ class Main extends React.PureComponent<Props, State> {
                             <tr>
                                 <td>Description</td>
                                 <td>
-                                    <textarea value={this.state.Description || ''} onChange={this.onChangeDescription} rows={4} cols={50}></textarea>
+                                    <textarea 
+                                        className='form-control'
+                                        value={this.state.Description || ''} 
+                                        rows={4} 
+                                        cols={50}
+                                        onChange={this.onChangeDescription} 
+                                        ></textarea>
                                 </td>
                             </tr>
                         }
@@ -359,13 +411,13 @@ class Main extends React.PureComponent<Props, State> {
                                 <tr>
                                     <td>URL</td>
                                     <td>
-                                        <TextInput value={this.state.URL || ''} onChangeValue={this.onChangeURL} placeholder='https://...'/>
+                                        <TextInput className='form-control' value={this.state.URL || ''} onChangeValue={this.onChangeURL} placeholder='https://...'/>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>URL Title</td>
                                     <td>
-                                        <TextInput value={this.state.URLTitle || ''} onChangeValue={this.onChangeURLTitle} placeholder='Website Name'/>
+                                        <TextInput className='form-control' value={this.state.URLTitle || ''} onChangeValue={this.onChangeURLTitle} placeholder='Website Name'/>
                                     </td>
                                 </tr>
                             </>

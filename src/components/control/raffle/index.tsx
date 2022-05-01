@@ -173,6 +173,7 @@ class Main extends React.PureComponent<Props, State> {
                 <IconHidden title='Show' onClick={Capture.ToggleRaffle}/>
             }
                 <input
+                    className='form-control'
                     type='text'
                     value={this.state.entry}
                     maxLength={max}
