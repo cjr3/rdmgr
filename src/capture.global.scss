@@ -841,8 +841,11 @@
 				}
 
 				> .pos {
+					visibility: hidden;
 					align-self: center;
 				}
+
+				&.jammer > .pos { visibility: visible; }
 			}
 		}
 
@@ -1285,6 +1288,53 @@
 	}
 }
 
+/* Full scoreboard visibility */
+.app-capture.defmode {
+	&.sbvisible {
+		// display: none;
+		.capture-scorekeeper {
+			top: calc(100% - 110px);
+			justify-content: center;
+			grid-template-columns: 48px 390px 1fr 390px 48px;
+			
+			> .team {
+				&.team-A {
+					grid-column: 2;
+				}
+				&.team-B {
+					grid-column: 4;
+				}
+				> .logo, > .name {
+					display: none;
+				}
+				> .skaters {
+					justify-content: center;
+					> .skater {
+						opacity: 0;
+						transform: translateY(200px);
+						justify-content: center;
+						grid-template-columns: repeat(3, auto);
+						transition: transform 250ms ease-in-out 150ms, opacity 250ms ease-in-out;
+						&:first-of-type {
+							display: grid;
+						}
+
+						> .thumb > img {
+							border-radius: 6px;
+						}
+
+						&.active {
+							transform: translateY(0px);
+							opacity: 1;
+							transition: transform 250ms ease-in-out, opacity 250ms ease-in-out 100ms;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 @keyframes aniRaffleTicketHidden {
 	0% {
 		transform: translateX(0px) rotateX(0deg);
@@ -1326,3 +1376,4 @@
 }
 
 @import './capture.1024.scss';
+@import './capture.1920.scss'

@@ -1,6 +1,7 @@
 import classNames from 'classnames';
 import { IconMicrophone } from 'components/common/icons';
 import React from 'react';
+import { Unsubscribe } from 'redux';
 import { Announcers } from 'tools/announcers/functions';
 import { Capture } from 'tools/capture/functions';
 
@@ -8,37 +9,51 @@ interface Props extends React.HTMLProps<HTMLDivElement> {
 
 }
 
-const AnnouncerCapture:React.FunctionComponent<Props> = props => {
-    const [visible, setVisible] = React.useState(Capture.GetAnnouncer().visible || false);
-    const [name1, setName1] = React.useState(Announcers.Get(1)?.Name || '');
-    const [name2, setName2] = React.useState(Announcers.Get(2)?.Name || '');
+interface State {
+    label:string;
+    visible:boolean;
+}
 
-    React.useEffect(() => {
-        return Announcers.Subscribe(() => {
-            setName1(Announcers.Get(1)?.Name || '');
-            setName2(Announcers.Get(2)?.Name || '');
+/**
+ * Display the announcer names.
+ */
+class AnnouncerCapture extends React.PureComponent<Props, State> {
+    readonly state:State = {
+        label:'',
+        visible:false
+    }
+
+    protected remoteCapture?:Unsubscribe;
+    protected remoteAnnouncers?:Unsubscribe;
+
+    protected update = () => {
+        this.setState({
+            label:[Announcers.Get(1)?.Name || '', Announcers.Get(2)?.Name || ''].filter(v => v).join(' & '),
+            visible:Capture.GetAnnouncer().visible || false
         });
-    }, []);
+    }
 
-    React.useEffect(() => {
-        return Capture.Subscribe(() => {
-            setVisible(Capture.GetAnnouncer().visible || false);
-        });
-    }, []);
+    componentDidMount() {
+        this.update();
+        this.remoteAnnouncers = Announcers.Subscribe(this.update);
+        this.remoteCapture = Capture.Subscribe(this.update);
+    }
 
-    let label:string = '';
-    if(name1 && name2)
-        label = name1 + ' & ' + name2;
-    else if(name1)
-        label = name1;
-    else if(name2)
-        label = name2;
+    componentWillUnmount() {
+        if(this.remoteAnnouncers)
+            this.remoteAnnouncers();
 
-    return <div {...props} className={classNames('capture-announcer', props.className, {active:visible})}>
-        <IconMicrophone/>
-        <div className='title'>Announcers</div>
-        <div className='names'>{label}</div>
-    </div>
+        if(this.remoteCapture)
+            this.remoteCapture();
+    }
+
+    render(): React.ReactNode {
+        return <div {...this.props} className={classNames('capture-announcer', this.props.className, {active:this.state.visible})}>
+            <IconMicrophone/>
+            <div className='title'>Announcers</div>
+            <div className='names'>{this.state.label}</div>
+        </div>
+    }
 }
 
 export {AnnouncerCapture};
