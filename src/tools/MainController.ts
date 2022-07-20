@@ -1,21 +1,21 @@
 import { AnthemSinger, ClockState, ClockStatus, DeckChoice, Peer, Penalty, Phase, RaffleTicket, RecordType, SAnthem, ScoreboardStatus, ScoreboardTeam, ScorekeeperPosition, Season, Skater, SkaterRoster, Slideshow, SMainController, SMediaQueue, SPenaltyTracker, Sponsor, SRaffle, SRoster, SScoreboard, SScorekeeper, SSlideshow, Team, TeamSide, Video, __BaseRecord } from "./vars";
 import { createStore, Unsubscribe } from "redux";
-import { AnnouncerRecords } from './announcers';
-import { AnthemRecords, AnthemState } from "./anthem";
-import { PenaltyRecords} from './penalties'
-import { PenaltyTrackerState } from './penaltytracker';
-import { PhaseRecords } from './phases';
-import { RosterState } from './roster'
-import { ScoreboardState } from './scoreboard';
-import { ScorekeeperState } from './scorekeeper'
+import * as AnnouncerRecords from './announcers';
+import * as Anthem from "./anthem";
+import * as Penalties from './penalties'
+import * as PenaltyTracker from './penaltytracker';
+import * as Phases from './phases';
+import * as Roster from './roster'
+import * as Scoreboard from './scoreboard';
+import * as Scorekeeper from './scorekeeper'
 import { SkaterRecords } from './skaters';
 import { SlideshowRecords, SlideshowState } from './slideshows';
 import { TeamRecords } from './teams';
 import { VideoRecords } from "./videos";
-import { PeerRecords } from "./peers";
+import * as Peers from "./peers";
 import { SponsorRecords } from "./sponsors";
-import { RaffleStore } from "./raffle";
-import { SeasonRecords } from "./seasons";
+import * as Raffle from "./raffle";
+import * as Seasons from "./seasons";
 
 enum Actions {
     ADD_RAFFLE_TICKET,
@@ -310,52 +310,52 @@ const InitState:SMainController = {
 const MainReducer = (state:SMainController = InitState, action:any) : SMainController => {
     try {
         switch(action.type) {
-            case Actions.ADD_RAFFLE_TICKET : return RaffleStore.Add(state, action.record);
-            case Actions.ADD_ROSTER_SKATERS : return RosterState.AddRecords(state, action.side, action.records);
+            case Actions.ADD_RAFFLE_TICKET : return Raffle.Add(state, action.record);
+            case Actions.ADD_ROSTER_SKATERS : return Roster.AddRecords(state, action.side, action.records);
 
             //remove records
-            case Actions.REMOVE_ANTHEM_SINGERS : return AnthemRecords.Remove(state, action.records);
-            case Actions.REMOVE_PEERS : return PeerRecords.Remove(state, action.records);
-            case Actions.REMOVE_PENALTIES : return PenaltyRecords.Remove(state, action.records);
-            case Actions.REMOVE_PHASES : return PhaseRecords.Remove(state, action.records);
-            case Actions.REMOVE_RAFFLE_TICKET : return RaffleStore.Remove(state, action.index);
+            case Actions.REMOVE_ANTHEM_SINGERS : return Anthem.Remove(state, action.records);
+            case Actions.REMOVE_PEERS : return Peers.Remove(state, action.records);
+            case Actions.REMOVE_PENALTIES : return Penalties.Remove(state, action.records);
+            case Actions.REMOVE_PHASES : return Phases.Remove(state, action.records);
+            case Actions.REMOVE_RAFFLE_TICKET : return Raffle.Remove(state, action.index);
             case Actions.REMOVE_SPONSORS : return SponsorRecords.Remove(state, action.records);
-            case Actions.REMOVE_ROSTER_SKATERS : return RosterState.RemoveRecords(state, action.side, action.records);
-            case Actions.REMOVE_SEASONS : return SeasonRecords.Remove(state, action.records);
+            case Actions.REMOVE_ROSTER_SKATERS : return Roster.RemoveRecords(state, action.side, action.records);
+            case Actions.REMOVE_SEASONS : return Seasons.Remove(state, action.records);
             case Actions.REMOVE_SKATERS : return SkaterRecords.Remove(state, action.records);
             case Actions.REMOVE_SLIDESHOWS : return SlideshowRecords.Remove(state, action.records);
             case Actions.REMOVE_TEAMS : return TeamRecords.Remove(state, action.records);
             case Actions.REMOVE_VIDEOS : return VideoRecords.Remove(state, action.records);
 
             //reset actions
-            case Actions.RESET_PENALTY_TRACKER : return PenaltyTrackerState.Reset(state);
+            case Actions.RESET_PENALTY_TRACKER : return PenaltyTracker.Reset(state);
 
             case Actions.SET_ANNOUNCER : return AnnouncerRecords.SetAnnouncer(state, action.name, action.index);
 
-            case Actions.SET_ANTHEM_RECORDS : return AnthemRecords.Set(state, action.records);
-            case Actions.SET_ANTHEM_STATE : return AnthemState.UpdateState(state, action.values);
+            case Actions.SET_ANTHEM_RECORDS : return Anthem.Set(state, action.records);
+            case Actions.SET_ANTHEM_STATE : return Anthem.SetState(state, action.values);
 
             //case Actions.SET_MEDIAQUEUE_STATE : return 
-            case Actions.SET_PEERS : return PeerRecords.Set(state, action.records);
-            case Actions.SET_PENALTIES : return PenaltyRecords.Set(state, action.records);
-            case Actions.SET_PENALTY_STATE : return PenaltyTrackerState.UpdateState(state, action.values);
-            case Actions.SET_PHASES : return PhaseRecords.Set(state, action.records);
+            case Actions.SET_PEERS : return Peers.Set(state, action.records);
+            case Actions.SET_PENALTIES : return Penalties.Set(state, action.records);
+            case Actions.SET_PENALTY_STATE : return PenaltyTracker.UpdateState(state, action.values);
+            case Actions.SET_PHASES : return Phases.Set(state, action.records);
 
-            case Actions.SET_RAFFLE_STATE : return RaffleStore.Update(state, action.values);
+            case Actions.SET_RAFFLE_STATE : return Raffle.Update(state, action.values);
 
-            case Actions.SET_ROSTER_ROLE : return RosterState.SetRole(state, action.side, action.role, action.recordId);
-            case Actions.SET_ROSTER_SKATERS : return RosterState.SetRecords(state, action.side, action.records);
-            case Actions.SET_ROSTER_STATE : return RosterState.Update(state, action.values);
+            case Actions.SET_ROSTER_ROLE : return Roster.SetRole(state, action.side, action.role, action.recordId);
+            case Actions.SET_ROSTER_SKATERS : return Roster.SetRecords(state, action.side, action.records);
+            case Actions.SET_ROSTER_STATE : return Roster.Update(state, action.values);
 
-            case Actions.SET_SEASONS : return SeasonRecords.Set(state, action.records);
+            case Actions.SET_SEASONS : return Seasons.Set(state, action.records);
 
-            case Actions.SET_SCOREBOARD_BREAK_CLOCK : return ScoreboardState.UpdateBreakClock(state, action.values);
-            case Actions.SET_SCOREBOARD_GAME_CLOCK : return ScoreboardState.UpdateGameClock(state, action.values);
-            case Actions.SET_SCOREBOARD_JAM_CLOCK : return ScoreboardState.UpdateJamClock(state, action.values);
-            case Actions.SET_SCOREBOARD_STATE : return ScoreboardState.UpdateState(state, action.values);
-            case Actions.SET_SCOREBOARD_TEAM : return ScoreboardState.UpdateTeam(state, action.side, action.values);
-            case Actions.SET_SCOREKEEPER_POSITION : return ScorekeeperState.SetPosition(state, action.side, action.record, action.deck, action.position);
-            case Actions.SET_SCOREKEEPER_STATE : return ScorekeeperState.Update(state, action.values);
+            case Actions.SET_SCOREBOARD_BREAK_CLOCK : return Scoreboard.UpdateBreakClock(state, action.values);
+            case Actions.SET_SCOREBOARD_GAME_CLOCK : return Scoreboard.UpdateGameClock(state, action.values);
+            case Actions.SET_SCOREBOARD_JAM_CLOCK : return Scoreboard.UpdateJamClock(state, action.values);
+            case Actions.SET_SCOREBOARD_STATE : return Scoreboard.UpdateState(state, action.values);
+            case Actions.SET_SCOREBOARD_TEAM : return Scoreboard.UpdateTeam(state, action.side, action.values);
+            case Actions.SET_SCOREKEEPER_POSITION : return Scorekeeper.SetPosition(state, action.side, action.record, action.deck, action.position);
+            case Actions.SET_SCOREKEEPER_STATE : return Scorekeeper.Update(state, action.values);
             case Actions.SET_SKATERS : return SkaterRecords.Set(state, action.records);
 
             case Actions.SET_SLIDESHOWS : return SlideshowRecords.Set(state, action.records);
@@ -366,17 +366,17 @@ const MainReducer = (state:SMainController = InitState, action:any) : SMainContr
 
             case Actions.SET_VIDEOS : return VideoRecords.Set(state, action.records);
 
-            case Actions.TOGGLE_PENALTY_SKATER : return PenaltyTrackerState.ToggleSkater(state, action.skaterId);
-            case Actions.TOGGLE_SKATER_PENALTY : return PenaltyTrackerState.TogglePenalty(state, action.skaterId, action.penaltyId);
+            case Actions.TOGGLE_PENALTY_SKATER : return PenaltyTracker.ToggleSkater(state, action.skaterId);
+            case Actions.TOGGLE_SKATER_PENALTY : return PenaltyTracker.TogglePenalty(state, action.skaterId, action.penaltyId);
 
-            case Actions.UPDATE_ROSTER_SKATER : return RosterState.UpdateRecord(state, action.values);
+            case Actions.UPDATE_ROSTER_SKATER : return Roster.UpdateRecord(state, action.values);
 
             //create / update records
-            case Actions.WRITE_ANTHEM_SINGERS : return AnthemRecords.Write(state, action.records);
-            case Actions.WRITE_PEERS : return PeerRecords.Write(state, action.records);
-            case Actions.WRITE_PENALTIES : return PenaltyRecords.Write(state, action.records);
-            case Actions.WRITE_PHASES : return PhaseRecords.Write(state, action.records);
-            case Actions.WRITE_SEASONS : return SeasonRecords.Write(state, action.records);
+            case Actions.WRITE_ANTHEM_SINGERS : return Anthem.Write(state, action.records);
+            case Actions.WRITE_PEERS : return Peers.Write(state, action.records);
+            case Actions.WRITE_PENALTIES : return Penalties.Write(state, action.records);
+            case Actions.WRITE_PHASES : return Phases.Write(state, action.records);
+            case Actions.WRITE_SEASONS : return Seasons.Write(state, action.records);
             case Actions.WRITE_SPONSORS : return SponsorRecords.Write(state, action.records);
             case Actions.WRITE_SKATERS : return SkaterRecords.Write(state, action.records);
             case Actions.WRITE_SLIDESHOWS : return SlideshowRecords.Write(state, action.records);

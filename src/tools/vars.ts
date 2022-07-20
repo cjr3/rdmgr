@@ -370,6 +370,125 @@ export interface FileSelectionResult {
     bookmarks:string[];    
 }
 
+export interface JamRecord {
+    /**
+     * Date and time created
+     */
+    DateCreated?:string|null;
+    /**
+     * Date and time jam ended.
+     */
+    DateEnded?:string|null;
+    /**
+     * Date and time jam started.
+     */
+    DateStarted?:string|null;
+    /**
+     * Date and time record was last updated
+     */
+    DateUpdated?:string|null;
+    /**
+     * Game clock Hour when jam ended
+     */
+    GameEndHour?:number;
+    /**
+     * Game clock minute when jam ended
+     */
+    GameEndMinute?:number;
+    /**
+     * Game clock second when jam ended
+     */
+    GameEndSecond?:number;
+    /**
+     * Game clock Hour when jam started 
+     */
+    GameStartHour?:number;
+    /**
+     * Game clock minute when jam started
+     */
+    GameStartMinute?:number;
+    /**
+     * Game clock second when jam started
+     */
+    GameStartSecond?:number;
+    /**
+     * Phase name
+     */
+    PhaseName?:string;
+    /**
+     * Phase quarter
+     */
+    PhaseQuarter?:number;
+    /**
+     * Record ID of jam phase
+     */
+    PhaseRecordID?:number;
+    /**
+     * Team side of jammer that was in the lead at the end of the jam.
+     */
+    LeadTeam?:TeamSide;
+    /**
+     * Number
+     */
+    Number?:string|null;
+    /**
+     * Jam points scored
+     */
+    TeamAJamPoints?:number;
+    /**
+     * Team Name
+     */
+    TeamAName?:string|null;
+    /**
+     * Team record id
+     */
+    TeamARecordID?:number;
+    /**
+     * Team Score
+     */
+    TeamAScore?:number;
+    /**
+     * Timeouts
+     */
+    TeamATimeouts?:number;
+    /**
+     * Challenges
+     */
+    TeamAChallenges?:number;
+    /**
+     * Team Status at end of jam
+     */
+    TeamAStatus?:ScoreboardTeamStatus;
+    /**
+     * Jam points scored
+     */
+    TeamBJamPoints?:number;
+    /**
+     * Team Name
+     */
+    TeamBName?:string|null;
+    /**
+     * Team record id
+     */
+    TeamBRecordID?:number;
+    /**
+     * Team Score
+     */
+    TeamBScore?:number;
+    /**
+     * Timeouts
+     */
+    TeamBTimeouts?:number;
+    /**
+     * Challenges
+     */
+    TeamBChallenges?:number;
+    /**
+     * Team Status at end of jam
+     */
+    TeamBStatus?:ScoreboardTeamStatus;
+}
+
 export interface Match {
     TimeStart?:string|null;
     TeamA:MatchTeam;
@@ -522,9 +641,13 @@ export interface SCaptureAutoSlideshow extends CaptureSection {
      */
     index?:number;
     /**
-     * Slideshow record id
+     * Record id
      */
     recordId?:number;
+    /**
+     * 
+     */
+    recordType?:RecordType;
     /**
      * True = running, false = paused
      */
@@ -674,7 +797,7 @@ export interface SkaterTeam {
  * Represents a slideshow, a collection of images / videos to be displayed on the capture window.
  */
 export interface Slideshow extends __BaseRecord {
-    Slides?:Slide[]
+    Slides?:Slide[];
 }
 
 export type SlideshowCollection = {[key:string]:Slideshow};

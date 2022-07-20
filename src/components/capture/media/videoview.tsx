@@ -13,6 +13,9 @@ interface State {
     
 }
 
+/**
+ * 
+ */
 class Main extends React.PureComponent<Props,State> {
 
     protected remote?:Unsubscribe;

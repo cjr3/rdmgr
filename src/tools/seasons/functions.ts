@@ -2,55 +2,62 @@ import Data from "tools/data";
 import { MainController } from "tools/MainController";
 import { Season } from "tools/vars";
 
-namespace Seasons {
-    /**
-     * Get a record
-     * @returns 
-     */
-    export const Get = (id?:number|null) => MainController.GetState().Seasons[`R-${id}`];
+/**
+ * Get a record
+ * @returns 
+ */
+const Get = (id?:number|null) => MainController.GetState().Seasons[`R-${id}`];
 
-    /**
-     * Get records
-     * @returns 
-     */
-    export const GetRecords = () => Object.values(MainController.GetState().Seasons);
+/**
+ * Get records
+ * @returns 
+ */
+const GetRecords = () => Object.values(MainController.GetState().Seasons);
 
-    export const GetUpdateTime = () => MainController.GetState().UpdateTimeSeasons;
+const GetUpdateTime = () => MainController.GetState().UpdateTimeSeasons;
 
-    /**
-     * Load season records
-     * @returns 
-     */
-    export const Load = () : Promise<Season[]> => {
-        return new Promise((res, rej) => {
-            Data.LoadSeasons().then(records => {
-                Set(records);
-                return res(records);
-            }).catch(er => rej(er));
-        });
-    }
-
-    /**
-     * Save season records
-     * @returns 
-     */
-    export const Save = () => Data.SaveSeasons(GetRecords());
-
-    /**
-     * Set season records
-     * @param records 
-     * @returns 
-     */
-    export const Set = (records:Season[]) => MainController.SetSeasons(records);
-
-    export const Subscribe = (f:{():void}) => MainController.Subscribe(f);
-
-    /**
-     * Create/update season records
-     * @param records 
-     * @returns 
-     */
-    export const Write = (records:Season[]) => MainController.WriteSeasons(records);
+/**
+ * Load season records
+ * @returns 
+ */
+const Load = async () : Promise<Season[]> => {
+    const records = await Data.LoadSeasons();
+    if(Array.isArray(records))
+        Set(records);
+    return records;
 }
+
+/**
+ * Save season records
+ * @returns 
+ */
+const Save = () => Data.SaveSeasons(GetRecords());
+
+/**
+ * Set season records
+ * @param records 
+ * @returns 
+ */
+const Set = (records:Season[]) => MainController.SetSeasons(records);
+
+const Subscribe = (f:{():void}) => MainController.Subscribe(f);
+
+/**
+ * Create/update season records
+ * @param records 
+ * @returns 
+ */
+const Write = (records:Season[]) => MainController.WriteSeasons(records);
+
+const Seasons = {
+    Get:Get,
+    GetRecords:GetRecords,
+    GetUpdateTime:GetUpdateTime,
+    Load:Load,
+    Save:Save,
+    Set:Set,
+    Subscribe:Subscribe,
+    Write:Write
+};
 
 export {Seasons};

@@ -2,120 +2,146 @@ import Data from "tools/data";
 import { MainController } from "tools/MainController";
 import { AnthemSinger, SAnthem } from "tools/vars";
 
-namespace Anthem {
-    /**
-     * Get current state.
-     * @returns 
-     */
-    export const Get = () => MainController.GetState().Anthem;
+/**
+ * Get anthem singer record
+ * @returns 
+ */
+ const GetRecord = (id?:number|null) => MainController.GetState().AnthemSingers[`R-${id}`];
 
-    /**
-     * Initialize anthem state.
-     * - Start save state listener
-     */
-    export const Init = () : Promise<boolean> => {
-        return new Promise((res) => {
-            Load().then().catch().finally(() => {
-                let lastState = Get();
-                let saving = false;
-                setInterval(() => {
-                    const state = Get();
-                    if(!saving && lastState !== state) {
-                        lastState = state;
-                        saving = true;
-                        Data.SaveAnthem(state).then().catch().finally(() => { saving = false; });
-                    }
-                }, 1000);
-                return res(true);
-            });
-        })
-    };
+/**
+ * Get anthem singer records.
+ * @returns 
+ */
+const GetRecords = () => Object.values(MainController.GetState().AnthemSingers);
 
-    /**
-     * Load anthem state.
-     * @returns 
-     */
-    export const Load = () : Promise<SAnthem> => {
-        return new Promise((res, rej) => {
-            Data.LoadAnthem().then(state => {
-                Update(state);
-                return res(state);
-            }).catch(er => rej(er));
-        });
-    };
+/**
+ * Get current state.
+ * @returns 
+ */
+const GetState = () => MainController.GetState().Anthem;
 
-    /**
-     * Reset state.
-     */
-    export const Reset = () => Update({Singer:undefined});
+/**
+ * Initialize anthem state.
+ * - Start save state listener
+ */
+const InitState = async () : Promise<boolean> => {
+    try {
+        await LoadState();
+        let lastState = GetState();
+        let saving = false;
+        setInterval(async () => {
+            const state = GetState();
+            if(!saving && lastState !== state) {
+                lastState = state;
+                saving = true;
+                try {
+                    await Data.SaveAnthem(state);
+                } catch(er) {
 
-    /**
-     * Subscribe to changes to the state
-     * @param f 
-     * @returns 
-     */
-    export const Subscribe = (f:{():void}) => MainController.Subscribe(f);
+                } finally {
+                    saving = false;
+                }
+            }
+        }, 1000);
+    } catch(er) {
 
-    /**
-     * Update state
-     * @param state 
-     * @returns 
-     */
-    export const Update = (state:SAnthem) => MainController.UpdateAnthemState(state);
+    }
+
+    return true;
 };
 
-namespace AnthemSingers {
-    /**
-     * Get anthem singer record
-     * @returns 
-     */
-    export const Get = (id?:number|null) => MainController.GetState().AnthemSingers[`R-${id}`];
+/**
+ * Load anthem state.
+ * @returns 
+ */
+const LoadState = async () : Promise<SAnthem> => {
+    try {
+        const state = await Data.LoadAnthem();
+        UpdateState(state);
+        return state;
+    } catch(er) {
+        throw er;
+    }
+};
 
-    /**
-     * Get anthem singer records.
-     * @returns 
-     */
-    export const GetRecords = () => Object.values(MainController.GetState().AnthemSingers);
+/**
+ * Reset state.
+ */
+const ResetState = () => UpdateState({Singer:undefined});
 
-    /**
-     * Load anthem singer records
-     * @returns 
-     */
-    export const Load = () : Promise<AnthemSinger[]> => {
-        return new Promise((res, rej) => {
-            Data.LoadAnthemSingers().then(records => {
-                MainController.SetAnthemSingers(records);
-                return res(records);
-            }).catch(er => rej(er));
-        });
-    };
+/**
+ * Subscribe to changes to the state
+ * @param f 
+ * @returns 
+ */
+const SubscribeState = (f:{():void}) => MainController.Subscribe(f);
 
-    /**
-     * Remove anthem singer records.
-     * @param records 
-     * @returns 
-     */
-    export const Remove = (records:number[]) => MainController.RemoveAnthemSingers(records);
+/**
+ * Update state
+ * @param state 
+ * @returns 
+ */
+const UpdateState = (state:SAnthem) => MainController.UpdateAnthemState(state);
 
-    /**
-     * Save anthem singer records
-     * @returns 
-     */
-    export const Save = () => Data.SaveAnthemSingers(GetRecords());
+/**
+ * Load anthem singer records
+ * @returns 
+ */
+const LoadRecords = async () : Promise<AnthemSinger[]> => {
+    try {
+        const records = await Data.LoadAnthemSingers();
+        if(Array.isArray(records))
+            SetRecords(records);
+        return records;
+    } catch(er) {
+        throw er;
+    }
+};
 
-    /**
-     * Set anthem singer records
-     * @param records 
-     * @returns 
-     */
-    export const Set = (records:AnthemSinger[]) => MainController.SetAnthemSingers(records);
+/**
+ * Remove anthem singer records.
+ * @param records 
+ * @returns 
+ */
+const RemoveRecord = (records:number[]) => MainController.RemoveAnthemSingers(records);
 
-    /**
-     * Create/update anthem singer records.
-     * @param records 
-     * @returns 
-     */
-    export const Write = (records:AnthemSinger[]) => MainController.WriteAnthemSingers(records);
+/**
+ * Save anthem singer records
+ * @returns 
+ */
+const SaveRecords = () => Data.SaveAnthemSingers(GetRecords());
+
+/**
+ * Set anthem singer records
+ * @param records 
+ * @returns 
+ */
+const SetRecords = (records:AnthemSinger[]) => MainController.SetAnthemSingers(records);
+
+/**
+ * Create/update anthem singer records.
+ * @param records 
+ * @returns 
+ */
+const WriteRecords = (records:AnthemSinger[]) => MainController.WriteAnthemSingers(records);
+
+const Anthem = {
+    Get:GetState,
+    Init:InitState,
+    Load:LoadState,
+    Reset:ResetState,
+    Subscribe:SubscribeState,
+    Update:UpdateState
+}
+
+const AnthemSingers = {
+    Get:GetRecord,
+    GetRecords:GetRecords,
+    Load:LoadRecords,
+    Remove:RemoveRecord,
+    Save:SaveRecords,
+    Set:SetRecords,
+    Write:WriteRecords
 }
 
 export {Anthem, AnthemSingers};

@@ -34,10 +34,10 @@ const AutoSlideshowControl:React.FunctionComponent<Props> = props => {
         const state = Capture.GetAutoSlideshow();
         let index = (state.index || 0) + 1;
         let slides = state.slides || [];
-        if(index >= slides.length)
+        if(index >= slides.length || slides.length === 1)
             index = 0;
         Capture.UpdateAutoSlideshow({index:index});
-        if(Capture.GetAutoSlideshow().status) {
+        if(Capture.GetAutoSlideshow().status && slides.length > 1) {
             timer = setTimeout(next, duration);
         }
     }, [status]);
@@ -46,8 +46,8 @@ const AutoSlideshowControl:React.FunctionComponent<Props> = props => {
         reset();
         Capture.UpdateAutoSlideshow({
             index:0,
-            recordId:record?.RecordID,
-            slides:record?.Slides,
+            recordId:record?.RecordID || 0,
+            slides:record?.Slides || [],
             status:false
         });
     };

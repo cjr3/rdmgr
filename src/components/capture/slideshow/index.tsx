@@ -41,14 +41,17 @@ const SlideshowCaptureBase:React.FunctionComponent<Props> = props => {
                 else
                     setSlideB(slides[current]);
             }
+        } else {
+            setSlideA(undefined);
+            setSlideB(undefined);
         }
     }, [currentTarget, slides, loop, showLastOnFirst]);
 
     return <div {...rprops} className={classNames('capture-slideshow', rprops.className, {
         active:active
     })}>
-        <SlideItem active={currentTarget === 'A'} {...slideA}/>
-        <SlideItem active={currentTarget === 'B'} {...slideB}/>
+        <SlideItem active={currentTarget === 'A'} total={slides.length} {...slideA}/>
+        <SlideItem active={currentTarget === 'B'} total={slides.length} {...slideB}/>
     </div>
 }
 

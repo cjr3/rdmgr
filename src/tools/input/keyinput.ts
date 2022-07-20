@@ -1,9 +1,6 @@
-//main file for keyboard input
-
 import keycodes from "tools/keycodes";
 import { Scoreboard } from "tools/scoreboard/functions";
 import { ScoreboardStatus, ScoreboardTeamStatus } from "tools/vars";
-import {BrowserWindow} from 'electron';
 
 class Controller
 {

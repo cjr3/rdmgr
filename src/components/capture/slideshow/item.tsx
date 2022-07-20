@@ -6,6 +6,7 @@ import { VideoView } from '../media/videoview';
 
 interface Props extends Slide, React.HTMLProps<HTMLDivElement> {
     active:boolean;
+    total:number;
 }
 
 const getExt = (filename:string) : string => {
@@ -66,6 +67,7 @@ const SlideItem:React.FunctionComponent<Props> = props => {
         Thumbnail,
         URL,
         URLTitle,
+        total,
         ...rprops} = {...props};
 
     const fname = Filename || '';
@@ -83,10 +85,12 @@ const SlideItem:React.FunctionComponent<Props> = props => {
         {
             isVideo(fname) &&
             <VideoView
-                status={VideoStatus.PLAYING}
+                status={fname && fname.length > 0 ? VideoStatus.PLAYING : VideoStatus.STOPPED}
                 src={fname}
                 autoPlay={true}
+                loop={(total === 1)}
                 volume={0}
+                muted={true}
             />
         }
     </div>

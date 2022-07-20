@@ -11,7 +11,7 @@ import { Scoreboard } from "./scoreboard/functions";
 import { Scorekeeper } from "./scorekeeper/functions";
 import { Slideshow } from "./slideshows/functions";
 import { UIController } from "./UIController";
-import { CaptureAction, ControlAction, ControlActions } from "./vars";
+import { CaptureAction, ControlAction } from "./vars";
 import { Videos } from "./videos/functions";
 
 //receive control messages on capture
