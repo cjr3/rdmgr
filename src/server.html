@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>RDMGR - Server</title>
+    <base href="./"/>
+  </head>
+  <body>
+    <div id="root" class="root-element"></div>
+    <script>
+      const scripts = [];
+      scripts.push('./server/ServerApp.js');
+      if (scripts.length) {
+        document.write(
+          scripts
+            .map((script) => `<script defer src="${script}"><\/script>`)
+            .join('')
+        );
+      }
+    </script>
+  </body>
+</html>
