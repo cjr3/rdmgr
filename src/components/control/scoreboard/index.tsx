@@ -1,6 +1,7 @@
 import classNames from 'classnames';
-import { IconReset, IconStopwatch, IconTeam } from 'components/common/icons';
+import { IconHidden, IconReset, IconStopwatch, IconTeam, IconVisible } from 'components/common/icons';
 import React from 'react';
+import { Capture } from 'tools/capture/functions';
 import { Scoreboard } from 'tools/scoreboard/functions';
 import { ScoreboardTeamStatus } from 'tools/vars';
 import { BreakClockControl } from './breakclock';
@@ -27,6 +28,7 @@ interface Props extends React.HTMLProps<HTMLDivElement> {
  */
 const ScoreboardControl:React.FunctionComponent<Props> = props => {
     const scoreboard = Scoreboard.GetState();
+    const [visible, setVisible] = React.useState(Capture.GetScoreboard().visible || false);
     const [panel, setPanel] = React.useState('');
     const [dialog, setDialog] = React.useState('');
     const [statusA, setTeamAStatus] = React.useState(typeof(scoreboard.TeamA?.Status) === 'number' ? scoreboard.TeamA.Status : ScoreboardTeamStatus.NORMAL);
@@ -42,11 +44,29 @@ const ScoreboardControl:React.FunctionComponent<Props> = props => {
     const onClickEdit = React.useCallback(() => setDialog('edit'), []);
 
     const onHideDialog = React.useCallback(() => setDialog(''), []);
+    const showScoreboard = React.useCallback(() => {
+        Capture.UpdateAnnouncer({visible:false});
+        Capture.UpdateAnthem({visible:false});
+        Capture.UpdateAutoSlideshow({visible:false});
+        // Capture.UpdateGameClock({visible:false});
+        Capture.UpdatePenaltyTracker({visible:false});
+        Capture.UpdateRaffle({visible:false});
+        Capture.UpdateRoster({visible:false});
+        Capture.UpdateSchedule({visible:false});
+        Capture.UpdateScorebanner({visible:false});
+        Capture.UpdateScorekeeper({visible:false});
+        Capture.UpdateSlideshow({visible:false});
+        Capture.UpdateScoreboard({visible:true});
+    }, []);
 
     React.useEffect(() => Scoreboard.Subscribe(() => {
         const scoreboard = Scoreboard.GetState();
         setTeamAStatus(typeof(scoreboard.TeamA?.Status) === 'number' ? scoreboard.TeamA.Status : ScoreboardTeamStatus.NORMAL);
         setTeamBStatus(typeof(scoreboard.TeamB?.Status) === 'number' ? scoreboard.TeamB.Status : ScoreboardTeamStatus.NORMAL);
+    }), []);
+
+    React.useEffect(() => Capture.Subscribe(() => {
+        setVisible(Capture.GetScoreboard().visible || false);
     }), []);
 
     return <>
@@ -80,6 +100,23 @@ const ScoreboardControl:React.FunctionComponent<Props> = props => {
                 />
             </div>
             <div className='buttons'>
+                {
+                    (visible) &&
+                    <IconVisible
+                        disabled={true}
+                        title='Scoreboard is visible'
+                        style={{opacity:'0.5'}}
+                        onClick={showScoreboard}
+                    />
+                }
+                {
+                    (!visible) &&
+                    <IconHidden
+                        active={false}
+                        title='Scoreboard is hidden - Click to show'
+                        onClick={showScoreboard}
+                    />
+                }
                 <ScoreboardButtons/>
                 <IconStopwatch 
                     active={(panel === 'phase')}

@@ -16,8 +16,8 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 
-const wfa = require('write-file-atomic');
-import { existsSync, mkdirSync, readFile, statSync, readFileSync } from 'fs';
+// const wfa = require('write-file-atomic');
+import { statSync, readFileSync } from 'fs';
 
 app.setName('RDMGR');
 let FOLDER_MAIN = app.getPath('appData') + "/" + app.getName();
@@ -26,13 +26,22 @@ if(process.env.NODE_ENV === 'development') {
 }
 
 const configFileName = path.join(FOLDER_MAIN, 'records', 'state.config.json');
+const peerFileName = path.join(FOLDER_MAIN, 'records', 'records.peers.json');
 
 let showCaptureWindow = true;
 let captureWindowWidth = 1280;
 let captureWindowHeight = 720;
 let captureWindowX = 0;
 let captureWindowY = 0;
+let mainWindow: BrowserWindow | null = null;
+let captureWindow: BrowserWindow | null = null;
+let serverWindow: BrowserWindow | null = null;
+// let localPort = 0;
+const g:any = global;
+// let portControl:MessagePortMain|undefined;
+// let portCapture:MessagePortMain|undefined;
 
+//get user config for window position
 try {
   const stat = statSync(configFileName);
   if(stat && stat.isFile && stat.isFile()) {
@@ -59,6 +68,26 @@ try {
   // throw er;
 }
 
+//get user config for localhost server
+
+try {
+  const stat = statSync(peerFileName);
+  if(stat && stat.isFile && stat.isFile()) {
+    const datab = readFileSync(peerFileName);
+    if(datab) {
+      const peers = JSON.parse(datab.toString());
+      if(peers && Array.isArray(peers)) {
+        const local = peers.find(p => p.Host === "127.0.0.1" || p.Host === "localhost");
+        if(local && local.Port && typeof(local.Port) === 'number') {
+          g.portNumber = local.Port;
+        }
+      }
+    }
+  }
+} catch(er) {
+  // throw er;
+}
+
 export default class AppUpdater {
   constructor() {
     log.transports.file.level = 'info';
@@ -66,9 +95,6 @@ export default class AppUpdater {
     autoUpdater.checkForUpdatesAndNotify();
   }
 }
-
-let mainWindow: BrowserWindow | null = null;
-let captureWindow: BrowserWindow | null = null;
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -125,8 +151,23 @@ const createWindow = async () => {
       allowRunningInsecureContent:true,
       enableRemoteModule:true,
       backgroundThrottling:false
+      // preload:__dirname + '/preloadControl.js'
     },
   });
+
+  //server
+  serverWindow = new BrowserWindow({
+    show:false,
+    frame:false,
+    webPreferences:{
+      nodeIntegration:true,
+      webSecurity:false,
+      allowRunningInsecureContent:true,
+      enableRemoteModule:true,
+      backgroundThrottling:false,
+      preload:__dirname + '/preloadServer.js'
+    }
+  })
 
   //capture
   if(showCaptureWindow) {
@@ -149,11 +190,18 @@ const createWindow = async () => {
         //otherwise, rendering will be paused if minimized
         //or placed into the background by a full-screen/maximized window
         backgroundThrottling:false
+        // preload:__dirname + '/preloadCapture.js'
       },
     });
+
+    // const {port1, port2} = new MessageChannelMain();
+    // portControl = port1;
+    // portCapture = port2;
   }
 
   mainWindow.loadURL(`file://${__dirname}/index.html`);
+  serverWindow.loadURL(`file://${__dirname}/server.html`);
+
   // captureWindow.loadURL(`file://${__dirname}/capture.html`)
   if(captureWindow)
     captureWindow.loadURL(`file://${__dirname}/index.html?capture=true`)
@@ -205,6 +253,10 @@ const createWindow = async () => {
     shell.openExternal(url);
   });
 
+  // serverWindow.on('ready-to-show', () => {
+  //   serverWindow?.webContents.postMessage('port-number', localPort);
+  // })
+
   // Don't open ANY urls on the capture window
   if(captureWindow) {
     captureWindow.webContents.on('new-window', (ev) => {
@@ -212,9 +264,23 @@ const createWindow = async () => {
     });
   }
 
+  // if(mainWindow && captureWindow && portCapture && portControl) {
+  //   mainWindow.once('ready-to-show', () => {
+  //     if(mainWindow && portControl) {
+  //       mainWindow.webContents.postMessage('port', null, [portControl]);
+  //     }
+  //   });
+
+  //   captureWindow.once('ready-to-show', () => {
+  //     if(captureWindow && portCapture) {
+  //       captureWindow.webContents.postMessage('port', null, [portCapture]);
+  //     }
+  //   });
+  // }
+
   // Remove this if your app does not use auto updates
   // eslint-disable-next-line
-  new AppUpdater();
+  // new AppUpdater();
 };
 
 /**
@@ -240,24 +306,26 @@ app.on('activate', () => {
 ipcMain.on('exit-app', async () => {
   if(captureWindow)
     captureWindow.close();
+  if(serverWindow)
+    serverWindow.close();
   if(mainWindow)
     mainWindow.close();
   return false;
-})
-
-//write to a file and call the callback when done/error
-ipcMain.handle('save-file', async (ev, filename:string, data:string|Buffer, options:any) => {
-  try {
-    if(filename && filename.length) {
-      await wfa(filename, data, {
-        ...options
-      });
-      return true;
-    }
-  } catch(er) {
-  }
-  return false;
 });
+
+// //write to a file and call the callback when done/error
+// ipcMain.handle('save-file', async (ev, filename:string, data:string|Buffer, options:any) => {
+//   try {
+//     if(filename && filename.length) {
+//       await wfa(filename, data, {
+//         ...options
+//       });
+//       return true;
+//     }
+//   } catch(er) {
+//   }
+//   return false;
+// });
 
 //config capture window
 ipcMain.handle('capture-config', (ev, values) => {
@@ -282,7 +350,7 @@ ipcMain.handle('capture-config', (ev, values) => {
 });
 
 //get info about the capture window
-ipcMain.handle('capture-info', (ev, values) => {
+ipcMain.handle('capture-info', () => {
   let width = 0;
   let height = 0;
   let x = 0;
@@ -309,63 +377,63 @@ ipcMain.handle('capture-info', (ev, values) => {
   }
 });
 
-//check and create a directory if it doesn't exist
-ipcMain.on('check-directory', (ev, name) => {
-  try {
-    if(existsSync(name)) {
-      ev.returnValue = true;
-    }
-    else {
-      mkdirSync(name);
-      ev.returnValue = existsSync(name);
-    }
-  } catch(er) {
-    // console.error(er);
-  }
+// //check and create a directory if it doesn't exist
+// ipcMain.on('check-directory', (ev, name) => {
+//   try {
+//     if(existsSync(name)) {
+//       ev.returnValue = true;
+//     }
+//     else {
+//       mkdirSync(name);
+//       ev.returnValue = existsSync(name);
+//     }
+//   } catch(er) {
+//     // console.error(er);
+//   }
 
-  ev.returnValue = false;
-});
+//   ev.returnValue = false;
+// });
 
-//check that a file exists and create it if it doesn't
-ipcMain.on('check-file', async (ev, filename:string, data:string|Buffer, options:any) => {
-  try {
-    if(filename && filename.length) {
-      if(existsSync(filename)) {
-        ev.returnValue = true;
-      } else {
-        await wfa(filename, data || '', {...options});
-        if(existsSync(filename))
-          ev.returnValue = true;
-      }
-    }
-  } catch(er) {
+// //check that a file exists and create it if it doesn't
+// ipcMain.on('check-file', async (ev, filename:string, data:string|Buffer, options:any) => {
+//   try {
+//     if(filename && filename.length) {
+//       if(existsSync(filename)) {
+//         ev.returnValue = true;
+//       } else {
+//         await wfa(filename, data || '', {...options});
+//         if(existsSync(filename))
+//           ev.returnValue = true;
+//       }
+//     }
+//   } catch(er) {
 
-  }
-  ev.returnValue = false;
-});
+//   }
+//   ev.returnValue = false;
+// });
 
-//read a file, and return as the indicated type
-ipcMain.on('read-file', (ev, filename:string) => {
-  try {
-    if(filename && filename.length) {
-      const stat = statSync(filename);
-      if(stat && stat.isFile && stat.isFile()) {
-        readFile(filename, (err:any, data:Buffer) => {
-          if(err)
-            ev.returnValue = err;
-          else
-            ev.returnValue = data.toString();
-        });
-      } else {
-        throw new Error('Failed to read file: File not found or is a directory.')
-      }
-    } else {
-      ev.returnValue = '';
-    }
-  } catch(er) {
-    ev.returnValue = er;
-  }
-});
+// //read a file, and return as the indicated type
+// ipcMain.on('read-file', (ev, filename:string) => {
+//   try {
+//     if(filename && filename.length) {
+//       const stat = statSync(filename);
+//       if(stat && stat.isFile && stat.isFile()) {
+//         readFile(filename, (err:any, data:Buffer) => {
+//           if(err)
+//             ev.returnValue = err;
+//           else
+//             ev.returnValue = data.toString();
+//         });
+//       } else {
+//         throw new Error('Failed to read file: File not found or is a directory.')
+//       }
+//     } else {
+//       ev.returnValue = '';
+//     }
+//   } catch(er) {
+//     ev.returnValue = er;
+//   }
+// });
 
 //send data from control window to capture window
 ipcMain.handle('control-capture', (ev, data) => {

@@ -82,7 +82,7 @@ const SlideItem:React.FunctionComponent<Props> = props => {
             isImage(fname) &&
             <img src={Data.GetMediaPath(fname)} alt=''/>
         }
-        {
+        {/* {
             isVideo(fname) &&
             <VideoView
                 status={fname && fname.length > 0 ? VideoStatus.PLAYING : VideoStatus.STOPPED}
@@ -92,7 +92,7 @@ const SlideItem:React.FunctionComponent<Props> = props => {
                 volume={0}
                 muted={true}
             />
-        }
+        } */}
     </div>
 };
 

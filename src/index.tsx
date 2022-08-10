@@ -27,6 +27,7 @@ import { KeyboardController } from 'tools/input/keyinput';
 import { GameController } from 'tools/input/gamepad';
 import { Capture } from 'tools/capture/functions';
 import { Seasons } from 'tools/seasons/functions';
+const remote = require('electron').remote;
 
 const ignore = () => {};
 UIController.Load().then(ignore).catch(ignore).finally(() => {

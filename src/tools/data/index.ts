@@ -1,6 +1,7 @@
 import { __BaseRecord, AnthemSinger, Config, Peer, Penalty, Phase, SAnthem, SCapture, Season, Skater, Slideshow, SMediaQueue, SPenaltyTracker, Sponsor, SRaffle, SRoster, SScoreboard, SScorekeeper, SSlideshow, Team, Video } from "tools/vars";
-const {ipcRenderer, remote} = require('electron');
-
+const {remote} = require('electron');
+const fs = remote.require('fs');
+const wfa = remote.require('write-file-atomic');
 const tdate = new Date();
 const strdate = tdate.getFullYear() +
     (tdate.getMonth() + 1).toString().padStart(2,'0') +
@@ -151,24 +152,81 @@ const mediaRX = new RegExp(FOLDER_MEDIA, 'ig');
  * @param name 
  * @returns 
  */
-const __CheckDirectory = (name:string) : Promise<boolean> => {
-    return new Promise(res => {
-        const response = ipcRenderer.sendSync('check-directory', name);
-        return res(response);
-    })
+const __CheckDirectory = async (name:string) : Promise<boolean> => {
+    try {
+        // console.log('checking directory ' + name);
+        const stat = await fs.promises.stat(name);
+        if(stat.isDirectory && stat.isDirectory()) {
+            // console.log('directory ' + name + ' exists');
+            return true;
+        }
+        return false;
+    } catch(er:any) {
+        // console.error(er);
+        if(er && er.code && er.code === 'ENOENT') {
+            try {
+                // console.log('creating directory ' + name);
+                await fs.promises.mkdir(name);
+                return true;
+            } catch(er) {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+    // return new Promise(res => {
+    //     fs.stat(name + 'ccccc', (err:any, stats:any) => {
+    //         if(err) {
+    //             if(err.code === 'ENOENT') {
+
+    //             } else {
+    //                 // console.error(err.code);
+    //                 return res(false);
+    //             }
+    //         } else {
+    //             console.log(stats);
+    //             return res(true);
+    //         }
+    //     });
+    //     // const response = ipcRenderer.sendSync('check-directory', name);
+    //     // return res(response);
+    // })
 }
 
 /**
  * Check that the given file exists, and create it if it doesn't.
  * @param filename 
- * @param content 
+ * @param content Default file content
  * @returns 
  */
-const __CheckFile = (filename:string, content:string) : Promise<boolean> => {
-    return new Promise(res => {
-        const response = ipcRenderer.sendSync('check-file', filename, content);
-        return res(response);
-    });
+const __CheckFile = async (filename:string, content:string) : Promise<boolean> => {
+    try {
+        // console.log('checking file ' + filename);
+        const stat = await fs.promises.stat(filename);
+        if(stat.isDirectory && stat.isFile()) {
+            // console.log('file ' + filename + ' exists');
+            return true;
+        }
+        return false;
+    } catch(er:any) {
+        // console.error(er);
+        if(er && er.code && er.code === 'ENOENT') {
+            try {
+                // console.log('creating directory ' + name);
+                await wfa(filename, content || '');
+                return true;
+            } catch(er) {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+    // return new Promise(res => {
+    //     const response = ipcRenderer.sendSync('check-file', filename, content);
+    //     return res(response);
+    // });
 }
 
 /**
@@ -176,21 +234,45 @@ const __CheckFile = (filename:string, content:string) : Promise<boolean> => {
  * @param filename 
  * @param contentType
  */
-const __ReadFile = (filename:string, contentType:string = 'json') : Promise<string|Buffer> => {
-    return new Promise((res, rej) => {
-        if(!filename)
-            return rej('Failed to read file: No filename provided');
-        const content = ipcRenderer.sendSync('read-file', filename, contentType);
-        if(typeof(content) === 'object') {
-            if(content instanceof Buffer)
-                return res(content);
-            if(content instanceof Error)
-                return rej(content);
-            return res(content.toString());
-        } else if(typeof(content) === 'string')
-            return res(content);
-        return rej('Failed to read file content: Unknown content type returned.')
-    });
+const __ReadFile = async (filename:string, contentType:string = '') : Promise<string|Buffer|null> => {
+    if(!filename)
+        throw new Error('Failed to read file: No filename provided.');
+    try {
+        if(contentType === 'json') {
+            //read as string
+            const content = await fs.promises.readFile(filename, {encoding:'utf8'});
+            if(typeof(content) === 'string')
+                return content;
+        } else {
+            //read as buffer
+            const content = fs.promises.readFile(filename);
+            if(typeof(content) === 'object') {
+                if(content instanceof Buffer)
+                    return content;
+                if(content instanceof Error)
+                    throw content;
+                return content.toString();
+            }
+        }
+    } catch(er:any) {
+        // console.error(er);
+        return null;
+    }
+    return null;
+    // return new Promise((res, rej) => {
+    //     if(!filename)
+    //         return rej('Failed to read file: No filename provided');
+    //     const content = ipcRenderer.sendSync('read-file', filename, contentType);
+    //     if(typeof(content) === 'object') {
+    //         if(content instanceof Buffer)
+    //             return res(content);
+    //         if(content instanceof Error)
+    //             return rej(content);
+    //         return res(content.toString());
+    //     } else if(typeof(content) === 'string')
+    //         return res(content);
+    //     return rej('Failed to read file content: Unknown content type returned.')
+    // });
 }
 
 /**
@@ -216,14 +298,21 @@ const __ReadJSONFile = <T>(filename:string) : Promise<T> => {
  * @param content 
  * @returns 
  */
-const __WriteFile = (filename:string, content:string|Buffer) : Promise<boolean> => {
-    return new Promise((res, rej) => {
-        if(!filename)
-            return rej('No file name provided');
-        ipcRenderer.invoke('save-file', filename, content).then(() => {
-            return res(true);
-        }).catch((er:any) => rej(er));
-    });
+const __WriteFile = async (filename:string, content:string|Buffer) : Promise<boolean> => {
+    try {
+        
+        await wfa(filename, content || '');
+        return true;
+    } catch(er:any) {
+        return false;
+    }
+    // return new Promise((res, rej) => {
+    //     if(!filename)
+    //         return rej('No file name provided');
+    //     ipcRenderer.invoke('save-file', filename, content).then(() => {
+    //         return res(true);
+    //     }).catch((er:any) => rej(er));
+    // });
 };
 
 /**

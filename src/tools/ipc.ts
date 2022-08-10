@@ -1,4 +1,5 @@
 //main file for handling ipc renderer.
+// import { ipcRenderer } from "electron";
 import { ipcRenderer } from "electron";
 import { Announcers } from "./announcers/functions";
 import { Anthem } from "./anthem/functions";
@@ -14,15 +15,6 @@ import { UIController } from "./UIController";
 import { CaptureAction, ControlAction } from "./vars";
 import { Videos } from "./videos/functions";
 
-//receive control messages on capture
-ipcRenderer.on('control-capture-receive', (ev, data) => {
-});
-
-//receive capture messages on control
-ipcRenderer.on('capture-control-receive', (ev, data) => {
-
-});
-
 const ignore = () => {};
 
 namespace CaptureIPC {
@@ -37,6 +29,7 @@ namespace CaptureIPC {
      * @param data 
      */
     const receive = (ev:Electron.IpcRendererEvent, data:CaptureAction) => {
+    // const receive = (data:CaptureAction) => {
         if(data !== null && data !== undefined && typeof(data) === 'object') {
             try {
                 switch(data.action) {
@@ -137,6 +130,7 @@ namespace ControlIPC {
      * @param data 
      */
     const receive = (ev:Electron.IpcRendererEvent, data:ControlAction) => {
+    // const receive = (data:ControlAction) => {
         if(data !== null && data !== undefined && typeof(data) === 'object') {
             try {
                 switch(data.action) {
@@ -301,9 +295,11 @@ namespace ControlIPC {
      */
     export const Send = (data:ControlAction) => {
         return new Promise((res) => {
+            // console.log(data);
             try {
                 ipcRenderer.invoke('capture-control', data).then(() => res(true)).catch(() => res(true));
             } catch(er) {
+                // console.error(er);
                 return res(false);
             }
         });
