@@ -1,5 +1,22 @@
 import { Scene, SceneItem } from 'obs-websocket-js';
 
+import { DataConnection, MediaConnection, Peer as PeerJSPeer } from 'peerjs';
+
+/**
+ * Collection of PeerJS peers that the user has attempted to connect to.
+ */
+export const LocalPeers:{[key:string]:PeerJSPeer|undefined} = {};
+
+/**
+ * Data connections established from remote peers
+ */
+export const RemoteDataConnections:{[key:string]:DataConnection|undefined} = {};
+
+/**
+ * Media stream connections initiated from remote peers
+ */
+export const RemoteMediaConnections:{[key:string]:MediaConnection|undefined} = {};
+
 export interface __BaseRecord {
     /**
      * Background image path/url
@@ -514,6 +531,14 @@ export interface OBSSceneCollection {
 export interface Peer extends __BaseRecord {
     Host?:string|null;
     Port?:number|null;
+    /**
+     * True if peer has established a data connection.
+     */
+    Connected?:boolean;
+    /**
+     * True if peer is sending streaming data (video/audio)
+     */
+    Streaming?:boolean;
     ReceiveApplications?:string[];
     SendApplications?:string[];
 };
@@ -866,6 +891,10 @@ export interface SMainController {
      */
     AnthemSingers:AnthemSingerCollection;
     /**
+     * Local IP Address for remote connections from peers
+     */
+    LocalIPAddress:string;
+    /**
      * Media Queue - Videos, slideshows, etc., queued up for a planned presentation.
      */
     MediaQueue:SMediaQueue;
@@ -873,6 +902,10 @@ export interface SMainController {
      * Computers to connect to.
      */
     Peers:PeerCollection;
+    /**
+     * Timestamp when data/media connections were last established.
+     */
+    PeerConnectionTime:number;
     /**
      * Penalty definitions.
      */

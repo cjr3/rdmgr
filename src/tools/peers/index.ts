@@ -31,6 +31,25 @@ export const Set = (state:SMainController, records:Peer[]) : SMainController => 
 };
 
 /**
+ * 
+ * @param state 
+ * @returns 
+ */
+export const SetConnectionTime = (state:SMainController) :SMainController => {
+    return {...state, PeerConnectionTime:Date.now()}
+}
+
+/**
+ * Set the local IP Address
+ * @param state 
+ * @param ip 
+ * @returns 
+ */
+export const SetLocalIP = (state:SMainController, ip:string) : SMainController => {
+    return {...state, LocalIPAddress:ip};
+};
+
+/**
  * Write changes / add peer records.
  * @param state 
  * @param records 

@@ -1,6 +1,6 @@
 import Data from "tools/data";
 import { MainController } from "tools/MainController";
-import { Peer } from "tools/vars";
+import { Peer as PeerRecord } from "tools/vars";
 
 /**
  * Get a specific peer record
@@ -19,9 +19,9 @@ const GetRecords = () => Object.values(MainController.GetState().Peers);
  * Load peer records
  * @returns 
  */
-const Load = async () : Promise<Peer[]> => {
+const Load = async () : Promise<PeerRecord[]> => {
     try {
-        const records = Data.LoadPeers();
+        const records = await Data.LoadPeers();
         if(Array.isArray(records))
             Set(records);
         return records;
@@ -41,14 +41,14 @@ const Save = () => Data.SavePeers(GetRecords());
  * @param records 
  * @returns 
  */
-const Set = (records:Peer[]) => MainController.SetPeers(records);
+const Set = (records:PeerRecord[]) => MainController.SetPeers(records);
 
 /**
  * Write records to the main store.
  * @param records 
  * @returns 
  */
-const Write = (records:Peer[]) => MainController.WritePeers(records);
+const Write = (records:PeerRecord[]) => MainController.WritePeers(records);
 
 const Peers = {
     Get:Get,

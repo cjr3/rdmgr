@@ -37,8 +37,10 @@ enum Actions {
     SET_ANTHEM_RECORDS,
     SET_ANTHEM_STATE,
     SET_CONFIG_STATE,
+    SET_LOCAL_IP,
     SET_MEDIAQUEUE_STATE,
     SET_PEERS,
+    SET_PEER_CONNECTION_TIME,
     SET_PENALTIES,
     SET_PENALTY_STATE,
     SET_PHASES,
@@ -91,10 +93,12 @@ const InitState:SMainController = {
         }
     },
     AnthemSingers:{},
+    LocalIPAddress:'',
     MediaQueue:{
         Records:[]
     },
     Peers:{},
+    PeerConnectionTime:0,
     Penalties:{},
     PenaltyTracker:{
         Skaters:[]
@@ -335,8 +339,12 @@ const MainReducer = (state:SMainController = InitState, action:any) : SMainContr
             case Actions.SET_ANTHEM_RECORDS : return Anthem.Set(state, action.records);
             case Actions.SET_ANTHEM_STATE : return Anthem.SetState(state, action.values);
 
+            //set local ip address
+            case Actions.SET_LOCAL_IP : return Peers.SetLocalIP(state, action.ip);
+
             //case Actions.SET_MEDIAQUEUE_STATE : return 
             case Actions.SET_PEERS : return Peers.Set(state, action.records);
+            case Actions.SET_PEER_CONNECTION_TIME : return Peers.SetConnectionTime(state);
             case Actions.SET_PENALTIES : return Penalties.Set(state, action.records);
             case Actions.SET_PENALTY_STATE : return PenaltyTracker.UpdateState(state, action.values);
             case Actions.SET_PHASES : return Phases.Set(state, action.records);
@@ -654,6 +662,17 @@ class Controller {
     };
 
     /**
+     * Set the local ip address for server requests
+     * @param ip 
+     */
+    SetLocalIPAddress = (ip:string) => {
+        MainStore.dispatch({
+            type:Actions.SET_LOCAL_IP,
+            ip:ip
+        });
+    }
+
+    /**
      * Set peer records
      * @param records 
      */
@@ -663,6 +682,15 @@ class Controller {
             records:records
         });
     };
+
+    /**
+     * Update last timestamp for peer connections.
+     */
+    SetPeerConnectionTime = () => {
+        MainStore.dispatch({
+            type:Actions.SET_PEER_CONNECTION_TIME
+        });
+    }
 
     /**
      * Set penalty records

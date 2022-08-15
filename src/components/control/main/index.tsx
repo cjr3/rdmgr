@@ -15,6 +15,7 @@ import { QuickVideoPanel } from './videopanel';
 import { ScorekeeperReel } from '../scorekeeper/reel';
 import { CameraPanel } from './camerapanel';
 import { OBSControl } from '../obs';
+import { PeerPanel } from './peerpanel';
 
 interface Props extends React.HTMLProps<HTMLDivElement> {
 
@@ -34,6 +35,7 @@ const MainControl:React.FunctionComponent<Props> = props => {
     const toggleCapture = React.useCallback(() => setPanel(panel === 'capture' ? '' : 'capture'), [panel]);
     const toggleConfig = React.useCallback(() => setPanel(panel === 'config' ? '' : 'config'), [panel]);
     const toggleObs = React.useCallback(() => setPanel(panel === 'obs' ? '' : 'obs'), [panel]);
+    const togglePeers = React.useCallback(() => setPanel(panel === 'peers' ? '' : 'peers'), [panel]);
     const toggleRaffle = React.useCallback(() => setPanel(panel === 'raffle' ? '' : 'raffle'), [panel]);
     const hidePanel = React.useCallback(() => {setPanel('');}, []);
 
@@ -63,6 +65,7 @@ const MainControl:React.FunctionComponent<Props> = props => {
             <QuickVideoPanel active={(panel === 'video')} onHide={hidePanel}/>
             <RafflePanel active={panel === 'raffle'} onHide={hidePanel}/>
             <OBSControl active={panel === 'obs'} onHide={hidePanel}/>
+            <PeerPanel active={panel === 'peers'} onHide={hidePanel}/>
             <ScorekeeperReel/>
             <CameraPanel active={(panel === 'camera')} onHide={hidePanel}/>
         </div>
@@ -71,6 +74,7 @@ const MainControl:React.FunctionComponent<Props> = props => {
             onSelectCapture={toggleCapture}
             onSelectConfig={toggleConfig}
             onSelectOBS={toggleObs}
+            onSelectPeers={togglePeers}
             onSelectRaffle={toggleRaffle}
         />
     </div>

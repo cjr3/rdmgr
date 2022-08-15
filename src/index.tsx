@@ -67,6 +67,32 @@ UIController.Load().then(ignore).catch(ignore).finally(() => {
             const state = MainController.GetState();
             GameClock.set(state.Scoreboard.GameClock?.Hours || 0, state.Scoreboard.GameClock?.Minutes || 0, state.Scoreboard.GameClock?.Seconds || 0, state.Scoreboard.GameClock?.Tenths || 0);
 
+            // const {remote} = require('electron').remote;
+            try {
+                const {networkInterfaces} = require('os');
+                let nets:any = networkInterfaces();
+                let localIp:string = '';
+                if(nets) {
+                    const items = Object.values(nets);
+                    items.forEach(item => {
+                        if(Array.isArray(item)) {
+                            item.forEach((addr:any) => {
+                                const familyV4Value = typeof addr.family == 'string' ? 'IPv4' : 4;
+                                if(addr.family === familyV4Value && !addr.internal && !localIp) {
+                                    localIp = addr.address;
+                                }
+                            })
+                        }
+                    })
+                }
+                
+                if(localIp) {
+                    MainController.SetLocalIPAddress(localIp);
+                }
+            } catch(er) {
+                
+            }
+
             Capture.UpdateRoster({
                 index:-1,
                 side:'',

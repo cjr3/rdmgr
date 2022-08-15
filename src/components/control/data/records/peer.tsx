@@ -43,6 +43,7 @@ class Main extends React.PureComponent<Props, State> {
 
     protected load = () => {
         const record = Peers.Get(this.props.recordId);
+        // console.log(record);
         this.setState({
             host:record?.Host || '',
             port:record?.Port || 49152,
@@ -90,6 +91,10 @@ class Main extends React.PureComponent<Props, State> {
         }
     }
 
+    componentDidMount(){
+        this.load();
+    }
+
     render() {
         return <BaseRecordForm
             recordId={this.props.recordId}
@@ -105,29 +110,29 @@ class Main extends React.PureComponent<Props, State> {
             onSave={this.props.onSave}
         >
             <tr>
-                <td>Host</td>
+                <td>Host:Port</td>
                 <td>
-                    <TextInput 
-                        className='form-control'
-                        value={this.state.host} 
-                        onChangeValue={this.onChangeHost} 
-                        maxLength={32}
-                        placeholder='IP address or host name'
+                    <div className='input-group'>
+                        <TextInput 
+                            className='form-control'
+                            value={this.state.host} 
+                            onChangeValue={this.onChangeHost} 
+                            maxLength={32}
+                            style={{flex:'0 0 200px'}}
+                            placeholder='IP address or host name'
+                            />
+                            <span className='input-group-text'>:</span>
+                        <NumberInput
+                            className='form-control'
+                            value={this.state.port}
+                            onChangeValue={this.onChangePort}
+                            min={0}
+                            max={65535}
+                            style={{flex:'0 0 150px'}}
+                            title='Enter a port between 49152 - 65535'
                         />
-                </td>
-            </tr>
-            <tr>
-                <td>Port</td>
-                <td>
-                    <NumberInput
-                        className='form-control'
-                        value={this.state.port}
-                        onChangeValue={this.onChangePort}
-                        min={0}
-                        max={65535}
-                        style={{width:'150px'}}
-                        title='Enter a port between 49152 - 65535'
-                    />
+                    </div>
+                    <p style={{margin:'6px 0px'}}>Enter 127.0.0.1 for your local server record.</p>
                 </td>
             </tr>
             <tr>

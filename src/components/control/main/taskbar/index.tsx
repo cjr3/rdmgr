@@ -1,4 +1,4 @@
-import { IconAV, IconClipboard, IconOBS, IconSettings, IconSkate, IconStream, IconStreamSend, IconTeam, IconTicket, IconWhistle } from 'components/common/icons';
+import { IconAV, IconClipboard, IconOBS, IconOffline, IconSettings, IconSkate, IconStream, IconStreamSend, IconTeam, IconTicket, IconWhistle } from 'components/common/icons';
 import React from 'react';
 import Data from 'tools/data';
 import { UIController } from 'tools/UIController';
@@ -9,6 +9,7 @@ interface Props {
     onSelectCapture:{():void};
     onSelectConfig:{():void};
     onSelectOBS:{():void};
+    onSelectPeers:{():void};
     onSelectRaffle:{():void};
 }
 
@@ -42,6 +43,7 @@ const Taskbar:React.FunctionComponent<Props> = props => {
         </div>
         <TaskbarStatus/>
         <div className='misc-icons'>
+            <IconOffline onClick={props.onSelectPeers} title='Network'/>
             <IconOBS onClick={props.onSelectOBS} title='OBS'/>
             <IconStream onClick={props.onSelectCamera} title='Camera'/>
             <IconTicket onClick={props.onSelectRaffle} title='Raffle'/>

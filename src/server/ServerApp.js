@@ -8,7 +8,7 @@ const clients = [];
 
 const server = app.listen(port);
 const peerServer = ExpressPeerServer(server, {
-    path:'/rdmgr'
+    path:'/'
 });
 
 peerServer.on('connection', (client) => {
@@ -27,6 +27,10 @@ peerServer.on('disconnect', (client) => {
         clients.pop(index, 1);
     }
     console.log(clients.length + ' clients connected');
+});
+
+peerServer.on('error', (err) => {
+    console.error(err);
 });
 
 app.use('/peerjs', peerServer);
