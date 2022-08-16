@@ -95,6 +95,11 @@ class Main extends React.PureComponent<Props, State> {
         this.load();
     }
 
+    componentDidUpdate(prevProps:Props) {
+        if(prevProps.recordId !== this.props.recordId)
+            this.load();
+    }
+
     render() {
         return <BaseRecordForm
             recordId={this.props.recordId}

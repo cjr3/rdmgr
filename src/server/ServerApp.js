@@ -1,10 +1,11 @@
 const express = require('express');
 const { ExpressPeerServer } = require('peer');
 const app = express();
+const clients = [];
 app.get('/', (req, res, next) => res.send('Hello, world!'));
+app.get('/peers', (req, res) => res.send(clients.map(c => c.getId()).join(',')));
 let port = (window && window.portNumber && typeof(window.portNumber) === 'number') ? window.portNumber : 9000;
 
-const clients = [];
 
 const server = app.listen(port);
 const peerServer = ExpressPeerServer(server, {

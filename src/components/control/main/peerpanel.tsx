@@ -17,6 +17,10 @@ interface State {
      */
     connected:boolean;
     /**
+     * Peers connected to the server
+     */
+    connectedPeers:string[];
+    /**
      * Local peer id from the first host with a host of 127.0.0.1
      */
     localId:string;
@@ -44,6 +48,7 @@ interface State {
 class PeerPanel extends React.PureComponent<Props, State> {
     readonly state:State = {
         connected:false,
+        connectedPeers:[],
         localIp:'',
         localId:'',
         localPort:0,
@@ -52,6 +57,81 @@ class PeerPanel extends React.PureComponent<Props, State> {
     }
 
     protected remote?:Unsubscribe;
+
+    protected checkTimer:any = 0;
+
+    /**
+     * 
+     * @param id 
+     * @param dc 
+     */
+    protected addDataConnection = (id:string, dc:DataConnection) => {
+        RemoteDataConnections[id] = dc;
+        console.log('addDataConnection: ' + id);
+        dc.on('close', () => {
+            console.log('dc: close ' + id);
+            this.removeDataConnection(id);
+        });
+
+        dc.on('data', (data:any) => {
+            console.log('data received ' + id);
+            console.log(data);
+        })
+
+        dc.on('error', (err) => {
+            console.log('dc error ' + id);
+            console.error(err);
+            this.removeDataConnection(id);
+        })
+
+        dc.on('iceStateChanged', (state:RTCIceConnectionState) => {
+            console.log('dc: iceStateChanged ' + id);
+            console.log(state);
+            MainController.SetPeerConnectionTime();
+        });
+
+        dc.on('open', () => {
+            console.log('dc: open ' + id);
+            MainController.SetPeerConnectionTime();
+        });
+
+        
+        MainController.SetPeerConnectionTime();
+    }
+
+    protected addMediaConnection = (id:string, mc:MediaConnection) => {
+        mc.on('close', () => {
+            this.removeMediaConnection(id);
+        });
+
+        mc.on('error', () => {
+            try {
+                mc.close();
+            } catch {
+
+            }
+        });
+
+        mc.on('iceStateChanged', () => {
+            MainController.SetPeerConnectionTime();
+        });
+
+        mc.on('stream', (ms:MediaStream) => {
+            
+        });
+
+        MainController.SetPeerConnectionTime();
+    }
+
+    protected removeDataConnection = (id:string) => {
+        RemoteDataConnections[id] = undefined;
+        MainController.SetPeerConnectionTime();
+    }
+
+    protected removeMediaConnection = (id:string) => {
+        RemoteMediaConnections[id] = undefined;
+        MainController.SetPeerConnectionTime();
+    }
 
     /**
      * Connect to the localhost
@@ -71,6 +151,7 @@ class PeerPanel extends React.PureComponent<Props, State> {
             } else if(peer && !peer.disconnected) {
                 //already connected to local
                 this.setState({connected:true});
+                MainController.SetPeerConnectionTime();
                 return;
             }
 
@@ -89,7 +170,7 @@ class PeerPanel extends React.PureComponent<Props, State> {
                 peer.on('disconnected', this.onRemoteDisconnected);
                 peer.on('error', this.onRemoteError);
                 LocalPeers[this.state.localId] = peer;
-                this.setState({connected:true});
+                this.setState({connected:true}, this.checkPeers);
             } catch(er) {
                 if(peer) {
                     try {
@@ -100,6 +181,8 @@ class PeerPanel extends React.PureComponent<Props, State> {
                         LocalPeers[this.state.localId] = undefined;
                     }
                 }
+            } finally {
+                MainController.SetPeerConnectionTime();
             }
         }
     }
@@ -111,21 +194,99 @@ class PeerPanel extends React.PureComponent<Props, State> {
     protected connectToPeer = (id:string) => {
         try {
             let local = this.getLocal();
-            if(id && local && !local.disconnected) {
-                let peer = LocalPeers[id];
-                if(peer && !peer.disconnected) {
-                    //already connected
-                    return;
-                } else if(peer && peer.disconnected) {
-                    //peer disconnected - destroy and connect
-                    peer.destroy();
-                    local.connect(id);
-                } else {
-                    local.connect(id);
+            const record = this.state.peers.find(r => r.Name === id);
+            if(record && id && local && !local.disconnected) {
+                try {
+                    let dc = RemoteDataConnections[id];
+                    if(!dc) {
+                        dc = local.connect(id);
+                        if(dc) {
+                            this.addDataConnection(id, dc);
+                        }
+                    }
+                } catch(er) {
+
                 }
             }
         } catch(er) {
 
+        }
+    }
+
+    /**
+     * Close connection to peer
+     * @param id 
+     */
+    protected disconnectFromPeer = (id:string) => {
+        console.log('disconnectFromPeer: ' + id);
+        const localp = LocalPeers[id];
+        const dc = RemoteDataConnections[id];
+        const mc = RemoteMediaConnections[id];
+        if(dc) {
+            try {
+                console.log('closing data connection: ' + id);
+                dc.close();
+            } catch(er) {
+
+            } finally {
+                RemoteDataConnections[id] = undefined;
+            }
+        }
+
+        if(mc) {
+            try {
+                console.log('closing media connection ' + id);
+                mc.close();
+            } catch(er) {
+
+            } finally {
+                RemoteMediaConnections[id] = undefined;
+            }
+        }
+
+        if(localp) {
+            try {
+                localp.disconnect();
+            } catch(er) {
+
+            } finally {
+                LocalPeers[id] = undefined;
+            }
+        }
+        
+        MainController.SetPeerConnectionTime();
+    }
+
+    /**
+     * Update connected peers
+     */
+    protected checkPeers = async () : Promise<void> => {
+        console.log('checkPeers');
+        let ids:string[] = [];
+        try {
+            clearTimeout(this.checkTimer);
+        } catch(er) {
+
+        }
+
+        try {
+            if(this.state.localId && this.state.localIp && this.state.localPort) {
+                const response = await fetch('http://127.0.0.1:' + this.state.localPort + '/peers');
+                const data = await response.text();
+                if(data && data.length) {
+                    ids = data.split(',');
+                }
+            }
+        } catch(er) {
+
+        } finally {
+            this.checkTimer = setTimeout(this.checkPeers, 15000);
+            this.state.connectedPeers.forEach(id => {
+                if(ids.indexOf(id) < 0) {
+                    this.disconnectFromPeer(id);
+                }
+            });
+            this.setState({connectedPeers:ids});
         }
     }
 
@@ -176,17 +337,19 @@ class PeerPanel extends React.PureComponent<Props, State> {
                 RemoteMediaConnections[key] = undefined;
             }
 
+            console.log('closed?')
             MainController.SetPeerConnectionTime();
+            this.setState({connected:false});
         }
     }
     
     /**
-     * Called when a peer makes a call to receive media streams
+     * Called when a peer makes a call to send media streams
      * @param mc 
      */
     protected onRemoteCall = (mc:MediaConnection) => {
         console.log('remote call');
-        //mc.answer(); //to answer calls and send a media stream back
+        //mc.answer(); //to answer calls so the peer can send audio/video
     }
 
     /**
@@ -203,39 +366,10 @@ class PeerPanel extends React.PureComponent<Props, State> {
      * @param dc 
      */
     protected onRemoteConnection = (dc:DataConnection) => {
-        console.log('remote data connection');
-        dc.on('close', () => {
-            console.log('remote data connection closed');
-            console.log(dc.peer);
-            console.log(RemoteDataConnections[dc.peer]);
-            if(dc && dc.peer && RemoteDataConnections[dc.peer]) {
-                RemoteDataConnections[dc.peer] = undefined;
-                MainController.SetPeerConnectionTime();
-            }
-        });
-
-        dc.on('data', (data:any) => {
-            console.log('data received from ' + dc.peer);
-            console.log(data);
-        });
-
-        dc.on('error', (err) => {
-            console.log('remote data error');
-            console.error(err);
-            MainController.SetPeerConnectionTime();
-        });
-        dc.on('iceStateChanged', () => {
-            console.log('remote data connection ice state changed');
-            MainController.SetPeerConnectionTime();
-        });
-        dc.on('open', () => {
-            console.log('remote data connection open');
-            MainController.SetPeerConnectionTime();
-        });
-        // console.log(dc);
-        // console.log('...?');
-        RemoteDataConnections[dc.peer] = dc;
-        MainController.SetPeerConnectionTime();
+        console.log('onRemoteConnection: ' + dc.peer);
+        if(dc && dc.peer) {
+            this.addDataConnection(dc.peer, dc);
+        }
     }
 
     /**
@@ -285,7 +419,7 @@ class PeerPanel extends React.PureComponent<Props, State> {
      * @param id 
      */
     protected onRemoteOpen = (id:string) => {
-        console.log('remote open');
+        console.log('remote open: ' + id);
         MainController.SetPeerConnectionTime();
     }
 
@@ -347,8 +481,8 @@ class PeerPanel extends React.PureComponent<Props, State> {
                     <>
                     {
                         this.state.peers.map((record, index) => {
-                            
-                            if(!record.Name || record.Name === this.state.localId || !record.Host || !record.Port) {
+                            let sconnected = (record && record.Name && this.state.connectedPeers.indexOf(record.Name) >= 0);
+                            if(!record.Name || record.Name === this.state.localId || !record.Host || !record.Port || !sconnected) {
                                 return null;
                             }
                             
@@ -375,12 +509,24 @@ class PeerPanel extends React.PureComponent<Props, State> {
                                     (connected) &&
                                     <IconOnline
                                         title='Connected. Ctrl+Click to disconnect.'
+                                        onClick={ev => {
+                                            ev.stopPropagation();
+                                            ev.preventDefault();
+                                            if(ev.ctrlKey && record.Name) {
+                                                this.disconnectFromPeer(record.Name);
+                                            }
+                                        }}
                                     />
                                 }
                                 {
                                     (!connected) &&
                                     <IconOffline
                                         title='Not connected. Click to connect.'
+                                        onClick={ev => {
+                                            ev.stopPropagation();
+                                            ev.preventDefault();
+                                            this.connectToPeer(record.Name || '');
+                                        }}
                                     />
                                 }
                             </div>
