@@ -14,6 +14,7 @@ const peerServer = ExpressPeerServer(server, {
 
 peerServer.on('connection', (client) => {
     console.log('Connection: ' + client.getId());
+    console.log(client);
     const index = clients.findIndex(c => c.getId() === client.getId());
     if(index < 0) {
         clients.push(client);
@@ -25,7 +26,7 @@ peerServer.on('disconnect', (client) => {
     console.log('Disconnect: ' + client.getId());
     const index = clients.findIndex(c => c.getId() === client.getId());
     if(index >= 0) {
-        clients.pop(index, 1);
+        clients.splice(index, 1);
     }
     console.log(clients.length + ' clients connected');
 });
@@ -33,5 +34,9 @@ peerServer.on('disconnect', (client) => {
 peerServer.on('error', (err) => {
     console.error(err);
 });
+
+setInterval(() => {
+    console.log(clients.map(c => c.id).join(','));
+}, 5000);
 
 app.use('/peerjs', peerServer);
