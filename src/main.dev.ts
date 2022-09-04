@@ -164,8 +164,8 @@ const createWindow = async () => {
       webSecurity:false,
       allowRunningInsecureContent:true,
       enableRemoteModule:true,
-      backgroundThrottling:false,
-      preload:__dirname + '/preloadServer.js'
+      backgroundThrottling:false
+      // preload:__dirname + '/preloadServer.js'
     }
   })
 
@@ -200,7 +200,7 @@ const createWindow = async () => {
   }
 
   mainWindow.loadURL(`file://${__dirname}/index.html`);
-  serverWindow.loadURL(`file://${__dirname}/server.html`);
+  serverWindow.loadURL(`file://${__dirname}/index.html?server=true`);
 
   // captureWindow.loadURL(`file://${__dirname}/capture.html`)
   if(captureWindow)
@@ -219,6 +219,9 @@ const createWindow = async () => {
       mainWindow.focus();
     }
   });
+
+  // mainWindow.webContents.openDevTools();
+  // serverWindow.webContents.openDevTools();
 
   if(captureWindow) {
     captureWindow.webContents.on('did-finish-load', () => {

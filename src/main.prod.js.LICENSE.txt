@@ -1,13 +1,3 @@
 /*! http://mths.be/fromcodepoint v0.1.0 by @mathias */
 
-/**
- * @preserve
- * JS Implementation of incremental MurmurHash3 (r150) (as of May 10, 2013)
- *
- * @author <a href="mailto:jensyt@gmail.com">Jens Taylor</a>
- * @see http://github.com/homebrewing/brauhaus-diff
- * @author <a href="mailto:gary.court@gmail.com">Gary Court</a>
- * @see http://github.com/garycourt/murmurhash-js
- * @author <a href="mailto:aappleby@gmail.com">Austin Appleby</a>
- * @see http://sites.google.com/site/murmurhash/
- */
+/*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */

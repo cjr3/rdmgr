@@ -38,6 +38,9 @@
       "dist/",
       "node_modules/",
       "index.html",
+      "server.html",
+      "server/",
+      "preloadServer.js",
       "main.prod.js",
       "main.prod.js.map",
       "package.json"
@@ -238,7 +241,7 @@
     "redux": "^4.1.1",
     "regenerator-runtime": "^0.13.9",
     "source-map-support": "^0.5.20",
-    "write-file-atomic": "^3.0.3"
+    "write-file-atomic": "^4.0.2"
   },
   "devEngines": {
     "node": ">=10.x",

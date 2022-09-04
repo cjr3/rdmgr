@@ -1,27 +1,32 @@
 
-const {remote} = require('electron');
-const express = require('express');
-const { ExpressPeerServer } = remote.require('peer');
 const setupServer = () => {
-    
+    const {remote} = window.require('electron');
+    // console.log(exp);
+    const express = window.require('express');
+    // console.log(express)
+    const { ExpressPeerServer } = window.require('peer');
     const app = express();
-    const clients = [];
-    app.get('/', (req, res, next) => res.send('Hello, world!'));
-    app.get('/peers', (req, res) => res.send(clients.map(c => c.getId()).join(',')));
+    const clients:any[] = [];
+    app.get('/', (req:any, res:any, next:any) => res.send('Hello, world!'));
+    app.get('/peers', (req:any, res:any) => res.send(clients.map((c:any) => c.getId()).join(',')));
+    let port:number = 9000;
     console.log(remote.getGlobal('portNumber'));
     try {
-        window.portNumber = remote.getGlobal('portNumber');
+        // window.portNumber = remote.getGlobal('portNumber');
+        let value = remote.getGlobal('portNumber')
+        if(typeof(value) === 'number' && value > 5000)
+            port = value;
     } catch(er) {
         console.error(er);
     }
-    let port = (window && window.portNumber && typeof(window.portNumber) === 'number') ? window.portNumber : 9000;
+    // let port = (window && window.portNumber && typeof(window.portNumber) === 'number') ? window.portNumber : 9000;
     
     const server = app.listen(port);
     const peerServer = ExpressPeerServer(server, {
         path:'/'
     });
     
-    peerServer.on('connection', (client) => {
+    peerServer.on('connection', (client:any) => {
         // console.log('Connection: ' + client.getId());
         // console.log(client);
         const index = clients.findIndex(c => c.getId() === client.getId());
@@ -31,7 +36,7 @@ const setupServer = () => {
         // console.log(clients.length + ' clients connected');
     });
     
-    peerServer.on('disconnect', (client) => {
+    peerServer.on('disconnect', (client:any) => {
         // console.log('Disconnect: ' + client.getId());
         const index = clients.findIndex(c => c.getId() === client.getId());
         if(index >= 0) {
@@ -40,7 +45,7 @@ const setupServer = () => {
         // console.log(clients.length + ' clients connected');
     });
     
-    peerServer.on('error', (err) => {
+    peerServer.on('error', (err:any) => {
         // console.error(err);
     });
     
@@ -51,4 +56,4 @@ const setupServer = () => {
     app.use('/peerjs', peerServer);
 };
 
-module.exports = setupServer;
+export {setupServer};

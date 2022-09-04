@@ -189,9 +189,12 @@ body {
 				flex-flow: row wrap;
 				justify-content: flex-end;
 				background-color: $rdPurple;
-				.button,
+				.button {
+					padding: 12px;
+				}
+
 				.icon {
-					vertical-align: top;
+					vertical-align: middle;
 				}
 			}
 

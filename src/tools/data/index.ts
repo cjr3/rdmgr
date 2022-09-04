@@ -1,7 +1,7 @@
 import { __BaseRecord, AnthemSinger, Config, Peer, Penalty, Phase, SAnthem, SCapture, Season, Skater, Slideshow, SMediaQueue, SPenaltyTracker, Sponsor, SRaffle, SRoster, SScoreboard, SScorekeeper, SSlideshow, Team, Video } from "tools/vars";
 const {remote} = require('electron');
 const fs = remote.require('fs');
-const wfa = remote.require('write-file-atomic');
+const wfa = require('write-file-atomic');
 const tdate = new Date();
 const strdate = tdate.getFullYear() +
     (tdate.getMonth() + 1).toString().padStart(2,'0') +

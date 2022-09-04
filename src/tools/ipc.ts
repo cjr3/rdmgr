@@ -5,14 +5,18 @@ import { Announcers } from "./announcers/functions";
 import { Anthem } from "./anthem/functions";
 import { Capture } from "./capture/functions";
 import { MainController } from "./MainController";
+import { PeerManager } from "./PeerManager";
 import { PenaltyTracker } from "./penaltytracker/functions";
 import { Raffle } from "./raffle/functions";
 import { Roster } from "./roster/functions";
+import { BreakClock } from "./scoreboard/breakclock";
 import { Scoreboard } from "./scoreboard/functions";
+import { GameClock } from "./scoreboard/gameclock";
+import { JamClock } from "./scoreboard/jamclock";
 import { Scorekeeper } from "./scorekeeper/functions";
 import { Slideshow } from "./slideshows/functions";
 import { UIController } from "./UIController";
-import { CaptureAction, ControlAction } from "./vars";
+import { CaptureAction, ClockStatus, ControlAction } from "./vars";
 import { Videos } from "./videos/functions";
 
 const ignore = () => {};
@@ -148,51 +152,111 @@ namespace ControlIPC {
      * Called when the main controller state is updated.
      */
     const onMainUpdate = async () => {
-        const state = MainController.GetState();
+        try {
+            const state = MainController.GetState();
 
-        if(ann1 !== state.Announcer1) {
-            ann1 = state.Announcer1;
-            CaptureIPC.Send({action:'announcer1', values:state.Announcer1}).then(ignore).catch(ignore);
-        }
+            if(ann1 !== state.Announcer1) {
+                ann1 = state.Announcer1;
+                CaptureIPC.Send({action:'announcer1', values:state.Announcer1}).then(ignore).catch(ignore);
+            }
 
-        if(ann2 !== state.Announcer2) {
-            ann2 = state.Announcer2;
-            CaptureIPC.Send({action:'announcer2', values:state.Announcer2}).then(ignore).catch(ignore);
-        }
+            if(ann2 !== state.Announcer2) {
+                ann2 = state.Announcer2;
+                CaptureIPC.Send({action:'announcer2', values:state.Announcer2}).then(ignore).catch(ignore);
+            }
 
-        if(anthemState !== state.Anthem) {
-            anthemState = state.Anthem;
-            CaptureIPC.Send({action:'anthem', values:state.Anthem}).then(ignore).catch(ignore);
-        }
+            if(anthemState !== state.Anthem) {
+                anthemState = state.Anthem;
+                CaptureIPC.Send({action:'anthem', values:state.Anthem}).then(ignore).catch(ignore);
+            }
 
-        if(penaltyState !== state.PenaltyTracker) {
-            penaltyState = state.PenaltyTracker;
-            CaptureIPC.Send({action:'penalty', values:state.PenaltyTracker}).then(ignore).catch(ignore);
-        }
+            if(penaltyState !== state.PenaltyTracker) {
+                penaltyState = state.PenaltyTracker;
+                CaptureIPC.Send({action:'penalty', values:state.PenaltyTracker}).then(ignore).catch(ignore);
+            }
 
-        if(raffleState !== state.Raffle) {
-            raffleState = state.Raffle;
-            CaptureIPC.Send({action:'raffle', values:state.Raffle}).then(ignore).catch(ignore);
-        }
+            if(raffleState !== state.Raffle) {
+                raffleState = state.Raffle;
+                CaptureIPC.Send({action:'raffle', values:state.Raffle}).then(ignore).catch(ignore);
+            }
 
-        if(rosterState !== state.Roster) {
-            rosterState = state.Roster;
-            CaptureIPC.Send({action:'roster', values:state.Roster}).then(ignore).catch(ignore);
-        }
+            if(rosterState !== state.Roster) {
+                rosterState = state.Roster;
+                CaptureIPC.Send({action:'roster', values:state.Roster}).then(ignore).catch(ignore);
+            }
 
-        if(scoreboardState !== state.Scoreboard) {
-            scoreboardState = state.Scoreboard;
-            CaptureIPC.Send({action:'scoreboard', values:state.Scoreboard}).then(ignore).catch(ignore);
-        }
+            if(scoreboardState !== state.Scoreboard) {
+                scoreboardState = state.Scoreboard;
+                CaptureIPC.Send({action:'scoreboard', values:state.Scoreboard}).then(ignore).catch(ignore);
 
-        if(scorekeeperState !== state.Scorekeeper) {
-            scorekeeperState = state.Scorekeeper;
-            CaptureIPC.Send({action:'scorekeeper', values:state.Scorekeeper}).then(ignore).catch(ignore);
-        }
+                //send scoreboard data
+                //send the data only when one of the clocks tenths is 0 or 9
+                //so we don't send data too rapidly.
+                //
+                //We read from the clock objects, not the state, as the tenths are not added
+                //to the state object
 
-        if(slideshowState !== state.Slideshow) {
-            slideshowState = state.Slideshow;
-            CaptureIPC.Send({action:'slideshow', values:state.Slideshow}).then(ignore).catch(ignore);
+                if(state.Scoreboard && state.Scoreboard.GameClock
+                    && state.Scoreboard.JamClock 
+                    && state.Scoreboard.BreakClock
+                    && (
+                        //none of the clocks are running - typically during setup
+                        (
+                            JamClock.Status === ClockStatus.STOPPED
+                            && BreakClock.Status === ClockStatus.STOPPED
+                            && GameClock.Status === ClockStatus.STOPPED
+                        )
+                        //game clock is running and at .0 or .9
+                        //don't 
+                        || (
+                            
+                            GameClock.Status === ClockStatus.RUNNING &&
+                            (GameClock.Tenths === 9 || GameClock.Tenths === 0 )
+                        )
+                        //jam clock is running and at .0 or .9
+                        || (
+                            JamClock.Status === ClockStatus.RUNNING &&
+                            (JamClock.Tenths === 9 || JamClock.Tenths === 0 )
+                        )
+                        //break clock is running and at .0 or .9
+                        || (
+                            BreakClock.Status === ClockStatus.RUNNING &&
+                            (BreakClock.Tenths === 9 || BreakClock.Tenths === 0)
+                        )
+                    )) {
+
+                    console.log(state.Scoreboard.JamClock.Tenths + ":" + state.Scoreboard.GameClock.Tenths + ":" + state.Scoreboard.BreakClock.Tenths);
+
+                    //ensure the state of the clock is not set to run, otherwise receiving
+                    //peers will run the clock, too.
+                    const value = {...state.Scoreboard};
+                    value.GameClock = {...value.GameClock, Status:ClockStatus.STOPPED};
+                    value.JamClock = {...value.JamClock, Status:ClockStatus.STOPPED};
+                    value.BreakClock = {...value.BreakClock, Status:ClockStatus.STOPPED};
+    
+                    //ensure any media files are prefixed with http so they are served
+                    //by the internal server.
+    
+                    //send
+                    PeerManager.sendData({
+                        app:'SB',
+                        data:value,
+                        type:'state'
+                    });
+                }
+            }
+
+            if(scorekeeperState !== state.Scorekeeper) {
+                scorekeeperState = state.Scorekeeper;
+                CaptureIPC.Send({action:'scorekeeper', values:state.Scorekeeper}).then(ignore).catch(ignore);
+            }
+
+            if(slideshowState !== state.Slideshow) {
+                slideshowState = state.Slideshow;
+                CaptureIPC.Send({action:'slideshow', values:state.Slideshow}).then(ignore).catch(ignore);
+            }
+        } catch(er:any) {
+
         }
     };
 

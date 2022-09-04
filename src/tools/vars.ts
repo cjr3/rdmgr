@@ -539,10 +539,38 @@ export interface Peer extends __BaseRecord {
      * True if peer is sending streaming data (video/audio)
      */
     Streaming?:boolean;
+    /**
+     * Application codes to receive data automatically from peer.
+     */
     ReceiveApplications?:string[];
+    /**
+     * Application codes to send data to automatically send to peer.
+     */
     SendApplications?:string[];
 };
 export type PeerCollection = {[key:string]:Peer};
+
+/**
+ * Describes data to send and receive between peers
+ */
+export interface PeerData {
+    /**
+     * 
+     */
+    app?:string;
+    /**
+     * 
+     */
+    data?:any;
+    /**
+     * 
+     */
+    message?:string;
+    /**
+     * 
+     */
+    type?:string;
+}
 
 export interface Penalty extends __BaseRecord {
     PenaltyType?:'P'|'X'|null;

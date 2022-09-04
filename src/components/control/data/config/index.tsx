@@ -1,7 +1,7 @@
 import { IconSave, IconX } from 'components/common/icons';
 import { ColorPicker } from 'components/common/inputs/colorpicker';
 import { MediaItem } from 'components/common/inputs/mediaitem';
-import { ipcRenderer } from 'electron';
+import { BrowserWindow, ipcRenderer } from 'electron';
 import React from 'react';
 import { Capture } from 'tools/capture/functions';
 import Data from 'tools/data';
@@ -592,6 +592,28 @@ class ConfigForm extends React.PureComponent<Props, State> {
                         </tr>
                     </tbody>
                 </table>
+                <p style={{borderTop:'dotted 1px #999999',color:'#999999',fontSize:'0.8rem'}}>
+                    Roller Derby Manager (RDMGR) &copy; Copyright Carl J. Roberts 2016-2022. 
+                    <button
+                        style={{
+                            color:'#999999',
+                            border:'none',
+                            background:'transparent',
+                            textDecoration:'underline'
+                        }}
+                        onClick={ev => {
+                            ev.stopPropagation();
+                            ev.preventDefault();
+                            try {
+                                BrowserWindow.getFocusedWindow()?.webContents.openDevTools();
+                            } catch(er:any) {
+
+                            }
+                        }}
+                    >
+                        Open Dev Tools
+                    </button>
+                </p>
             </div>
             <div className='buttons'>
                 <IconSave asButton={true} onClick={this.onClickSubmit}>Submit</IconSave>

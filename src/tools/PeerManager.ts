@@ -1,7 +1,7 @@
 import { CallOption, DataConnection, MediaConnection, Peer, PeerConnectOption } from "peerjs";
 import { Unsubscribe } from "redux";
 import { MainController } from "./MainController";
-import { Peer as PeerRecord } from './vars';
+import { Peer as PeerRecord, PeerData } from './vars';
 
 //1 : Create local peer
 //2 : For each peer we want to connect to (manually) create a Peer object
@@ -38,6 +38,11 @@ class Manager  {
     readonly LocalMediaConnections:{[key:string]:MediaConnection|undefined} = {};
 
     /**
+     * Current peer records
+     */
+    protected PeerRecords:PeerRecord[] = [];
+
+    /**
      * Collection of peer objects, where the key is the remote peer's id.
      * These are peer objects pointing to the remote machine.
      */
@@ -55,8 +60,16 @@ class Manager  {
      */
     readonly RemoteMediaConnections:{[key:string]:MediaConnection|undefined} = {};
 
-    constructor() {
+    protected remote?:Unsubscribe;
 
+    /**
+     * Timestamp when peer records were last updated.
+     * Not the same timestamp when peer status is updated.
+     */
+    protected PeerUpdateTime:number = 0;
+
+    constructor() {
+        this.remote = MainController.Subscribe(this.updatePeerRecords);
     }
 
     /**
@@ -348,6 +361,13 @@ class Manager  {
     }
 
     /**
+     * Force reload the peer records.
+     */
+    load = () => {
+        this.PeerRecords = Object.values(MainController.GetState().Peers);
+    }
+
+    /**
      * Called when the local peer is destroyed
      */
     protected onLocalClose = () => {
@@ -391,6 +411,46 @@ class Manager  {
     protected onLocalOpen = () => {
         console.log('onLocalOpen');
         this.update();
+    }
+
+    /**
+     * Handle received data.
+     * @param id Peer Name
+     * @param data message data
+     */
+    protected onReceiveData = async (id:string, data:any) => {
+        try {
+            let values:PeerData|undefined = undefined;
+            if(typeof(data) === 'string')
+                values = JSON.parse(data);
+            else if(typeof(data) === 'object' && data !== null)
+                values = data;
+
+            if(values && values.type) {
+                switch(values.type) {
+                    //copy state
+                    case 'state' :
+                        if(values.app && values.data) {
+                            switch(values.app) {
+                                //scoreboard state
+                                case 'SB' :
+                                    MainController.UpdateScoreboardState(values.data);
+                                break;
+                            }
+                        }
+                    break;
+
+                    //receive chat message
+                    case 'message' : 
+                        if(values.message) {
+                            //add message to chat state
+                        }
+                    break;
+                }
+            }
+        } catch(er:any) {
+
+        }
     }
 
     /**
@@ -465,6 +525,71 @@ class Manager  {
         }
 
         return false;
+    }
+
+    /**
+     * Send data to all listening peers.
+     * @param data 
+     * @param id Peer id to send to if applicable; otherwise, will send to all peers configured to send data to.
+     */
+    sendData = async (data:PeerData, id:string = '') => {
+        try {
+            if(id) {
+                let dc = this.getDataConnection(id);
+                if(dc) {
+                    this.sendDataToPeer(data, dc, id);
+                }
+            } else {
+                for(let key in this.LocalDataConnections) {
+                    let dc = this.LocalDataConnections[key];
+                    if(dc) {
+                        this.sendDataToPeer(data, dc, key);
+                    }
+                }
+
+                for(let key in this.RemoteDataConnections) {
+                    let dc = this.RemoteDataConnections[key];
+                    if(dc) {
+                        this.sendDataToPeer(data, dc, key);
+                    }
+                }
+            }
+        } catch(er:any) {
+
+        }
+    }
+
+    /**
+     * Send data to a peer.
+     * @param data 
+     * @param dc
+     * @param id 
+     */
+    protected sendDataToPeer = async (data:PeerData, dc:DataConnection, id:string) => {
+        try {
+            if(data && dc && dc.open && id) {
+                switch(data.type) {
+                    case 'state' :
+                        if(data.app && data.data) {
+                            // console.log(this.PeerRecords)
+                            const pr = this.PeerRecords.find(p => p.Name === id);
+                            // console.log(pr);
+                            if(pr && pr.SendApplications && pr.SendApplications.indexOf(data.app) >= 0) {
+                                dc.send(data);
+                            }
+                        }
+                    break;
+
+                    case 'message' :
+                        if(data.message) {
+                            dc.send(data);
+                        }
+                    break;
+                }
+            }
+        } catch(er:any) {
+
+        }
     }
 
     /**
@@ -567,6 +692,16 @@ class Manager  {
     }
 
     private update = () => MainController.SetPeerConnectionTime();
+
+    /**
+     * Update peer records when updated
+     */
+    protected updatePeerRecords = () => {
+        const mstate = MainController.GetState();
+        if(mstate.UpdateTimePeers !== this.PeerUpdateTime) {
+            this.PeerRecords = Object.values(mstate.Peers);
+        }
+    }
 }
 
 const PeerManager = new Manager();

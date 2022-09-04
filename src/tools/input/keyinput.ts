@@ -1,3 +1,4 @@
+import { openDevTools } from "electron-debug";
 import keycodes from "tools/keycodes";
 import { Scoreboard } from "tools/scoreboard/functions";
 import { ScoreboardStatus, ScoreboardTeamStatus } from "tools/vars";
