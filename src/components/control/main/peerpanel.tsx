@@ -163,15 +163,6 @@ class PeerPanel extends React.PureComponent<Props, State> {
                                 {
                                     (dataConnected) &&
                                     <>
-                                        <button
-                                            onClick={ev => {
-                                                ev.stopPropagation();
-                                                ev.preventDefault();
-                                                if(dc) {
-                                                    dc.send(JSON.stringify({message:'Hello!'}))
-                                                }
-                                            }}
-                                            >Send</button>
                                         <IconOnline
                                             title='Connected. Ctrl+Click to disconnect.'
                                             onClick={ev => {

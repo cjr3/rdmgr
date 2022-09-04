@@ -18,7 +18,7 @@ if(process.env.NODE_ENV === 'development') {
 /**
  * Data file folder
  */
-const FOLDER_DATA = FOLDER_MAIN + '/records';
+const FOLDER_DATA = FOLDER_MAIN + '/records'.replace('C:', 'c:')
 
 /**
  * Media / uploads folder
@@ -146,6 +146,9 @@ const FILE_STATE_SCOREKEEPER = FOLDER_DATA + '/state.scorekeeper.json';
 const FILE_STATE_SLIDESHOW = FOLDER_DATA + '/state.slideshow.json';
 
 const mediaRX = new RegExp(FOLDER_MEDIA, 'ig');
+
+//needed for windows compatibility with backslash
+const FOLDER_MEDIA_FWS = FOLDER_MEDIA.replace(/\//ig, '\\').replace('C:', 'c:');
 
 /**
  * Check that the given directory exists, and create it if it doesn't.
@@ -320,7 +323,7 @@ const __WriteFile = async (filename:string, content:string|Buffer) : Promise<boo
  * @param filename 
  * @returns 
  */
-const GetMediaPath = (filename:string, prefix:string = '') : string => {
+export const GetMediaPath = (filename:string, prefix:string = '') : string => {
     if(filename && filename.length) {
         const name = filename.toLowerCase();
         if(name.search(mediaRX) === 0) {
@@ -339,7 +342,32 @@ const GetMediaPath = (filename:string, prefix:string = '') : string => {
     }
 
     return '';
-}
+};
+
+/**
+ * Remove media path from the given url
+ * @param src 
+ * @returns 
+ */
+export const RemoveMediaPath = (src?:string|null) => {
+
+    // console.log(FOLDER_MEDIA_FWS);
+    if(typeof(src) !== 'string' || src === '')
+        return '';
+    if(src.indexOf('http://') === 0 || src.indexOf('https://') === 0)
+        return src;
+
+    if(src && src.startsWith('C:'))
+        src = src.replace('C:', 'c:');
+    // console.log(FOLDER_MEDIA);
+    if(typeof(src) === "string" && src.indexOf(FOLDER_MEDIA) >= 0)
+        return src.replace(FOLDER_MEDIA, '');
+    if(typeof(src) === 'string' && src.indexOf(FOLDER_MEDIA_FWS) >= 0) {
+        // console.log(src);
+        return src.replace(FOLDER_MEDIA_FWS, '');
+    }
+    return src;
+};
 
 /**
  * 

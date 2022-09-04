@@ -1,7 +1,11 @@
 import { CallOption, DataConnection, MediaConnection, Peer, PeerConnectOption } from "peerjs";
 import { Unsubscribe } from "redux";
+import { RemoveMediaPath } from "./data";
 import { MainController } from "./MainController";
-import { Peer as PeerRecord, PeerData } from './vars';
+import { BreakClock } from "./scoreboard/breakclock";
+import { GameClock } from "./scoreboard/gameclock";
+import { JamClock } from "./scoreboard/jamclock";
+import { Peer as PeerRecord, PeerData, SScoreboard } from './vars';
 
 //1 : Create local peer
 //2 : For each peer we want to connect to (manually) create a Peer object
@@ -31,6 +35,9 @@ class Manager  {
      * Data connection objects for locally connected peers.
      */
     readonly LocalDataConnections:{[key:string]:DataConnection|undefined} = {};
+
+    protected LocalIPAddress:string = '';
+    protected LocalPort:number = 0;
 
     /**
      * Media connection objects for locally connected peers.
@@ -70,6 +77,35 @@ class Manager  {
 
     constructor() {
         this.remote = MainController.Subscribe(this.updatePeerRecords);
+        this.LocalIPAddress = MainController.GetState().LocalIPAddress;
+    }
+
+    /**
+     * 
+     * @param path 
+     * @returns 
+     */
+    protected addAPIPath = (path:string) : string => {
+        if(path 
+            && !path.startsWith('http://')
+            && !path.startsWith('https://')
+            && this.LocalIPAddress 
+            && this.LocalPeerRecord 
+            && this.LocalPeerRecord.Port) {
+            let url = 'http://' + this.LocalIPAddress + ':' + this.LocalPeerRecord.Port + '/api/';
+            if(path.search(/(.*?)\.{1}(png|jpg|jpeg|gif){1}$/) >= 0) {
+                url += 'image/' + RemoveMediaPath(path);
+            }
+
+            //condition for other file types
+            //videos ???
+
+            //replace backslash with forward slash
+            url = url.replace(/\//ig, '/');
+
+            return url;
+        }
+        return path;
     }
 
     /**
@@ -96,43 +132,43 @@ class Manager  {
                 });
 
                 peer.on('call', (mc:MediaConnection) => {
-                    console.log(id + ':call');
+                    // console.log(id + ':call');
                     this.setMediaConnection(id, mc);
                 });
 
                 peer.on('close', () => {
-                    console.log(id + ':close');
+                    // console.log(id + ':close');
                     this.destroyPeer(id);
                     this.update();
                 });
 
                 peer.on('connection', (dc:DataConnection) => {
-                    console.log(id + ':connection');
+                    // console.log(id + ':connection');
                     this.setDataConnection(id, dc);
                 });
 
                 peer.on('disconnected', () => {
-                    console.log(id + ':disconnected');
+                    // console.log(id + ':disconnected');
                     this.destroyPeer(id);
                     this.update();
                 });
 
                 peer.on('error', (err:any) => {
-                    console.log(id + ':error');
-                    console.error(err);
-                    console.error(err.type);
-                    console.error(err.message);
+                    // console.log(id + ':error');
+                    // console.error(err);
+                    // console.error(err.type);
+                    // console.error(err.message);
                     this.destroyPeer(id);
                     this.update();
                 });
 
                 peer.on('open', () => {
-                    console.log(id + ':open');
+                    // console.log(id + ':open');
                     this.openDataConnection(id);
                 });
 
                 this.RemotePeers[id] = peer;
-                console.log('peer ' + id + ' created');
+                // console.log('peer ' + id + ' created');
                 this.update();
                 return peer;
             }
@@ -145,7 +181,7 @@ class Manager  {
      * Closes all connections including local.
      */
     closeAll = () => {
-        console.log('closeAll');
+        // console.log('closeAll');
         const local = this.getMyLocalPeer();
         if(local) {
             local.disconnect();
@@ -210,7 +246,7 @@ class Manager  {
             const id = this.LocalPeerRecord.Name;
             //this.destroyPeer(id);
 
-            console.log(`start local:${this.LocalPeerRecord.Host}:${this.LocalPeerRecord.Port}:${id}`)
+            // console.log(`start local:${this.LocalPeerRecord.Host}:${this.LocalPeerRecord.Port}:${id}`)
             const peer = new Peer(id, {
                 host:this.LocalPeerRecord.Host,
                 port:this.LocalPeerRecord.Port,
@@ -236,7 +272,7 @@ class Manager  {
      * @param id
      */
     connectToPeer = (id:string) => {
-        console.log('connectToPeer: ' + id);
+        // console.log('connectToPeer: ' + id);
         try {
             let peer = this.getPeer(id);
 
@@ -257,7 +293,7 @@ class Manager  {
      * @param id 
      */
     destroyPeer = (id:string) => {
-        console.log('destroyPeer: ' + id);
+        // console.log('destroyPeer: ' + id);
         try {
             let peer = this.LocalPeers[id];
             if(peer && !peer.destroyed) {
@@ -365,13 +401,14 @@ class Manager  {
      */
     load = () => {
         this.PeerRecords = Object.values(MainController.GetState().Peers);
+        this.LocalIPAddress = MainController.GetState().LocalIPAddress;
     }
 
     /**
      * Called when the local peer is destroyed
      */
     protected onLocalClose = () => {
-        console.log('onLocalClose');
+        // console.log('onLocalClose');
         const peer = this.getMyLocalPeer();
         if(peer && peer.id) {
             this.destroyPeer(peer.id);
@@ -382,7 +419,7 @@ class Manager  {
      * Called when the local peer has disconnected from its own server
      */
     protected onLocalDisconnected = () => {
-        console.log('onLocalDisconnected');
+        // console.log('onLocalDisconnected');
         const peer = this.getMyLocalPeer();
         if(peer && peer.id) {
             this.destroyPeer(peer.id);
@@ -396,8 +433,8 @@ class Manager  {
      * @param err 
      */
     protected onLocalError = (err:any) => {
-        console.log('onLocalError');
-        console.error(err);
+        // console.log('onLocalError');
+        // console.error(err);
         const peer = this.getMyLocalPeer();
         if(peer && peer.id) {
             this.destroyPeer(peer.id);
@@ -409,7 +446,7 @@ class Manager  {
      * Called when the local peer connects to its local server.
      */
     protected onLocalOpen = () => {
-        console.log('onLocalOpen');
+        // console.log('onLocalOpen');
         this.update();
     }
 
@@ -420,7 +457,10 @@ class Manager  {
      */
     protected onReceiveData = async (id:string, data:any) => {
         try {
+            // console.log(id);
+            // console.log(data);
             let values:PeerData|undefined = undefined;
+            const pr = this.PeerRecords.find(r => r.Name === id);
             if(typeof(data) === 'string')
                 values = JSON.parse(data);
             else if(typeof(data) === 'object' && data !== null)
@@ -430,11 +470,39 @@ class Manager  {
                 switch(values.type) {
                     //copy state
                     case 'state' :
-                        if(values.app && values.data) {
+                        if(values.app && values.data && pr && pr.ReceiveApplications && pr.ReceiveApplications.indexOf(values.app) >= 0) {
                             switch(values.app) {
                                 //scoreboard state
                                 case 'SB' :
-                                    MainController.UpdateScoreboardState(values.data);
+                                    try {
+                                        const state:SScoreboard = values.data;
+                                        // console.log(state);
+                                        MainController.UpdateScoreboardState(state);
+                                        //update clocks separately
+                                        if(state.GameClock) {
+                                            GameClock.set(state.GameClock.Hours || 0, 
+                                                state.GameClock.Minutes || 0,
+                                                state.GameClock.Seconds || 0,
+                                                state.GameClock.Tenths || 0);
+                                        }
+
+                                        if(state.JamClock) {
+                                            JamClock.set(state.JamClock.Hours || 0, 
+                                                state.JamClock.Minutes || 0,
+                                                state.JamClock.Seconds || 0,
+                                                state.JamClock.Tenths || 0);
+                                        }
+
+                                        if(state.BreakClock) {
+                                            BreakClock.set(state.BreakClock.Hours || 0, 
+                                                state.BreakClock.Minutes || 0,
+                                                state.BreakClock.Seconds || 0,
+                                                state.BreakClock.Tenths || 0);
+                                        }
+
+                                    } catch(er) {
+                                        console.error(er);
+                                    }
                                 break;
                             }
                         }
@@ -458,7 +526,7 @@ class Manager  {
      * @param mc 
      */
     private onRemoteCall = (mc:MediaConnection) => {
-        console.log('onRemoteCall: ' + mc.peer);
+        // console.log('onRemoteCall: ' + mc.peer);
         if(mc && mc.peer) {
             this.setMediaConnection(mc.peer, mc);
         }
@@ -469,7 +537,7 @@ class Manager  {
      * @param dc 
      */
     protected onRemoteConnection = (dc:DataConnection) => {
-        console.log('onRemoteConnection: ' + dc.peer);
+        // console.log('onRemoteConnection: ' + dc.peer);
         if(dc && dc.peer) {
             this.setDataConnection(dc.peer, dc);
         }
@@ -483,7 +551,7 @@ class Manager  {
      */
     openDataConnection = (id:string, options?:PeerConnectOption) : boolean => {
         let peer = this.getPeer(id);
-        console.log('openDataConnection: ' + id);
+        // console.log('openDataConnection: ' + id);
         if(!peer)
             peer = this.createPeer(id);
 
@@ -507,7 +575,7 @@ class Manager  {
      * @returns 
      */
     openMediaConnection = (id:string, stream?:MediaStream, options?:CallOption) : boolean => {
-        console.log('openMediaConnection: ' + id);
+        // console.log('openMediaConnection: ' + id);
         let peer = this.getPeer(id);
         if(!stream)
             return false;
@@ -571,10 +639,37 @@ class Manager  {
                 switch(data.type) {
                     case 'state' :
                         if(data.app && data.data) {
-                            // console.log(this.PeerRecords)
                             const pr = this.PeerRecords.find(p => p.Name === id);
-                            // console.log(pr);
+
                             if(pr && pr.SendApplications && pr.SendApplications.indexOf(data.app) >= 0) {
+                                //adjust media to use API
+                                switch(data.app) {
+                                    case 'SB' : {
+                                        const state:SScoreboard = structuredClone(data.data);
+                                        if(state && state.TeamA && state.TeamA.Logo) {
+                                            state.TeamA.Logo = this.addAPIPath(state.TeamA.Logo);
+                                        }
+
+                                        if(state && state.TeamA && state.TeamA.ScoreboardThumbnail) {
+                                            state.TeamA.ScoreboardThumbnail = this.addAPIPath(state.TeamA.ScoreboardThumbnail);
+                                        }
+
+                                        if(state && state.TeamB && state.TeamB.Logo) {
+                                            state.TeamB.Logo = this.addAPIPath(state.TeamB.Logo);
+                                        }
+
+                                        if(state && state.TeamB && state.TeamB.ScoreboardThumbnail) {
+                                            state.TeamB.ScoreboardThumbnail = this.addAPIPath(state.TeamB.ScoreboardThumbnail);
+                                        }
+
+                                        // console.log(state);
+
+                                        data.data = state;
+                                    }
+                                    break;
+                                }
+
+                                // console.log(data);
                                 dc.send(data);
                             }
                         }
@@ -588,7 +683,7 @@ class Manager  {
                 }
             }
         } catch(er:any) {
-
+            console.error(er);
         }
     }
 
@@ -598,10 +693,12 @@ class Manager  {
      * @param dc 
      */
     setDataConnection = (id:string, dc:DataConnection) => {
-        console.log('setDataConnection: ' + id);
-        const current = this.getDataConnection(id);
-        if(current && current.open)
-            return;
+        // console.log('setDataConnection: ' + id);
+        // const current = this.getDataConnection(id);
+        // if(current && current.open) {
+        //     console.log('currently open');
+        //     return;
+        // }
         this.createPeer(id);
         if(this.isRemotePeer(id))
             this.RemoteDataConnections[id] = dc;
@@ -609,29 +706,30 @@ class Manager  {
             this.LocalDataConnections[id] = dc;
 
         dc.on('close', () => {
-            console.log('dc:close:' + id);
+            // console.log('dc:close:' + id);
             this.destroyPeer(id);
             this.update();
         });
 
         dc.on('data', (data:any) => {
-            console.log('dc:data:' + id);
-            console.log(data);
+            // console.log('dc:data:' + id);
+            // console.log(data);
+            this.onReceiveData(id, data);
         });
 
         dc.on('error', (err:any) => {
-            console.error('dc:error:' + id);
-            console.error(err);
+            // console.error('dc:error:' + id);
+            // console.error(err);
             this.update();
         });
 
         dc.on('iceStateChanged', () => {
-            console.log('dc:iceStateChanged:' + id);
+            // console.log('dc:iceStateChanged:' + id);
             this.update();
         })
 
         dc.on('open', () => {
-            console.log('dc:open:' + id);
+            // console.log('dc:open:' + id);
             this.update();
         })
 
@@ -643,7 +741,7 @@ class Manager  {
      * @param record 
      */
     setLocalRecord = (record:PeerRecord) => {
-        console.log('setLocalRecord: ' + record.Name);
+        // console.log('setLocalRecord: ' + record.Name);
         this.LocalPeerRecord = record;
         this.update();
     }
@@ -654,7 +752,7 @@ class Manager  {
      * @param mc 
      */
     setMediaConnection = (id:string, mc:MediaConnection) => {
-        console.log('setMediaConnection: ' + id);
+        // console.log('setMediaConnection: ' + id);
         const current = this.getMediaConnection(id);
         if(current && current.open)
             return;
@@ -665,26 +763,26 @@ class Manager  {
             this.LocalMediaConnections[id] = mc;
 
         mc.on('close', () => {
-            console.log('mc:close:' + id);
+            // console.log('mc:close:' + id);
             this.LocalMediaConnections[id] = undefined;
             this.RemoteMediaConnections[id] = undefined;
             this.update();
         });
 
         mc.on('error', (err:any) => {
-            console.log('mc:error:' + id);
-            console.error(err);
+            // console.log('mc:error:' + id);
+            // console.error(err);
             this.update();
         })
 
         mc.on('iceStateChanged', () => {
-            console.log('mc:iceStateChanged:' + id);
+            // console.log('mc:iceStateChanged:' + id);
             this.update();
         })
 
         mc.on('stream', (ms:MediaStream) => {
-            console.log('mc:stream:' + id);
-            console.log(ms);
+            // console.log('mc:stream:' + id);
+            // console.log(ms);
             this.update();
         });
 
@@ -699,7 +797,14 @@ class Manager  {
     protected updatePeerRecords = () => {
         const mstate = MainController.GetState();
         if(mstate.UpdateTimePeers !== this.PeerUpdateTime) {
+            this.LocalIPAddress = mstate.LocalIPAddress;
             this.PeerRecords = Object.values(mstate.Peers);
+            const lp = this.PeerRecords.find(r => r.Host === '127.0.0.1' && r.Name && r.Port);
+            if(lp) {
+                this.LocalPeerRecord = lp;
+            }
+
+            this.PeerUpdateTime = mstate.UpdateTimePeers;
         }
     }
 }

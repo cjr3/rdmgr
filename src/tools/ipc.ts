@@ -16,7 +16,7 @@ import { JamClock } from "./scoreboard/jamclock";
 import { Scorekeeper } from "./scorekeeper/functions";
 import { Slideshow } from "./slideshows/functions";
 import { UIController } from "./UIController";
-import { CaptureAction, ClockStatus, ControlAction } from "./vars";
+import { CaptureAction, ClockStatus, ControlAction, SScoreboard } from "./vars";
 import { Videos } from "./videos/functions";
 
 const ignore = () => {};
@@ -220,22 +220,19 @@ namespace ControlIPC {
                         )
                         //break clock is running and at .0 or .9
                         || (
-                            BreakClock.Status === ClockStatus.RUNNING &&
+                            BreakClock.Status === ClockStatus.RUNNING ||
                             (BreakClock.Tenths === 9 || BreakClock.Tenths === 0)
                         )
                     )) {
 
-                    console.log(state.Scoreboard.JamClock.Tenths + ":" + state.Scoreboard.GameClock.Tenths + ":" + state.Scoreboard.BreakClock.Tenths);
+                    // console.log(state.Scoreboard.JamClock.Tenths + ":" + state.Scoreboard.GameClock.Tenths + ":" + state.Scoreboard.BreakClock.Tenths);
 
                     //ensure the state of the clock is not set to run, otherwise receiving
                     //peers will run the clock, too.
-                    const value = {...state.Scoreboard};
+                    const value:SScoreboard = {...state.Scoreboard};
                     value.GameClock = {...value.GameClock, Status:ClockStatus.STOPPED};
                     value.JamClock = {...value.JamClock, Status:ClockStatus.STOPPED};
                     value.BreakClock = {...value.BreakClock, Status:ClockStatus.STOPPED};
-    
-                    //ensure any media files are prefixed with http so they are served
-                    //by the internal server.
     
                     //send
                     PeerManager.sendData({
