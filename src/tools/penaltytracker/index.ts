@@ -1,4 +1,4 @@
-import {SMainController, SkaterPenalty, SPenaltyTracker} from '../vars';
+import {SMainController, SkaterPenalty, SPenaltyTracker, SScoreboard} from '../vars';
 
 /**
  * Reset the penalty tracker.
@@ -22,7 +22,7 @@ export const Reset = (state:SMainController) : SMainController => {
  * @param skaterId 
  * @param penaltyId 
  */
-export const TogglePenalty = (state:SMainController, skaterId:number, penaltyId:number) : SMainController => {
+export const TogglePenalty = (state:SMainController, jamNumber:number, skaterId:number, penaltyId:number) : SMainController => {
     if(skaterId <= 0 || penaltyId <= 0)
         return state;
     const skater = state.Skaters[`R-${skaterId}`];
@@ -31,7 +31,7 @@ export const TogglePenalty = (state:SMainController, skaterId:number, penaltyId:
         return state;
     const records = state.PenaltyTracker.Skaters.slice();
     const index = records.findIndex(r => r.RecordID === skaterId);
-    const jamNumber = state.Scoreboard.JamNumber || 0;
+    // const jamNumber = sstate.JamNumber || 0;
     if(index >= 0) {
         const record = records[index];
         record.JamNumber = jamNumber;
@@ -73,12 +73,12 @@ export const TogglePenalty = (state:SMainController, skaterId:number, penaltyId:
  * @param skaterId 
  * @returns 
  */
-export const ToggleSkater = (state:SMainController, skaterId:number) : SMainController => {
+export const ToggleSkater = (state:SMainController, jamNumber:number, skaterId:number) : SMainController => {
     const records = state.PenaltyTracker.Skaters.slice();
     const index = records.findIndex(r => r.RecordID === skaterId);
     if(index < 0) {
         records.push({
-            JamNumber:state.Scoreboard.JamNumber || 0,
+            JamNumber:jamNumber || 0,
             Penalties:[],
             Codes:[],
             RecordID:skaterId

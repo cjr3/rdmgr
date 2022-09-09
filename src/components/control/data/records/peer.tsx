@@ -13,6 +13,7 @@ interface Props {
 interface State {
     host:string;
     port:number;
+    mediaAPIHost:boolean;
     receive:string[];
     send:string[];
 }
@@ -23,6 +24,7 @@ interface AppRecord {
 }
 
 const apps:AppRecord[] = [
+    {name:'Clocks', code:'CLK'},
     {name:'Penalty Tracker', code:'PT'},
     {name:'Raffle', code:'RAF'},
     {name:'Roster', code:'ROS'},
@@ -37,23 +39,50 @@ class Main extends React.PureComponent<Props, State> {
     readonly state:State = {
         host:'',
         port:49152,
+        mediaAPIHost:false,
         receive:[],
         send:[]
     }
 
+    /**
+     * 
+     */
     protected load = () => {
         const record = Peers.Get(this.props.recordId);
         // console.log(record);
         this.setState({
             host:record?.Host || '',
             port:record?.Port || 49152,
+            mediaAPIHost:record?.MediaAPIHost || false,
             receive:record?.ReceiveApplications || [],
             send:record?.SendApplications || []
         })
     }
 
+    /**
+     * 
+     * @param value 
+     * @returns 
+     */
     protected onChangeHost = (value:string) => this.setState({host:value});
+
+    /**
+     * 
+     * @returns 
+     */
+    protected onChangeMediaAPIHost = () => this.setState({mediaAPIHost:!this.state.mediaAPIHost});
+
+    /**
+     * 
+     * @param value 
+     * @returns 
+     */
     protected onChangePort = (value:number) => this.setState({port:value});
+
+    /**
+     * 
+     * @param code 
+     */
     protected onSelectReceive = (code:string) => {
         const records = this.state.receive.slice();
         const index = records.indexOf(code);
@@ -64,6 +93,10 @@ class Main extends React.PureComponent<Props, State> {
         this.setState({receive:records});
     }
 
+    /**
+     * 
+     * @param code 
+     */
     protected onSelectSend = (code:string) => {
         const records = this.state.send.slice();
         const index = records.indexOf(code);
@@ -74,6 +107,11 @@ class Main extends React.PureComponent<Props, State> {
         this.setState({send:records});
     }
 
+    /**
+     * 
+     * @param values 
+     * @returns 
+     */
     protected onBeforeSubmit = (values:Peer) : Peer => {
         let port = this.state.port;
         if(port <= 1024)
@@ -86,6 +124,7 @@ class Main extends React.PureComponent<Props, State> {
             ...values,
             Host:this.state.host,
             Port:this.state.port,
+            MediaAPIHost:this.state.mediaAPIHost,
             ReceiveApplications:this.state.receive,
             SendApplications:this.state.send
         }
@@ -138,6 +177,20 @@ class Main extends React.PureComponent<Props, State> {
                         />
                     </div>
                     <p style={{margin:'6px 0px'}}>Enter 127.0.0.1 for your local server record.</p>
+                </td>
+            </tr>
+            <tr>
+                <td>Media</td>
+                <td>
+                    <label className='form-control' style={{height:'auto'}}>
+                        <input
+                            type='checkbox'
+                            checked={this.state.mediaAPIHost}
+                            onChange={this.onChangeMediaAPIHost}
+                            style={{flex:'0 0 48px'}}
+                        />
+                        Load media from this peer when receiving data for the associated application.
+                    </label>
                 </td>
             </tr>
             <tr>

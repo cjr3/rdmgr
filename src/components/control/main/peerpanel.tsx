@@ -34,6 +34,14 @@ interface State {
      */
     localPort:number;
     /**
+     * IP / Host for media content
+     */
+    mediaApiHost:string;
+    /**
+     * Media API Port
+     */
+    mediaApiPort:number;
+    /**
      * Available peers
      */
     peers:PeerRecord[];
@@ -53,6 +61,8 @@ class PeerPanel extends React.PureComponent<Props, State> {
         localIp:'',
         localId:'',
         localPort:0,
+        mediaApiHost:'',
+        mediaApiPort:0,
         peers:[],
         updateTime:0
     }

@@ -1,7 +1,8 @@
-import { AnthemSinger, ClockState, ClockStatus, DeckChoice, Peer, Penalty, Phase, RaffleTicket, RecordType, SAnthem, ScoreboardStatus, ScoreboardTeam, ScorekeeperPosition, Season, Skater, SkaterRoster, Slideshow, SMainController, SMediaQueue, SPenaltyTracker, Sponsor, SRaffle, SRoster, SScoreboard, SScorekeeper, SSlideshow, Team, TeamSide, Video, __BaseRecord } from "./vars";
+import { AnthemSinger, ClockState, ClockStatus, DeckChoice, Peer, Penalty, Phase, RaffleTicket, RecordType, SAnthem, SClock, ScoreboardStatus, ScoreboardTeam, ScorekeeperPosition, Season, Skater, SkaterRoster, Slideshow, SMainController, SMediaQueue, SPenaltyTracker, Sponsor, SRaffle, SRoster, SScoreboard, SScorekeeper, SSlideshow, Team, TeamSide, Video, __BaseRecord } from "./vars";
 import { createStore, Unsubscribe } from "redux";
 import * as AnnouncerRecords from './announcers';
 import * as Anthem from "./anthem";
+import * as Clocks from './clocks/store';
 import * as Penalties from './penalties'
 import * as PenaltyTracker from './penaltytracker';
 import * as Phases from './phases';
@@ -66,6 +67,7 @@ enum Actions {
     TOGGLE_SKATER_PENALTY,
     UPDATE_ROSTER_SKATER,
     WRITE_ANTHEM_SINGERS,
+    WRITE_CLOCKS,
     WRITE_PEERS,
     WRITE_PENALTIES,
     WRITE_PHASES,
@@ -76,6 +78,68 @@ enum Actions {
     WRITE_TEAMS,
     WRITE_VIDEOS
 }
+
+const InitClocks:SClock = {
+    BreakHour:0,
+    BreakMinute:0,
+    BreakSecond:0,
+    BreakStatus:ClockStatus.STOPPED,
+    GameHour:0,
+    GameMinute:0,
+    GameSecond:0,
+    GameStatus:ClockStatus.STOPPED,
+    JamHour:0,
+    JamMinute:0,
+    JamSecond:0,
+    JamStatus:0
+};
+
+const InitScoreboard:SScoreboard = {
+    BoardStatus:ScoreboardStatus.NORMAL,
+    // BreakClock:{
+    //     Hours:0,
+    //     Minutes:0,
+    //     Seconds:30,
+    //     Status:ClockStatus.STOPPED,
+    //     Tenths:0
+    // },
+    ConfirmStatus:false,
+    DateEnd:'',
+    DateStart:'',
+    // GameClock:{
+    //     Hours:2,
+    //     Minutes:0,
+    //     Seconds:0,
+    //     Status:ClockStatus.STOPPED,
+    //     Tenths:0
+    // },
+    // JamClock:{
+    //     Hours:0,
+    //     Minutes:0,
+    //     Seconds:60,
+    //     Status:ClockStatus.STOPPED,
+    //     Tenths:0
+    // },
+    JamHour:0,
+    JamMinute:0,
+    JamNumber:0,
+    JamSecond:0,
+    PhaseIndex:0,
+    PhaseID:1,
+    PhaseHour:2,
+    PhaseMinute:0,
+    PhaseSecond:0,
+    PhaseName:'Setup',
+    TeamA:{
+        Name:'Team A',
+        Color:'#990000'
+    },
+    TeamB:{
+        Name:'Team B',
+        Color:'#000099'
+    },
+    UpdateTime:0
+};
 
 const InitState:SMainController = {
     Announcer1:{
@@ -211,51 +275,6 @@ const InitState:SMainController = {
         }
     },
     Seasons:{},
-    Scoreboard:{
-        BoardStatus:ScoreboardStatus.NORMAL,
-        BreakClock:{
-            Hours:0,
-            Minutes:0,
-            Seconds:30,
-            Status:ClockStatus.STOPPED,
-            Tenths:0
-        },
-        ConfirmStatus:false,
-        DateEnd:'',
-        DateStart:'',
-        GameClock:{
-            Hours:2,
-            Minutes:0,
-            Seconds:0,
-            Status:ClockStatus.STOPPED,
-            Tenths:0
-        },
-        JamClock:{
-            Hours:0,
-            Minutes:0,
-            Seconds:60,
-            Status:ClockStatus.STOPPED,
-            Tenths:0
-        },
-        JamHour:0,
-        JamMinute:0,
-        JamNumber:0,
-        JamSecond:0,
-        PhaseIndex:0,
-        PhaseID:1,
-        PhaseHour:2,
-        PhaseMinute:0,
-        PhaseSecond:0,
-        PhaseName:'Setup',
-        TeamA:{
-            Name:'Team A',
-            Color:'#990000'
-        },
-        TeamB:{
-            Name:'Team B',
-            Color:'#000099'
-        },
-    },
     Scorekeeper:{
         DeckA:{},
         DeckB:{},
@@ -304,6 +323,25 @@ const InitState:SMainController = {
     UpdateTimeVideos:0,
     Videos:{}
 };
+
+/**
+ * Clock reducer
+ * @param state 
+ * @param action 
+ * @returns 
+ */
+const ClockReducer = (state:SClock = InitClocks, action:any) : SClock => {
+    try {
+        switch(action.type) {
+            case Actions.WRITE_CLOCKS : return Clocks.UpdateClocks(state, action.values);
+            default : return state;
+        }
+    } catch(er) {
+
+    }
+
+    return state;
+}
 
 /**
  * 
@@ -357,11 +395,12 @@ const MainReducer = (state:SMainController = InitState, action:any) : SMainContr
 
             case Actions.SET_SEASONS : return Seasons.Set(state, action.records);
 
-            case Actions.SET_SCOREBOARD_BREAK_CLOCK : return Scoreboard.UpdateBreakClock(state, action.values);
-            case Actions.SET_SCOREBOARD_GAME_CLOCK : return Scoreboard.UpdateGameClock(state, action.values);
-            case Actions.SET_SCOREBOARD_JAM_CLOCK : return Scoreboard.UpdateJamClock(state, action.values);
-            case Actions.SET_SCOREBOARD_STATE : return Scoreboard.UpdateState(state, action.values);
-            case Actions.SET_SCOREBOARD_TEAM : return Scoreboard.UpdateTeam(state, action.side, action.values);
+            // 09/06/2022: Moved scoreboard to its own store.
+            // case Actions.SET_SCOREBOARD_BREAK_CLOCK : return Scoreboard.UpdateBreakClock(state, action.values);
+            // case Actions.SET_SCOREBOARD_GAME_CLOCK : return Scoreboard.UpdateGameClock(state, action.values);
+            // case Actions.SET_SCOREBOARD_JAM_CLOCK : return Scoreboard.UpdateJamClock(state, action.values);
+            // case Actions.SET_SCOREBOARD_STATE : return Scoreboard.UpdateState(state, action.values);
+            // case Actions.SET_SCOREBOARD_TEAM : return Scoreboard.UpdateTeam(state, action.side, action.values);
             case Actions.SET_SCOREKEEPER_POSITION : return Scorekeeper.SetPosition(state, action.side, action.record, action.deck, action.position);
             case Actions.SET_SCOREKEEPER_STATE : return Scorekeeper.Update(state, action.values);
             case Actions.SET_SKATERS : return SkaterRecords.Set(state, action.records);
@@ -374,8 +413,8 @@ const MainReducer = (state:SMainController = InitState, action:any) : SMainContr
 
             case Actions.SET_VIDEOS : return VideoRecords.Set(state, action.records);
 
-            case Actions.TOGGLE_PENALTY_SKATER : return PenaltyTracker.ToggleSkater(state, action.skaterId);
-            case Actions.TOGGLE_SKATER_PENALTY : return PenaltyTracker.TogglePenalty(state, action.skaterId, action.penaltyId);
+            case Actions.TOGGLE_PENALTY_SKATER : return PenaltyTracker.ToggleSkater(state, action.jamNumber, action.skaterId);
+            case Actions.TOGGLE_SKATER_PENALTY : return PenaltyTracker.TogglePenalty(state, action.jamNumber, action.skaterId, action.penaltyId);
 
             case Actions.UPDATE_ROSTER_SKATER : return Roster.UpdateRecord(state, action.values);
 
@@ -400,7 +439,28 @@ const MainReducer = (state:SMainController = InitState, action:any) : SMainContr
     return state;
 };
 
+/**
+ * Reducer for scoreboard, since it changes often.
+ * @param state 
+ * @param action 
+ * @returns 
+ */
+const ScoreboardReducer = (state:SScoreboard = InitScoreboard, action:any) : SScoreboard => {
+    try {
+        switch(action.type) {
+            case Actions.SET_SCOREBOARD_STATE : return Scoreboard.UpdateState(state, action.values);
+            default : return state;
+        }
+    } catch(er) {
+
+    }
+
+    return state;
+};
+
+const ClockStore = createStore(ClockReducer);
 const MainStore = createStore(MainReducer);
+const ScoreStore = createStore(ScoreboardReducer);
 
 class Controller {
 
@@ -463,6 +523,18 @@ class Controller {
             records:records
         });
     };
+
+    /**
+     * Main state of clock.
+     * @returns 
+     */
+    GetClockState = () : SClock => ClockStore.getState();
+
+    /**
+     * Get the current scoreboard state.
+     * @returns 
+     */
+    GetScoreboardState = () : SScoreboard => ScoreStore.getState();
     
     /**
      * Get the current state
@@ -483,7 +555,7 @@ class Controller {
             state.UpdateTimePenaltyTracker,
             state.UpdateTimeRaffle,
             state.UpdateTimeRoster,
-            state.UpdateTimeScoreboard,
+            // state.UpdateTimeScoreboard,
             state.UpdateTimeScorekeeper,
             state.UpdateTimeSkaters,
             state.UpdateTimeSlideshow,
@@ -833,12 +905,27 @@ class Controller {
     Subscribe = (f:{():void}) : Unsubscribe => MainStore.subscribe(f);
 
     /**
+     * Subscribe to changes for the clocks.
+     * @param f 
+     * @returns 
+     */
+    SubscribeClocks = (f:{():void}) : Unsubscribe => ClockStore.subscribe(f);
+
+    /**
+     * Subscribe to changes in the scoreboard store.
+     * @param f 
+     * @returns 
+     */
+    SubscribeScoreboard = (f:{():void}) : Unsubscribe => ScoreStore.subscribe(f);
+
+    /**
      * Add/remove a skater from the penalty tracker.
      * @param skaterId 
      */
     TogglePenaltySkater = (skaterId:number) => {
         MainStore.dispatch({
             type:Actions.TOGGLE_PENALTY_SKATER,
+            jamNumber:this.GetScoreboardState().JamNumber || 0,
             skaterId:skaterId
         });
     };
@@ -852,6 +939,7 @@ class Controller {
     ToggleSkaterPenalty = (skaterId:number, penaltyId:number) => {
         MainStore.dispatch({
             type:Actions.TOGGLE_SKATER_PENALTY,
+            jamNumber:this.GetScoreboardState().JamNumber || 0,
             skaterId:skaterId,
             penaltyId:penaltyId
         });
@@ -867,6 +955,17 @@ class Controller {
             values:values
         });
     };
+
+    /**
+     * Update the main clock store.
+     * @param values 
+     */
+    UpdateClockState = (values:SClock) => {
+        ClockStore.dispatch({
+            type:Actions.WRITE_CLOCKS,
+            values:values
+        })
+    }
 
     /**
      * 
@@ -925,37 +1024,55 @@ class Controller {
         });
     };
 
-    /**
-     * Update scoreboard break clock
-     * @param values 
-     * @returns 
-     */
-    UpdateScoreboardBreakClock = (values:ClockState) => {
-        // MainStore.dispatch({type:Actions.SET_SCOREBOARD_BREAK_CLOCK, values:values});
-        const state = MainController.GetState().Scoreboard;
-        this.UpdateScoreboardState({BreakClock:{...state.BreakClock, ...values}});
-    }
+    // /**
+    //  * Update scoreboard break clock
+    //  * @param values 
+    //  * @returns 
+    //  */
+    // UpdateScoreboardBreakClock = (values:ClockState) => {
+    //     this.UpdateClockState({
+    //         BreakHour:values.Hours,
+    //         BreakMinute:values.Minutes,
+    //         BreakSecond:values.Seconds,
+    //         BreakStatus:values.Status
+    //     });
+    //     // MainStore.dispatch({type:Actions.SET_SCOREBOARD_BREAK_CLOCK, values:values});
+    //     // const state = MainController.GetState().Scoreboard;
+    //     // this.UpdateScoreboardState({BreakClock:{...state.BreakClock, ...values}});
+    // }
 
-    /**
-     * Update scoreboard game clock
-     * @param values 
-     * @returns 
-     */
-    UpdateScoreboardGameClock = (values:ClockState) => {
-        //MainStore.dispatch({type:Actions.SET_SCOREBOARD_GAME_CLOCK, values:values});
-        const state = MainController.GetState().Scoreboard;
-        this.UpdateScoreboardState({GameClock:{...state.GameClock, ...values}});
-    }
+    // /**
+    //  * Update scoreboard game clock
+    //  * @param values 
+    //  * @returns 
+    //  */
+    // UpdateScoreboardGameClock = (values:ClockState) => {
+    //     this.UpdateClockState({
+    //         GameHour:values.Hours,
+    //         GameMinute:values.Minutes,
+    //         GameSecond:values.Seconds,
+    //         GameStatus:values.Status
+    //     });
+    //     //MainStore.dispatch({type:Actions.SET_SCOREBOARD_GAME_CLOCK, values:values});
+    //     // const state = MainController.GetState().Scoreboard;
+    //     // this.UpdateScoreboardState({GameClock:{...state.GameClock, ...values}});
+    // }
 
-    /**
-     * Update scoreboard jam clock
-     * @param values 
-     * @returns 
-     */
-    UpdateScoreboardJamClock = (values:ClockState) => {
-        const state = MainController.GetState().Scoreboard;
-        this.UpdateScoreboardState({JamClock:{...state.JamClock, ...values}});
-    }
+    // /**
+    //  * Update scoreboard jam clock
+    //  * @param values 
+    //  * @returns 
+    //  */
+    // UpdateScoreboardJamClock = (values:ClockState) => {
+    //     this.UpdateClockState({
+    //         JamHour:values.Hours,
+    //         JamMinute:values.Minutes,
+    //         JamSecond:values.Seconds,
+    //         JamStatus:values.Status
+    //     });
+    //     // const state = MainController.GetState().Scoreboard;
+    //     // this.UpdateScoreboardState({JamClock:{...state.JamClock, ...values}});
+    // }
 
     /**
      * Update the values of the scoreboard.
@@ -963,7 +1080,7 @@ class Controller {
      * @returns 
      */
     UpdateScoreboardState = (values:SScoreboard) => {
-        MainStore.dispatch({type:Actions.SET_SCOREBOARD_STATE, values:values});
+        ScoreStore.dispatch({type:Actions.SET_SCOREBOARD_STATE, values:values});
     }
 
     /**
@@ -972,7 +1089,7 @@ class Controller {
      * @param values 
      */
     UpdateScoreboardTeam = (side:TeamSide, values:ScoreboardTeam) => {
-        const state = MainController.GetState().Scoreboard;
+        const state = this.GetScoreboardState();
         if(side === 'A') {
             this.UpdateScoreboardState({TeamA:{...state.TeamA, ...values}});
         } else {

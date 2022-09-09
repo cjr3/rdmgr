@@ -1,4 +1,4 @@
-import { __BaseRecord, AnthemSinger, Config, Peer, Penalty, Phase, SAnthem, SCapture, Season, Skater, Slideshow, SMediaQueue, SPenaltyTracker, Sponsor, SRaffle, SRoster, SScoreboard, SScorekeeper, SSlideshow, Team, Video } from "tools/vars";
+import { __BaseRecord, AnthemSinger, Config, Peer, Penalty, Phase, SAnthem, SCapture, Season, Skater, Slideshow, SMediaQueue, SPenaltyTracker, Sponsor, SRaffle, SRoster, SScoreboard, SScorekeeper, SSlideshow, Team, Video, SClock } from "tools/vars";
 const {remote} = require('electron');
 const fs = remote.require('fs');
 const wfa = require('write-file-atomic');
@@ -104,6 +104,11 @@ const FILE_STATE_ANTHEM = FOLDER_DATA + '/state.anthem.json';
  * Current capture window state.
  */
 const FILE_STATE_CAPTURE = FOLDER_DATA + '/state.capture.json';
+
+/**
+ * Current clock state file.
+ */
+const FILE_STATE_CLOCKS = FOLDER_DATA + '/state.clocks.json';
 
 /**
  * Config file
@@ -410,6 +415,7 @@ const Init = () : Promise<boolean> => {
                 __CheckFile(FILE_RECORDS_VIDEOS, ar),
                 __CheckFile(FILE_STATE_ANTHEM, ob),
                 __CheckFile(FILE_STATE_CAPTURE, ob),
+                __CheckFile(FILE_STATE_CLOCKS, ob),
                 __CheckFile(FILE_STATE_CONFIG, ob),
                 __CheckFile(FILE_STATE_MEDIA, ob),
                 __CheckFile(FILE_STATE_PENALTY, ob),
@@ -444,6 +450,12 @@ const LoadAnthemSingers = () : Promise<AnthemSinger[]> => __ReadJSONFile<AnthemS
  * @returns 
  */
 const LoadCapture = () : Promise<SCapture> => __ReadJSONFile<SCapture>(FILE_STATE_CAPTURE);
+
+/**
+ * Load clocks state.
+ * @returns 
+ */
+const LoadClock = () : Promise<SClock> => __ReadJSONFile<SClock>(FILE_STATE_CLOCKS);
 
 /**
  * Load config
@@ -679,6 +691,7 @@ const Data = {
     LoadAnthem:LoadAnthem,
     LoadAnthemSingers:LoadAnthemSingers,
     LoadCapture:LoadCapture,
+    LoadClock:LoadClock,
     LoadConfig,
     LoadMediaQueue:LoadMediaQueue,
     LoadPeers:LoadPeers,

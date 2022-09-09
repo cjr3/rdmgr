@@ -1,6 +1,5 @@
 import React from 'react';
 import { Unsubscribe } from 'redux';
-import { MainController } from 'tools/MainController';
 import { Scoreboard } from 'tools/scoreboard/functions';
 import { ScoreboardTeamStatus } from 'tools/vars';
 
@@ -15,7 +14,10 @@ interface State {
     status:number;
 }
 
-class Main extends React.PureComponent<Props, State> {
+/**
+ * Display teams data on the titlebar 
+ */
+class Team extends React.PureComponent<Props, State> {
     readonly state:State = {
         color:'#000',
         name:'',
@@ -36,7 +38,7 @@ class Main extends React.PureComponent<Props, State> {
     }
 
     componentDidMount() {
-        this.remote = MainController.Subscribe(this.update);
+        this.remote = Scoreboard.Subscribe(this.update);
         this.update();
     }
 
@@ -58,4 +60,4 @@ class Main extends React.PureComponent<Props, State> {
     }
 }
 
-export {Main as Team};
+export {Team};

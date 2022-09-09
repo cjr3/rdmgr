@@ -5,7 +5,7 @@ import { MainController } from "./MainController";
 import { BreakClock } from "./scoreboard/breakclock";
 import { GameClock } from "./scoreboard/gameclock";
 import { JamClock } from "./scoreboard/jamclock";
-import { Peer as PeerRecord, PeerData, SScoreboard } from './vars';
+import { ClockStatus, Peer as PeerRecord, PeerData, SClock, SScoreboard } from './vars';
 
 //1 : Create local peer
 //2 : For each peer we want to connect to (manually) create a Peer object
@@ -83,16 +83,26 @@ class Manager  {
     /**
      * 
      * @param path 
+     * @param peerId
      * @returns 
      */
-    protected addAPIPath = (path:string) : string => {
+    protected addAPIPath = (path:string, peerId:string = '') : string => {
+        let ipAddress = this.LocalIPAddress;
+        let port = (this.LocalPeerRecord && this.LocalPeerRecord.Port) ? this.LocalPeerRecord.Port : 0;
+        if(peerId) {
+            const peer = this.PeerRecords.find(r => r.Name === peerId);
+            if(peer && peer.Host && peer.Port) {
+                ipAddress = peer.Host;
+                port = peer.Port;
+            }
+        }
+
         if(path 
             && !path.startsWith('http://')
             && !path.startsWith('https://')
-            && this.LocalIPAddress 
-            && this.LocalPeerRecord 
-            && this.LocalPeerRecord.Port) {
-            let url = 'http://' + this.LocalIPAddress + ':' + this.LocalPeerRecord.Port + '/api/';
+            && ipAddress 
+            && port) {
+            let url = 'http://' + ipAddress + ':' + port + '/api/';
             if(path.search(/(.*?)\.{1}(png|jpg|jpeg|gif){1}$/) >= 0) {
                 url += 'image/' + RemoveMediaPath(path);
             }
@@ -472,33 +482,92 @@ class Manager  {
                     case 'state' :
                         if(values.app && values.data && pr && pr.ReceiveApplications && pr.ReceiveApplications.indexOf(values.app) >= 0) {
                             switch(values.app) {
+                                //clocks
+                                case 'CLK' :
+                                    try {
+                                        const state:SClock = values.data;
+                                        GameClock.stop();
+                                        JamClock.stop();
+                                        BreakClock.stop();
+
+                                        GameClock.set(state.GameHour || 0, 
+                                            state.GameMinute || 0,
+                                            state.GameSecond || 0,
+                                            0);
+                                        
+                                        JamClock.set(state.JamHour || 0, 
+                                            state.JamMinute || 0,
+                                            state.JamSecond || 0,
+                                            0);
+                                        
+                                        BreakClock.set(state.BreakHour || 0, 
+                                            state.BreakMinute || 0,
+                                            state.BreakSecond || 0,
+                                            0);
+                                        // MainController.UpdateClockState(state);
+                                    } catch(er) {
+
+                                    }
+                                break;
+
                                 //scoreboard state
                                 case 'SB' :
                                     try {
                                         const state:SScoreboard = values.data;
+
+                                        //stop clocks
+                                        // GameClock.stop();
+                                        // JamClock.stop();
+                                        // BreakClock.stop();
+                                        // if(state.GameClock)
+                                        //     state.GameClock.Status = ClockStatus.STOPPED;
+                                        // if(state.BreakClock)
+                                        //     state.BreakClock.Status = ClockStatus.STOPPED;
+                                        // if(state.JamClock)
+                                        //     state.JamClock.Status = ClockStatus.STOPPED;
+
+                                        //add remote peer's media path
+                                        // if(state.TeamA) {
+                                        //     if(state.TeamA.Logo)
+                                        //         state.TeamA.Logo = this.addAPIPath(state.TeamA.Logo, id);
+
+                                        //     if(state.TeamA.ScoreboardThumbnail)
+                                        //         state.TeamA.ScoreboardThumbnail = this.addAPIPath(state.TeamA.ScoreboardThumbnail, id);
+                                        // }
+
+                                        // if(state.TeamB) {
+                                        //     if(state.TeamB.Logo)
+                                        //         state.TeamB.Logo = this.addAPIPath(state.TeamB.Logo, id);
+
+                                        //     if(state.TeamB.ScoreboardThumbnail)
+                                        //         state.TeamB.ScoreboardThumbnail = this.addAPIPath(state.TeamB.ScoreboardThumbnail, id);
+                                        // }
+
                                         // console.log(state);
+                                        // update clocks - they don't read from the scoreboard
+                                        // and the UI reads from the clocks, not the scoreboard.
+                                        // if(state.GameClock) {
+                                        //     GameClock.set(state.GameClock.Hours || 0, 
+                                        //         state.GameClock.Minutes || 0,
+                                        //         state.GameClock.Seconds || 0,
+                                        //         state.GameClock.Tenths || 0);
+                                        // }
+
+                                        // if(state.JamClock) {
+                                        //     JamClock.set(state.JamClock.Hours || 0, 
+                                        //         state.JamClock.Minutes || 0,
+                                        //         state.JamClock.Seconds || 0,
+                                        //         state.JamClock.Tenths || 0);
+                                        // }
+
+                                        // if(state.BreakClock) {
+                                        //     BreakClock.set(state.BreakClock.Hours || 0, 
+                                        //         state.BreakClock.Minutes || 0,
+                                        //         state.BreakClock.Seconds || 0,
+                                        //         state.BreakClock.Tenths || 0);
+                                        // }
+
                                         MainController.UpdateScoreboardState(state);
-                                        //update clocks separately
-                                        if(state.GameClock) {
-                                            GameClock.set(state.GameClock.Hours || 0, 
-                                                state.GameClock.Minutes || 0,
-                                                state.GameClock.Seconds || 0,
-                                                state.GameClock.Tenths || 0);
-                                        }
-
-                                        if(state.JamClock) {
-                                            JamClock.set(state.JamClock.Hours || 0, 
-                                                state.JamClock.Minutes || 0,
-                                                state.JamClock.Seconds || 0,
-                                                state.JamClock.Tenths || 0);
-                                        }
-
-                                        if(state.BreakClock) {
-                                            BreakClock.set(state.BreakClock.Hours || 0, 
-                                                state.BreakClock.Minutes || 0,
-                                                state.BreakClock.Seconds || 0,
-                                                state.BreakClock.Tenths || 0);
-                                        }
 
                                     } catch(er) {
                                         console.error(er);
@@ -517,7 +586,7 @@ class Manager  {
                 }
             }
         } catch(er:any) {
-
+            alert(er.message);
         }
     }
 
@@ -642,33 +711,6 @@ class Manager  {
                             const pr = this.PeerRecords.find(p => p.Name === id);
 
                             if(pr && pr.SendApplications && pr.SendApplications.indexOf(data.app) >= 0) {
-                                //adjust media to use API
-                                switch(data.app) {
-                                    case 'SB' : {
-                                        const state:SScoreboard = structuredClone(data.data);
-                                        if(state && state.TeamA && state.TeamA.Logo) {
-                                            state.TeamA.Logo = this.addAPIPath(state.TeamA.Logo);
-                                        }
-
-                                        if(state && state.TeamA && state.TeamA.ScoreboardThumbnail) {
-                                            state.TeamA.ScoreboardThumbnail = this.addAPIPath(state.TeamA.ScoreboardThumbnail);
-                                        }
-
-                                        if(state && state.TeamB && state.TeamB.Logo) {
-                                            state.TeamB.Logo = this.addAPIPath(state.TeamB.Logo);
-                                        }
-
-                                        if(state && state.TeamB && state.TeamB.ScoreboardThumbnail) {
-                                            state.TeamB.ScoreboardThumbnail = this.addAPIPath(state.TeamB.ScoreboardThumbnail);
-                                        }
-
-                                        // console.log(state);
-
-                                        data.data = state;
-                                    }
-                                    break;
-                                }
-
                                 // console.log(data);
                                 dc.send(data);
                             }

@@ -1,6 +1,7 @@
 import classNames from 'classnames';
 import React from 'react';
 import { Capture } from 'tools/capture/functions';
+import { Clocks } from 'tools/clocks/functions';
 import { Scoreboard } from 'tools/scoreboard/functions';
 
 interface Props extends React.HTMLProps<HTMLDivElement> {
@@ -17,10 +18,10 @@ const JamClock:React.FunctionComponent<Props> = props => {
     const [visible, setVisible] = React.useState(Capture.GetJamClock().visible || false);
 
     React.useEffect(() => {
-        return Scoreboard.Subscribe(() => {
-            const state = Scoreboard.GetState();
-            const minute = state.JamClock?.Minutes || 0;
-            const second = state.JamClock?.Seconds || 0;
+        return Clocks.Subscribe(() => {
+            const state = Clocks.GetState();
+            const minute = state.JamMinute || 0;
+            const second = state.JamSecond || 0;
             if(minute) {
                 setTime(`${minute}:${second.toString().padStart(2,'0')}`);
             } else {

@@ -5,6 +5,7 @@ import { NumberInput } from 'components/common/inputs/numberinput';
 import { GameClock } from 'tools/scoreboard/gameclock';
 import { Scoreboard } from 'tools/scoreboard/functions';
 import { ClockStatus } from 'tools/vars';
+import { Clocks } from 'tools/clocks/functions';
 
 interface Props extends React.HTMLProps<HTMLDivElement> {
 
@@ -19,20 +20,20 @@ const GameClockEditor:React.FunctionComponent<Props> = props => {
     const [hour, setHour] = React.useState(0);
     const [minute, setMinute] = React.useState(0);
     const [second, setSecond] = React.useState(0);
-    const [status, setStatus] = React.useState(Scoreboard.GetState().GameClock?.Status || ClockStatus.STOPPED);
+    const [status, setStatus] = React.useState(Clocks.GetState().GameStatus || ClockStatus.STOPPED);
 
     const onClickSet = React.useCallback(() => {
         GameClock.set(hour, minute, second);
     }, [hour, minute, second]);
 
     React.useEffect(() => {
-        return Scoreboard.Subscribe(() => {
-            const state = Scoreboard.GetState().GameClock;
-            setStatus(state?.Status || ClockStatus.STOPPED);
-            if(state?.Status === ClockStatus.RUNNING) {
-                setHour(state.Hours || 0);
-                setMinute(state.Minutes || 0);
-                setSecond(state.Seconds || 0);
+        return Clocks.Subscribe(() => {
+            const state = Clocks.GetState();
+            setStatus(state?.GameStatus || ClockStatus.STOPPED);
+            if(state?.GameStatus === ClockStatus.RUNNING) {
+                setHour(state.GameHour || 0);
+                setMinute(state.GameMinute || 0);
+                setSecond(state.GameSecond || 0);
             }
         })
     }, []);

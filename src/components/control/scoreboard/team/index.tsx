@@ -1,16 +1,16 @@
 import React from 'react';
 import cnames from 'classnames';
 import { Unsubscribe } from 'redux';
-import { MainController } from 'tools/MainController';
 import {Score} from './score';
 import { Name } from './name';
 import { TeamJamPointsControl } from './jampoints';
 import { TeamChallengesControl } from './challenges';
 import { TeamTimeoutsControl } from './timeouts';
-import { TeamButtons } from './buttons';
+// import { TeamButtons } from './buttons';
 import { TeamStatus } from './status';
 import { ScoreboardTeamStatus, TeamSide } from 'tools/vars';
 import Data from 'tools/data';
+import { Scoreboard } from 'tools/scoreboard/functions';
 
 interface Props extends React.HTMLProps<HTMLDivElement> {
     side:TeamSide;
@@ -42,7 +42,7 @@ class Main extends React.PureComponent<Props, State> {
     protected remote?:Unsubscribe;
 
     protected update = () => {
-        const state = MainController.GetState().Scoreboard
+        const state = Scoreboard.GetState();
         this.setState({
             challenges:((this.props.side === 'A') ? state.TeamA?.Challenges : state.TeamB?.Challenges) || 0,
             color:((this.props.side === 'A') ? state.TeamA?.Color : state.TeamB?.Color) || '#000000',
@@ -57,7 +57,7 @@ class Main extends React.PureComponent<Props, State> {
 
     componentDidMount() {
         this.update();
-        this.remote = MainController.Subscribe(this.update);
+        this.remote = Scoreboard.Subscribe(this.update);
     }
     
     componentWillUnmount() {

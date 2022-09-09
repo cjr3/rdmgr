@@ -222,10 +222,10 @@ const RemoveSkater = (side:TeamSide, id:number) => MainController.RemoveRosterSk
  * Set the roster to match that of the skaters who are assigned to the current scoreboard teams.
  */
 const Reset = () => {
-    const state = MainController.GetState();
+    const state = MainController.GetScoreboardState();
     const skaters = Skaters.GetRecords();
-    SetSkaters('A', skaters.filter(s => s.Teams && s.Teams.findIndex(t => t.TeamID === state.Scoreboard.TeamA?.ID) >= 0 ));
-    SetSkaters('B', skaters.filter(s => s.Teams && s.Teams.findIndex(t => t.TeamID === state.Scoreboard.TeamB?.ID) >= 0 ));
+    SetSkaters('A', skaters.filter(s => s.Teams && s.Teams.findIndex(t => t.TeamID === state.TeamA?.ID) >= 0 ));
+    SetSkaters('B', skaters.filter(s => s.Teams && s.Teams.findIndex(t => t.TeamID === state.TeamB?.ID) >= 0 ));
     Update({
         TeamA:{
             BenchCoach:0,

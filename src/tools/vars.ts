@@ -170,6 +170,7 @@ export type CaptureActions = ''
 | 'capture-scorekeeper'
 | 'capture-slideshow'
 | 'capture-standings'
+| 'clocks'
 | 'penalty'
 | 'raffle'
 | 'roster'
@@ -243,6 +244,14 @@ export interface Config {
     Colors?:ConfigColors;
     Misc?:ConfigMisc;
     Scoreboard?:ConfigScoreboard;
+    /**
+     * Host/IP for media API
+     */
+    MediaAPIHost?:string;
+    /**
+     * Port associated with media host for media API
+     */
+    MediaAPIPort?:number;
 };
 
 /**
@@ -536,6 +545,11 @@ export interface Peer extends __BaseRecord {
      */
     Connected?:boolean;
     /**
+     * If true, then this peer is the media host endpoint.
+     * If the peer is connected, then images, such as scoreboard images, will be loaded from this user's API endpoint.
+     */
+    MediaAPIHost?:boolean;
+    /**
      * True if peer is sending streaming data (video/audio)
      */
     Streaming?:boolean;
@@ -743,6 +757,21 @@ export interface SCaptureStandings extends CaptureSection {
      */
     standings?:Standing[]
 }
+
+export interface SClock {
+    BreakHour?:number;
+    BreakMinute?:number;
+    BreakSecond?:number;
+    BreakStatus?:ClockStatus;
+    GameHour?:number;
+    GameMinute?:number;
+    GameSecond?:number;
+    GameStatus?:ClockStatus;
+    JamHour?:number;
+    JamMinute?:number;
+    JamSecond?:number;
+    JamStatus?:ClockStatus;
+};
 
 export enum ScoreboardStatus {
     NORMAL,
@@ -968,8 +997,9 @@ export interface SMainController {
     Slideshows:SlideshowCollection;
     /**
      * Scoreboard state
+     * - Moved to it's own state since it changes more often.
      */
-    Scoreboard:SScoreboard;
+    // Scoreboard:SScoreboard;
     /**
      * Scorekeeper state
      */
@@ -1093,7 +1123,7 @@ export interface SScoreboard {
     /**
      * Break clock.
      */
-    BreakClock?:ClockState;
+    // BreakClock?:ClockState;
     /**
      * True = confirming with in-field call / jam points.
      */
@@ -1109,11 +1139,11 @@ export interface SScoreboard {
     /**
      * Game clock
      */
-    GameClock?:ClockState;
+    // GameClock?:ClockState;
     /**
      * Jam Clock
      */
-    JamClock?:ClockState;
+    // JamClock?:ClockState;
     /**
      * Hour of the jam clock when the last jam started.
      */
@@ -1162,6 +1192,10 @@ export interface SScoreboard {
      * Right-side team.
      */
     TeamB?:ScoreboardTeam;
+    /**
+     * Timestamp when last updated.
+     */
+    UpdateTime?:number;
 }
 
 /**

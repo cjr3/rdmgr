@@ -1,6 +1,6 @@
 import React from 'react';
 import { Unsubscribe } from 'redux';
-import { MainController } from 'tools/MainController';
+import { Scoreboard } from 'tools/scoreboard/functions';
 
 interface Props {
 
@@ -10,7 +10,7 @@ interface State {
     value:number;
 }
 
-class Main extends React.PureComponent<Props, State> {
+class JamCounter extends React.PureComponent<Props, State> {
     readonly state:State = {
         value:0
     }
@@ -18,11 +18,11 @@ class Main extends React.PureComponent<Props, State> {
     protected remote?:Unsubscribe;
 
     protected update = () => {
-        this.setState({value:MainController.GetState().Scoreboard.JamNumber || 0});
+        this.setState({value:Scoreboard.GetState().JamNumber || 0});
     }
 
     componentDidMount() {
-        this.remote = MainController.Subscribe(this.update);
+        this.remote = Scoreboard.Subscribe(this.update);
     }
 
     componentWillUnmount() {
@@ -35,4 +35,4 @@ class Main extends React.PureComponent<Props, State> {
     }
 }
 
-export {Main as JamCounter};
+export {JamCounter};

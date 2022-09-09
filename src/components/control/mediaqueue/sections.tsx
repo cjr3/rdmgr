@@ -78,7 +78,7 @@ const AnthemSection:React.FunctionComponent<SectionProps> = props => {
         onToggle={props.onToggle}
         onToggleVisibility={Capture.ToggleAnthem}
     >
-        <AnthemControl/>
+        <AnthemControl active={visible}/>
     </Collapsable>
 };
 

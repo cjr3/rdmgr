@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import React from 'react';
-import { Scoreboard } from 'tools/scoreboard/functions';
+import { Clocks } from 'tools/clocks/functions';
 import { ClockStatus } from 'tools/vars';
 
 interface Props extends React.HTMLProps<HTMLDivElement> {
@@ -13,17 +13,17 @@ interface Props extends React.HTMLProps<HTMLDivElement> {
  * @returns 
  */
 const ScoreboardBreakClock:React.FunctionComponent<Props> = props => {
-    const [seconds, setSeconds] = React.useState(Scoreboard.GetState().BreakClock?.Seconds || 0);
+    const [seconds, setSeconds] = React.useState(Clocks.GetState().BreakSecond || 0);
     const [active, setActive] = React.useState(false);
 
     React.useEffect(() => {
-        return Scoreboard.Subscribe(() => {
-            const state = Scoreboard.GetState();
-            const value = state?.BreakClock?.Seconds || 0;
+        return Clocks.Subscribe(() => {
+            const state = Clocks.GetState();
+            const value = state?.BreakSecond || 0;
             setSeconds(value);
-            if(state.BreakClock?.Status === ClockStatus.RUNNING)
+            if(state?.BreakStatus === ClockStatus.RUNNING)
                 setActive(true);
-            else if(value === 0 && state.JamClock?.Status === ClockStatus.STOPPED && state.GameClock?.Status === ClockStatus.STOPPED)
+            else if(value === 0 && state.JamStatus === ClockStatus.STOPPED && state.GameStatus === ClockStatus.STOPPED)
                 setActive(true);
             else
                 setActive(false);

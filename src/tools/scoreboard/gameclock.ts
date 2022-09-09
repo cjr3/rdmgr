@@ -3,10 +3,10 @@ import { MainController } from "tools/MainController";
 import { ClockStatus } from "tools/vars";
 
 const GameClock = new Clock();
-const state = MainController.GetState().Scoreboard.GameClock;
-GameClock.Hour = state?.Hours || 0;
-GameClock.Minute = state?.Minutes || 0;
-GameClock.Second = state?.Seconds || 0;
+const state = MainController.GetClockState();
+GameClock.Hour = state?.GameHour || 0;
+GameClock.Minute = state?.GameMinute || 0;
+GameClock.Second = state?.GameSecond || 0;
 GameClock.Tenths = 0;
 // let lastSecond = GameClock.Second;
 // let lastHour = GameClock.Hour;
@@ -18,19 +18,18 @@ GameClock.OnTick.push(async (hour, minute, second, tenths, status) => {
         // lastSecond = second;
         // lastMinute = minute;
         // lastStatus = status;
-        MainController.UpdateScoreboardGameClock({
-            Hours:hour,
-            Minutes:minute,
-            Seconds:second,
-            Tenths:0,
-            Status:status
+        MainController.UpdateClockState({
+            GameHour:hour,
+            GameMinute:minute,
+            GameSecond:second,
+            GameStatus:status
         });
     // }
 });
 
 GameClock.OnStop.push(async () => {
-    MainController.UpdateScoreboardGameClock({
-        Status:ClockStatus.STOPPED
+    MainController.UpdateClockState({
+        GameStatus:ClockStatus.STOPPED
     });
 });
 

@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import React from 'react';
-import { Scoreboard } from 'tools/scoreboard/functions';
+import { Clocks } from 'tools/clocks/functions';
 
 interface Props extends React.HTMLProps<HTMLDivElement> {
 
@@ -12,17 +12,17 @@ interface Props extends React.HTMLProps<HTMLDivElement> {
  * @returns 
  */
 const GameClock:React.FunctionComponent<Props> = props => {
-    const [hour, setHour] = React.useState(Scoreboard.GetState()?.GameClock?.Hours || 0);
-    const [minute, setMinute] = React.useState(Scoreboard.GetState()?.GameClock?.Minutes || 0);
-    const [second, setSecond] = React.useState(Scoreboard.GetState()?.GameClock?.Seconds || 0);
+    const [hour, setHour] = React.useState(Clocks.GetState().GameHour || 0);
+    const [minute, setMinute] = React.useState(Clocks.GetState().GameMinute || 0);
+    const [second, setSecond] = React.useState(Clocks.GetState()?.GameSecond || 0);
 
     React.useEffect(() => {
-        return Scoreboard.Subscribe(() => {
-            const state = Scoreboard.GetState().GameClock;
+        return Clocks.Subscribe(() => {
+            const state = Clocks.GetState();
             // console.log('game clock updated')
-            setHour(state?.Hours || 0);
-            setMinute(state?.Minutes || 0);
-            setSecond(state?.Seconds || 0);
+            setHour(state?.GameHour || 0);
+            setMinute(state?.GameMinute || 0);
+            setSecond(state?.GameSecond || 0);
         })
     }, []);
 

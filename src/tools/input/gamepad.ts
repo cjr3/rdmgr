@@ -1,3 +1,4 @@
+import { Clocks } from "tools/clocks/functions";
 import { Roster } from "tools/roster/functions";
 import { Scoreboard } from "tools/scoreboard/functions";
 import { Scorekeeper } from "tools/scorekeeper/functions";
@@ -645,11 +646,12 @@ class Controller
         //SELECT
         if(buttons.SELECT.pressed) {
             if(buttons.L2.pressed && buttons.R2.pressed) {
-                const state = Scoreboard.GetState();
+                const state = Clocks.GetState();
+                const sstate = Scoreboard.GetState();
                 Scoreboard.SetGameClockTime(
-                    state.PhaseHour || state.GameClock?.Hours || 0,
-                    state.PhaseMinute || state.GameClock?.Minutes || 0,
-                    state.PhaseSecond || state.GameClock?.Seconds || 0,
+                    sstate.PhaseHour || state.GameHour || 0,
+                    sstate.PhaseMinute || state.GameMinute || 0,
+                    sstate.PhaseSecond || state.GameSecond || 0,
                 );
             } else if(buttons.R2.pressed) {
                 Scoreboard.PreviousPhase();

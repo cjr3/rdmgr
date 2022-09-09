@@ -147,10 +147,12 @@ class Clock
 
     public stop = async () => {
         this.clear();
+        const current = this.Status;
         this.Status = ClockStatus.STOPPED;
         if(this.ResetOnStop)
             this.reset();
-        this.OnStop.forEach(f => f());
+        if(current !== this.Status)
+            this.OnStop.forEach(f => f());
     }
 
     protected tick = async () => {

@@ -16,23 +16,21 @@ JamClock.OnTick.push((hour, minute, second, tenths, status) => {
     //     lastMinute = minute;
     //     lastSecond = second;
     //     lastStatus = status;
-        MainController.UpdateScoreboardJamClock({
-            Hours:hour,
-            Minutes:minute,
-            Seconds:second,
-            Status:status,
-            Tenths:0
+        MainController.UpdateClockState({
+            JamHour:hour,
+            JamMinute:minute,
+            JamSecond:second,
+            JamStatus:status
         });
     // }
 });
 
 JamClock.OnStop.push(() => {
-    MainController.UpdateScoreboardJamClock({
-        Status:ClockStatus.STOPPED,
-        Hours:0,
-        Minutes:0,
-        Seconds:JamClock.MaxSeconds,
-        Tenths:0
+    MainController.UpdateClockState({
+        JamStatus:ClockStatus.STOPPED,
+        JamHour:0,
+        JamMinute:0,
+        JamSecond:JamClock.MaxSeconds
     });
 });
 

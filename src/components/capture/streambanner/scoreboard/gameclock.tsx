@@ -1,6 +1,7 @@
 import classNames from 'classnames';
 import React from 'react';
 import { Capture } from 'tools/capture/functions';
+import { Clocks } from 'tools/clocks/functions';
 import { Scoreboard } from 'tools/scoreboard/functions';
 import { JamClock } from './jamclock';
 import { JamNumber } from './jamnumber';
@@ -21,13 +22,12 @@ const GameClock:React.FunctionComponent<Props> = props => {
     const [counterVisible, setCounterVisible] = React.useState(Capture.GetJamCounter().visible || false);
 
     React.useEffect(() => {
-        return Scoreboard.Subscribe(() => {
-            const state = Scoreboard.GetState();
-            const hour = (state.GameClock?.Hours || 0).toString().padStart(2,'0');
-            const minute = (state.GameClock?.Minutes || 0).toString().padStart(2,'0');
-            const second = (state.GameClock?.Seconds || 0).toString().padStart(2,'0');
-            setName(state.PhaseName || '')
-            if(state.GameClock?.Hours)
+        return Clocks.Subscribe(() => {
+            const state = Clocks.GetState();
+            const hour = (state.GameHour || 0).toString().padStart(2,'0');
+            const minute = (state.GameMinute || 0).toString().padStart(2,'0');
+            const second = (state.GameSecond || 0).toString().padStart(2,'0');
+            if(state.GameHour)
                 setTime(`${hour}:${minute}:${second}`);
             else
                 setTime(`${minute}:${second}`);
@@ -37,6 +37,11 @@ const GameClock:React.FunctionComponent<Props> = props => {
     React.useEffect(() => Capture.Subscribe(() => {
         setVisible(Capture.GetGameClock().visible || false);
         setCounterVisible(Capture.GetJamCounter().visible || false);
+    }), []);
+
+    React.useEffect(() => Scoreboard.Subscribe(() => {
+        const state = Scoreboard.GetState();
+        setName(state.PhaseName || '');
     }), []);
 
     return <div className='clock-phase'>

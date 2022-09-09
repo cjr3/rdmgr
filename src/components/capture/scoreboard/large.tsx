@@ -1,6 +1,7 @@
 import classNames from 'classnames';
 import React from 'react';
 import { Capture } from 'tools/capture/functions';
+import { Clocks } from 'tools/clocks/functions';
 import { Scoreboard } from 'tools/scoreboard/functions';
 
 interface Props extends React.HTMLProps<HTMLDivElement> {
@@ -33,17 +34,17 @@ const LargeJamCounter:React.FunctionComponent<Props> = props => {
  * @returns 
  */
 const LargeGameClock:React.FunctionComponent<Props> = props => {
-    const [hour, setHour] = React.useState(Scoreboard.GetState().GameClock?.Hours || 0);
-    const [minute, setMinute] = React.useState(Scoreboard.GetState().GameClock?.Minutes || 0);
-    const [second, setSecond] = React.useState(Scoreboard.GetState().GameClock?.Seconds || 0);
+    const [hour, setHour] = React.useState(Clocks.GetState().GameHour || 0);
+    const [minute, setMinute] = React.useState(Clocks.GetState().GameMinute || 0);
+    const [second, setSecond] = React.useState(Clocks.GetState().GameSecond || 0);
     const [visible, setVisible] = React.useState(Capture.GetGameClock().visible || false);
     let className = '';
 
-    React.useEffect(() => Scoreboard.Subscribe(() => {
-        const state = Scoreboard.GetState();
-        setHour(state.GameClock?.Hours || 0);
-        setMinute(state.GameClock?.Minutes || 0);
-        setSecond(state.GameClock?.Seconds || 0);
+    React.useEffect(() => Clocks.Subscribe(() => {
+        const state = Clocks.GetState();
+        setHour(state.GameHour || 0);
+        setMinute(state.GameMinute || 0);
+        setSecond(state.GameSecond || 0);
     }), []);
 
     React.useEffect(() => Capture.Subscribe(() => {
@@ -66,8 +67,8 @@ const LargeGameClock:React.FunctionComponent<Props> = props => {
  */
 const LargeJamClock:React.FunctionComponent<Props> = props => {
     const [className, setClassName] = React.useState(Capture.GetJamClock().className || '');
-    const [minute, setMinute] = React.useState(Scoreboard.GetState().JamClock?.Minutes || 0);
-    const [second, setSeconds] = React.useState(Scoreboard.GetState().JamClock?.Seconds || 0);
+    const [minute, setMinute] = React.useState(Clocks.GetState().JamMinute || 0);
+    const [second, setSeconds] = React.useState(Clocks.GetState().JamSecond || 0);
     const [visible, setVisible] = React.useState(Capture.GetJamClock().visible || false);
 
     React.useEffect(() => Capture.Subscribe(() => {
@@ -75,10 +76,10 @@ const LargeJamClock:React.FunctionComponent<Props> = props => {
         setClassName(Capture.GetJamClock().className || '');
     }), []);
 
-    React.useEffect(() => Scoreboard.Subscribe(() => {
-        const state = Scoreboard.GetState();
-        setMinute(state.JamClock?.Minutes || 0);
-        setSeconds(state.JamClock?.Seconds || 0);
+    React.useEffect(() => Clocks.Subscribe(() => {
+        const state = Clocks.GetState();
+        setMinute(state.JamMinute || 0);
+        setSeconds(state.JamSecond || 0);
     }), []);
 
     let time = second.toString().padStart(2,'0');

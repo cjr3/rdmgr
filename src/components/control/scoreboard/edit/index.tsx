@@ -293,7 +293,7 @@ class Main extends React.PureComponent<Props, State> {
      * Copy values from current state.
      */
     protected update = () => {
-        const state = MainController.GetState().Scoreboard
+        const state = Scoreboard.GetState();
         this.setState({
             gameClockHour:GameClock.Hour,
             gameClockMinute:GameClock.Minute,

@@ -1,6 +1,5 @@
 import React from 'react';
 import { Unsubscribe } from 'redux';
-import { MainController } from 'tools/MainController';
 import { Scoreboard } from 'tools/scoreboard/functions';
 
 interface Props {
@@ -11,7 +10,7 @@ interface State {
     status:number;
 }
 
-class Main extends React.PureComponent<Props, State> {
+class BoardStatus extends React.PureComponent<Props, State> {
     readonly state:State = {
         status:0
     }
@@ -19,11 +18,11 @@ class Main extends React.PureComponent<Props, State> {
     protected remote?:Unsubscribe;
 
     protected update = () => {
-        this.setState({status:MainController.GetState().Scoreboard.BoardStatus || 0});
+        this.setState({status:Scoreboard.GetState().BoardStatus || 0});
     }
 
     componentDidMount() {
-        this.remote = MainController.Subscribe(this.update);
+        this.remote = Scoreboard.Subscribe(this.update);
     }
 
     componentWillUnmount() {
@@ -40,4 +39,4 @@ class Main extends React.PureComponent<Props, State> {
     }
 }
 
-export {Main as BoardStatus};
+export {BoardStatus};

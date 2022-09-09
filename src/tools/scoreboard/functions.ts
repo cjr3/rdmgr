@@ -64,7 +64,8 @@ const DecreaseTeamChallenges = (side:TeamSide, amount:number = 1) => {
  */
 const DecreaseTeamJamPoints = (side:TeamSide, amount:number = 1) : boolean => {
     const state = GetState();
-    if(state.JamClock?.Status !== ClockStatus.RUNNING) {
+    const cstate = MainController.GetClockState();
+    if(cstate.JamStatus !== ClockStatus.RUNNING) {
         SetTeamJamPoints(side, (((side === 'A') ? state.TeamA?.JamPoints : state.TeamB?.JamPoints) || 0) - amount);
         DecreaseTeamScore(side, amount);
         return true;
@@ -96,7 +97,7 @@ const DecreaseTeamTimeouts = (side:TeamSide, amount:number = 1) => {
  * Get current scoreboard state
  * @returns 
  */
-const GetState = () => MainController.GetState().Scoreboard;
+const GetState = () => MainController.GetScoreboardState();
 
 /**
  * 
@@ -201,7 +202,8 @@ const IncreaseTeamChallenges = (side:TeamSide, amount:number = 1) => {
  */
 const IncreaseTeamJamPoints = (side:TeamSide, amount:number = 1) : boolean => {
     const state = GetState();
-    if(state.JamClock?.Status !== ClockStatus.RUNNING) {
+    const cstate = MainController.GetClockState();
+    if(cstate.JamStatus !== ClockStatus.RUNNING) {
         SetTeamJamPoints(side, (((side === 'A') ? state.TeamA?.JamPoints : state.TeamB?.JamPoints) || 0) + amount);
         IncreaseTeamScore(side, amount);
         return true;
@@ -251,7 +253,7 @@ const Init = async () : Promise<boolean> => {
                     saving = false;
                 }
             }
-        }, 1000);
+        }, 5000);
     } catch(er) {
 
     }
@@ -337,30 +339,45 @@ const Reset = () => {
     const second = first?.Seconds || 0;
     GameClock.set(hour, minute, second, 0);
 
+    MainController.UpdateClockState({
+        BreakHour:0,
+        BreakMinute:0,
+        BreakSecond:BreakClock.MaxSeconds,
+        BreakStatus:ClockStatus.STOPPED,
+        GameHour:hour,
+        GameMinute:minute,
+        GameSecond:second,
+        GameStatus:ClockStatus.STOPPED,
+        JamHour:0,
+        JamMinute:0,
+        JamSecond:JamClock.MaxSeconds,
+        JamStatus:ClockStatus.STOPPED
+    })
+
     MainController.UpdateScoreboardState({
         BoardStatus:ScoreboardStatus.NORMAL,
-        BreakClock:{
-            Hours:0,
-            Minutes:0,
-            Seconds:BreakClock.MaxSeconds,
-            Status:ClockStatus.STOPPED,
-            Tenths:0
-        },
+        // BreakClock:{
+        //     Hours:0,
+        //     Minutes:0,
+        //     Seconds:BreakClock.MaxSeconds,
+        //     Status:ClockStatus.STOPPED,
+        //     Tenths:0
+        // },
         ConfirmStatus:false,
-        GameClock:{
-            Hours:hour,
-            Minutes:minute,
-            Seconds:second,
-            Tenths:0,
-            Status:ClockStatus.STOPPED
-        },
-        JamClock:{
-            Hours:0,
-            Minutes:0,
-            Seconds:JamClock.MaxSeconds,
-            Tenths:0,
-            Status:ClockStatus.STOPPED
-        },
+        // GameClock:{
+        //     Hours:hour,
+        //     Minutes:minute,
+        //     Seconds:second,
+        //     Tenths:0,
+        //     Status:ClockStatus.STOPPED
+        // },
+        // JamClock:{
+        //     Hours:0,
+        //     Minutes:0,
+        //     Seconds:JamClock.MaxSeconds,
+        //     Tenths:0,
+        //     Status:ClockStatus.STOPPED
+        // },
         JamHour:hour,
         JamMinute:minute,
         JamSecond:second,
@@ -516,7 +533,7 @@ const Stop = () => {
  * @param f 
  * @returns 
  */
-const Subscribe = (f:{():void}) : Unsubscribe => MainController.Subscribe(f);
+const Subscribe = (f:{():void}) : Unsubscribe => MainController.SubscribeScoreboard(f);
 
 /**
  * Start/stop the break clock and jam clock.

@@ -16,7 +16,7 @@ import { JamClock } from "./scoreboard/jamclock";
 import { Scorekeeper } from "./scorekeeper/functions";
 import { Slideshow } from "./slideshows/functions";
 import { UIController } from "./UIController";
-import { CaptureAction, ClockStatus, ControlAction, SScoreboard } from "./vars";
+import { CaptureAction, ClockStatus, ControlAction, Peer, SScoreboard } from "./vars";
 import { Videos } from "./videos/functions";
 
 const ignore = () => {};
@@ -56,6 +56,7 @@ namespace CaptureIPC {
                     case 'capture-scorekeeper' : Capture.UpdateScorekeeper(data.values); break;
                     case 'capture-slideshow' : Capture.UpdateSlideshow(data.values); break;
                     case 'capture-standings' : Capture.UpdateStandings(data.values); break;
+                    case 'clocks' : MainController.UpdateClockState(data.values); break;
                     case 'penalty' : PenaltyTracker.Update(data.values); break;
                     case 'raffle' : Raffle.Update(data.values); break;
                     case 'roster' : Roster.Update(data.values); break;
@@ -112,7 +113,7 @@ namespace ControlIPC {
     let rosterState = MainController.GetState().Roster;
     let rosterUI = UIController.GetState().Capture.Roster;
     let scheduleUI = UIController.GetState().Capture.Schedule;
-    let scoreboardState = MainController.GetState().Scoreboard;
+    let scoreboardState = MainController.GetScoreboardState();
     let scorebannerUI = UIController.GetState().Capture.Scorebanner;
     let scoreboardUI = UIController.GetState().Capture.Scoreboard;
     let scorekeeperState = MainController.GetState().Scorekeeper;
@@ -121,9 +122,10 @@ namespace ControlIPC {
     let slideshowUI = UIController.GetState().Capture.Slideshow;
     let standingsUI = UIController.GetState().Capture.Standings;
     let uiConfig = UIController.GetState().Config;
-
     export const Init = () => {
         MainController.Subscribe(onMainUpdate);
+        MainController.SubscribeScoreboard(onScoreUpdate);
+        MainController.SubscribeClocks(onClockUpdate);
         UIController.Subscribe(onCaptureUpdate);
         ipcRenderer.on('capture-control-receive', receive);
     }
@@ -146,6 +148,19 @@ namespace ControlIPC {
     
             }
         }
+    };
+
+    /**
+     * Called when the clock state updates.
+     */
+    const onClockUpdate = async () => {
+        const state = MainController.GetClockState();
+        CaptureIPC.Send({action:'clocks', values:state}).then(ignore).catch(ignore);
+        PeerManager.sendData({
+            app:'CLK',
+            data:state,
+            type:'state'
+        });
     };
 
     /**
@@ -185,63 +200,70 @@ namespace ControlIPC {
                 CaptureIPC.Send({action:'roster', values:state.Roster}).then(ignore).catch(ignore);
             }
 
-            if(scoreboardState !== state.Scoreboard) {
-                scoreboardState = state.Scoreboard;
-                CaptureIPC.Send({action:'scoreboard', values:state.Scoreboard}).then(ignore).catch(ignore);
+            // if(scoreboardState !== sstate) {
+            //     scoreboardState = sstate;
+            //     CaptureIPC.Send({action:'scoreboard', values:sstate}).then(ignore).catch(ignore);
 
-                //send scoreboard data
-                //send the data only when one of the clocks tenths is 0 or 9
-                //so we don't send data too rapidly.
-                //
-                //We read from the clock objects, not the state, as the tenths are not added
-                //to the state object
+            //     // console.log('scoreboard changed')
+            //     PeerManager.sendData({
+            //         app:'SB',
+            //         data:scoreboardState,
+            //         type:'state'
+            //     });
 
-                if(state.Scoreboard && state.Scoreboard.GameClock
-                    && state.Scoreboard.JamClock 
-                    && state.Scoreboard.BreakClock
-                    && (
-                        //none of the clocks are running - typically during setup
-                        (
-                            JamClock.Status === ClockStatus.STOPPED
-                            && BreakClock.Status === ClockStatus.STOPPED
-                            && GameClock.Status === ClockStatus.STOPPED
-                        )
-                        //game clock is running and at .0 or .9
-                        //don't 
-                        || (
+            //     //send scoreboard data
+            //     //send the data only when one of the clocks tenths is 0 or 9
+            //     //so we don't send data too rapidly.
+            //     //
+            //     //We read from the clock objects, not the state, as the tenths are not added
+            //     //to the state object
+
+            //     // if(state.Scoreboard && state.Scoreboard.GameClock
+            //     //     && state.Scoreboard.JamClock 
+            //     //     && state.Scoreboard.BreakClock
+            //     //     && (
+            //     //         //none of the clocks are running - typically during setup
+            //     //         (
+            //     //             JamClock.Status === ClockStatus.STOPPED
+            //     //             && BreakClock.Status === ClockStatus.STOPPED
+            //     //             && GameClock.Status === ClockStatus.STOPPED
+            //     //         )
+            //     //         //game clock is running and at .0 or .9
+            //     //         //don't 
+            //     //         || (
                             
-                            GameClock.Status === ClockStatus.RUNNING &&
-                            (GameClock.Tenths === 9 || GameClock.Tenths === 0 )
-                        )
-                        //jam clock is running and at .0 or .9
-                        || (
-                            JamClock.Status === ClockStatus.RUNNING &&
-                            (JamClock.Tenths === 9 || JamClock.Tenths === 0 )
-                        )
-                        //break clock is running and at .0 or .9
-                        || (
-                            BreakClock.Status === ClockStatus.RUNNING ||
-                            (BreakClock.Tenths === 9 || BreakClock.Tenths === 0)
-                        )
-                    )) {
+            //     //             GameClock.Status === ClockStatus.RUNNING &&
+            //     //             (GameClock.Tenths === 9 || GameClock.Tenths === 0 )
+            //     //         )
+            //     //         //jam clock is running and at .0 or .9
+            //     //         || (
+            //     //             JamClock.Status === ClockStatus.RUNNING &&
+            //     //             (JamClock.Tenths === 9 || JamClock.Tenths === 0 )
+            //     //         )
+            //     //         //break clock is running and at .0 or .9
+            //     //         || (
+            //     //             BreakClock.Status === ClockStatus.RUNNING ||
+            //     //             (BreakClock.Tenths === 9 || BreakClock.Tenths === 0)
+            //     //         )
+            //     //     )) {
 
-                    // console.log(state.Scoreboard.JamClock.Tenths + ":" + state.Scoreboard.GameClock.Tenths + ":" + state.Scoreboard.BreakClock.Tenths);
+            //     //     // console.log(state.Scoreboard.JamClock.Tenths + ":" + state.Scoreboard.GameClock.Tenths + ":" + state.Scoreboard.BreakClock.Tenths);
 
-                    //ensure the state of the clock is not set to run, otherwise receiving
-                    //peers will run the clock, too.
-                    const value:SScoreboard = {...state.Scoreboard};
-                    value.GameClock = {...value.GameClock, Status:ClockStatus.STOPPED};
-                    value.JamClock = {...value.JamClock, Status:ClockStatus.STOPPED};
-                    value.BreakClock = {...value.BreakClock, Status:ClockStatus.STOPPED};
+            //     //     //ensure the state of the clock is not set to run, otherwise receiving
+            //     //     //peers will run the clock, too.
+            //     //     const value:SScoreboard = {...state.Scoreboard};
+            //     //     value.GameClock = {...value.GameClock, Status:ClockStatus.STOPPED};
+            //     //     value.JamClock = {...value.JamClock, Status:ClockStatus.STOPPED};
+            //     //     value.BreakClock = {...value.BreakClock, Status:ClockStatus.STOPPED};
     
-                    //send
-                    PeerManager.sendData({
-                        app:'SB',
-                        data:value,
-                        type:'state'
-                    });
-                }
-            }
+            //     //     //send
+            //     //     PeerManager.sendData({
+            //     //         app:'SB',
+            //     //         data:value,
+            //     //         type:'state'
+            //     //     });
+            //     // }
+            // }
 
             if(scorekeeperState !== state.Scorekeeper) {
                 scorekeeperState = state.Scorekeeper;
@@ -255,6 +277,19 @@ namespace ControlIPC {
         } catch(er:any) {
 
         }
+    };
+
+    /**
+     * Called when the scoreboard state is updated.
+     */
+    const onScoreUpdate = async () => {
+        const state = MainController.GetScoreboardState();
+        CaptureIPC.Send({action:'scoreboard', values:state}).then(ignore).catch(ignore);
+        PeerManager.sendData({
+            app:'SB',
+            data:MainController.GetScoreboardState(),
+            type:'state'
+        });
     };
 
     /**

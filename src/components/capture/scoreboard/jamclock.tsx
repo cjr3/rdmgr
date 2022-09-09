@@ -1,5 +1,6 @@
 import classNames from 'classnames';
 import React from 'react';
+import { Clocks } from 'tools/clocks/functions';
 import { Scoreboard } from 'tools/scoreboard/functions';
 
 interface Props extends React.HTMLProps<HTMLDivElement> {
@@ -12,19 +13,23 @@ interface Props extends React.HTMLProps<HTMLDivElement> {
  * @returns 
  */
 const JamClock:React.FunctionComponent<Props> = props => {
-    const [jamSeconds, setSeconds] = React.useState(Scoreboard.GetState()?.JamClock?.Seconds || 0);
-    const [jamMinutes, setMinutes] = React.useState(Scoreboard.GetState()?.JamClock?.Minutes || 0);
+    const [jamSeconds, setSeconds] = React.useState(Clocks.GetState().JamSecond || 0);
+    const [jamMinutes, setMinutes] = React.useState(Clocks.GetState()?.JamMinute || 0);
     const [jamNumber, setJamNumber] = React.useState(Scoreboard.GetState()?.JamNumber || 0);
     const [confirm, setConfirm] = React.useState(Scoreboard.GetState().ConfirmStatus || false);
     React.useEffect(() => {
         return Scoreboard.Subscribe(() => {
             const state = Scoreboard.GetState();
-            setSeconds(state?.JamClock?.Seconds || 0);
-            setMinutes(state?.JamClock?.Minutes || 0);
             setJamNumber(state?.JamNumber || 0);
-            setConfirm(Scoreboard.GetState().ConfirmStatus || false);
+            setConfirm(state.ConfirmStatus || false);
         });
     }, []);
+
+    React.useEffect(() => Clocks.Subscribe(() => {
+        const state = Clocks.GetState();
+        setSeconds(state.JamSecond || 0);
+        setMinutes(state.JamMinute || 0);
+    }), []);
 
     let time = jamSeconds.toString().padStart(2,'0')
     if(jamMinutes > 0)

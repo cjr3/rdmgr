@@ -17,12 +17,11 @@ BreakClock.OnTick.push((hour, minute, second, tenths, status) => {
     //     lastMinute = minute;
     //     lastSecond = second;
     //     lastStatus = status;
-        MainController.UpdateScoreboardBreakClock({
-            Hours:hour,
-            Minutes:minute,
-            Seconds:second,
-            Tenths:0,
-            Status:status
+        MainController.UpdateClockState({
+            BreakHour:hour,
+            BreakMinute:minute,
+            BreakSecond:second,
+            BreakStatus:status
         });
     // }
 
@@ -36,8 +35,8 @@ BreakClock.OnTick.push((hour, minute, second, tenths, status) => {
 });
 
 BreakClock.OnStop.push(() => {
-    MainController.UpdateScoreboardBreakClock({
-        Status:ClockStatus.STOPPED
+    MainController.UpdateClockState({
+        BreakStatus:ClockStatus.STOPPED
     });
 });
 

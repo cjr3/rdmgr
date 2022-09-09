@@ -28,7 +28,7 @@ import { GameController } from 'tools/input/gamepad';
 import { Capture } from 'tools/capture/functions';
 import { Seasons } from 'tools/seasons/functions';
 import { PeerManager } from 'tools/PeerManager';
-import { setupServer } from 'LocalServer';
+import { setupServer } from './LocalServer';
 
 const ignore = () => {};
 if(document.location.href.endsWith('server=true')) {
@@ -68,8 +68,9 @@ if(document.location.href.endsWith('server=true')) {
                 }
             
                 //overrides from files
-                const state = MainController.GetState();
-                GameClock.set(state.Scoreboard.GameClock?.Hours || 0, state.Scoreboard.GameClock?.Minutes || 0, state.Scoreboard.GameClock?.Seconds || 0, state.Scoreboard.GameClock?.Tenths || 0);
+                // const state = MainController.GetState();
+                const sstate = MainController.GetScoreboardState();
+                GameClock.set(sstate.GameClock?.Hours || 0, sstate.GameClock?.Minutes || 0, sstate.GameClock?.Seconds || 0, sstate.GameClock?.Tenths || 0);
 
                 // const {remote} = require('electron').remote;
                 try {
