@@ -581,6 +581,13 @@ const SaveAnthemSingers = (records:AnthemSinger[]) => __WriteFile(FILE_RECORDS_A
 const SaveCapture = (state:SCapture) => __WriteFile(FILE_STATE_CAPTURE, JSON.stringify(state));
 
 /**
+ * Save state of clocks.
+ * @param state 
+ * @returns 
+ */
+const SaveClocks = (state:SClock) => __WriteFile(FILE_STATE_CLOCKS, JSON.stringify(state));
+
+/**
  * Save config file.
  * @param state 
  * @returns 
@@ -712,6 +719,7 @@ const Data = {
     SaveAnthem:SaveAnthem,
     SaveAnthemSingers:SaveAnthemSingers,
     SaveCapture:SaveCapture,
+    SaveClocks:SaveClocks,
     SaveConfig:SaveConfig,
     SavePeers:SavePeers,
     SavePenalties:SavePenalties,

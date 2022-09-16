@@ -243,6 +243,7 @@ export type ClockType = 'clock' | 'stopwatch';
 export interface Config {
     Colors?:ConfigColors;
     Misc?:ConfigMisc;
+    NetworkEnabled?:boolean;
     Scoreboard?:ConfigScoreboard;
     /**
      * Host/IP for media API

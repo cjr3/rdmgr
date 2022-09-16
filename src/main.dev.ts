@@ -36,6 +36,7 @@ let captureWindowY = 0;
 let mainWindow: BrowserWindow | null = null;
 let captureWindow: BrowserWindow | null = null;
 let serverWindow: BrowserWindow | null = null;
+let networkEnabled = false;
 // let localPort = 0;
 const g:any = global;
 // let portControl:MessagePortMain|undefined;
@@ -62,6 +63,9 @@ try {
           }
         }
       }
+
+      if(json.NetworkEnabled)
+        networkEnabled = true;
     }
   }
 } catch(er) {
@@ -71,15 +75,17 @@ try {
 //get user config for localhost server
 
 try {
-  const stat = statSync(peerFileName);
-  if(stat && stat.isFile && stat.isFile()) {
-    const datab = readFileSync(peerFileName);
-    if(datab) {
-      const peers = JSON.parse(datab.toString());
-      if(peers && Array.isArray(peers)) {
-        const local = peers.find(p => p.Host === "127.0.0.1" || p.Host === "localhost");
-        if(local && local.Port && typeof(local.Port) === 'number') {
-          g.portNumber = local.Port;
+  if(networkEnabled) {
+    const stat = statSync(peerFileName);
+    if(stat && stat.isFile && stat.isFile()) {
+      const datab = readFileSync(peerFileName);
+      if(datab) {
+        const peers = JSON.parse(datab.toString());
+        if(peers && Array.isArray(peers)) {
+          const local = peers.find(p => p.Host === "127.0.0.1" || p.Host === "localhost");
+          if(local && local.Port && typeof(local.Port) === 'number') {
+            g.portNumber = local.Port;
+          }
         }
       }
     }
@@ -156,18 +162,20 @@ const createWindow = async () => {
   });
 
   //server
-  serverWindow = new BrowserWindow({
-    show:false,
-    frame:false,
-    webPreferences:{
-      nodeIntegration:true,
-      webSecurity:false,
-      allowRunningInsecureContent:true,
-      enableRemoteModule:true,
-      backgroundThrottling:false
-      // preload:__dirname + '/preloadServer.js'
-    }
-  })
+  if(networkEnabled) {
+    serverWindow = new BrowserWindow({
+      show:false,
+      frame:false,
+      webPreferences:{
+        nodeIntegration:true,
+        webSecurity:false,
+        allowRunningInsecureContent:true,
+        enableRemoteModule:true,
+        backgroundThrottling:false
+        // preload:__dirname + '/preloadServer.js'
+      }
+    })
+  }
 
   //capture
   if(showCaptureWindow) {
@@ -200,7 +208,9 @@ const createWindow = async () => {
   }
 
   mainWindow.loadURL(`file://${__dirname}/index.html`);
-  serverWindow.loadURL(`file://${__dirname}/index.html?server=true`);
+
+  if(networkEnabled && serverWindow)
+    serverWindow.loadURL(`file://${__dirname}/index.html?server=true`);
 
   // captureWindow.loadURL(`file://${__dirname}/capture.html`)
   if(captureWindow)

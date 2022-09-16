@@ -1,4 +1,4 @@
-import { IconSave, IconX } from 'components/common/icons';
+import { IconCheck, IconSave, IconX } from 'components/common/icons';
 import { ColorPicker } from 'components/common/inputs/colorpicker';
 import { MediaItem } from 'components/common/inputs/mediaitem';
 import { BrowserWindow, ipcRenderer } from 'electron';
@@ -47,12 +47,16 @@ interface State {
     maxTeamChallenges:number;
     maxTeamTimeouts:number;
     monitors:Electron.Display[];
+    networkEnabled:boolean;
     raffleBackground:string;
     raffleTicketBackground:string;
     scorebannerBackground:string;
     scoreboardClassName:string;
 }
 
+/**
+ * Form to configure options for the application. 
+ */
 class ConfigForm extends React.PureComponent<Props, State> {
 
     readonly state:State = {
@@ -85,6 +89,7 @@ class ConfigForm extends React.PureComponent<Props, State> {
         maxTeamChallenges:2,
         maxTeamTimeouts:2,
         monitors:[],
+        networkEnabled:false,
         raffleBackground:es,
         raffleTicketBackground:es,
         scorebannerBackground:es,
@@ -124,6 +129,7 @@ class ConfigForm extends React.PureComponent<Props, State> {
             leagueLogo:state.Config?.Misc?.LeagueLogo || es,
             maxTeamChallenges:state.Config?.Scoreboard?.MaxTeamChallenges || 2,
             maxTeamTimeouts:state.Config?.Scoreboard?.MaxTeamTimeouts || 2,
+            networkEnabled:state.Config?.NetworkEnabled || false,
             raffleBackground:state.Capture.Raffle.backgroundImage || es,
             raffleTicketBackground:state.Config.Misc?.RaffleTicketBackground || es,
             scorebannerBackground:state.Capture?.Scorebanner?.backgroundImage || es,
@@ -238,6 +244,16 @@ class ConfigForm extends React.PureComponent<Props, State> {
     protected onChangeMaxTeamTimeouts = (value:number) => this.setState({maxTeamTimeouts:value});
 
     /**
+     * Toggle the flag that turns on P2P capabilities.
+     * @param ev 
+     */
+    protected onChangeNetworkEnabled = (ev:React.MouseEvent<HTMLElement>) => {
+        ev.stopPropagation();
+        ev.preventDefault();
+        this.setState({networkEnabled:!this.state.networkEnabled});
+    }
+
+    /**
      * Called when the user sets the raffle background image
      * @param value 
      * @returns 
@@ -309,7 +325,8 @@ class ConfigForm extends React.PureComponent<Props, State> {
                 },
                 RaffleTicketBackground:this.state.raffleTicketBackground,
                 LeagueLogo:this.state.leagueLogo
-            }
+            },
+            NetworkEnabled:this.state.networkEnabled
         };
 
         if(config.Colors)
@@ -334,7 +351,9 @@ class ConfigForm extends React.PureComponent<Props, State> {
             className:this.state.scoreboardClassName
         });
 
-        Data.SaveConfig(UIController.GetState().Config).then(() => {
+        const current = UIController.GetState().Config;
+        current.NetworkEnabled = this.state.networkEnabled;
+        Data.SaveConfig(current).then(() => {
             this.props.onSave();
         }).catch(() => {
             
@@ -571,6 +590,20 @@ class ConfigForm extends React.PureComponent<Props, State> {
                         </tr>
                     </tbody>
                 </table>
+                <h3 style={{marginTop:'16px'}}>Peer-to-Peer Networking</h3>
+                <div style={{display:'grid', gridTemplateColumns:'auto 1fr', alignItems:'flex-start'}}>
+                    <div className='btn-group'>
+                        <button className={(this.state.networkEnabled) ? 'btn btn-primary' : 'btn btn-secondary'} onClick={this.onChangeNetworkEnabled}>Enabled</button>
+                        <button className={(!this.state.networkEnabled) ? 'btn btn-primary' : 'btn btn-secondary'} onClick={this.onChangeNetworkEnabled}>Disabled</button>
+                    </div>
+                    <div style={{padding:'0px 12px'}}>
+                        Use P2P Networking to send Scoreboard data between local computers. (Requires restart of application.)
+                        <p>
+                            You'll need at least one peer record configured with a host of 127.0.0.1, an available port on your computer,
+                            and a unique ID between your other peers.
+                        </p>
+                    </div>
+                </div>
                 <h3 style={{marginTop:'16px'}}>Scoreboard</h3>
                 <table className='table table-striped'>
                     <tbody>
@@ -592,27 +625,8 @@ class ConfigForm extends React.PureComponent<Props, State> {
                         </tr>
                     </tbody>
                 </table>
-                <p style={{borderTop:'dotted 1px #999999',color:'#999999',fontSize:'0.8rem'}}>
-                    Roller Derby Manager (RDMGR) &copy; Copyright Carl J. Roberts 2016-2022. 
-                    <button
-                        style={{
-                            color:'#999999',
-                            border:'none',
-                            background:'transparent',
-                            textDecoration:'underline'
-                        }}
-                        onClick={ev => {
-                            ev.stopPropagation();
-                            ev.preventDefault();
-                            try {
-                                BrowserWindow.getFocusedWindow()?.webContents.openDevTools();
-                            } catch(er:any) {
-
-                            }
-                        }}
-                    >
-                        Open Dev Tools
-                    </button>
+                <p style={{borderTop:'dotted 1px #999999',color:'#999999',fontSize:'0.8rem', paddingTop:'16px'}}>
+                    Roller Derby Manager (RDMGR) &copy; Copyright Carl J. Roberts 2016-2022
                 </p>
             </div>
             <div className='buttons'>

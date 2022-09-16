@@ -18,6 +18,7 @@ interface Props {
  */
 const Taskbar:React.FunctionComponent<Props> = props => {
     const [appCode, setAppCode] = React.useState(UIController.GetState().Config.Misc?.AppCode || 'SB');
+    const [networkEnabled, setNetworkEnabled] = React.useState(UIController.GetState().Config.NetworkEnabled || false);
     const setApplication = React.useCallback((code:string) => {
         UIController.UpdateConfigMisc({AppCode:code});
         Data.SaveConfig(UIController.GetState().Config);
@@ -31,6 +32,7 @@ const Taskbar:React.FunctionComponent<Props> = props => {
     
     React.useEffect(() => UIController.Subscribe(() => {
         setAppCode(UIController.GetState().Config.Misc?.AppCode || 'SB');
+        setNetworkEnabled(UIController.GetState().Config.NetworkEnabled || false);
     }), []);
     
     return <div className='taskbar'>
@@ -43,7 +45,10 @@ const Taskbar:React.FunctionComponent<Props> = props => {
         </div>
         <TaskbarStatus/>
         <div className='misc-icons'>
-            <IconOffline onClick={props.onSelectPeers} title='Network'/>
+            {
+                (networkEnabled) &&
+                <IconOffline onClick={props.onSelectPeers} title='Network'/>
+            }
             <IconOBS onClick={props.onSelectOBS} title='OBS'/>
             <IconStream onClick={props.onSelectCamera} title='Camera'/>
             <IconTicket onClick={props.onSelectRaffle} title='Raffle'/>

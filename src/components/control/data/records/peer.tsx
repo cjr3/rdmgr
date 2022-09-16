@@ -25,11 +25,11 @@ interface AppRecord {
 
 const apps:AppRecord[] = [
     {name:'Clocks', code:'CLK'},
-    {name:'Penalty Tracker', code:'PT'},
-    {name:'Raffle', code:'RAF'},
-    {name:'Roster', code:'ROS'},
+    // {name:'Penalty Tracker', code:'PT'},
+    // {name:'Raffle', code:'RAF'},
+    // {name:'Roster', code:'ROS'},
     {name:'Scoreboard', code:'SB'},
-    {name:'Scorekeeper', code:'SK'},
+    // {name:'Scorekeeper', code:'SK'},
 ];
 
 /**

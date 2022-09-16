@@ -29,6 +29,7 @@ import { Capture } from 'tools/capture/functions';
 import { Seasons } from 'tools/seasons/functions';
 import { PeerManager } from 'tools/PeerManager';
 import { setupServer } from './LocalServer';
+import { Clocks } from 'tools/clocks/functions';
 
 const ignore = () => {};
 if(document.location.href.endsWith('server=true')) {
@@ -69,8 +70,8 @@ if(document.location.href.endsWith('server=true')) {
             
                 //overrides from files
                 // const state = MainController.GetState();
-                const sstate = MainController.GetScoreboardState();
-                GameClock.set(sstate.GameClock?.Hours || 0, sstate.GameClock?.Minutes || 0, sstate.GameClock?.Seconds || 0, sstate.GameClock?.Tenths || 0);
+                // const sstate = MainController.GetClockState();
+                // GameClock.set(sstate.GameHour || 0, sstate.GameMinute || 15, sstate.GameSecond || 0, 0);
 
                 // const {remote} = require('electron').remote;
                 try {
@@ -109,6 +110,7 @@ if(document.location.href.endsWith('server=true')) {
                 setTimeout(() => {
                     Anthem.Init().then(ignore).catch(ignore);
                     Capture.Init().then(ignore).catch(ignore);
+                    Clocks.Init().then(ignore).catch(ignore);
                     ControlIPC.Init();
                     Roster.Init().then(ignore).catch(ignore);
                     PenaltyTracker.Init().then(ignore).catch(ignore);
