@@ -8,6 +8,7 @@ To enable Peer-to-Peer networking, you'll need the following
 - A record in the list of peers (in the config panel) with a host of 127.0.0.1. This will be your computer's peer record.
 - Enable networking, which can be found in the config panel.
 - At least one additional peer record, with their local ip address and port.
+- Each peer record should have a unique name, preferably with only alpha-numerics. This will be their unique ID to connect with, and should match the one the other users have on their computers.
 
 The config panel can be accessed from the lower-right tools icon.
 
